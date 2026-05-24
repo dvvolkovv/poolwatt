@@ -122,6 +122,17 @@ ssh dv@77.221.159.163 'pm2 restart poolwatt-bot poolwatt-worker'
   at user scope, so the bot's spawned claude has TDD/debugging/etc.
   skills available.
 
+- **Playwright uses system Chrome, not bundled chromium.** Ubuntu
+  26.04 ("resolute") is too new for Playwright 1.60.0's chromium
+  binary matrix, so `npx playwright install chromium` fails on the
+  server. We use system Google Chrome (`channel: "chrome"` in
+  `playwright.config.ts`), installed via the official .deb. To run
+  e2e: `ssh dv@77.221.159.163 'cd ~/poolwatt && npm run test:e2e'`.
+  Tests need `poolwatt-web` (the Next.js app on :3000) to be online —
+  `pm2 status` to verify before running. Once Playwright ships a
+  ubuntu26 chromium build, drop `channel: "chrome"` to switch back
+  to bundled chromium.
+
 ## Roadmap
 
 See [README.md](README.md#roadmap). Currently in Phase 1 (scaffold + landing
