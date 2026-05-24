@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "Households contribute renewable power. The grid pays them back.",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "settings": "Settings",
+    "admin": "Admin",
+    "watchlist": "Watchlist",
+    "request": "List your household",
+    "hubs": "Hubs",
+    "producers": "Producers",
+    "offers": "Offers",
+    "languageLabel": "Language",
+    "currencyLabel": "Currency",
+    "themeLabel": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System"
+  },
+  "home": {
+    "heroEyebrow": "Live · Poolwatt Grid · refreshed every 60 s",
+    "heroLine1": "The grid",
+    "heroLine2Before": "powered by ",
+    "heroLine2Accent": "households",
+    "heroLine2After": ".",
+    "heroSubtitle": "Poolwatt is a peer-to-peer marketplace where homes sell battery-stored renewable energy. Every kilowatt-hour on the network came from solar, wind, hydro or biomass — and we can prove it.",
+    "ctaPrimary": "Browse producers",
+    "ctaSecondary": "List your household"
+  },
+  "stats": {
+    "totalCapacity": "Total capacity",
+    "delivered24h": "Delivered (24h)",
+    "lifetimeDelivered": "Lifetime delivered",
+    "activeProducers": "Active producers",
+    "activeHubs": "Active hubs",
+    "solarShare": "Solar share",
+    "windShare": "Wind share",
+    "hydroShare": "Hydro share",
+    "carbonOffset": "CO₂ offset (24h)",
+    "greenIndex": "Green Index"
+  },
+  "greenIndex": {
+    "carbon-heavy": "Carbon-heavy",
+    "mixed": "Mixed",
+    "neutral": "Balanced",
+    "renewable": "Renewable",
+    "fully-renewable": "Fully renewable"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "Producer",
+    "source": "Source",
+    "stateOfCharge": "Charge",
+    "available": "Available",
+    "price": "Price / kWh",
+    "delivered24h": "24h",
+    "lifetime": "Lifetime",
+    "change24h": "24h %",
+    "weekly": "7-day output",
+    "uptime": "Uptime",
+    "loadingFallback": "Fetching grid telemetry…",
+    "search": "Search by handle, city or operator…"
+  },
+  "source": {
+    "SOLAR": "Solar",
+    "WIND": "Wind",
+    "HYDRO": "Hydro",
+    "BIOMASS": "Biomass",
+    "GEOTHERMAL": "Geothermal",
+    "HYBRID": "Hybrid"
+  },
+  "weather": {
+    "SUNNY": "Sunny",
+    "CLOUDY": "Cloudy",
+    "WINDY": "Windy",
+    "CALM": "Calm",
+    "RAINY": "Rainy"
+  },
+  "footer": {
+    "dataNote": "Live telemetry from the producer fleet, aggregated by the Poolwatt grid worker. Refresh cadence: 60 s for prices, 5 min for state-of-charge, 30 min for weather.",
+    "section": {
+      "grid": "Grid",
+      "account": "Account",
+      "data": "Data"
+    }
+  },
+  "bot": {
+    "siblingNote": "Telegram bot @PoolwattBot delivers live alerts and lets producers post offers from their phone."
+  }
+}

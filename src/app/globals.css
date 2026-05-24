@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Brand palette — Poolwatt Grid (dark; energy/sunlight accent) */
+  --color-bg: #0c1014;
+  --color-bg-tint: #0e131a;
+  --color-card: #131923;
+  --color-card-alt: #1c2533;
+  --color-hairline: #1f2a37;
+
+  --color-foreground: #f5f7fa;
+  --color-muted: #93a0b1;
+  --color-muted-strong: #c3ccd9;
+
+  /* Brand accent — sunlight amber: the visual cue for "energy". */
+  --color-accent: #f5b400;
+  --color-accent-foreground: #0a0e12;
+
+  /* Secondary — renewable emerald, for the "green" angle. */
+  --color-green: #10b981;
+  --color-green-foreground: #04130d;
+
+  /* Primary CTA — electric cyan. */
+  --color-blue: #22d3ee;
+  --color-blue-foreground: #04141a;
+
+  --color-up: #4ade80;
+  --color-down: #f87171;
+  --color-info: #38bdf8;
+
+  /* Bridge names so shadcn defaults still work */
+  --color-background: var(--color-bg);
+  --color-border: var(--color-hairline);
+  --color-input: var(--color-card);
+  --color-ring: var(--color-accent);
+  --color-primary: var(--color-accent);
+  --color-primary-foreground: var(--color-accent-foreground);
+  --color-secondary: var(--color-card-alt);
+  --color-secondary-foreground: var(--color-foreground);
+  --color-destructive: var(--color-down);
+  --color-destructive-foreground: var(--color-foreground);
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --radius-md: 0.625rem;
+  --radius-lg: 1.25rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-foreground);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01" 1, "cv11" 1;
+}
+
+/* Tabular numerics — apply via .num class wherever kWh/percent/price renders. */
+.num {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1, "zero" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hairline divider. */
+.hairline {
+  background: var(--color-hairline);
+}
+
+/* Live-tick flash for cells annotated with data-live-kwh. */
+.live-flash-up {
+  animation: live-flash-up 700ms ease-out;
+}
+.live-flash-down {
+  animation: live-flash-down 700ms ease-out;
+}
+@keyframes live-flash-up {
+  0%   { background-color: rgba(74, 222, 128, 0.22); }
+  100% { background-color: transparent; }
+}
+@keyframes live-flash-down {
+  0%   { background-color: rgba(248, 113, 113, 0.22); }
+  100% { background-color: transparent; }
+}
+
+/* Soft glow used for primary CTAs. */
+.glow-accent {
+  box-shadow:
+    0 0 0 1px rgba(245, 180, 0, 0.30),
+    0 12px 48px -12px rgba(245, 180, 0, 0.30);
+}
+
+/* Battery-gauge subtle pulse animation (for active producers). */
+.pulse-charge {
+  animation: pulse-charge 2.4s ease-in-out infinite;
+}
+@keyframes pulse-charge {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+/* Sun-ray glow for hero icon. */
+.sun-glow {
+  filter: drop-shadow(0 0 14px rgba(245, 180, 0, 0.45));
+}
+
+/* Scrollbar. */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: var(--color-bg); }
+*::-webkit-scrollbar-thumb {
+  background: var(--color-card-alt);
+  border-radius: 999px;
+  border: 2px solid var(--color-bg);
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--color-muted); }
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}

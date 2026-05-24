@@ -1,0 +1,104 @@
+import { setRequestLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
+import {
+  readTopProducers,
+  readGridStats,
+  readExchangeRates,
+  readGreenIndex,
+} from "@/lib/snapshot";
+import { GridStatsHero } from "@/components/grid-stats-hero";
+import { ProducerListClient } from "@/components/producer-list-client";
+import { getCurrency } from "@/lib/get-currency";
+
+export const revalidate = 60;
+
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const tl = await getTranslations("listing");
+  const th = await getTranslations("home");
+
+  const [rows, stats, rates, currency, greenIndex] = await Promise.all([
+    readTopProducers(),
+    readGridStats(),
+    readExchangeRates(),
+    getCurrency(),
+    readGreenIndex(),
+  ]);
+
+  return (
+    <main className="bg-bg">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-12 xl:px-20">
+        {/* HERO */}
+        <section className="py-12 md:py-28">
+          <div className="grid grid-cols-12 gap-8 items-end">
+            <div className="col-span-12 lg:col-span-8">
+              <div className="num text-[11px] uppercase tracking-[0.3em] text-up mb-6 inline-flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-up animate-pulse" aria-hidden />
+                {th("heroEyebrow")}
+              </div>
+              <h1 className="text-[42px] sm:text-[60px] md:text-[88px] lg:text-[112px] leading-[0.92] tracking-[-0.045em] font-black">
+                {th("heroLine1")}
+                <br />
+                {th("heroLine2Before")}
+                <span className="italic font-extrabold text-accent">
+                  {th("heroLine2Accent")}
+                </span>
+                {th("heroLine2After")}
+              </h1>
+              <p className="mt-8 max-w-[640px] text-[15px] md:text-[18px] lg:text-[20px] leading-[1.5] font-light text-muted">
+                {th("heroSubtitle")}
+              </p>
+              <div className="mt-10 flex flex-wrap items-center gap-3">
+                <Link
+                  href="#producers"
+                  className="inline-flex items-center px-5 py-3 rounded-full font-semibold text-[13px] uppercase tracking-[0.18em] bg-accent text-accent-foreground glow-accent transition-all hover:brightness-110"
+                >
+                  {th("ctaPrimary")}
+                </Link>
+                <Link
+                  href={`/${locale}/request`}
+                  className="inline-flex items-center px-5 py-3 rounded-full font-semibold text-[13px] uppercase tracking-[0.18em] border border-hairline text-muted-strong hover:text-foreground hover:border-accent/60 transition-all"
+                >
+                  {th("ctaSecondary")}
+                </Link>
+              </div>
+            </div>
+            <div className="col-span-12 lg:col-span-4">
+              <GridStatsHero
+                stats={stats}
+                currency={currency}
+                rates={rates}
+                greenIndex={greenIndex}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* PRODUCER TABLE */}
+        <section id="producers" className="py-12 scroll-mt-24">
+          <div className="num text-[11px] uppercase tracking-[0.3em] text-muted mb-2">
+            Section · I
+          </div>
+          <h2 className="text-[32px] md:text-[40px] font-bold tracking-[-0.03em] mb-8">
+            Top producers.
+          </h2>
+          {rows.length > 0 ? (
+            <ProducerListClient
+              rows={rows}
+              currency={currency}
+              rates={rates}
+              locale={locale}
+            />
+          ) : (
+            <p className="text-muted">{tl("loadingFallback")}</p>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}

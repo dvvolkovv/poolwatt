@@ -1,0 +1,91 @@
+{
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "Домохозяйства отдают возобновляемую энергию. Сеть им платит.",
+    "signIn": "Войти",
+    "signOut": "Выйти",
+    "settings": "Настройки",
+    "admin": "Админ",
+    "watchlist": "Избранное",
+    "request": "Зарегистрировать дом",
+    "hubs": "Хабы",
+    "producers": "Производители",
+    "offers": "Офферы",
+    "languageLabel": "Язык",
+    "currencyLabel": "Валюта",
+    "themeLabel": "Тема",
+    "themeLight": "Светлая",
+    "themeDark": "Тёмная",
+    "themeSystem": "Системная"
+  },
+  "home": {
+    "heroEyebrow": "Live · Poolwatt Grid · обновление каждые 60 с",
+    "heroLine1": "Сеть",
+    "heroLine2Before": "на энергии ",
+    "heroLine2Accent": "домохозяйств",
+    "heroLine2After": ".",
+    "heroSubtitle": "Poolwatt — это P2P-маркетплейс, где дома продают энергию из своих powerbank, заряженных от солнца, ветра, воды и биомассы. Каждый кВт·ч в сети — возобновляемый, и это можно подтвердить.",
+    "ctaPrimary": "Смотреть производителей",
+    "ctaSecondary": "Зарегистрировать дом"
+  },
+  "stats": {
+    "totalCapacity": "Совокупная ёмкость",
+    "delivered24h": "Отдано (24ч)",
+    "lifetimeDelivered": "Всего отдано",
+    "activeProducers": "Активные производители",
+    "activeHubs": "Активные хабы",
+    "solarShare": "Доля солнца",
+    "windShare": "Доля ветра",
+    "hydroShare": "Доля воды",
+    "carbonOffset": "Компенсация CO₂ (24ч)",
+    "greenIndex": "Green Index"
+  },
+  "greenIndex": {
+    "carbon-heavy": "Углеродная",
+    "mixed": "Смешанная",
+    "neutral": "Сбалансированная",
+    "renewable": "Возобновляемая",
+    "fully-renewable": "Полностью возобновляемая"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "Производитель",
+    "source": "Источник",
+    "stateOfCharge": "Заряд",
+    "available": "Доступно",
+    "price": "Цена / кВт·ч",
+    "delivered24h": "24ч",
+    "lifetime": "Всего",
+    "change24h": "24ч %",
+    "weekly": "Выработка 7д",
+    "uptime": "Аптайм",
+    "loadingFallback": "Загружаем телеметрию сети…",
+    "search": "Поиск по handle, городу или оператору…"
+  },
+  "source": {
+    "SOLAR": "Солнце",
+    "WIND": "Ветер",
+    "HYDRO": "Вода",
+    "BIOMASS": "Биомасса",
+    "GEOTHERMAL": "Геотермия",
+    "HYBRID": "Гибрид"
+  },
+  "weather": {
+    "SUNNY": "Солнечно",
+    "CLOUDY": "Облачно",
+    "WINDY": "Ветрено",
+    "CALM": "Штиль",
+    "RAINY": "Дождь"
+  },
+  "footer": {
+    "dataNote": "Live-телеметрия с устройств производителей, агрегируется воркером Poolwatt. Цикл обновления: 60 с — цены, 5 мин — заряд, 30 мин — погода.",
+    "section": {
+      "grid": "Сеть",
+      "account": "Аккаунт",
+      "data": "Данные"
+    }
+  },
+  "bot": {
+    "siblingNote": "Telegram-бот @PoolwattBot шлёт live-оповещения и позволяет производителям публиковать офферы прямо с телефона."
+  }
+}

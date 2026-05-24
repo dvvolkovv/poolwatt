@@ -1,0 +1,326 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String?   @unique
+  name              String?
+  image             String?
+  role              Role      @default(USER)
+  preferredLocale   String    @default("en")
+  preferredCurrency String    @default("USD")
+  preferredTheme    String    @default("system")
+  emailVerified     DateTime?
+  createdAt         DateTime  @default(now())
+
+  accounts            Account[]
+  sessions            Session[]
+  ownedProducers      Producer[]          @relation("ProducerOwner")
+  watchlist           Watchlist[]
+  hubWatchlist        HubWatchlist[]
+  producerRequests    ProducerRequest[]
+  reviewedRequests    ProducerRequest[]   @relation("RequestReviewer")
+  adminAddedProducers Producer[]          @relation("AdminProducerAdditions")
+  auditLogs           AdminAuditLog[]     @relation("AdminAuditActor")
+  buyContracts        Contract[]          @relation("ContractBuyer")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Renewable source category for the household's power-bank charging mix.
+enum RenewableSource {
+  SOLAR
+  WIND
+  HYDRO
+  BIOMASS
+  GEOTHERMAL
+  HYBRID
+}
+
+enum ProducerSource {
+  AUTO_FEED       // imported from a partner aggregator feed
+  ADMIN_ADDED     // manually whitelisted by admin
+  SELF_ENROLLED   // household signed up through the portal
+}
+
+// A household (or small commercial) producer that contributes battery-stored
+// renewable electricity to the network.
+model Producer {
+  id          String           @id @default(cuid())
+  slug        String           @unique
+  handle      String           @unique           // human-friendly id, e.g. "lisbon-rooftop-04"
+  displayName String                              // e.g. "Casa do Sol — Lisbon"
+  city        String?
+  region      String?
+  country     String                              // ISO 3166-1 alpha-2
+  lat         Float?
+  lng         Float?
+
+  primarySource     RenewableSource
+  sourceMix         Json?                         // e.g. { "SOLAR": 0.7, "WIND": 0.3 }
+  capacityKwh       Decimal          @db.Decimal(12, 3)  // total powerbank capacity
+  inverterKw        Decimal          @db.Decimal(8, 3)   // max instantaneous output
+  installedAt       DateTime?
+
+  source            ProducerSource   @default(SELF_ENROLLED)
+  isActive          Boolean          @default(true)
+  rank              Int                                  // ranked by lifetime kWh delivered
+  logoUrl           String?
+  bannerUrl         String?
+  bio               String?          @db.Text
+  websiteUrl        String?
+  twitterUrl        String?
+
+  ownerId           String?
+  owner             User?            @relation("ProducerOwner", fields: [ownerId], references: [id])
+  addedByAdminId    String?
+  addedBy           User?            @relation("AdminProducerAdditions", fields: [addedByAdminId], references: [id])
+  approvedFromRequestId String?      @unique
+  approvedFromRequest   ProducerRequest? @relation("ProducerRequestApproved", fields: [approvedFromRequestId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  metadataFetchedAt DateTime?
+
+  snapshots   ProducerSnapshot[]
+  offers      Offer[]
+  watchedBy   Watchlist[]
+  contracts   Contract[]
+
+  @@index([country, rank])
+  @@index([primarySource])
+}
+
+// Periodic telemetry snapshot per producer: state-of-charge, last 24h delivery, prices.
+model ProducerSnapshot {
+  id                  String   @id @default(cuid())
+  producerId          String
+  producer            Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+
+  stateOfChargePct    Float                                           // 0..100
+  availableKwh        Decimal  @db.Decimal(12, 3)                     // currently dischargeable
+  delivered24hKwh     Decimal  @db.Decimal(12, 3)
+  deliveredLifetimeKwh Decimal @db.Decimal(16, 3)
+  avgPricePerKwhUsd   Decimal  @db.Decimal(10, 6)
+  pctChange24h        Float?
+  pctChange7d         Float?
+  uptimePct           Float?
+  carbonOffsetKgCo2e  Decimal? @db.Decimal(14, 3)
+  weatherCondition    String?                                          // SUNNY/CLOUDY/WINDY/CALM…
+  fetchedAt           DateTime @default(now())
+
+  @@index([producerId, fetchedAt])
+}
+
+// Network-wide stats — analog of GlobalStats in the reference project.
+model GridStats {
+  id                  Int       @id @default(1)
+  totalCapacityKwh    Decimal   @db.Decimal(18, 3)
+  totalDelivered24hKwh Decimal  @db.Decimal(18, 3)
+  totalLifetimeKwh    Decimal   @db.Decimal(20, 3)
+  activeProducers     Int
+  activeHubs          Int
+  solarSharePct       Float
+  windSharePct        Float
+  hydroSharePct       Float
+  otherSharePct       Float
+  carbonOffset24hKgCo2e Decimal @db.Decimal(16, 3)
+  fetchedAt           DateTime @default(now())
+}
+
+// Hub == aggregation point / microgrid / utility partner where producers and buyers meet.
+model Hub {
+  id              String   @id                                       // e.g. "iberian-grid"
+  slug            String   @unique
+  name            String
+  country         String?
+  region          String?
+  lat             Float?
+  lng             Float?
+  logoUrl         String?
+  isOperational   Boolean  @default(true)
+  yearEstablished Int?
+  capacityKwh     Float                                             // aggregate
+  throughput24hKwh Float
+  trustScore      Int?
+  trustScoreRank  Int?
+  url             String?
+  watchedBy       HubWatchlist[]
+  contracts       Contract[]
+  fetchedAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([trustScoreRank])
+}
+
+model HubWatchlist {
+  userId  String
+  hubId   String
+  addedAt DateTime @default(now())
+  user    User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hub     Hub  @relation(fields: [hubId], references: [id], onDelete: Cascade)
+
+  @@id([userId, hubId])
+  @@index([userId])
+}
+
+model Watchlist {
+  userId     String
+  producerId String
+  addedAt    DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  producer   Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+
+  @@id([userId, producerId])
+  @@index([userId])
+}
+
+enum OfferStatus {
+  OPEN
+  FILLED
+  EXPIRED
+  CANCELLED
+}
+
+// An offer to sell N kWh at price P, posted by a producer and visible on a hub.
+model Offer {
+  id            String      @id @default(cuid())
+  producerId    String
+  producer      Producer    @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  kwh           Decimal     @db.Decimal(12, 3)
+  pricePerKwhUsd Decimal    @db.Decimal(10, 6)
+  startAt       DateTime
+  endAt         DateTime
+  status        OfferStatus @default(OPEN)
+  contracts     Contract[]
+  createdAt     DateTime    @default(now())
+
+  @@index([status, startAt])
+  @@index([producerId, status])
+}
+
+enum ContractStatus {
+  PENDING
+  ACTIVE
+  SETTLED
+  CANCELLED
+}
+
+// A buyer-side contract that consumes (part of) an Offer.
+model Contract {
+  id              String         @id @default(cuid())
+  offerId         String
+  offer           Offer          @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  producerId      String
+  producer        Producer       @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  buyerId         String
+  buyer           User           @relation("ContractBuyer", fields: [buyerId], references: [id])
+  hubId           String?
+  hub             Hub?           @relation(fields: [hubId], references: [id])
+  kwh             Decimal        @db.Decimal(12, 3)
+  pricePerKwhUsd  Decimal        @db.Decimal(10, 6)
+  status          ContractStatus @default(PENDING)
+  signedAt        DateTime?
+  settledAt       DateTime?
+  createdAt       DateTime       @default(now())
+
+  @@index([buyerId, createdAt])
+  @@index([producerId, createdAt])
+  @@index([status, createdAt])
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Household applies to list its powerbank on the platform.
+model ProducerRequest {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  handle        String
+  displayName   String
+  country       String
+  city          String?
+  primarySource RenewableSource
+  capacityKwh   Decimal       @db.Decimal(12, 3)
+  inverterKw    Decimal       @db.Decimal(8, 3)
+  reason        String        @db.Text
+  status        RequestStatus @default(PENDING)
+  reviewedAt    DateTime?
+  reviewedById  String?
+  rejectReason  String?
+  createdAt     DateTime      @default(now())
+  reviewer      User?         @relation("RequestReviewer", fields: [reviewedById], references: [id])
+  approvedProducer Producer?  @relation("ProducerRequestApproved")
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+}
+
+enum AdminAction {
+  APPROVE_REQUEST
+  REJECT_REQUEST
+  ADD_PRODUCER
+  TOGGLE_PRODUCER_ACTIVE
+  SET_USER_ROLE
+}
+
+model AdminAuditLog {
+  id         String      @id @default(cuid())
+  actorId    String
+  actor      User        @relation("AdminAuditActor", fields: [actorId], references: [id])
+  action     AdminAction
+  targetType String
+  targetId   String
+  details    Json?
+  createdAt  DateTime    @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+}
