@@ -6,6 +6,8 @@ import {
   renderGridStats,
   escapeMd,
 } from "./format";
+import type { ClaudeRunner } from "./claudeRunner";
+import type { SessionStore } from "./session";
 
 export type Reply = (text: string, opts?: { parseMode?: "MarkdownV2" }) => Promise<unknown>;
 
@@ -13,6 +15,12 @@ export type CommandDeps = {
   webBaseUrl: string;
   /** caller's preferred locale — used to build deep links inside messages */
   locale: string;
+  /** Telegram user id of the caller — needed for /whoami, /cancel, /status, etc. */
+  userId: number;
+  /** Whether the caller is on the dev-commands whitelist. */
+  isAuthorized: boolean;
+  session: SessionStore;
+  runner: ClaudeRunner;
 };
 
 type CommandHandler = (args: string[], reply: Reply, deps: CommandDeps) => Promise<void>;
@@ -20,18 +28,25 @@ type CommandHandler = (args: string[], reply: Reply, deps: CommandDeps) => Promi
 const HELP_TEXT = [
   "*Poolwatt* — P2P renewable energy marketplace",
   "",
-  "Available commands:",
+  "*Marketplace commands:*",
   "· /start — welcome",
   "· /help — this message",
   "· /producers — top 10 producers right now",
   "· /producer `<handle>` — full profile for one producer",
-  "· /grid — network-wide live stats",
+  "· /grid — network\\-wide live stats",
   "· /greenindex — current Green Index reading",
   "· /watch `<handle>` — add producer to your watchlist",
   "· /unwatch `<handle>` — remove from watchlist",
-  "· /buy `<handle>` `<kwh>` — open an offer-to-buy",
+  "· /buy `<handle>` `<kwh>` — open an offer\\-to\\-buy",
   "· /listing — apply to list your household on Poolwatt",
   "· /whoami — show your Telegram user id",
+  "",
+  "*Dev commands \\(whitelisted users only\\):*",
+  "· _free\\-form text_ — run as a Claude prompt against the repo",
+  "· /new — drop the current Claude session",
+  "· /cancel — stop the running task",
+  "· /verbose — toggle per\\-tool status updates",
+  "· /status — show current session state",
 ].join("\n");
 
 export const handlers: Record<string, CommandHandler> = {
@@ -173,13 +188,78 @@ export const handlers: Record<string, CommandHandler> = {
     );
   },
 
-  "/whoami": async (_args, reply, _deps) => {
-    // The bot index injects userId into the deps wrapper if it wants to expose
-    // it here; we leave this as a no-op so the dispatcher can still mention
-    // the command in /help without crashing.
-    await reply("Your Telegram user id is shown via the bot dispatcher\\.", {
+  "/whoami": async (_args, reply, deps) => {
+    await reply(`Your Telegram user id: \`${deps.userId}\``, {
       parseMode: "MarkdownV2",
     });
+  },
+
+  "/new": async (_args, reply, deps) => {
+    if (!deps.isAuthorized) {
+      await reply("Not authorized\\.", { parseMode: "MarkdownV2" });
+      return;
+    }
+    deps.session.reset(deps.userId);
+    await reply("New session — next message starts from a clean slate\\.", {
+      parseMode: "MarkdownV2",
+    });
+  },
+
+  "/cancel": async (_args, reply, deps) => {
+    if (!deps.isAuthorized) {
+      await reply("Not authorized\\.", { parseMode: "MarkdownV2" });
+      return;
+    }
+    if (deps.runner.isActive(deps.userId)) {
+      deps.runner.cancel(deps.userId);
+      await reply("Cancelling current task…", { parseMode: "MarkdownV2" });
+    } else {
+      await reply("Nothing to cancel — no active task\\.", {
+        parseMode: "MarkdownV2",
+      });
+    }
+  },
+
+  "/verbose": async (_args, reply, deps) => {
+    if (!deps.isAuthorized) {
+      await reply("Not authorized\\.", { parseMode: "MarkdownV2" });
+      return;
+    }
+    const current = deps.session.getVerbose(deps.userId);
+    deps.session.setVerbose(deps.userId, !current);
+    await reply(
+      !current
+        ? "Verbose mode *on* — you'll see every tool call as a separate message\\."
+        : "Verbose mode *off*\\.",
+      { parseMode: "MarkdownV2" },
+    );
+  },
+
+  "/status": async (_args, reply, deps) => {
+    if (!deps.isAuthorized) {
+      await reply("Not authorized\\.", { parseMode: "MarkdownV2" });
+      return;
+    }
+    const rec = deps.session.get(deps.userId);
+    const running = deps.runner.isActive(deps.userId);
+    if (!rec) {
+      await reply(
+        running
+          ? "No session in memory but a claude process is running \\(odd\\)\\."
+          : "No active session\\. Send a free\\-form message to start one\\.",
+        { parseMode: "MarkdownV2" },
+      );
+      return;
+    }
+    const sinceSec = Math.round((Date.now() - rec.lastActivity) / 1000);
+    await reply(
+      [
+        `session\\_id: \`${escapeMd(rec.claudeSessionId)}\``,
+        `last activity: *${sinceSec}s ago*`,
+        `claude process: *${running ? "running" : "idle"}*`,
+      ].join("\n"),
+      { parseMode: "MarkdownV2" },
+    );
   },
 };
 
