@@ -25,7 +25,7 @@ export function renderProducerShort(p: ProducerRow): string {
   const soc = escapeMd(`${p.stateOfChargePct}%`);
   return [
     `${src} *${name}* \\(\`${handle}\`\\)`,
-    `${city} · *${price}* USD/kWh · ${avail} kWh free · charge ${soc}`,
+    `${city} · *${price}* USD/кВт·ч · ${avail} кВт·ч свободно · заряд ${soc}`,
   ].join("\n");
 }
 
@@ -38,33 +38,33 @@ export function renderProducerDetail(p: ProducerRow, webBaseUrl: string, locale:
     `${src} *${name}*`,
     `_${city}_`,
     "",
-    `· Source: *${escapeMd(p.primarySource.toLowerCase())}*`,
-    `· Capacity: *${escapeMd(`${p.capacityKwh.toFixed(1)} kWh`)}*`,
-    `· Inverter: *${escapeMd(`${p.inverterKw.toFixed(1)} kW`)}*`,
-    `· State of charge: *${escapeMd(`${p.stateOfChargePct}%`)}*`,
-    `· Available now: *${escapeMd(`${p.availableKwh.toFixed(2)} kWh`)}*`,
-    `· Price: *${escapeMd(`${p.pricePerKwhUsd.toFixed(3)} USD/kWh`)}*`,
-    `· Delivered 24h: *${escapeMd(`${p.delivered24hKwh.toFixed(1)} kWh`)}*`,
-    `· Lifetime: *${escapeMd(`${p.deliveredLifetimeKwh.toLocaleString()} kWh`)}*`,
-    `· Uptime: *${escapeMd(`${p.uptimePct.toFixed(1)}%`)}*`,
-    `· CO₂ offset 24h: *${escapeMd(`${p.carbonOffsetKgCo2e.toFixed(1)} kg`)}*`,
+    `· Источник: *${escapeMd(p.primarySource.toLowerCase())}*`,
+    `· Ёмкость: *${escapeMd(`${p.capacityKwh.toFixed(1)} кВт·ч`)}*`,
+    `· Инвертор: *${escapeMd(`${p.inverterKw.toFixed(1)} кВт`)}*`,
+    `· Заряд: *${escapeMd(`${p.stateOfChargePct}%`)}*`,
+    `· Доступно сейчас: *${escapeMd(`${p.availableKwh.toFixed(2)} кВт·ч`)}*`,
+    `· Цена: *${escapeMd(`${p.pricePerKwhUsd.toFixed(3)} USD/кВт·ч`)}*`,
+    `· Отдано за 24ч: *${escapeMd(`${p.delivered24hKwh.toFixed(1)} кВт·ч`)}*`,
+    `· Всего за всё время: *${escapeMd(`${p.deliveredLifetimeKwh.toLocaleString()} кВт·ч`)}*`,
+    `· Аптайм: *${escapeMd(`${p.uptimePct.toFixed(1)}%`)}*`,
+    `· CO₂\\-офсет за 24ч: *${escapeMd(`${p.carbonOffsetKgCo2e.toFixed(1)} кг`)}*`,
     "",
-    escapeMd(`Open in browser: ${webBaseUrl}/${locale}/p/${p.handle}`),
+    escapeMd(`Открыть в браузере: ${webBaseUrl}/${locale}/p/${p.handle}`),
   ];
   return lines.join("\n");
 }
 
 export function renderGridStats(g: GridSnap, gi: GreenIndex | null): string {
   return [
-    "*Poolwatt Grid — live*",
+    "*Сеть Poolwatt — live*",
     "",
-    `· Capacity: *${escapeMd(`${g.totalCapacityKwh.toLocaleString()} kWh`)}*`,
-    `· Delivered 24h: *${escapeMd(`${g.totalDelivered24hKwh.toLocaleString()} kWh`)}*`,
-    `· Lifetime: *${escapeMd(`${g.totalLifetimeKwh.toLocaleString()} kWh`)}*`,
-    `· Active producers: *${escapeMd(g.activeProducers.toString())}*`,
-    `· Active hubs: *${escapeMd(g.activeHubs.toString())}*`,
-    `· Mix: ☀️ ${escapeMd(`${g.solarSharePct.toFixed(1)}%`)} · 💨 ${escapeMd(`${g.windSharePct.toFixed(1)}%`)} · 💧 ${escapeMd(`${g.hydroSharePct.toFixed(1)}%`)} · ⚡️ ${escapeMd(`${g.otherSharePct.toFixed(1)}%`)}`,
-    `· CO₂ offset 24h: *${escapeMd(`${g.carbonOffset24hKgCo2e.toLocaleString()} kg`)}*`,
+    `· Ёмкость: *${escapeMd(`${g.totalCapacityKwh.toLocaleString()} кВт·ч`)}*`,
+    `· Отдано за 24ч: *${escapeMd(`${g.totalDelivered24hKwh.toLocaleString()} кВт·ч`)}*`,
+    `· Всего за всё время: *${escapeMd(`${g.totalLifetimeKwh.toLocaleString()} кВт·ч`)}*`,
+    `· Активных производителей: *${escapeMd(g.activeProducers.toString())}*`,
+    `· Активных хабов: *${escapeMd(g.activeHubs.toString())}*`,
+    `· Микс: ☀️ ${escapeMd(`${g.solarSharePct.toFixed(1)}%`)} · 💨 ${escapeMd(`${g.windSharePct.toFixed(1)}%`)} · 💧 ${escapeMd(`${g.hydroSharePct.toFixed(1)}%`)} · ⚡️ ${escapeMd(`${g.otherSharePct.toFixed(1)}%`)}`,
+    `· CO₂\\-офсет за 24ч: *${escapeMd(`${g.carbonOffset24hKgCo2e.toLocaleString()} кг`)}*`,
     gi ? `· Green Index: *${escapeMd(`${gi.value} (${gi.classification})`)}*` : "",
   ].filter(Boolean).join("\n");
 }

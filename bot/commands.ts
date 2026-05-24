@@ -15,7 +15,7 @@ export type CommandDeps = {
   webBaseUrl: string;
   /** caller's preferred locale — used to build deep links inside messages */
   locale: string;
-  /** Telegram user id of the caller — needed for /whoami, /cancel, /status, etc. */
+  /** Telegram user id of the caller. */
   userId: number;
   /** Whether the caller is on the dev-commands whitelist. */
   isAuthorized: boolean;
@@ -26,38 +26,38 @@ export type CommandDeps = {
 type CommandHandler = (args: string[], reply: Reply, deps: CommandDeps) => Promise<void>;
 
 const HELP_TEXT = [
-  "*Poolwatt* — P2P renewable energy marketplace",
+  "*Poolwatt* — P2P маркетплейс возобновляемой энергии",
   "",
-  "*Marketplace commands:*",
-  "· /start — welcome",
-  "· /help — this message",
-  "· /producers — top 10 producers right now",
-  "· /producer `<handle>` — full profile for one producer",
-  "· /grid — network\\-wide live stats",
-  "· /greenindex — current Green Index reading",
-  "· /watch `<handle>` — add producer to your watchlist",
-  "· /unwatch `<handle>` — remove from watchlist",
-  "· /buy `<handle>` `<kwh>` — open an offer\\-to\\-buy",
-  "· /listing — apply to list your household on Poolwatt",
-  "· /whoami — show your Telegram user id",
+  "*Маркетплейс:*",
+  "· /start — приветствие",
+  "· /help — это сообщение",
+  "· /producers — топ\\-10 производителей сейчас",
+  "· /producer `<handle>` — полный профиль производителя",
+  "· /grid — сводка по сети",
+  "· /greenindex — текущий Green Index",
+  "· /watch `<handle>` — добавить в избранное",
+  "· /unwatch `<handle>` — убрать из избранного",
+  "· /buy `<handle>` `<квт·ч>` — оформить предложение покупки",
+  "· /listing — подать заявку на листинг своего домохозяйства",
+  "· /whoami — показать твой Telegram user id",
   "",
-  "*Dev commands \\(whitelisted users only\\):*",
-  "· _free\\-form text_ — run as a Claude prompt against the repo",
-  "· /new — drop the current Claude session",
-  "· /cancel — stop the running task",
-  "· /verbose — toggle per\\-tool status updates",
-  "· /status — show current session state",
+  "*Dev \\(только для whitelisted\\):*",
+  "· _свободный текст_ — задача для Claude в репо",
+  "· /new — сбросить текущую сессию Claude",
+  "· /cancel — остановить активную задачу",
+  "· /verbose — переключить подробный вывод каждого tool call'а",
+  "· /status — состояние текущей сессии",
 ].join("\n");
 
 export const handlers: Record<string, CommandHandler> = {
   "/start": async (_args, reply, _deps) => {
     await reply(
       [
-        "*Welcome to Poolwatt*",
+        "*Привет, это Poolwatt*",
         "",
-        "Poolwatt is a peer\\-to\\-peer marketplace where households sell battery\\-stored renewable electricity\\.",
+        "Peer\\-to\\-peer маркетплейс, где домохозяйства продают электричество из возобновляемых источников, накопленное в powerbank'ах\\.",
         "",
-        "Send /help to see what I can do\\.",
+        "Отправь /help чтобы увидеть команды\\.",
       ].join("\n"),
       { parseMode: "MarkdownV2" },
     );
@@ -72,18 +72,18 @@ export const handlers: Record<string, CommandHandler> = {
     const body = top
       .map((p, i) => `*${i + 1}\\.* ${renderProducerShort(p)}`)
       .join("\n\n");
-    await reply(`*Top producers on Poolwatt*\n\n${body}`, { parseMode: "MarkdownV2" });
+    await reply(`*Топ производителей Poolwatt*\n\n${body}`, { parseMode: "MarkdownV2" });
   },
 
   "/producer": async (args, reply, deps) => {
     const handle = (args[0] ?? "").replace(/^@/, "").trim();
     if (!handle) {
-      await reply("Usage: /producer `<handle>`", { parseMode: "MarkdownV2" });
+      await reply("Использование: /producer `<handle>`", { parseMode: "MarkdownV2" });
       return;
     }
     const p = MOCK_PRODUCERS.find((x) => x.handle === handle);
     if (!p) {
-      await reply(`No producer with handle \`${escapeMd(handle)}\` found\\.`, {
+      await reply(`Производитель \`${escapeMd(handle)}\` не найден\\.`, {
         parseMode: "MarkdownV2",
       });
       return;
@@ -96,7 +96,7 @@ export const handlers: Record<string, CommandHandler> = {
   "/grid": async (_args, reply) => {
     const [stats, gi] = await Promise.all([readGridStats(), readGreenIndex()]);
     if (!stats) {
-      await reply("Grid telemetry unavailable\\.", { parseMode: "MarkdownV2" });
+      await reply("Телеметрия сети недоступна\\.", { parseMode: "MarkdownV2" });
       return;
     }
     await reply(renderGridStats(stats, gi), { parseMode: "MarkdownV2" });
@@ -105,7 +105,7 @@ export const handlers: Record<string, CommandHandler> = {
   "/greenindex": async (_args, reply) => {
     const gi = await readGreenIndex();
     if (!gi) {
-      await reply("Green Index unavailable\\.", { parseMode: "MarkdownV2" });
+      await reply("Green Index недоступен\\.", { parseMode: "MarkdownV2" });
       return;
     }
     await reply(
@@ -117,11 +117,10 @@ export const handlers: Record<string, CommandHandler> = {
   "/watch": async (args, reply) => {
     const handle = (args[0] ?? "").replace(/^@/, "").trim();
     if (!handle) {
-      await reply("Usage: /watch `<handle>`", { parseMode: "MarkdownV2" });
+      await reply("Использование: /watch `<handle>`", { parseMode: "MarkdownV2" });
       return;
     }
-    // Phase 2: persist via Prisma. For now ack.
-    await reply(`Added \`${escapeMd(handle)}\` to your watchlist\\.`, {
+    await reply(`Добавил \`${escapeMd(handle)}\` в избранное\\.`, {
       parseMode: "MarkdownV2",
     });
   },
@@ -129,10 +128,10 @@ export const handlers: Record<string, CommandHandler> = {
   "/unwatch": async (args, reply) => {
     const handle = (args[0] ?? "").replace(/^@/, "").trim();
     if (!handle) {
-      await reply("Usage: /unwatch `<handle>`", { parseMode: "MarkdownV2" });
+      await reply("Использование: /unwatch `<handle>`", { parseMode: "MarkdownV2" });
       return;
     }
-    await reply(`Removed \`${escapeMd(handle)}\` from your watchlist\\.`, {
+    await reply(`Убрал \`${escapeMd(handle)}\` из избранного\\.`, {
       parseMode: "MarkdownV2",
     });
   },
@@ -141,19 +140,19 @@ export const handlers: Record<string, CommandHandler> = {
     const handle = (args[0] ?? "").replace(/^@/, "").trim();
     const kwh = Number(args[1]);
     if (!handle || !Number.isFinite(kwh) || kwh <= 0) {
-      await reply("Usage: /buy `<handle>` `<kwh>`", { parseMode: "MarkdownV2" });
+      await reply("Использование: /buy `<handle>` `<квт·ч>`", { parseMode: "MarkdownV2" });
       return;
     }
     const p = MOCK_PRODUCERS.find((x) => x.handle === handle);
     if (!p) {
-      await reply(`No producer with handle \`${escapeMd(handle)}\` found\\.`, {
+      await reply(`Производитель \`${escapeMd(handle)}\` не найден\\.`, {
         parseMode: "MarkdownV2",
       });
       return;
     }
     if (kwh > p.availableKwh) {
       await reply(
-        `Only ${escapeMd(p.availableKwh.toFixed(2))} kWh currently available from \`${escapeMd(handle)}\`\\.`,
+        `У \`${escapeMd(handle)}\` сейчас доступно только ${escapeMd(p.availableKwh.toFixed(2))} кВт·ч\\.`,
         { parseMode: "MarkdownV2" },
       );
       return;
@@ -161,14 +160,14 @@ export const handlers: Record<string, CommandHandler> = {
     const totalUsd = (kwh * p.pricePerKwhUsd).toFixed(2);
     await reply(
       [
-        "*Offer to buy* — preview only",
+        "*Предложение покупки* — превью",
         "",
-        `· Producer: ${escapeMd(p.displayName)} \\(\`${escapeMd(p.handle)}\`\\)`,
-        `· Volume: *${escapeMd(kwh.toFixed(2))} kWh*`,
-        `· Unit price: *${escapeMd(p.pricePerKwhUsd.toFixed(3))} USD/kWh*`,
-        `· Total: *${escapeMd(totalUsd)} USD*`,
+        `· Производитель: ${escapeMd(p.displayName)} \\(\`${escapeMd(p.handle)}\`\\)`,
+        `· Объём: *${escapeMd(kwh.toFixed(2))} кВт·ч*`,
+        `· Цена: *${escapeMd(p.pricePerKwhUsd.toFixed(3))} USD/кВт·ч*`,
+        `· Итого: *${escapeMd(totalUsd)} USD*`,
         "",
-        "Confirm via the web portal — wallet signing will appear here in Phase 3\\.",
+        "Подтверждение пойдёт через веб\\-портал — подпись кошельком появится в Phase 3\\.",
       ].join("\n"),
       { parseMode: "MarkdownV2" },
     );
@@ -177,11 +176,11 @@ export const handlers: Record<string, CommandHandler> = {
   "/listing": async (_args, reply, deps) => {
     await reply(
       [
-        "*List your household on Poolwatt*",
+        "*Листинг своего домохозяйства на Poolwatt*",
         "",
-        "1\\. Make sure your powerbank is charged from a renewable source \\(solar/wind/hydro/biomass\\)\\.",
-        "2\\. Get your inverter make + capacity ready\\.",
-        "3\\. Submit at:",
+        "1\\. Убедись, что твой powerbank заряжается из возобновляемого источника \\(солнце/ветер/гидро/биомасса\\)\\.",
+        "2\\. Подготовь модель и мощность инвертора\\.",
+        "3\\. Подай заявку:",
         escapeMd(`${deps.webBaseUrl}/${deps.locale}/request`),
       ].join("\n"),
       { parseMode: "MarkdownV2" },
@@ -189,32 +188,32 @@ export const handlers: Record<string, CommandHandler> = {
   },
 
   "/whoami": async (_args, reply, deps) => {
-    await reply(`Your Telegram user id: \`${deps.userId}\``, {
+    await reply(`Твой Telegram user id: \`${deps.userId}\``, {
       parseMode: "MarkdownV2",
     });
   },
 
   "/new": async (_args, reply, deps) => {
     if (!deps.isAuthorized) {
-      await reply("Not authorized\\.", { parseMode: "MarkdownV2" });
+      await reply("Нет доступа\\.", { parseMode: "MarkdownV2" });
       return;
     }
     deps.session.reset(deps.userId);
-    await reply("New session — next message starts from a clean slate\\.", {
+    await reply("Новая сессия — следующее сообщение начнёт с чистого листа\\.", {
       parseMode: "MarkdownV2",
     });
   },
 
   "/cancel": async (_args, reply, deps) => {
     if (!deps.isAuthorized) {
-      await reply("Not authorized\\.", { parseMode: "MarkdownV2" });
+      await reply("Нет доступа\\.", { parseMode: "MarkdownV2" });
       return;
     }
     if (deps.runner.isActive(deps.userId)) {
       deps.runner.cancel(deps.userId);
-      await reply("Cancelling current task…", { parseMode: "MarkdownV2" });
+      await reply("Отменяю текущую задачу…", { parseMode: "MarkdownV2" });
     } else {
-      await reply("Nothing to cancel — no active task\\.", {
+      await reply("Нечего отменять — активной задачи нет\\.", {
         parseMode: "MarkdownV2",
       });
     }
@@ -222,22 +221,22 @@ export const handlers: Record<string, CommandHandler> = {
 
   "/verbose": async (_args, reply, deps) => {
     if (!deps.isAuthorized) {
-      await reply("Not authorized\\.", { parseMode: "MarkdownV2" });
+      await reply("Нет доступа\\.", { parseMode: "MarkdownV2" });
       return;
     }
     const current = deps.session.getVerbose(deps.userId);
     deps.session.setVerbose(deps.userId, !current);
     await reply(
       !current
-        ? "Verbose mode *on* — you'll see every tool call as a separate message\\."
-        : "Verbose mode *off*\\.",
+        ? "Verbose режим *вкл* — увидишь каждый tool call отдельным сообщением\\."
+        : "Verbose режим *выкл*\\.",
       { parseMode: "MarkdownV2" },
     );
   },
 
   "/status": async (_args, reply, deps) => {
     if (!deps.isAuthorized) {
-      await reply("Not authorized\\.", { parseMode: "MarkdownV2" });
+      await reply("Нет доступа\\.", { parseMode: "MarkdownV2" });
       return;
     }
     const rec = deps.session.get(deps.userId);
@@ -245,8 +244,8 @@ export const handlers: Record<string, CommandHandler> = {
     if (!rec) {
       await reply(
         running
-          ? "No session in memory but a claude process is running \\(odd\\)\\."
-          : "No active session\\. Send a free\\-form message to start one\\.",
+          ? "В памяти нет сессии, но процесс claude запущен \\(странно\\)\\."
+          : "Активной сессии нет\\. Отправь свободный текст — начнём с нуля\\.",
         { parseMode: "MarkdownV2" },
       );
       return;
@@ -255,8 +254,8 @@ export const handlers: Record<string, CommandHandler> = {
     await reply(
       [
         `session\\_id: \`${escapeMd(rec.claudeSessionId)}\``,
-        `last activity: *${sinceSec}s ago*`,
-        `claude process: *${running ? "running" : "idle"}*`,
+        `последняя активность: *${sinceSec}с назад*`,
+        `процесс claude: *${running ? "запущен" : "idle"}*`,
       ].join("\n"),
       { parseMode: "MarkdownV2" },
     );

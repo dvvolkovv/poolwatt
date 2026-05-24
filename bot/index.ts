@@ -38,7 +38,7 @@ bot.on("message:text", async (ctx) => {
     });
     if (!handled) {
       await reply(
-        "Unknown command\\. Send /help to see what I can do\\.",
+        "Неизвестная команда\\. Отправь /help — покажу что умею\\.",
         { parseMode: "MarkdownV2" },
       );
     }
@@ -48,7 +48,7 @@ bot.on("message:text", async (ctx) => {
   // Free-form text — route to Claude for whitelisted users only.
   if (!authorized) {
     await reply(
-      "I respond to commands\\. Send /help to see them all\\.",
+      "Я отвечаю на команды\\. Отправь /help — список\\.",
       { parseMode: "MarkdownV2" },
     );
     return;
@@ -67,7 +67,7 @@ async function processPrompt(
     return;
   }
 
-  const placeholder = await ctx.reply("🤔 думаю…");
+  const placeholder = await ctx.reply("🤔 думаю над задачей…");
   const status = new StatusUpdater(bot, ctx.chat!.id, placeholder.message_id);
   const verbose = session.getVerbose(userId);
   const existing = session.get(userId);

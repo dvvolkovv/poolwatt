@@ -45,8 +45,13 @@ box **is** the live production box, not a clone. No separate deploy step over
 the wire; processes serve straight from this directory via PM2.
 
 ```bash
-# From the laptop: edit code locally, then sync + commit + push in one round-trip
-rsync -az --delete --exclude='node_modules' --exclude='.next' \
+# From the laptop: edit code locally, then sync + commit + push in one round-trip.
+# CRITICAL: --exclude='.env*' — the server's .env.local has runtime secrets
+# (bot whitelist, auth tokens, OAuth-related config) that DO NOT exist on the
+# laptop. Without these excludes, --delete will nuke them.
+rsync -az --delete \
+  --exclude='node_modules' --exclude='.next' \
+  --exclude='.env' --exclude='.env.local' --exclude='.env.local.bak' \
   -e "ssh -i ~/.ssh/id_ed25519" \
   ~/poolwatt/ dv@77.221.159.163:/home/dv/poolwatt/
 
@@ -99,6 +104,23 @@ ssh dv@77.221.159.163 'pm2 restart poolwatt-bot poolwatt-worker'
 - **Phase 1 reads no DB.** `src/lib/snapshot.ts` returns mock data from
   `src/lib/producers.ts`. Don't add Prisma calls until Phase 2 lands — the
   shape is intentional so the landing demo runs without infra.
+
+- **rsync --delete eats `.env.local`.** The laptop checkout has no
+  `.env.local` (gitignored, secrets live only on the server). Without
+  `--exclude='.env.local'` in the rsync recipe, every sync **wipes** the
+  server's secrets — including `BOT_ALLOWED_USER_IDS` for the bot.
+  Symptom: bot starts with `whitelist=(empty)` after a sync. Fix: always
+  use the rsync recipe in the deploy section above; it includes the
+  necessary excludes.
+
+- **Bot is a Claude-runner.** `bot/index.ts` spawns `claude -p` on the
+  server for any free-form text from whitelisted Telegram users
+  (`BOT_ALLOWED_USER_IDS`). Auth is via `claude auth login` on the
+  server — credentials live in `~/.claude/` under user `dv`. Sessions
+  are kept in-memory (no Redis in Phase 1), so they reset on bot
+  restart. The `superpowers` plugin (`obra/superpowers`) is installed
+  at user scope, so the bot's spawned claude has TDD/debugging/etc.
+  skills available.
 
 ## Roadmap
 
