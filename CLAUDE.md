@@ -117,8 +117,8 @@ ssh dv@77.221.159.163 'pm2 restart poolwatt-bot poolwatt-worker'
   server for any free-form text from whitelisted Telegram users
   (`BOT_ALLOWED_USER_IDS`). Auth is via `claude auth login` on the
   server — credentials live in `~/.claude/` under user `dv`. Sessions
-  are kept in-memory (no Redis in Phase 1), so they reset on bot
-  restart. The `superpowers` plugin (`obra/superpowers`) is installed
+  must be persisted across restarts (e.g. to a JSON file or Redis) so
+  that conversation context survives `pm2 restart poolwatt-bot`. The `superpowers` plugin (`obra/superpowers`) is installed
   at user scope, so the bot's spawned claude has TDD/debugging/etc.
   skills available.
 
@@ -132,6 +132,13 @@ ssh dv@77.221.159.163 'pm2 restart poolwatt-bot poolwatt-worker'
   `pm2 status` to verify before running. Once Playwright ships a
   ubuntu26 chromium build, drop `channel: "chrome"` to switch back
   to bundled chromium.
+
+## Bot response mode
+
+When responding via Telegram, **always send the answer as a voice/audio
+message** in addition to the text reply. This applies to all inputs (text and
+voice), not only voice-initiated conversations. The user interacts with Claude
+through the Telegram bot and prefers audio delivery.
 
 ## Roadmap
 

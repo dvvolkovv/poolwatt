@@ -11,6 +11,7 @@
     "hubs": "Хабы",
     "producers": "Производители",
     "offers": "Офферы",
+    "navigator": "Зарядки",
     "languageLabel": "Язык",
     "currencyLabel": "Валюта",
     "themeLabel": "Тема",
@@ -84,6 +85,30 @@
       "account": "Аккаунт",
       "data": "Данные"
     }
+  },
+  "navigator": {
+    "title": "Зарядные станции",
+    "metaDescription": "Найдите зарядные станции для электромобилей рядом с вами — типы разъёмов, мощность, операторы и доступность в реальном времени.",
+    "loading": "Загружаем станции…",
+    "stationsFound": "станций найдено",
+    "searchPlaceholder": "Поиск по названию, городу, оператору…",
+    "filters": "Фильтры",
+    "connectorType": "Разъём",
+    "powerLevel": "Мощность",
+    "statusLabel": "Статус",
+    "all": "Все",
+    "status_operational": "Работает",
+    "status_planned": "Планируется",
+    "status_temporarily_unavailable": "Временно недоступна",
+    "noStations": "В этой области станций нет. Переместите карту для поиска.",
+    "pts": "точек",
+    "connections": "Разъёмы",
+    "points": "Точки",
+    "maxPower": "Макс. мощность",
+    "rating": "Рейтинг",
+    "cost": "Стоимость",
+    "lastVerified": "Проверено",
+    "directions": "Маршрут"
   },
   "bot": {
     "siblingNote": "Telegram-бот @PoolwattBot шлёт live-оповещения и позволяет производителям публиковать офферы прямо с телефона."

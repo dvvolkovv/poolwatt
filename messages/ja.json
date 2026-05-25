@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "家庭が再生可能エネルギーを供給。グリッドが対価を支払います。",
+    "signIn": "ログイン",
+    "signOut": "ログアウト",
+    "settings": "設定",
+    "admin": "管理",
+    "watchlist": "ウォッチリスト",
+    "request": "家庭を登録",
+    "hubs": "ハブ",
+    "producers": "プロデューサー",
+    "offers": "オファー",
+    "navigator": "充電器",
+    "languageLabel": "言語",
+    "currencyLabel": "通貨",
+    "themeLabel": "テーマ",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "themeSystem": "システム"
+  },
+  "home": {
+    "heroEyebrow": "ライブ · Poolwattグリッド · 60秒ごとに更新",
+    "heroLine1": "グリッドは",
+    "heroLine2Before": "",
+    "heroLine2Accent": "家庭",
+    "heroLine2After": "によって動いています。",
+    "heroSubtitle": "Poolwattは、家庭がバッテリーに蓄えた再生可能エネルギーを販売するP2Pマーケットプレイスです。ネットワーク上のすべてのキロワット時は、太陽光、風力、水力、またはバイオマスから生まれています。",
+    "ctaPrimary": "プロデューサーを見る",
+    "ctaSecondary": "家庭を登録"
+  },
+  "stats": {
+    "totalCapacity": "総容量",
+    "delivered24h": "供給量（24時間）",
+    "lifetimeDelivered": "累計供給量",
+    "activeProducers": "アクティブプロデューサー",
+    "activeHubs": "アクティブハブ",
+    "solarShare": "太陽光シェア",
+    "windShare": "風力シェア",
+    "hydroShare": "水力シェア",
+    "carbonOffset": "CO₂削減（24時間）",
+    "greenIndex": "グリーンインデックス"
+  },
+  "greenIndex": {
+    "carbon-heavy": "高炭素",
+    "mixed": "混合",
+    "neutral": "バランス",
+    "renewable": "再生可能",
+    "fully-renewable": "完全再生可能"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "プロデューサー",
+    "source": "電源",
+    "stateOfCharge": "充電率",
+    "available": "利用可能",
+    "price": "価格 / kWh",
+    "delivered24h": "24時間",
+    "lifetime": "累計",
+    "change24h": "24時間 %",
+    "weekly": "7日間出力",
+    "uptime": "稼働率",
+    "loadingFallback": "グリッドデータを取得中…",
+    "search": "名前、都市、またはオペレーターで検索…"
+  },
+  "source": {
+    "SOLAR": "太陽光",
+    "WIND": "風力",
+    "HYDRO": "水力",
+    "BIOMASS": "バイオマス",
+    "GEOTHERMAL": "地熱",
+    "HYBRID": "ハイブリッド"
+  },
+  "weather": {
+    "SUNNY": "晴れ",
+    "CLOUDY": "曇り",
+    "WINDY": "風",
+    "CALM": "穏やか",
+    "RAINY": "雨"
+  },
+  "footer": {
+    "dataNote": "プロデューサーフリートからのライブテレメトリー。Poolwattグリッドワーカーが集約。更新頻度：価格60秒、充電状態5分、天気30分。",
+    "section": {
+      "grid": "グリッド",
+      "account": "アカウント",
+      "data": "データ"
+    }
+  },
+  "navigator": {
+    "title": "EV充電ステーション",
+    "metaDescription": "お近くのEV充電ステーションを詳細な技術仕様で検索 — コネクタータイプ、出力、オペレーター、リアルタイム空き状況。",
+    "loading": "ステーション読み込み中…",
+    "stationsFound": "ステーション発見",
+    "searchPlaceholder": "名前、都市、オペレーターで検索…",
+    "filters": "フィルター",
+    "connectorType": "コネクター",
+    "powerLevel": "出力",
+    "statusLabel": "ステータス",
+    "all": "すべて",
+    "status_operational": "稼働中",
+    "status_planned": "計画中",
+    "status_temporarily_unavailable": "一時利用不可",
+    "noStations": "このエリアにステーションがありません。マップを移動して検索してください。",
+    "pts": "点",
+    "connections": "接続",
+    "points": "充電ポイント",
+    "maxPower": "最大出力",
+    "rating": "評価",
+    "cost": "料金",
+    "lastVerified": "最終確認",
+    "directions": "ナビ"
+  },
+  "bot": {
+    "siblingNote": "Telegramボット @PoolwattBot がリアルタイム通知を配信し、プロデューサーがスマートフォンからオファーを投稿できます。"
+  }
+}

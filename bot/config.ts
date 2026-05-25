@@ -14,6 +14,8 @@ export type BotConfig = {
   claudeCwd: string;
   /** Watchdog timeout for a single Claude run. Long builds/tests need headroom. */
   claudeTimeoutMs: number;
+  /** OpenAI key used by voice (Whisper STT + TTS) and image generation. */
+  openaiApiKey: string | null;
 };
 
 function parseIds(raw: string): Set<number> {
@@ -47,5 +49,8 @@ export function loadConfig(): BotConfig {
     webBaseUrl: process.env.NEXTAUTH_URL ?? "https://poolwatt.com",
     claudeCwd: process.env.CLAUDE_CWD ?? process.cwd(),
     claudeTimeoutMs: Number(process.env.CLAUDE_TIMEOUT_MS ?? 1_800_000),
+    // Voice (in/out) and image generation are optional. If the key is missing
+    // we degrade gracefully — those features return a friendly error message.
+    openaiApiKey: process.env.OPENAI_API_KEY ?? null,
   };
 }

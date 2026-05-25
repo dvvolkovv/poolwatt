@@ -89,9 +89,23 @@ export async function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 flex flex-col items-start gap-2 md:flex-row md:items-center md:justify-between num text-[11px] uppercase tracking-[0.18em] text-muted border-t border-hairline">
-          <div>&copy; {year} {t("appName")}</div>
-          <div>v0.1.0 &middot; MMXXVI</div>
+        <div className="mt-12 pt-6 border-t border-hairline flex flex-col md:flex-row md:justify-between gap-6">
+          <div className="text-[11px] leading-[1.7] text-muted/70 max-w-[420px]">
+            <span className="font-medium text-muted">Elektrárenská a.s.</span>
+            <br />
+            Mlynské nivy&nbsp;II. 18884/52B, 821&nbsp;05 Bratislava
+            <br />
+            IČO:&nbsp;<span className="num">35806842</span> &middot;
+            DIČ:&nbsp;<span className="num">2020258867</span> &middot;
+            IČ&nbsp;DPH:&nbsp;<span className="num">SK2020258867</span>
+            <br />
+            Obch. register OS&nbsp;BA&nbsp;III, Sa, vl.&nbsp;č.&nbsp;<span className="num">2664</span>/B
+          </div>
+
+          <div className="flex flex-col items-start md:items-end justify-end gap-1 num text-[11px] uppercase tracking-[0.18em] text-muted">
+            <div>&copy; {year} {t("appName")}</div>
+            <div>v0.1.0 &middot; MMXXVI</div>
+          </div>
         </div>
       </div>
     </footer>

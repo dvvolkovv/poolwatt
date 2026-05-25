@@ -8,8 +8,13 @@ import {
 } from "./format";
 import type { ClaudeRunner } from "./claudeRunner";
 import type { SessionStore } from "./session";
+import type OpenAI from "openai";
+import { generateImage, logoPrompt } from "./imageGen";
 
 export type Reply = (text: string, opts?: { parseMode?: "MarkdownV2" }) => Promise<unknown>;
+
+/** Sends a photo. Defined as a callback so commands.ts doesn't import grammy. */
+export type PhotoReply = (png: Buffer, caption?: string) => Promise<unknown>;
 
 export type CommandDeps = {
   webBaseUrl: string;
@@ -21,6 +26,10 @@ export type CommandDeps = {
   isAuthorized: boolean;
   session: SessionStore;
   runner: ClaudeRunner;
+  /** Null when OPENAI_API_KEY is unset — used by /image and /logo. */
+  openai: OpenAI | null;
+  /** Sends a PNG as a photo with optional caption. */
+  sendPhoto: PhotoReply;
 };
 
 type CommandHandler = (args: string[], reply: Reply, deps: CommandDeps) => Promise<void>;
@@ -43,6 +52,9 @@ const HELP_TEXT = [
   "",
   "*Dev \\(только для whitelisted\\):*",
   "· _свободный текст_ — задача для Claude в репо",
+  "· _голосовое_ — Whisper расшифрует и обработает как текст \\(ответит и текстом, и голосом\\)",
+  "· /image `<prompt>` — сгенерить картинку",
+  "· /logo `<описание>` — сгенерить лого \\(минималистичный вектор\\)",
   "· /new — сбросить текущую сессию Claude",
   "· /cancel — остановить активную задачу",
   "· /verbose — переключить подробный вывод каждого tool call'а",
@@ -232,6 +244,66 @@ export const handlers: Record<string, CommandHandler> = {
         : "Verbose режим *выкл*\\.",
       { parseMode: "MarkdownV2" },
     );
+  },
+
+  "/image": async (args, reply, deps) => {
+    if (!deps.isAuthorized) {
+      await reply("Нет доступа\\.", { parseMode: "MarkdownV2" });
+      return;
+    }
+    if (!deps.openai) {
+      await reply("OPENAI\\_API\\_KEY не задан — генерация картинок недоступна\\.", {
+        parseMode: "MarkdownV2",
+      });
+      return;
+    }
+    const prompt = args.join(" ").trim();
+    if (!prompt) {
+      await reply("Использование: /image `<описание картинки>`", { parseMode: "MarkdownV2" });
+      return;
+    }
+    await reply("🎨 рисую\\.\\.\\.", { parseMode: "MarkdownV2" });
+    try {
+      const { png } = await generateImage(prompt, deps.openai);
+      await deps.sendPhoto(png, prompt.length > 200 ? prompt.slice(0, 200) + "…" : prompt);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      await reply(`Не получилось сгенерить: ${escapeMd(msg.slice(0, 200))}`, {
+        parseMode: "MarkdownV2",
+      });
+    }
+  },
+
+  "/logo": async (args, reply, deps) => {
+    if (!deps.isAuthorized) {
+      await reply("Нет доступа\\.", { parseMode: "MarkdownV2" });
+      return;
+    }
+    if (!deps.openai) {
+      await reply("OPENAI\\_API\\_KEY не задан — генерация картинок недоступна\\.", {
+        parseMode: "MarkdownV2",
+      });
+      return;
+    }
+    const desc = args.join(" ").trim();
+    if (!desc) {
+      await reply("Использование: /logo `<описание>`", { parseMode: "MarkdownV2" });
+      return;
+    }
+    await reply("🎨 рисую лого\\.\\.\\.", { parseMode: "MarkdownV2" });
+    try {
+      const wrapped = logoPrompt(desc);
+      const { png } = await generateImage(wrapped, deps.openai, {
+        size: "1024x1024",
+        quality: "high",
+      });
+      await deps.sendPhoto(png, `Лого: ${desc.length > 180 ? desc.slice(0, 180) + "…" : desc}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      await reply(`Не получилось сгенерить: ${escapeMd(msg.slice(0, 200))}`, {
+        parseMode: "MarkdownV2",
+      });
+    }
   },
 
   "/status": async (_args, reply, deps) => {

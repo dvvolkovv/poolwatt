@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "Domácnosti dodávajú obnoviteľnú energiu. Sieť im platí späť.",
+    "signIn": "Prihlásiť sa",
+    "signOut": "Odhlásiť sa",
+    "settings": "Nastavenia",
+    "admin": "Admin",
+    "watchlist": "Sledované",
+    "request": "Zaregistrovať domácnosť",
+    "hubs": "Huby",
+    "producers": "Výrobcovia",
+    "offers": "Ponuky",
+    "navigator": "Nabíjačky",
+    "languageLabel": "Jazyk",
+    "currencyLabel": "Mena",
+    "themeLabel": "Téma",
+    "themeLight": "Svetlá",
+    "themeDark": "Tmavá",
+    "themeSystem": "Systém"
+  },
+  "home": {
+    "heroEyebrow": "Naživo · Poolwatt sieť · obnovené každých 60 s",
+    "heroLine1": "Sieť",
+    "heroLine2Before": "poháňaná ",
+    "heroLine2Accent": "domácnosťami",
+    "heroLine2After": ".",
+    "heroSubtitle": "Poolwatt je peer-to-peer trhovisko, kde domácnosti predávajú energiu uloženú v batériách z obnoviteľných zdrojov. Každá kilowatthodina v sieti pochádza zo solárnej, veternej, vodnej alebo biomasovej energie — a vieme to dokázať.",
+    "ctaPrimary": "Prehliadať výrobcov",
+    "ctaSecondary": "Zaregistrovať domácnosť"
+  },
+  "stats": {
+    "totalCapacity": "Celková kapacita",
+    "delivered24h": "Dodané (24h)",
+    "lifetimeDelivered": "Celkom dodané",
+    "activeProducers": "Aktívni výrobcovia",
+    "activeHubs": "Aktívne huby",
+    "solarShare": "Podiel solárnej",
+    "windShare": "Podiel veternej",
+    "hydroShare": "Podiel vodnej",
+    "carbonOffset": "CO₂ úspora (24h)",
+    "greenIndex": "Zelený index"
+  },
+  "greenIndex": {
+    "carbon-heavy": "Uhlíkovo náročné",
+    "mixed": "Zmiešané",
+    "neutral": "Vyvážené",
+    "renewable": "Obnoviteľné",
+    "fully-renewable": "Plne obnoviteľné"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "Výrobca",
+    "source": "Zdroj",
+    "stateOfCharge": "Nabitie",
+    "available": "Dostupné",
+    "price": "Cena / kWh",
+    "delivered24h": "24h",
+    "lifetime": "Celkom",
+    "change24h": "24h %",
+    "weekly": "7-dňový výkon",
+    "uptime": "Dostupnosť",
+    "loadingFallback": "Načítavam údaje siete…",
+    "search": "Hľadať podľa mena, mesta alebo prevádzkovateľa…"
+  },
+  "source": {
+    "SOLAR": "Solárna",
+    "WIND": "Veterná",
+    "HYDRO": "Vodná",
+    "BIOMASS": "Biomasa",
+    "GEOTHERMAL": "Geotermálna",
+    "HYBRID": "Hybrid"
+  },
+  "weather": {
+    "SUNNY": "Slnečno",
+    "CLOUDY": "Zamračené",
+    "WINDY": "Veterno",
+    "CALM": "Bezvetrie",
+    "RAINY": "Daždivo"
+  },
+  "footer": {
+    "dataNote": "Živá telemetria z flotily výrobcov, agregovaná Poolwatt grid workerom. Frekvencia: 60 s pre ceny, 5 min pre stav nabitia, 30 min pre počasie.",
+    "section": {
+      "grid": "Sieť",
+      "account": "Účet",
+      "data": "Dáta"
+    }
+  },
+  "navigator": {
+    "title": "Nabíjacie stanice",
+    "metaDescription": "Nájdite nabíjacie stanice pre elektromobily vo vašom okolí s kompletnou technickou špecifikáciou — typy konektorov, výkon, prevádzkovatelia a dostupnosť v reálnom čase.",
+    "loading": "Načítavam stanice…",
+    "stationsFound": "nájdených staníc",
+    "searchPlaceholder": "Hľadať podľa mena, mesta, prevádzkovateľa…",
+    "filters": "Filtre",
+    "connectorType": "Konektor",
+    "powerLevel": "Výkon",
+    "statusLabel": "Stav",
+    "all": "Všetky",
+    "status_operational": "V prevádzke",
+    "status_planned": "Plánované",
+    "status_temporarily_unavailable": "Dočasne nedostupné",
+    "noStations": "V tejto oblasti nie sú žiadne stanice. Posuňte mapu pre vyhľadávanie.",
+    "pts": "b.",
+    "connections": "Pripojenia",
+    "points": "Nabíjacie body",
+    "maxPower": "Max. výkon",
+    "rating": "Hodnotenie",
+    "cost": "Cena",
+    "lastVerified": "Posledná kontrola",
+    "directions": "Navigácia"
+  },
+  "bot": {
+    "siblingNote": "Telegram bot @PoolwattBot doručuje živé upozornenia a umožňuje výrobcom zverejňovať ponuky priamo z telefónu."
+  }
+}

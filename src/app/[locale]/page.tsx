@@ -21,6 +21,7 @@ export default async function Home({
   setRequestLocale(locale);
   const tl = await getTranslations("listing");
   const th = await getTranslations("home");
+  const tc = await getTranslations("common");
 
   const [rows, stats, rates, currency, greenIndex] = await Promise.all([
     readTopProducers(),
@@ -65,6 +66,12 @@ export default async function Home({
                   className="inline-flex items-center px-5 py-3 rounded-full font-semibold text-[13px] uppercase tracking-[0.18em] border border-hairline text-muted-strong hover:text-foreground hover:border-accent/60 transition-all"
                 >
                   {th("ctaSecondary")}
+                </Link>
+                <Link
+                  href={`/${locale}/navigator`}
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-full font-semibold text-[13px] uppercase tracking-[0.18em] border border-green/40 text-green hover:bg-green/10 transition-all"
+                >
+                  <span>⚡</span> {tc("navigator")}
                 </Link>
               </div>
             </div>

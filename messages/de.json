@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "Haushalte liefern erneuerbare Energie. Das Netz zahlt zurück.",
+    "signIn": "Anmelden",
+    "signOut": "Abmelden",
+    "settings": "Einstellungen",
+    "admin": "Admin",
+    "watchlist": "Merkliste",
+    "request": "Haushalt anmelden",
+    "hubs": "Hubs",
+    "producers": "Erzeuger",
+    "offers": "Angebote",
+    "navigator": "Ladestationen",
+    "languageLabel": "Sprache",
+    "currencyLabel": "Währung",
+    "themeLabel": "Design",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel",
+    "themeSystem": "System"
+  },
+  "home": {
+    "heroEyebrow": "Live · Poolwatt-Netz · alle 60 s aktualisiert",
+    "heroLine1": "Das Netz",
+    "heroLine2Before": "betrieben von ",
+    "heroLine2Accent": "Haushalten",
+    "heroLine2After": ".",
+    "heroSubtitle": "Poolwatt ist ein Peer-to-Peer-Marktplatz, auf dem Haushalte batterie­gespeicherte erneuerbare Energie verkaufen. Jede Kilowattstunde im Netz stammt aus Solar, Wind, Wasser oder Biomasse — und wir können es beweisen.",
+    "ctaPrimary": "Erzeuger durchsuchen",
+    "ctaSecondary": "Haushalt anmelden"
+  },
+  "stats": {
+    "totalCapacity": "Gesamtkapazität",
+    "delivered24h": "Geliefert (24h)",
+    "lifetimeDelivered": "Gesamt geliefert",
+    "activeProducers": "Aktive Erzeuger",
+    "activeHubs": "Aktive Hubs",
+    "solarShare": "Solaranteil",
+    "windShare": "Windanteil",
+    "hydroShare": "Wasseranteil",
+    "carbonOffset": "CO₂-Einsparung (24h)",
+    "greenIndex": "Grün-Index"
+  },
+  "greenIndex": {
+    "carbon-heavy": "CO₂-intensiv",
+    "mixed": "Gemischt",
+    "neutral": "Ausgeglichen",
+    "renewable": "Erneuerbar",
+    "fully-renewable": "Vollständig erneuerbar"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "Erzeuger",
+    "source": "Quelle",
+    "stateOfCharge": "Ladung",
+    "available": "Verfügbar",
+    "price": "Preis / kWh",
+    "delivered24h": "24h",
+    "lifetime": "Gesamt",
+    "change24h": "24h %",
+    "weekly": "7-Tage-Ausgabe",
+    "uptime": "Verfügbarkeit",
+    "loadingFallback": "Netzdaten werden geladen…",
+    "search": "Suche nach Name, Stadt oder Betreiber…"
+  },
+  "source": {
+    "SOLAR": "Solar",
+    "WIND": "Wind",
+    "HYDRO": "Wasser",
+    "BIOMASS": "Biomasse",
+    "GEOTHERMAL": "Geothermie",
+    "HYBRID": "Hybrid"
+  },
+  "weather": {
+    "SUNNY": "Sonnig",
+    "CLOUDY": "Bewölkt",
+    "WINDY": "Windig",
+    "CALM": "Ruhig",
+    "RAINY": "Regnerisch"
+  },
+  "footer": {
+    "dataNote": "Live-Telemetrie der Erzeugerflotte, aggregiert vom Poolwatt-Grid-Worker. Aktualisierung: 60 s für Preise, 5 Min. für Ladezustand, 30 Min. für Wetter.",
+    "section": {
+      "grid": "Netz",
+      "account": "Konto",
+      "data": "Daten"
+    }
+  },
+  "navigator": {
+    "title": "Ladestationen",
+    "metaDescription": "Finden Sie Ladestationen für Elektrofahrzeuge in Ihrer Nähe mit vollständigen technischen Daten — Steckertypen, Ladeleistung, Betreiber und Echtzeitverfügbarkeit.",
+    "loading": "Stationen werden geladen…",
+    "stationsFound": "Stationen gefunden",
+    "searchPlaceholder": "Suche nach Name, Stadt, Betreiber…",
+    "filters": "Filter",
+    "connectorType": "Stecker",
+    "powerLevel": "Leistung",
+    "statusLabel": "Status",
+    "all": "Alle",
+    "status_operational": "In Betrieb",
+    "status_planned": "Geplant",
+    "status_temporarily_unavailable": "Vorübergehend nicht verfügbar",
+    "noStations": "Keine Stationen in diesem Bereich. Karte verschieben zum Suchen.",
+    "pts": "Pkt.",
+    "connections": "Anschlüsse",
+    "points": "Ladepunkte",
+    "maxPower": "Max. Leistung",
+    "rating": "Bewertung",
+    "cost": "Kosten",
+    "lastVerified": "Zuletzt geprüft",
+    "directions": "Route"
+  },
+  "bot": {
+    "siblingNote": "Der Telegram-Bot @PoolwattBot liefert Live-Benachrichtigungen und ermöglicht Erzeugern, Angebote direkt vom Handy zu veröffentlichen."
+  }
+}

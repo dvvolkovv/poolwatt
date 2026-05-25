@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "家庭贡献可再生能源，电网为此付费。",
+    "signIn": "登录",
+    "signOut": "退出",
+    "settings": "设置",
+    "admin": "管理",
+    "watchlist": "关注列表",
+    "request": "注册您的家庭",
+    "hubs": "枢纽",
+    "producers": "生产者",
+    "offers": "报价",
+    "navigator": "充电桩",
+    "languageLabel": "语言",
+    "currencyLabel": "货币",
+    "themeLabel": "主题",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "themeSystem": "系统"
+  },
+  "home": {
+    "heroEyebrow": "实时 · Poolwatt电网 · 每60秒刷新",
+    "heroLine1": "电网",
+    "heroLine2Before": "由",
+    "heroLine2Accent": "家庭",
+    "heroLine2After": "驱动。",
+    "heroSubtitle": "Poolwatt是一个点对点市场，家庭在此出售储存在电池中的可再生能源。网络上的每一千瓦时都来自太阳能、风能、水力或生物质能——我们可以证明这一点。",
+    "ctaPrimary": "浏览生产者",
+    "ctaSecondary": "注册您的家庭"
+  },
+  "stats": {
+    "totalCapacity": "总容量",
+    "delivered24h": "已交付（24小时）",
+    "lifetimeDelivered": "累计交付",
+    "activeProducers": "活跃生产者",
+    "activeHubs": "活跃枢纽",
+    "solarShare": "太阳能份额",
+    "windShare": "风能份额",
+    "hydroShare": "水能份额",
+    "carbonOffset": "CO₂减排（24小时）",
+    "greenIndex": "绿色指数"
+  },
+  "greenIndex": {
+    "carbon-heavy": "高碳",
+    "mixed": "混合",
+    "neutral": "平衡",
+    "renewable": "可再生",
+    "fully-renewable": "完全可再生"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "生产者",
+    "source": "来源",
+    "stateOfCharge": "电量",
+    "available": "可用",
+    "price": "价格 / kWh",
+    "delivered24h": "24小时",
+    "lifetime": "累计",
+    "change24h": "24小时 %",
+    "weekly": "7天产出",
+    "uptime": "在线率",
+    "loadingFallback": "正在获取电网数据…",
+    "search": "按名称、城市或运营商搜索…"
+  },
+  "source": {
+    "SOLAR": "太阳能",
+    "WIND": "风能",
+    "HYDRO": "水力",
+    "BIOMASS": "生物质",
+    "GEOTHERMAL": "地热",
+    "HYBRID": "混合"
+  },
+  "weather": {
+    "SUNNY": "晴天",
+    "CLOUDY": "多云",
+    "WINDY": "大风",
+    "CALM": "平静",
+    "RAINY": "下雨"
+  },
+  "footer": {
+    "dataNote": "来自生产者集群的实时遥测数据，由Poolwatt网格工作者汇总。刷新频率：价格60秒，充电状态5分钟，天气30分钟。",
+    "section": {
+      "grid": "电网",
+      "account": "账户",
+      "data": "数据"
+    }
+  },
+  "navigator": {
+    "title": "电动车充电站",
+    "metaDescription": "查找您附近的电动车充电站，包含完整技术规格——连接器类型、充电功率、运营商和实时可用性。",
+    "loading": "正在加载充电站…",
+    "stationsFound": "个充电站",
+    "searchPlaceholder": "按名称、城市、运营商搜索…",
+    "filters": "筛选",
+    "connectorType": "连接器",
+    "powerLevel": "功率",
+    "statusLabel": "状态",
+    "all": "全部",
+    "status_operational": "运营中",
+    "status_planned": "规划中",
+    "status_temporarily_unavailable": "暂时不可用",
+    "noStations": "此区域无充电站。移动地图以搜索。",
+    "pts": "分",
+    "connections": "连接",
+    "points": "充电点",
+    "maxPower": "最大功率",
+    "rating": "评分",
+    "cost": "费用",
+    "lastVerified": "最后验证",
+    "directions": "导航"
+  },
+  "bot": {
+    "siblingNote": "Telegram机器人 @PoolwattBot 发送实时通知，并允许生产者从手机发布报价。"
+  }
+}

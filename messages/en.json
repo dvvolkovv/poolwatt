@@ -11,6 +11,7 @@
     "hubs": "Hubs",
     "producers": "Producers",
     "offers": "Offers",
+    "navigator": "Chargers",
     "languageLabel": "Language",
     "currencyLabel": "Currency",
     "themeLabel": "Theme",
@@ -84,6 +85,30 @@
       "account": "Account",
       "data": "Data"
     }
+  },
+  "navigator": {
+    "title": "EV Chargers",
+    "metaDescription": "Find electric vehicle charging stations near you with full technical specs — connector types, power output, operators and real-time availability.",
+    "loading": "Loading stations…",
+    "stationsFound": "stations found",
+    "searchPlaceholder": "Search by name, city, operator…",
+    "filters": "Filters",
+    "connectorType": "Connector",
+    "powerLevel": "Power",
+    "statusLabel": "Status",
+    "all": "All",
+    "status_operational": "Operational",
+    "status_planned": "Planned",
+    "status_temporarily_unavailable": "Temp. Unavailable",
+    "noStations": "No stations in this area. Pan the map to search.",
+    "pts": "pts",
+    "connections": "Connections",
+    "points": "Points",
+    "maxPower": "Max power",
+    "rating": "Rating",
+    "cost": "Cost",
+    "lastVerified": "Last verified",
+    "directions": "Directions"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot delivers live alerts and lets producers post offers from their phone."

@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "Домогосподарства постачають відновлювану енергію. Мережа їм платить.",
+    "signIn": "Увійти",
+    "signOut": "Вийти",
+    "settings": "Налаштування",
+    "admin": "Адмін",
+    "watchlist": "Обране",
+    "request": "Зареєструвати господарство",
+    "hubs": "Хаби",
+    "producers": "Виробники",
+    "offers": "Пропозиції",
+    "navigator": "Зарядки",
+    "languageLabel": "Мова",
+    "currencyLabel": "Валюта",
+    "themeLabel": "Тема",
+    "themeLight": "Світла",
+    "themeDark": "Темна",
+    "themeSystem": "Системна"
+  },
+  "home": {
+    "heroEyebrow": "Наживо · Мережа Poolwatt · оновлення кожні 60 с",
+    "heroLine1": "Мережа",
+    "heroLine2Before": "яку живлять ",
+    "heroLine2Accent": "домогосподарства",
+    "heroLine2After": ".",
+    "heroSubtitle": "Poolwatt — це peer-to-peer маркетплейс, де домогосподарства продають відновлювану енергію, накопичену в батареях. Кожна кіловат-година в мережі надходить від сонячної, вітрової, водної або біомасової енергії — і ми можемо це довести.",
+    "ctaPrimary": "Переглянути виробників",
+    "ctaSecondary": "Зареєструвати господарство"
+  },
+  "stats": {
+    "totalCapacity": "Загальна ємність",
+    "delivered24h": "Доставлено (24г)",
+    "lifetimeDelivered": "Всього доставлено",
+    "activeProducers": "Активні виробники",
+    "activeHubs": "Активні хаби",
+    "solarShare": "Частка сонячної",
+    "windShare": "Частка вітрової",
+    "hydroShare": "Частка водної",
+    "carbonOffset": "Скорочення CO₂ (24г)",
+    "greenIndex": "Зелений індекс"
+  },
+  "greenIndex": {
+    "carbon-heavy": "Вуглецево важкий",
+    "mixed": "Змішаний",
+    "neutral": "Збалансований",
+    "renewable": "Відновлюваний",
+    "fully-renewable": "Повністю відновлюваний"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "Виробник",
+    "source": "Джерело",
+    "stateOfCharge": "Заряд",
+    "available": "Доступно",
+    "price": "Ціна / кВт·год",
+    "delivered24h": "24г",
+    "lifetime": "Всього",
+    "change24h": "24г %",
+    "weekly": "Виробництво 7 днів",
+    "uptime": "Доступність",
+    "loadingFallback": "Завантаження даних мережі…",
+    "search": "Пошук за назвою, містом або оператором…"
+  },
+  "source": {
+    "SOLAR": "Сонячна",
+    "WIND": "Вітрова",
+    "HYDRO": "Водна",
+    "BIOMASS": "Біомаса",
+    "GEOTHERMAL": "Геотермальна",
+    "HYBRID": "Гібридна"
+  },
+  "weather": {
+    "SUNNY": "Сонячно",
+    "CLOUDY": "Хмарно",
+    "WINDY": "Вітряно",
+    "CALM": "Штиль",
+    "RAINY": "Дощ"
+  },
+  "footer": {
+    "dataNote": "Телеметрія в реальному часі з флоту виробників, агрегована grid worker Poolwatt. Частота: 60 с ціни, 5 хв заряд, 30 хв погода.",
+    "section": {
+      "grid": "Мережа",
+      "account": "Акаунт",
+      "data": "Дані"
+    }
+  },
+  "navigator": {
+    "title": "Зарядні станції",
+    "metaDescription": "Знайдіть зарядні станції для електромобілів поблизу з повною технічною специфікацією — типи роз'ємів, потужність, оператори та доступність у реальному часі.",
+    "loading": "Завантаження станцій…",
+    "stationsFound": "станцій знайдено",
+    "searchPlaceholder": "Пошук за назвою, містом, оператором…",
+    "filters": "Фільтри",
+    "connectorType": "Роз'єм",
+    "powerLevel": "Потужність",
+    "statusLabel": "Статус",
+    "all": "Всі",
+    "status_operational": "Працює",
+    "status_planned": "Планується",
+    "status_temporarily_unavailable": "Тимчасово недоступна",
+    "noStations": "Немає станцій у цій зоні. Перемістіть карту для пошуку.",
+    "pts": "б.",
+    "connections": "З'єднання",
+    "points": "Точки зарядки",
+    "maxPower": "Макс. потужність",
+    "rating": "Рейтинг",
+    "cost": "Вартість",
+    "lastVerified": "Остання перевірка",
+    "directions": "Маршрут"
+  },
+  "bot": {
+    "siblingNote": "Telegram-бот @PoolwattBot надсилає сповіщення в реальному часі та дозволяє виробникам публікувати пропозиції безпосередньо з телефону."
+  }
+}

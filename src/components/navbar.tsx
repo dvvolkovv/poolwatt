@@ -32,6 +32,9 @@ export async function Navbar() {
           <Link href={`/${locale}/offers`} className="hover:text-foreground transition-colors">
             {t("offers")}
           </Link>
+          <Link href={`/${locale}/navigator`} className="hover:text-foreground transition-colors">
+            {t("navigator")}
+          </Link>
           <Link href={`/${locale}/watchlist`} className="hover:text-foreground transition-colors">
             {t("watchlist")}
           </Link>

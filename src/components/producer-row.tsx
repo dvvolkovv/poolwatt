@@ -30,12 +30,25 @@ export function ProducerRow({
           href={`/${locale}/p/${row.handle}`}
           className="block group"
         >
-          <div className="text-foreground font-medium group-hover:text-accent transition-colors">
+          <div className="text-foreground font-medium group-hover:text-accent transition-colors flex items-center gap-2">
             {row.displayName}
+            {row.category === "EQUIPMENT_MANUFACTURER" && (
+              <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-accent/10 text-accent border border-accent/30">OEM</span>
+            )}
           </div>
           <div className="text-muted text-[12px] mt-0.5">
             @{row.handle} · {row.city}, {row.country}
           </div>
+          {row.equipment && row.equipment.length > 0 && (
+            <div className="text-[11px] text-muted/70 mt-1 leading-tight">
+              <span className="text-muted/50">⚙</span> {row.equipment.join(" · ")}
+            </div>
+          )}
+          {row.manufactures && row.manufactures.length > 0 && (
+            <div className="text-[11px] text-accent/70 mt-1 leading-tight">
+              <span className="text-accent/50">MFG:</span> {row.manufactures.join(" · ")}
+            </div>
+          )}
         </Link>
       </td>
       <td className="px-5 py-4">

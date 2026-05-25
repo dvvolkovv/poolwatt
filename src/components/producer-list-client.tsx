@@ -2,10 +2,20 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import type { ProducerRow as ProducerRowT } from "@/lib/producers";
+import type { ProducerRow as ProducerRowT, RenewableSource } from "@/lib/producers";
 import type { Currency, ExchangeRates } from "@/lib/currency";
 import { ProducerRow } from "./producer-row";
 import { ProducerCardMobile } from "./producer-card-mobile";
+
+const SOURCE_FILTERS: { key: RenewableSource | "ALL"; icon: string }[] = [
+  { key: "ALL", icon: "⚡" },
+  { key: "SOLAR", icon: "☀️" },
+  { key: "WIND", icon: "💨" },
+  { key: "HYDRO", icon: "💧" },
+  { key: "BIOMASS", icon: "🌿" },
+  { key: "GEOTHERMAL", icon: "🌋" },
+  { key: "HYBRID", icon: "🔄" },
+];
 
 type SortKey = "rank" | "price" | "pctChange24h" | "available" | "delivered24h" | "soc";
 type SortDir = "asc" | "desc";
@@ -60,7 +70,9 @@ export function ProducerListClient({
   locale: string;
 }) {
   const t = useTranslations("listing");
+  const tSource = useTranslations("source");
   const [query, setQuery] = useState("");
+  const [sourceFilter, setSourceFilter] = useState<RenewableSource | "ALL">("ALL");
   const [sortKey, setSortKey] = useState<SortKey>("rank");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
@@ -74,30 +86,51 @@ export function ProducerListClient({
   };
 
   const filtered = useMemo(() => {
+    let base = sourceFilter === "ALL"
+      ? rows
+      : rows.filter((r) => r.primarySource === sourceFilter);
     const q = query.trim().toLowerCase();
-    const base = q
-      ? rows.filter(
-          (r) =>
-            r.handle.toLowerCase().includes(q) ||
-            r.displayName.toLowerCase().includes(q) ||
-            r.city.toLowerCase().includes(q),
-        )
-      : rows;
+    if (q) {
+      base = base.filter(
+        (r) =>
+          r.handle.toLowerCase().includes(q) ||
+          r.displayName.toLowerCase().includes(q) ||
+          r.city.toLowerCase().includes(q),
+      );
+    }
     const fn = SORT_FIELDS[sortKey];
     const sorted = [...base].sort((a, b) => fn(a) - fn(b));
     if (sortDir === "desc") sorted.reverse();
     return sorted;
-  }, [rows, query, sortKey, sortDir]);
+  }, [rows, query, sourceFilter, sortKey, sortDir]);
 
   return (
     <div className="space-y-6">
-      <input
-        type="text"
-        placeholder={t("search")}
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="bg-card border border-hairline rounded-md px-3 py-2 text-sm placeholder:text-muted focus:ring-1 focus:ring-accent outline-none w-full max-w-sm"
-      />
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+        <input
+          type="text"
+          placeholder={t("search")}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="bg-card border border-hairline rounded-md px-3 py-2 text-sm placeholder:text-muted focus:ring-1 focus:ring-accent outline-none w-full max-w-sm"
+        />
+        <div className="flex flex-wrap gap-1.5">
+          {SOURCE_FILTERS.map(({ key, icon }) => (
+            <button
+              key={key}
+              onClick={() => setSourceFilter(key)}
+              className={`px-3 py-1.5 text-[12px] rounded-full border transition-colors ${
+                sourceFilter === key
+                  ? "bg-accent/15 border-accent/40 text-accent font-medium"
+                  : "bg-card border-hairline text-muted hover:text-foreground hover:border-foreground/20"
+              }`}
+            >
+              <span className="mr-1">{icon}</span>
+              {key === "ALL" ? "All" : tSource(key)}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Desktop table */}
       <div className="hidden md:block bg-card border border-hairline rounded-[20px] overflow-hidden overflow-x-auto">

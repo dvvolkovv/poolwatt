@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "المنازل تساهم بالطاقة المتجددة. الشبكة تدفع لهم.",
+    "signIn": "تسجيل الدخول",
+    "signOut": "تسجيل الخروج",
+    "settings": "الإعدادات",
+    "admin": "المسؤول",
+    "watchlist": "المفضلة",
+    "request": "سجّل منزلك",
+    "hubs": "المحاور",
+    "producers": "المنتجون",
+    "offers": "العروض",
+    "navigator": "الشواحن",
+    "languageLabel": "اللغة",
+    "currencyLabel": "العملة",
+    "themeLabel": "المظهر",
+    "themeLight": "فاتح",
+    "themeDark": "داكن",
+    "themeSystem": "النظام"
+  },
+  "home": {
+    "heroEyebrow": "مباشر · شبكة Poolwatt · تحديث كل 60 ثانية",
+    "heroLine1": "الشبكة",
+    "heroLine2Before": "مدعومة من ",
+    "heroLine2Accent": "المنازل",
+    "heroLine2After": ".",
+    "heroSubtitle": "Poolwatt هو سوق نظير إلى نظير حيث تبيع المنازل الطاقة المتجددة المخزنة في البطاريات. كل كيلووات ساعة في الشبكة مصدرها الطاقة الشمسية أو الرياح أو المياه أو الكتلة الحيوية — ويمكننا إثبات ذلك.",
+    "ctaPrimary": "تصفح المنتجين",
+    "ctaSecondary": "سجّل منزلك"
+  },
+  "stats": {
+    "totalCapacity": "السعة الإجمالية",
+    "delivered24h": "تم التسليم (24 ساعة)",
+    "lifetimeDelivered": "إجمالي التسليم",
+    "activeProducers": "المنتجون النشطون",
+    "activeHubs": "المحاور النشطة",
+    "solarShare": "حصة الطاقة الشمسية",
+    "windShare": "حصة طاقة الرياح",
+    "hydroShare": "حصة الطاقة المائية",
+    "carbonOffset": "تخفيض CO₂ (24 ساعة)",
+    "greenIndex": "المؤشر الأخضر"
+  },
+  "greenIndex": {
+    "carbon-heavy": "عالي الكربون",
+    "mixed": "مختلط",
+    "neutral": "متوازن",
+    "renewable": "متجدد",
+    "fully-renewable": "متجدد بالكامل"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "المنتج",
+    "source": "المصدر",
+    "stateOfCharge": "الشحن",
+    "available": "متاح",
+    "price": "السعر / كيلووات ساعة",
+    "delivered24h": "24 ساعة",
+    "lifetime": "الإجمالي",
+    "change24h": "24 ساعة %",
+    "weekly": "إنتاج 7 أيام",
+    "uptime": "وقت التشغيل",
+    "loadingFallback": "جارٍ تحميل بيانات الشبكة…",
+    "search": "البحث بالاسم أو المدينة أو المشغّل…"
+  },
+  "source": {
+    "SOLAR": "شمسية",
+    "WIND": "رياح",
+    "HYDRO": "مائية",
+    "BIOMASS": "كتلة حيوية",
+    "GEOTHERMAL": "حرارة أرضية",
+    "HYBRID": "هجينة"
+  },
+  "weather": {
+    "SUNNY": "مشمس",
+    "CLOUDY": "غائم",
+    "WINDY": "عاصف",
+    "CALM": "هادئ",
+    "RAINY": "ممطر"
+  },
+  "footer": {
+    "dataNote": "قياسات مباشرة من أسطول المنتجين، مجمعة بواسطة عامل شبكة Poolwatt. معدل التحديث: 60 ثانية للأسعار، 5 دقائق للشحن، 30 دقيقة للطقس.",
+    "section": {
+      "grid": "الشبكة",
+      "account": "الحساب",
+      "data": "البيانات"
+    }
+  },
+  "navigator": {
+    "title": "محطات الشحن",
+    "metaDescription": "ابحث عن محطات شحن السيارات الكهربائية القريبة منك مع المواصفات التقنية الكاملة — أنواع الموصلات، الطاقة، المشغلون والتوفر في الوقت الفعلي.",
+    "loading": "جارٍ تحميل المحطات…",
+    "stationsFound": "محطة تم العثور عليها",
+    "searchPlaceholder": "البحث بالاسم أو المدينة أو المشغّل…",
+    "filters": "التصفية",
+    "connectorType": "الموصل",
+    "powerLevel": "الطاقة",
+    "statusLabel": "الحالة",
+    "all": "الكل",
+    "status_operational": "تعمل",
+    "status_planned": "مخطط لها",
+    "status_temporarily_unavailable": "غير متاحة مؤقتاً",
+    "noStations": "لا توجد محطات في هذه المنطقة. حرّك الخريطة للبحث.",
+    "pts": "نقاط",
+    "connections": "التوصيلات",
+    "points": "نقاط الشحن",
+    "maxPower": "أقصى طاقة",
+    "rating": "التقييم",
+    "cost": "التكلفة",
+    "lastVerified": "آخر تحقق",
+    "directions": "الاتجاهات"
+  },
+  "bot": {
+    "siblingNote": "بوت تيليجرام @PoolwattBot يرسل تنبيهات مباشرة ويتيح للمنتجين نشر العروض من هواتفهم."
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "Gospodarstwa domowe dostarczają odnawialną energię. Sieć im za to płaci.",
+    "signIn": "Zaloguj się",
+    "signOut": "Wyloguj się",
+    "settings": "Ustawienia",
+    "admin": "Admin",
+    "watchlist": "Obserwowane",
+    "request": "Zarejestruj gospodarstwo",
+    "hubs": "Huby",
+    "producers": "Producenci",
+    "offers": "Oferty",
+    "navigator": "Ładowarki",
+    "languageLabel": "Język",
+    "currencyLabel": "Waluta",
+    "themeLabel": "Motyw",
+    "themeLight": "Jasny",
+    "themeDark": "Ciemny",
+    "themeSystem": "System"
+  },
+  "home": {
+    "heroEyebrow": "Na żywo · Sieć Poolwatt · odświeżanie co 60 s",
+    "heroLine1": "Sieć",
+    "heroLine2Before": "zasilana przez ",
+    "heroLine2Accent": "gospodarstwa domowe",
+    "heroLine2After": ".",
+    "heroSubtitle": "Poolwatt to rynek peer-to-peer, na którym domy sprzedają energię odnawialną przechowywaną w bateriach. Każda kilowatogodzina w sieci pochodzi z energii słonecznej, wiatrowej, wodnej lub biomasy — i możemy to udowodnić.",
+    "ctaPrimary": "Przeglądaj producentów",
+    "ctaSecondary": "Zarejestruj gospodarstwo"
+  },
+  "stats": {
+    "totalCapacity": "Całkowita pojemność",
+    "delivered24h": "Dostarczone (24h)",
+    "lifetimeDelivered": "Dostarczone łącznie",
+    "activeProducers": "Aktywni producenci",
+    "activeHubs": "Aktywne huby",
+    "solarShare": "Udział słonecznej",
+    "windShare": "Udział wiatrowej",
+    "hydroShare": "Udział wodnej",
+    "carbonOffset": "Redukcja CO₂ (24h)",
+    "greenIndex": "Zielony indeks"
+  },
+  "greenIndex": {
+    "carbon-heavy": "Wysokoemisyjny",
+    "mixed": "Mieszany",
+    "neutral": "Zrównoważony",
+    "renewable": "Odnawialny",
+    "fully-renewable": "W pełni odnawialny"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "Producent",
+    "source": "Źródło",
+    "stateOfCharge": "Ładunek",
+    "available": "Dostępne",
+    "price": "Cena / kWh",
+    "delivered24h": "24h",
+    "lifetime": "Łącznie",
+    "change24h": "24h %",
+    "weekly": "Produkcja 7-dniowa",
+    "uptime": "Dostępność",
+    "loadingFallback": "Pobieranie danych sieci…",
+    "search": "Szukaj po nazwie, mieście lub operatorze…"
+  },
+  "source": {
+    "SOLAR": "Słoneczna",
+    "WIND": "Wiatrowa",
+    "HYDRO": "Wodna",
+    "BIOMASS": "Biomasa",
+    "GEOTHERMAL": "Geotermalna",
+    "HYBRID": "Hybrydowa"
+  },
+  "weather": {
+    "SUNNY": "Słonecznie",
+    "CLOUDY": "Pochmurnie",
+    "WINDY": "Wietrznie",
+    "CALM": "Spokojnie",
+    "RAINY": "Deszczowo"
+  },
+  "footer": {
+    "dataNote": "Telemetria na żywo z floty producentów, agregowana przez Poolwatt grid worker. Częstotliwość: 60 s ceny, 5 min stan naładowania, 30 min pogoda.",
+    "section": {
+      "grid": "Sieć",
+      "account": "Konto",
+      "data": "Dane"
+    }
+  },
+  "navigator": {
+    "title": "Stacje ładowania",
+    "metaDescription": "Znajdź stacje ładowania pojazdów elektrycznych w pobliżu z pełną specyfikacją techniczną — typy złączy, moc ładowania, operatorzy i dostępność w czasie rzeczywistym.",
+    "loading": "Ładowanie stacji…",
+    "stationsFound": "znalezionych stacji",
+    "searchPlaceholder": "Szukaj po nazwie, mieście, operatorze…",
+    "filters": "Filtry",
+    "connectorType": "Złącze",
+    "powerLevel": "Moc",
+    "statusLabel": "Status",
+    "all": "Wszystkie",
+    "status_operational": "Działająca",
+    "status_planned": "Planowana",
+    "status_temporarily_unavailable": "Tymczasowo niedostępna",
+    "noStations": "Brak stacji w tym obszarze. Przesuń mapę, aby szukać.",
+    "pts": "pkt",
+    "connections": "Złącza",
+    "points": "Punkty ładowania",
+    "maxPower": "Moc maks.",
+    "rating": "Ocena",
+    "cost": "Koszt",
+    "lastVerified": "Ostatnia weryfikacja",
+    "directions": "Nawigacja"
+  },
+  "bot": {
+    "siblingNote": "Bot Telegram @PoolwattBot dostarcza powiadomienia na żywo i pozwala producentom publikować oferty bezpośrednio z telefonu."
+  }
+}

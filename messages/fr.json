@@ -1,0 +1,116 @@
+{
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "Les foyers fournissent de l'énergie renouvelable. Le réseau les rémunère.",
+    "signIn": "Connexion",
+    "signOut": "Déconnexion",
+    "settings": "Paramètres",
+    "admin": "Admin",
+    "watchlist": "Favoris",
+    "request": "Inscrire votre foyer",
+    "hubs": "Hubs",
+    "producers": "Producteurs",
+    "offers": "Offres",
+    "navigator": "Bornes",
+    "languageLabel": "Langue",
+    "currencyLabel": "Devise",
+    "themeLabel": "Thème",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeSystem": "Système"
+  },
+  "home": {
+    "heroEyebrow": "En direct · Réseau Poolwatt · mis à jour toutes les 60 s",
+    "heroLine1": "Le réseau",
+    "heroLine2Before": "alimenté par les ",
+    "heroLine2Accent": "foyers",
+    "heroLine2After": ".",
+    "heroSubtitle": "Poolwatt est une place de marché peer-to-peer où les foyers vendent l'énergie renouvelable stockée dans leurs batteries. Chaque kilowatt-heure du réseau provient du solaire, de l'éolien, de l'hydraulique ou de la biomasse — et nous pouvons le prouver.",
+    "ctaPrimary": "Parcourir les producteurs",
+    "ctaSecondary": "Inscrire votre foyer"
+  },
+  "stats": {
+    "totalCapacity": "Capacité totale",
+    "delivered24h": "Livré (24h)",
+    "lifetimeDelivered": "Total livré",
+    "activeProducers": "Producteurs actifs",
+    "activeHubs": "Hubs actifs",
+    "solarShare": "Part solaire",
+    "windShare": "Part éolienne",
+    "hydroShare": "Part hydraulique",
+    "carbonOffset": "Réduction CO₂ (24h)",
+    "greenIndex": "Indice vert"
+  },
+  "greenIndex": {
+    "carbon-heavy": "Fortement carboné",
+    "mixed": "Mixte",
+    "neutral": "Équilibré",
+    "renewable": "Renouvelable",
+    "fully-renewable": "Entièrement renouvelable"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "Producteur",
+    "source": "Source",
+    "stateOfCharge": "Charge",
+    "available": "Disponible",
+    "price": "Prix / kWh",
+    "delivered24h": "24h",
+    "lifetime": "Total",
+    "change24h": "24h %",
+    "weekly": "Production 7 jours",
+    "uptime": "Disponibilité",
+    "loadingFallback": "Chargement des données réseau…",
+    "search": "Rechercher par nom, ville ou opérateur…"
+  },
+  "source": {
+    "SOLAR": "Solaire",
+    "WIND": "Éolien",
+    "HYDRO": "Hydraulique",
+    "BIOMASS": "Biomasse",
+    "GEOTHERMAL": "Géothermie",
+    "HYBRID": "Hybride"
+  },
+  "weather": {
+    "SUNNY": "Ensoleillé",
+    "CLOUDY": "Nuageux",
+    "WINDY": "Venteux",
+    "CALM": "Calme",
+    "RAINY": "Pluvieux"
+  },
+  "footer": {
+    "dataNote": "Télémétrie en direct de la flotte de producteurs, agrégée par le grid worker Poolwatt. Fréquence : 60 s pour les prix, 5 min pour la charge, 30 min pour la météo.",
+    "section": {
+      "grid": "Réseau",
+      "account": "Compte",
+      "data": "Données"
+    }
+  },
+  "navigator": {
+    "title": "Bornes de recharge",
+    "metaDescription": "Trouvez des bornes de recharge pour véhicules électriques près de chez vous avec les spécifications techniques complètes — types de connecteurs, puissance, opérateurs et disponibilité en temps réel.",
+    "loading": "Chargement des bornes…",
+    "stationsFound": "bornes trouvées",
+    "searchPlaceholder": "Rechercher par nom, ville, opérateur…",
+    "filters": "Filtres",
+    "connectorType": "Connecteur",
+    "powerLevel": "Puissance",
+    "statusLabel": "Statut",
+    "all": "Tous",
+    "status_operational": "Opérationnelle",
+    "status_planned": "Planifiée",
+    "status_temporarily_unavailable": "Temporairement indisponible",
+    "noStations": "Aucune borne dans cette zone. Déplacez la carte pour chercher.",
+    "pts": "pts",
+    "connections": "Connexions",
+    "points": "Points de charge",
+    "maxPower": "Puissance max.",
+    "rating": "Note",
+    "cost": "Coût",
+    "lastVerified": "Dernière vérification",
+    "directions": "Itinéraire"
+  },
+  "bot": {
+    "siblingNote": "Le bot Telegram @PoolwattBot envoie des alertes en direct et permet aux producteurs de publier des offres depuis leur téléphone."
+  }
+}
