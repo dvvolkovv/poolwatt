@@ -88,6 +88,34 @@ ssh dv@77.221.159.163 'pm2 restart poolwatt-bot'
 ssh dv@77.221.159.163 'pm2 restart poolwatt-bot poolwatt-worker'
 ```
 
+
+## iOS builds (via the Mac at home)
+
+This server cannot build iOS apps (Linux). For iOS work, drive the Mac at
+home through a reverse SSH tunnel that the Mac holds open (LaunchDaemon
+`com.poolwatt.tunnel.powerbank` on the Mac forwards `127.0.0.1:2222` here
+to mac:22). A `~/bin/mac-ios` wrapper SSHes back through that tunnel and
+invokes a fastlane lane on the Mac:
+
+```bash
+/home/dv/bin/mac-ios --lane build_sim            # ~2 min — simulator smoke + unit tests
+/home/dv/bin/mac-ios --lane release_testflight   # ~5 min — signed IPA → TestFlight
+```
+
+Both commands block until the lane finishes and inherit its exit code. On
+success, `release_testflight` returns immediately after upload — TestFlight
+processing (5–15 min) happens server-side at Apple. The user sees the build
+in their TestFlight app once Apple finishes processing.
+
+If `mac-ios` returns SSH-level errors (`Connection refused`, `timeout`),
+the reverse tunnel is down. Ask the user to check
+`~/Library/Logs/poolwatt-tunnel-powerbank.log` on the Mac.
+
+Source of truth: the iOS project lives in `/Users/aleksandrswiss/poolwatt-ios/`
+on the Mac (separate repo). Spec + plan are in this repo at
+`docs/superpowers/specs/2026-05-25-ios-build-pipeline-design.md` and
+`docs/superpowers/plans/2026-05-25-ios-build-pipeline.md`.
+
 ## Known gotchas
 
 - **dotenv + `.env.local`.** Standalone Node entrypoints (`bot/`, `worker/`)
@@ -139,6 +167,11 @@ When responding via Telegram, **always send the answer as a voice/audio
 message** in addition to the text reply. This applies to all inputs (text and
 voice), not only voice-initiated conversations. The user interacts with Claude
 through the Telegram bot and prefers audio delivery.
+
+## Design specs
+
+When writing design specs, send the full text as a message in the conversation
+(not just commit to a file). The user reads specs inline, not by opening files.
 
 ## Roadmap
 
