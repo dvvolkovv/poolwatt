@@ -3,29 +3,36 @@ loadDotenv({ path: ".env" });
 loadDotenv({ path: ".env.local", override: true });
 
 import OpenAI from "openai";
-import { writeFileSync } from "fs";
+import { writeFileSync, readFileSync } from "fs";
+import { translateToSlovak } from "../bot/tts";
 
-const report = `
-Рекомендация по почтовой системе для Poolwatt.
+// Status report generator: takes Russian text (from argv[2] file path or stdin)
+// and produces TWO sibling MP3s — RU original + SK translation — per the
+// bilingual rule in CLAUDE.md. Use as:
+//   npx tsx scripts/status-report-audio.ts <input.txt> [<base-name>]
+//   echo "..." | npx tsx scripts/status-report-audio.ts - [<base-name>]
+// Defaults to base name "status-report" (→ status-report.mp3 + status-report-sk.mp3).
 
-Рекомендую использовать Resend — транзакционный API для отправки писем. Вот почему.
+async function readInput(arg: string | undefined): Promise<string> {
+  if (!arg || arg === "-") {
+    const chunks: Buffer[] = [];
+    for await (const c of process.stdin) chunks.push(c as Buffer);
+    return Buffer.concat(chunks).toString("utf8").trim();
+  }
+  return readFileSync(arg, "utf8").trim();
+}
 
-Первое. В проекте уже заложены переменные RESEND API KEY и RESEND FROM EMAIL. Проект изначально на это рассчитан.
-
-Второе. Resend отлично работает с Next.js и поддерживает React Email — шаблоны писем пишутся как React-компоненты, с типизацией и переиспользованием.
-
-Третье. Доставляемость из коробки. SPF и DKIM настраиваются одной DNS-записью. Не нужно следить за IP-репутацией.
-
-Четвёртое. Бесплатный тариф — три тысячи писем в месяц. Этого более чем хватит на Фазу два.
-
-Пятое. Никакой нагрузки на сервер. Ваш единственный VPS уже несёт Next.js, бот и воркер. Поднимать Postfix на нём — лишний риск и лишняя работа.
-
-Почему не self-hosted Postfix? Один сервер, общий с приложением — дополнительная поверхность атаки. IP может попасть в спам-листы, а восстановление репутации — головная боль. Для двух задач — восстановление пароля и уведомления — это избыточно.
-
-Для входящей почты вроде support@poolwatt.com позже можно подключить Yandex триста шестьдесят или простой форвард.
-
-Если вы согласны — перехожу к детальному дизайну: архитектура, компоненты, шаблоны писем, интеграция с Auth.js. Конец доклада.
-`.trim();
+async function synth(openai: OpenAI, text: string, outPath: string) {
+  const res = await openai.audio.speech.create({
+    model: "gpt-4o-mini-tts",
+    voice: "alloy",
+    input: text,
+    response_format: "mp3",
+  });
+  const buf = Buffer.from(await res.arrayBuffer());
+  writeFileSync(outPath, buf);
+  console.log(`  → ${outPath} (${buf.length} bytes)`);
+}
 
 async function main() {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -34,20 +41,29 @@ async function main() {
     process.exit(1);
   }
 
+  const inputArg = process.argv[2];
+  const baseName = process.argv[3] || "status-report";
+  const reportRu = await readInput(inputArg);
+  if (!reportRu) {
+    console.error("Empty input. Pass a file path or pipe text via stdin.");
+    process.exit(1);
+  }
+
   const openai = new OpenAI({ apiKey });
 
-  console.log("Generating audio report...");
-  const res = await openai.audio.speech.create({
-    model: "gpt-4o-mini-tts",
-    voice: "alloy",
-    input: report,
-    response_format: "mp3",
-  });
+  console.log("RU TTS…");
+  await synth(openai, reportRu, `${baseName}.mp3`);
 
-  const ab = await res.arrayBuffer();
-  const outPath = "status-report.mp3";
-  writeFileSync(outPath, Buffer.from(ab));
-  console.log(`Audio report saved to ${outPath} (${Buffer.from(ab).length} bytes)`);
+  console.log("RU → SK translation…");
+  const reportSk = await translateToSlovak(reportRu, openai);
+  if (!reportSk) {
+    console.error("Slovak translation returned empty — skipping SK file.");
+    process.exit(2);
+  }
+  console.log("SK TTS…");
+  await synth(openai, reportSk, `${baseName}-sk.mp3`);
+
+  console.log("Done.");
 }
 
 main();

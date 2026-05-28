@@ -204,13 +204,22 @@ through the Telegram bot and prefers audio delivery.
 must be delivered as **two** MP3 files: one in Russian and one in Slovak.
 The Russian file keeps the base name (e.g. `status-report.mp3`); the Slovak
 sibling gets a `-sk` suffix (`status-report-sk.mp3`). For ad-hoc status
-reports, mirror the pattern of `scripts/status-report-audio.ts` (RU) and
-`scripts/status-report-audio-sk.ts` (SK). For Telegram bot replies, the
-bot's `synthesizeVoice()` flow should emit two voice messages per reply —
-currently it emits one; extend when touching `bot/index.ts`. Slovak TTS
-quirk for `gpt-4o-mini-tts`: spell `@` as `zavináč` and `.` as `bodka`
-inside email addresses and dotted identifiers (e.g. `Auth.js` → `Auth bodka
-js`), otherwise the model reads them in Latin pronunciation.
+reports use `scripts/status-report-audio.ts` — it takes Russian text on
+stdin or as a file path and produces **both** MP3s in one run (RU original
++ SK auto-translated via `translateToSlovak` in `bot/tts.ts`):
+
+```bash
+echo "Привет — это короткий отчёт." | \
+  npx tsx scripts/status-report-audio.ts -
+# → status-report.mp3 + status-report-sk.mp3
+```
+
+Telegram bot replies already emit two voice messages per reply (RU then SK)
+in `bot/index.ts` — wired via `synthesizeVoice()` + `translateToSlovak()`.
+Slovak TTS quirk for `gpt-4o-mini-tts`: spell `@` as `zavináč` and `.` as
+`bodka` inside email addresses and dotted identifiers (e.g. `Auth.js` →
+`Auth bodka js`), otherwise the model reads them in Latin pronunciation.
+The translation prompt in `translateToSlovak` already enforces this.
 
 ## Design specs
 
