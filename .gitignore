@@ -43,3 +43,6 @@ yarn-error.log*
 # Prisma artefacts
 /prisma/dev.db
 /prisma/dev.db-journal
+
+# Ad-hoc TTS report outputs (scripts/status-report-audio*.ts)
+/status-report*.mp3

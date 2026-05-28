@@ -116,6 +116,38 @@ on the Mac (separate repo). Spec + plan are in this repo at
 `docs/superpowers/specs/2026-05-25-ios-build-pipeline-design.md` and
 `docs/superpowers/plans/2026-05-25-ios-build-pipeline.md`.
 
+
+## Android builds (on this server)
+
+Unlike iOS, Android builds run directly on this Linux server — no Mac
+involvement. A Capacitor app at `~/poolwatt-android/` wraps the live
+`https://poolwatt.com` website in a WebView. The build produces a
+debug-signed APK that is published to the existing nginx hostname.
+
+```bash
+/home/dv/bin/android-build                # build + publish (default)
+/home/dv/bin/android-build --no-publish   # build only, no copy to /downloads/
+```
+
+The script prints the latest and versioned download URLs on success. On
+failure it prints the last Gradle stderr — pass straight to Telegram.
+
+Always invoke with the absolute path. The bot's `claude -p` is
+non-interactive and does not load `~/.profile`, so `~/bin` is not on
+PATH (same lesson as `mac-ios` in the iOS section above).
+
+Downloads land at:
+- `https://poolwatt.com/downloads/poolwatt.apk` — always latest
+- `https://poolwatt.com/downloads/poolwatt-build-<N>.apk` — versioned
+- `https://poolwatt.com/downloads/` — autoindex listing all builds
+
+Builds keep on disk the newest 20 versioned APKs (~80 MB ceiling since
+each APK is ~4 MB).
+
+Source of truth: `~/poolwatt-android/` (its own git repo on this server).
+Spec + plan in this repo at `docs/superpowers/specs/2026-05-25-android-build-pipeline-design.md`
+and `docs/superpowers/plans/2026-05-25-android-build-pipeline.md`.
+
 ## Known gotchas
 
 - **dotenv + `.env.local`.** Standalone Node entrypoints (`bot/`, `worker/`)
@@ -167,6 +199,18 @@ When responding via Telegram, **always send the answer as a voice/audio
 message** in addition to the text reply. This applies to all inputs (text and
 voice), not only voice-initiated conversations. The user interacts with Claude
 through the Telegram bot and prefers audio delivery.
+
+**Bilingual audio — always two files.** Every audio reply / status report
+must be delivered as **two** MP3 files: one in Russian and one in Slovak.
+The Russian file keeps the base name (e.g. `status-report.mp3`); the Slovak
+sibling gets a `-sk` suffix (`status-report-sk.mp3`). For ad-hoc status
+reports, mirror the pattern of `scripts/status-report-audio.ts` (RU) and
+`scripts/status-report-audio-sk.ts` (SK). For Telegram bot replies, the
+bot's `synthesizeVoice()` flow should emit two voice messages per reply —
+currently it emits one; extend when touching `bot/index.ts`. Slovak TTS
+quirk for `gpt-4o-mini-tts`: spell `@` as `zavináč` and `.` as `bodka`
+inside email addresses and dotted identifiers (e.g. `Auth.js` → `Auth bodka
+js`), otherwise the model reads them in Latin pronunciation.
 
 ## Design specs
 

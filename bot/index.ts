@@ -13,7 +13,7 @@ import { ClaudeRunner } from "./claudeRunner";
 import { StatusUpdater, truncate } from "./telegramView";
 import { renderToolStatus } from "./statusRender";
 import { downloadTelegramVoice, transcribeBuffer } from "./voice";
-import { synthesizeVoice } from "./tts";
+import { synthesizeVoice, translateToSlovak } from "./tts";
 
 const config = loadConfig();
 const bot = new Bot(config.telegramBotToken);
@@ -179,12 +179,29 @@ async function processPrompt(
       await ctx.reply(body);
     }
 
-    // Voice reply — only when the original input was voice, and only if we
-    // have an OpenAI client. Don't break the whole flow if TTS fails.
+    // Voice reply — Russian first, then Slovak per CLAUDE.md "Bot response
+    // mode" (bilingual audio rule). Slovak failure is logged but never
+    // breaks the Russian reply. If Russian synthesis itself fails, skip
+    // Slovak too — almost always the same OpenAI outage.
     if (opts.speakReply && openai) {
       try {
-        const { ogg } = await synthesizeVoice(textForVoice, openai);
+        const { ogg, spokenText } = await synthesizeVoice(textForVoice, openai);
         await ctx.replyWithVoice(new InputFile(ogg, "reply.ogg"));
+
+        try {
+          const sk = await translateToSlovak(spokenText, openai);
+          if (sk) {
+            const { ogg: oggSk } = await synthesizeVoice(sk, openai);
+            await ctx.replyWithVoice(new InputFile(oggSk, "reply-sk.ogg"), {
+              caption: "🇸🇰",
+            });
+          }
+        } catch (err) {
+          console.error(
+            "[bot] Slovak TTS failed:",
+            err instanceof Error ? err.message : err,
+          );
+        }
       } catch (err) {
         console.error("[bot] TTS failed:", err instanceof Error ? err.message : err);
       }

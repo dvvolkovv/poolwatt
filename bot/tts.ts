@@ -37,3 +37,35 @@ export async function synthesizeVoice(
   const ab = await res.arrayBuffer();
   return { ogg: Buffer.from(ab), spokenText };
 }
+
+/**
+ * Translate Russian status text to spoken Slovak, prepared for
+ * `gpt-4o-mini-tts`. Adapts email addresses and dotted identifiers so the
+ * TTS model reads them naturally — see CLAUDE.md "Bot response mode" for
+ * the quirk this works around.
+ */
+export async function translateToSlovak(
+  textRu: string,
+  openai: OpenAI,
+): Promise<string> {
+  const trimmed = textRu.trim();
+  if (!trimmed) return "";
+
+  const res = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    temperature: 0.2,
+    messages: [
+      {
+        role: "system",
+        content:
+          "You translate short status messages from Russian to Slovak for a text-to-speech engine. " +
+          "Return ONLY the Slovak translation — no quotes, no preface, no explanation. " +
+          'Inside email addresses and dotted identifiers, spell "@" as "zavináč" and "." as "bodka" ' +
+          '(so "Auth.js" → "Auth bodka js", "foo@bar.com" → "foo zavináč bar bodka com"). ' +
+          "Keep numbers as digits. Keep the tone natural and concise.",
+      },
+      { role: "user", content: trimmed },
+    ],
+  });
+  return (res.choices[0]?.message?.content ?? "").trim();
+}
