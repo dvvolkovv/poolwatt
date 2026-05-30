@@ -34,7 +34,7 @@ const cachedNews = unstable_cache(
     const raw = await fetchNews();
     return await translateHeadlines(raw);
   },
-  ["news:v1"],
+  ["news:v2"],
   { revalidate: 1800, tags: ["news"] },
 );
 
