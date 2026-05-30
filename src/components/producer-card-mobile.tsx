@@ -6,28 +6,43 @@ import { formatKwh, formatPct, deltaClass } from "@/lib/format";
 import { SourceBadge } from "./source-badge";
 import { StateOfCharge } from "./state-of-charge";
 import { Sparkline } from "./sparkline";
+import { FavoriteButton } from "./favorite-button";
 
 export function ProducerCardMobile({
   row,
   currency,
   rates,
   locale,
+  isFavorite,
+  signedIn,
 }: {
   row: ProducerRowT;
   currency: Currency;
   rates: ExchangeRates | null;
   locale: string;
+  isFavorite: boolean;
+  signedIn: boolean;
 }) {
   const r = rates ?? { USD: 1 };
   const price = formatInCurrency(row.pricePerKwhUsd, currency, r, {
     maximumFractionDigits: 4,
   });
   return (
-    <Link
-      href={`/${locale}/p/${row.handle}`}
-      className="block bg-card border border-hairline rounded-[16px] p-4 hover:border-accent/60 transition-colors"
-    >
-      <div className="flex items-start justify-between gap-3">
+    <div className="relative bg-card border border-hairline rounded-[16px] p-4 hover:border-accent/60 transition-colors">
+      <div className="absolute top-3 right-3">
+        <FavoriteButton
+          kind="producer"
+          id={row.handle}
+          initial={isFavorite}
+          signedIn={signedIn}
+          size="sm"
+        />
+      </div>
+      <Link
+        href={`/${locale}/p/${row.handle}`}
+        className="block"
+      >
+      <div className="flex items-start justify-between gap-3 pr-10">
         <div className="min-w-0">
           <div className="text-muted num text-[11px]">#{row.rank}</div>
           <div className="text-foreground font-semibold truncate">{row.displayName}</div>
@@ -63,6 +78,7 @@ export function ProducerCardMobile({
         <span className="text-muted text-[11px]">{formatKwh(row.delivered24hKwh)} / 24h</span>
         <Sparkline data={row.weeklyOutput} width={96} height={24} />
       </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

@@ -407,3 +407,10 @@ export const MOCK_CHARGERS: ChargerStation[] = [
   // ─── GLOBAL: GEORGIA ─────────────────────────────────────────────────
   { id: "g25", title: "EV Point — Tbilisi Vake", operator: "EV Point Georgia", address: "Chavchavadze Ave 37", city: "Tbilisi", country: "GE", lat: 41.7086, lng: 44.7681, status: "operational", usageType: "public", connections: [{ connectorType: "CCS2", powerKw: 50, voltageV: 400, ampereA: 125, currentType: "DC", quantity: 2 }, { connectorType: "Type2", powerKw: 22, voltageV: 400, ampereA: 32, currentType: "AC", quantity: 4 }], totalPoints: 6, maxPowerKw: 50, powerLevel: "dc_fast", costInfo: "0.30 GEL/kWh", openHours: "24/7", rating: 4.1, lastVerified: "2026-05-11", photoUrl: null },
 ];
+
+// O(1) lookup keyed by id — needed by /c/[id] page and the favorites reader.
+const BY_ID = new Map(MOCK_CHARGERS.map((c) => [c.id, c]));
+
+export function getChargerById(id: string): ChargerStation | null {
+  return BY_ID.get(id) ?? null;
+}

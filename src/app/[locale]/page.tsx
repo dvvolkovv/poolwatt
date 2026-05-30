@@ -12,6 +12,8 @@ import { ProducerListClient } from "@/components/producer-list-client";
 import { NewsRail } from "@/components/news-rail";
 import { getCurrency } from "@/lib/get-currency";
 import type { NewsTheme } from "@/lib/news";
+import { auth } from "@/lib/auth";
+import { readFavoriteProducerHandles } from "@/lib/favorites";
 
 export const revalidate = 60;
 
@@ -26,14 +28,17 @@ export default async function Home({
   const th = await getTranslations("home");
   const tc = await getTranslations("common");
 
-  const [rows, stats, rates, currency, greenIndex, news] = await Promise.all([
+  const session = await auth();
+  const [rows, stats, rates, currency, greenIndex, news, favoriteHandles] = await Promise.all([
     readTopProducers(),
     readGridStats(),
     readExchangeRates(),
     getCurrency(),
     readGreenIndex(),
     readNews(),
+    session?.user ? readFavoriteProducerHandles(session.user.id) : Promise.resolve(new Set<string>()),
   ]);
+  const signedIn = !!session?.user;
 
   const newsLabels: Record<NewsTheme, string> = {
     solar: th("newsflow.categories.solar"),
@@ -130,6 +135,8 @@ export default async function Home({
               currency={currency}
               rates={rates}
               locale={locale}
+              favoriteHandles={favoriteHandles}
+              signedIn={signedIn}
             />
           ) : (
             <p className="text-muted">{tl("loadingFallback")}</p>

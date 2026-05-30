@@ -6,17 +6,22 @@ import { formatKwh, formatPct, deltaClass } from "@/lib/format";
 import { SourceBadge } from "./source-badge";
 import { StateOfCharge } from "./state-of-charge";
 import { Sparkline } from "./sparkline";
+import { FavoriteButton } from "./favorite-button";
 
 export function ProducerRow({
   row,
   currency,
   rates,
   locale,
+  isFavorite,
+  signedIn,
 }: {
   row: ProducerRowT;
   currency: Currency;
   rates: ExchangeRates | null;
   locale: string;
+  isFavorite: boolean;
+  signedIn: boolean;
 }) {
   const r = rates ?? { USD: 1 };
   const price = formatInCurrency(row.pricePerKwhUsd, currency, r, {
@@ -65,6 +70,15 @@ export function ProducerRow({
       </td>
       <td className="px-5 py-4">
         <Sparkline data={row.weeklyOutput} />
+      </td>
+      <td className="px-3 py-4 text-right">
+        <FavoriteButton
+          kind="producer"
+          id={row.handle}
+          initial={isFavorite}
+          signedIn={signedIn}
+          size="sm"
+        />
       </td>
     </tr>
   );

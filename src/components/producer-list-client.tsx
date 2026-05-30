@@ -63,11 +63,15 @@ export function ProducerListClient({
   currency,
   rates,
   locale,
+  favoriteHandles = new Set(),
+  signedIn = false,
 }: {
   rows: ProducerRowT[];
   currency: Currency;
   rates: ExchangeRates | null;
   locale: string;
+  favoriteHandles?: Set<string>;
+  signedIn?: boolean;
 }) {
   const t = useTranslations("listing");
   const tSource = useTranslations("source");
@@ -184,6 +188,7 @@ export function ProducerListClient({
                 onSort={toggleSort}
               />
               <th className="text-left font-medium px-5 py-4">{t("weekly")}</th>
+              <th className="text-right font-medium px-3 py-4" aria-label="favorite" />
             </tr>
           </thead>
           <tbody>
@@ -194,6 +199,8 @@ export function ProducerListClient({
                 currency={currency}
                 rates={rates}
                 locale={locale}
+                isFavorite={favoriteHandles.has(row.handle)}
+                signedIn={signedIn}
               />
             ))}
           </tbody>
@@ -209,6 +216,8 @@ export function ProducerListClient({
             currency={currency}
             rates={rates}
             locale={locale}
+            isFavorite={favoriteHandles.has(row.handle)}
+            signedIn={signedIn}
           />
         ))}
       </div>
