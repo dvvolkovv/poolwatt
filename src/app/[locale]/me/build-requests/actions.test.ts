@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { createBuildRequest, updateBuildRequest, cancelBuildRequest } from "./actions";
+import { createBuildRequest, updateBuildRequest, cancelBuildRequest, acceptClaim } from "./actions";
 
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
@@ -143,6 +143,88 @@ describe("cancelBuildRequest", () => {
     await prisma.buildRequest.update({ where: { id: created.id! }, data: { status: "FULFILLED" } });
 
     const r = await cancelBuildRequest(created.id!);
+    expect(r.ok).toBe(false);
+  });
+});
+
+describe("acceptClaim", () => {
+  async function setupBrAndClaims(opts: { count: number }) {
+    const owner = await ensureUser("test_br_accept_owner");
+    mockedAuth.mockResolvedValue({ user: { id: owner.id, username: owner.username, role: "USER" } } as never);
+    const created = await createBuildRequest(formInput);
+    const claimIds: string[] = [];
+    for (let i = 0; i < opts.count; i++) {
+      const ctrUser = await prisma.user.upsert({
+        where: { username: `test_br_accept_ctr_${i}` },
+        update: {},
+        create: { username: `test_br_accept_ctr_${i}`, passwordHash: "x" },
+      });
+      const ctr = await prisma.contractor.create({
+        data: {
+          slug: `test_br_accept_slug_${Date.now()}_${i}`,
+          entityType: "INDIVIDUAL",
+          displayName: `AcceptCo ${i}`,
+          country: "SK",
+          city: "Bratislava",
+          workCategories: ["INSTALLATION"],
+          renewableTypes: ["SOLAR"],
+          countriesServed: ["SK"],
+          bio: "x".repeat(150),
+          contactEmail: `c${i}@x.test`,
+          contactPhone: "+421900000000",
+          status: "APPROVED",
+        },
+      });
+      await prisma.contractorMember.create({ data: { contractorId: ctr.id, userId: ctrUser.id, role: "OWNER" } });
+      const claim = await prisma.buildRequestClaim.create({
+        data: { buildRequestId: created.id!, contractorId: ctr.id, status: "PENDING" },
+      });
+      claimIds.push(claim.id);
+    }
+    return { owner, brId: created.id!, claimIds };
+  }
+
+  it("happy path: ACCEPTED claim + siblings REJECTED + BR MATCHED", async () => {
+    const { brId, claimIds } = await setupBrAndClaims({ count: 3 });
+
+    const r = await acceptClaim(claimIds[0]);
+    expect(r.ok).toBe(true);
+
+    const accepted = await prisma.buildRequestClaim.findUniqueOrThrow({ where: { id: claimIds[0] } });
+    expect(accepted.status).toBe("ACCEPTED");
+    expect(accepted.respondedAt).not.toBeNull();
+
+    const rej1 = await prisma.buildRequestClaim.findUniqueOrThrow({ where: { id: claimIds[1] } });
+    const rej2 = await prisma.buildRequestClaim.findUniqueOrThrow({ where: { id: claimIds[2] } });
+    expect(rej1.status).toBe("REJECTED");
+    expect(rej2.status).toBe("REJECTED");
+
+    const br = await prisma.buildRequest.findUniqueOrThrow({ where: { id: brId } });
+    expect(br.status).toBe("MATCHED");
+  });
+
+  it("rejects when caller is not the BR owner", async () => {
+    const { claimIds } = await setupBrAndClaims({ count: 1 });
+    const intruder = await ensureUser("test_br_accept_intruder");
+    mockedAuth.mockResolvedValueOnce({ user: { id: intruder.id, username: intruder.username, role: "USER" } } as never);
+
+    const r = await acceptClaim(claimIds[0]);
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects when claim is not PENDING", async () => {
+    const { claimIds } = await setupBrAndClaims({ count: 1 });
+    await prisma.buildRequestClaim.update({ where: { id: claimIds[0] }, data: { status: "WITHDRAWN" } });
+
+    const r = await acceptClaim(claimIds[0]);
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects when BR is not OPEN", async () => {
+    const { brId, claimIds } = await setupBrAndClaims({ count: 1 });
+    await prisma.buildRequest.update({ where: { id: brId }, data: { status: "CANCELLED" } });
+
+    const r = await acceptClaim(claimIds[0]);
     expect(r.ok).toBe(false);
   });
 });

@@ -140,16 +140,106 @@ export async function cancelBuildRequest(id: string): Promise<ActionResult> {
     return { ok: true, id };  // idempotent
   }
 
-  await prisma.buildRequest.update({
-    where: { id },
-    data: {
-      status: "CANCELLED",
-      statusChangedAt: new Date(),
-      statusChangedById: session.user.id,
-    },
-  });
+  await prisma.$transaction([
+    prisma.buildRequest.update({
+      where: { id },
+      data: {
+        status: "CANCELLED",
+        statusChangedAt: new Date(),
+        statusChangedById: session.user.id,
+      },
+    }),
+    prisma.buildRequestClaim.updateMany({
+      where: { buildRequestId: id, status: "PENDING" },
+      data: { status: "WITHDRAWN", respondedAt: new Date() },
+    }),
+  ]);
 
   revalidatePath("/[locale]/me/build-requests", "page");
   revalidatePath(`/[locale]/me/build-requests/${id}`, "page");
   return { ok: true, id };
+}
+
+export async function acceptClaim(claimId: string): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user) return { ok: false, formError: "Not authenticated" };
+
+  const claim = await prisma.buildRequestClaim.findUnique({
+    where: { id: claimId },
+    select: {
+      id: true,
+      status: true,
+      contractorId: true,
+      buildRequest: { select: { id: true, userId: true, status: true } },
+    },
+  });
+  if (!claim) return { ok: false, formError: "Claim not found" };
+
+  if (claim.buildRequest.userId !== session.user.id) {
+    return { ok: false, formError: "Claim not found" };
+  }
+  if (claim.status !== "PENDING") {
+    return { ok: false, formError: "Claim cannot be accepted (not PENDING)" };
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const updated = await tx.buildRequest.update({
+        where: { id: claim.buildRequest.id, status: "OPEN" },
+        data: {
+          status: "MATCHED",
+          statusChangedAt: new Date(),
+          statusChangedById: session.user.id,
+        },
+        select: { id: true },
+      });
+
+      await tx.buildRequestClaim.update({
+        where: { id: claim.id },
+        data: { status: "ACCEPTED", respondedAt: new Date() },
+      });
+
+      await tx.buildRequestClaim.updateMany({
+        where: {
+          buildRequestId: updated.id,
+          status: "PENDING",
+          NOT: { id: claim.id },
+        },
+        data: { status: "REJECTED", respondedAt: new Date() },
+      });
+    });
+  } catch (err) {
+    const code = (err as { code?: string })?.code;
+    const msg = err instanceof Error ? err.message : String(err);
+    if (code === "P2025" || msg.includes("P2025") || msg.includes("Record to update not found")) {
+      return { ok: false, formError: "Request status changed concurrently — please refresh" };
+    }
+    throw err;
+  }
+
+  try {
+    const { sendClaimAcceptedToContractor, sendClaimRejectedToContractor } = await import("@/lib/resend-match");
+    await sendClaimAcceptedToContractor({
+      claimId: claim.id,
+      buildRequestId: claim.buildRequest.id,
+      contractorId: claim.contractorId,
+    });
+    const siblings = await prisma.buildRequestClaim.findMany({
+      where: { buildRequestId: claim.buildRequest.id, status: "REJECTED" },
+      select: { id: true, contractorId: true },
+    });
+    for (const s of siblings) {
+      await sendClaimRejectedToContractor({
+        claimId: s.id,
+        buildRequestId: claim.buildRequest.id,
+        contractorId: s.contractorId,
+      });
+    }
+  } catch (err) {
+    console.error("[matching] accept notifications failed:", err);
+  }
+
+  revalidatePath(`/[locale]/me/build-requests/${claim.buildRequest.id}`, "page");
+  revalidatePath(`/[locale]/me/contractor/[id]/requests`, "page");
+  return { ok: true };
 }
