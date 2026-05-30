@@ -78,6 +78,19 @@ export default async function AdminContractorDetail({
         <p className="mt-2 whitespace-pre-wrap text-sm">{c.bio}</p>
       </section>
 
+      {c.providesEvCharging && (
+        <section className="border border-hairline rounded p-4">
+          <h2 className="text-sm uppercase tracking-wide text-muted mb-2">⚡ EV Charging</h2>
+          <p>Power source: <b>{c.evPowerSource}</b></p>
+          <p>Stations: <span className="num">{c.evStationCount}</span></p>
+          <p>Connectors: {c.evConnectorTypes.join(", ")}</p>
+          <p>Power levels: {c.evPowerLevels.join(", ")}</p>
+          <p>Access: {c.evUsageType}</p>
+          <p>Max power: <span className="num">{c.evMaxPowerKw?.toString()}</span> kW</p>
+          {c.evDescription && <p className="mt-2 whitespace-pre-wrap text-sm">{c.evDescription}</p>}
+        </section>
+      )}
+
       <section className="border border-hairline rounded p-4">
         <h2 className="text-sm uppercase tracking-wide text-muted mb-2">Status</h2>
         <p>Current: <b>{c.status}</b></p>

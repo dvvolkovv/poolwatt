@@ -69,6 +69,30 @@ export default async function ContractorDetailPage({
         {c.websiteUrl && <><dt className="text-muted">{t("field.websiteUrl.label")}</dt><dd><a href={c.websiteUrl} className="underline" target="_blank" rel="noreferrer">{c.websiteUrl}</a></dd></>}
         <dt className="text-muted">{t("field.bio.label")}</dt><dd className="whitespace-pre-wrap">{c.bio}</dd>
       </dl>
+
+      {c.providesEvCharging && (
+        <section className="mt-10 border border-hairline rounded-lg p-5">
+          <h2 className="text-sm uppercase tracking-wider text-muted mb-3">
+            ⚡ {t("field.providesEvCharging.label").replace(/^This company /, "")}
+          </h2>
+          <dl className="grid grid-cols-[180px_1fr] gap-y-2 text-sm">
+            <dt className="text-muted">{t("field.evPowerSource.label")}</dt>
+            <dd>{c.evPowerSource ? t(`field.evPowerSource.${c.evPowerSource}`) : "—"}</dd>
+            <dt className="text-muted">{t("field.evStationCount.label")}</dt>
+            <dd>{c.evStationCount ?? "—"}</dd>
+            <dt className="text-muted">{t("field.evConnectorTypes.label")}</dt>
+            <dd>{c.evConnectorTypes.map(k => t(`field.evConnectorTypes.${k}`)).join(", ")}</dd>
+            <dt className="text-muted">{t("field.evPowerLevels.label")}</dt>
+            <dd>{c.evPowerLevels.map(k => t(`field.evPowerLevels.${k}`)).join(", ")}</dd>
+            <dt className="text-muted">{t("field.evUsageType.label")}</dt>
+            <dd>{c.evUsageType ? t(`field.evUsageType.${c.evUsageType}`) : "—"}</dd>
+            <dt className="text-muted">{t("field.evMaxPowerKw.label")}</dt>
+            <dd>{c.evMaxPowerKw ? `${c.evMaxPowerKw.toString()} kW` : "—"}</dd>
+            <dt className="text-muted">{t("field.evDescription.label")}</dt>
+            <dd className="whitespace-pre-wrap">{c.evDescription}</dd>
+          </dl>
+        </section>
+      )}
     </div>
   );
 }
