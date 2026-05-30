@@ -175,8 +175,9 @@ model Producer {
 
   snapshots   ProducerSnapshot[]
   offers      Offer[]
-  watchedBy   Watchlist[]
   contracts   Contract[]
+  // Watchlist FK was dropped in V1 personal cabinet — see comment on the
+  // Watchlist model. When the producer cutover lands, restore: watchedBy Watchlist[]
 
   @@index([country, rank])
   @@index([primarySource])
@@ -255,12 +256,16 @@ model HubWatchlist {
   @@index([userId])
 }
 
+// V1 personal cabinet stores Producer.handle (a stable mock identifier) in
+// producerId; producers themselves live in src/lib/producers.ts (mock data).
+// The FK to Producer was dropped so V1 can ship without the producer-table
+// cutover; a later migration will either repoint this column to a real FK
+// or rename it. Until then, producerId is a free-form String key.
 model Watchlist {
   userId     String
   producerId String
   addedAt    DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  producer   Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
 
   @@id([userId, producerId])
   @@index([userId])
