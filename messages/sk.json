@@ -177,5 +177,110 @@
       "emptyChargersTitle": "Zatiaľ tu nič nie je",
       "emptyChargersBody": "Otvorte [navigátor] a kliknite na hviezdičku, aby ste pridali sem."
     }
+  },
+  "charger": {
+    "backToNavigator": "Späť na navigátor",
+    "favoriteAdd": "Pridať do obľúbených",
+    "favoriteRemove": "Odstrániť z obľúbených",
+    "buildRoute": "Naplánovať trasu",
+    "buildRouteHint": "Otvorí sa v predvolenej mapovej aplikácii zariadenia.",
+    "connectorsTitle": "Konektory",
+    "totalPoints": "Počet bodov",
+    "maxPower": "Max. výkon",
+    "usageType": "Prístup",
+    "openHours": "Hodiny",
+    "costInfo": "Cena",
+    "rating": "Hodnotenie",
+    "lastVerified": "Overené",
+    "status": {
+      "operational": "V prevádzke",
+      "planned": "Plánované",
+      "temporarily_unavailable": "Dočasne nedostupné",
+      "removed": "Odstránené"
+    },
+    "usage": {
+      "public": "Verejný",
+      "membership": "Členský",
+      "private": "Súkromný",
+      "pay_at_location": "Platba na mieste"
+    }
+  },
+  "settings": {
+    "title": "Nastavenia",
+    "email": {
+      "title": "Email na obnovenie",
+      "none": "Žiadny email nie je uvedený. Pridajte ho, aby ste mohli obnoviť heslo.",
+      "pendingNote": "Bez emailu nemožno obnoviť zabudnuté heslo — nemáme iný spôsob, ako vás identifikovať.",
+      "addLabel": "Email",
+      "addPlaceholder": "vy@priklad.com",
+      "submit": "Odoslať odkaz",
+      "submitting": "Odosiela sa…",
+      "successPending": "Overovací email odoslaný. Kliknutím na odkaz potvrďte."
+    },
+    "password": {
+      "title": "Zmeniť heslo",
+      "currentLabel": "Aktuálne heslo",
+      "newLabel": "Nové heslo",
+      "submit": "Zmeniť",
+      "submitting": "Ukladá sa…",
+      "success": "Heslo aktualizované."
+    },
+    "danger": {
+      "title": "Vymazať účet",
+      "warning": "Vymaže vaše obľúbené a odhlási vás. Akciu nemožno vrátiť.",
+      "confirmLabel": "Pre potvrdenie napíšte {username}",
+      "submit": "Vymazať natrvalo",
+      "submitting": "Mazanie…"
+    }
+  },
+  "verifyEmail": {
+    "backToSettings": "Späť na nastavenia",
+    "ok": {
+      "title": "Email potvrdený",
+      "body": "Teraz ho môžete použiť na obnovenie hesla."
+    },
+    "expired": {
+      "title": "Odkaz vypršal",
+      "body": "Overovacie odkazy platia hodinu. Vyžiadajte nový v nastaveniach."
+    },
+    "missing": {
+      "title": "Chýba token",
+      "body": "Tento odkaz je neúplný. Skúste ho otvoriť z emailu znova."
+    },
+    "notfound": {
+      "title": "Odkaz nenájdený",
+      "body": "Tento overovací odkaz už neplatí."
+    }
+  },
+  "forgotPassword": {
+    "title": "Obnovenie hesla",
+    "subtitle": "Zadajte prezývku alebo email — pošleme odkaz na reset.",
+    "identifierLabel": "Prezývka alebo email",
+    "identifierPlaceholder": "vaša prezývka alebo vy@priklad.com",
+    "submit": "Odoslať odkaz",
+    "submitting": "Odosiela sa…",
+    "success": "Ak má účet overený email, poslali sme odkaz.",
+    "noEmail": "Tento účet nemá overený email — obnovenie nie je možné. Kontaktujte @poolwattbot.",
+    "unknown": "Takúto prezývku ani email nepoznáme.",
+    "backToLogin": "Späť na prihlásenie"
+  },
+  "resetPassword": {
+    "title": "Nové heslo",
+    "subtitle": "Zvoľte si niečo, čo si zapamätáte.",
+    "newLabel": "Nové heslo",
+    "submit": "Nastaviť heslo",
+    "submitting": "Ukladá sa…",
+    "success": "Heslo bolo aktualizované. Prihláste sa.",
+    "backToLogin": "Prihlásiť sa",
+    "missing": {
+      "title": "Chýba token",
+      "body": "Odkaz je neúplný.",
+      "cta": "Vyžiadať nový odkaz"
+    },
+    "expired": {
+      "title": "Odkaz vypršal alebo bol použitý",
+      "body": "Odkazy sú jednorazové a platia hodinu.",
+      "cta": "Vyžiadať nový odkaz"
+    }
   }
 }

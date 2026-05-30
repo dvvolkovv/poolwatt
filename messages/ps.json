@@ -177,5 +177,110 @@
       "emptyChargersTitle": "No favorite chargers yet",
       "emptyChargersBody": "Open the [navigator] and tap the star on a charger to save it here."
     }
+  },
+  "charger": {
+    "backToNavigator": "Back to navigator",
+    "favoriteAdd": "Add to favorites",
+    "favoriteRemove": "Remove from favorites",
+    "buildRoute": "Build a route",
+    "buildRouteHint": "Opens in your device's default maps app.",
+    "connectorsTitle": "Connectors",
+    "totalPoints": "Total points",
+    "maxPower": "Max power",
+    "usageType": "Access",
+    "openHours": "Hours",
+    "costInfo": "Pricing",
+    "rating": "Rating",
+    "lastVerified": "Last verified",
+    "status": {
+      "operational": "Operational",
+      "planned": "Planned",
+      "temporarily_unavailable": "Temporarily unavailable",
+      "removed": "Removed"
+    },
+    "usage": {
+      "public": "Public",
+      "membership": "Membership",
+      "private": "Private",
+      "pay_at_location": "Pay at location"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "email": {
+      "title": "Recovery email",
+      "none": "No email on file. Add one so you can recover your password later.",
+      "pendingNote": "Without an email, a forgotten password cannot be reset — there's no other way to identify you.",
+      "addLabel": "Email",
+      "addPlaceholder": "you@example.com",
+      "submit": "Send link",
+      "submitting": "Sending…",
+      "successPending": "Verification email sent. Click the link to confirm."
+    },
+    "password": {
+      "title": "Change password",
+      "currentLabel": "Current password",
+      "newLabel": "New password",
+      "submit": "Change",
+      "submitting": "Saving…",
+      "success": "Password updated."
+    },
+    "danger": {
+      "title": "Delete account",
+      "warning": "This wipes your favorites and signs you out. Cannot be undone.",
+      "confirmLabel": "Type {username} to confirm",
+      "submit": "Delete forever",
+      "submitting": "Deleting…"
+    }
+  },
+  "verifyEmail": {
+    "backToSettings": "Back to settings",
+    "ok": {
+      "title": "Email confirmed",
+      "body": "You can now use it to recover your password if you forget it."
+    },
+    "expired": {
+      "title": "Link expired",
+      "body": "Verification links last one hour. Request a new one from settings."
+    },
+    "missing": {
+      "title": "Missing token",
+      "body": "This link is incomplete. Try opening it again from your email."
+    },
+    "notfound": {
+      "title": "Link not found",
+      "body": "This verification link is no longer valid."
+    }
+  },
+  "forgotPassword": {
+    "title": "Reset password",
+    "subtitle": "Enter your nickname or email — we'll send a reset link.",
+    "identifierLabel": "Nickname or email",
+    "identifierPlaceholder": "your nickname or you@example.com",
+    "submit": "Send reset link",
+    "submitting": "Sending…",
+    "success": "If that account has a verified email, we sent a reset link.",
+    "noEmail": "This account has no verified email — recovery is not possible. Contact support via @poolwattbot.",
+    "unknown": "We don't recognize that nickname or email.",
+    "backToLogin": "Back to sign in"
+  },
+  "resetPassword": {
+    "title": "Choose a new password",
+    "subtitle": "Pick something you'll remember.",
+    "newLabel": "New password",
+    "submit": "Set password",
+    "submitting": "Saving…",
+    "success": "Password updated. Please sign in.",
+    "backToLogin": "Sign in",
+    "missing": {
+      "title": "Missing token",
+      "body": "This link is incomplete.",
+      "cta": "Request a new link"
+    },
+    "expired": {
+      "title": "Link expired or used",
+      "body": "Reset links work once and last one hour.",
+      "cta": "Request a new link"
+    }
   }
 }
