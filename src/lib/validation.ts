@@ -55,3 +55,11 @@ export const resetPasswordSchema = z.object({
   token: z.string().min(1),
   newPassword: passwordSchema,
 });
+
+export const phoneSchema = z
+  .string()
+  .regex(/^\+[1-9]\d{6,14}$/, "Phone must be E.164 (+followed by digits, 7–15 total)");
+
+export const updatePhoneSchema = z.object({
+  phone: z.union([phoneSchema, z.literal("")]),  // empty string = clear
+});

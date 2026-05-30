@@ -296,6 +296,12 @@
       "submitting": "Odosiela sa…",
       "successPending": "Overovací email odoslaný. Kliknutím na odkaz potvrďte."
     },
+    "phone": {
+      "title": "Telefón",
+      "placeholder": "+421 900 000 000",
+      "submit": "Uložiť",
+      "success": "Telefón aktualizovaný"
+    },
     "password": {
       "title": "Zmeniť heslo",
       "currentLabel": "Aktuálne heslo",

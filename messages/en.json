@@ -296,6 +296,12 @@
       "submitting": "Sending…",
       "successPending": "Verification email sent. Click the link to confirm."
     },
+    "phone": {
+      "title": "Phone",
+      "placeholder": "+421 900 000 000",
+      "submit": "Save",
+      "success": "Phone updated"
+    },
     "password": {
       "title": "Change password",
       "currentLabel": "Current password",

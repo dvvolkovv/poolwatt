@@ -8,6 +8,7 @@ import { hashPassword, verifyPassword } from "@/lib/password";
 import {
   changePasswordSchema,
   addEmailSchema,
+  updatePhoneSchema,
 } from "@/lib/validation";
 
 export type FieldError = { fieldErrors?: Record<string, string>; formError?: string; ok?: boolean };
@@ -134,6 +135,29 @@ export async function updatePreferencesAction(
   if (Object.keys(data).length === 0) return { formError: "Нечего сохранять" };
 
   await prisma.user.update({ where: { id: session.user.id }, data });
+  revalidatePath("/[locale]/me/settings", "page");
+  return { ok: true };
+}
+
+// ─── Phone ────────────────────────────────────────────────────────────────
+
+export async function updatePhoneAction(
+  _prev: FieldError,
+  formData: FormData,
+): Promise<FieldError> {
+  const session = await auth();
+  if (!session?.user) return { formError: "Not authenticated" };
+
+  const raw = { phone: String(formData.get("phone") ?? "").trim() };
+  const parsed = updatePhoneSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { fieldErrors: { phone: parsed.error.issues[0].message } };
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { phone: parsed.data.phone === "" ? null : parsed.data.phone },
+  });
   revalidatePath("/[locale]/me/settings", "page");
   return { ok: true };
 }

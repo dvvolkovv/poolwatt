@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { EmailSection } from "@/components/settings/email-section";
+import { PhoneSection } from "@/components/settings/phone-section";
 import { PasswordSection } from "@/components/settings/password-section";
 import { DangerZone } from "@/components/settings/danger-zone";
 
@@ -23,6 +24,7 @@ export default async function SettingsPage({
       username: true,
       email: true,
       emailVerified: true,
+      phone: true,
       preferredLocale: true,
       preferredCurrency: true,
       preferredTheme: true,
@@ -52,6 +54,16 @@ export default async function SettingsPage({
             submit: t("email.submit"),
             submitting: t("email.submitting"),
             successPending: t("email.successPending"),
+          }}
+        />
+
+        <PhoneSection
+          currentPhone={user.phone}
+          labels={{
+            title: t("phone.title"),
+            placeholder: t("phone.placeholder"),
+            submit: t("phone.submit"),
+            success: t("phone.success"),
           }}
         />
 
