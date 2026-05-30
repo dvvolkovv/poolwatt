@@ -149,6 +149,7 @@ messages/
 - **Phase 1 (current):** Scaffold, mock data, landing page, Telegram bot stub.
   - [x] **Build-request cabinet (V1)** — homeowner files solar/wind requests at `/me/build-requests`; admin triages at `/admin/build-requests`. See `docs/superpowers/specs/2026-05-30-build-request-cabinet-design.md`.
   - [x] **Contractor cabinet (V2a)** — homeowner registers a contractor company at `/me/contractor`; admin triages at `/admin/contractors`. See `docs/superpowers/specs/2026-05-30-contractor-cabinet-v2a-design.md`.
+  - [x] **Public contractor listing (V2b)** — `/contractors` directory + homepage block of newest approved contractors. See `docs/superpowers/specs/2026-05-30-contractor-public-listing-v2b-design.md`.
 - **Phase 2:** Prisma migrations, real producer fleet seeded from partner
   aggregators, Redis-backed snapshots, grid worker (60s/5min/30min cadences),
   Auth.js v5 wired (Google + GitHub + Telegram).
