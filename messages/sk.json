@@ -254,7 +254,8 @@
         "section": {
           "identity": "Identita firmy",
           "work": "Čo robíte",
-          "contact": "Kontakt a profil"
+          "contact": "Kontakt a profil",
+          "ev": "Nabíjacia infraštruktúra pre EV"
         }
       },
       "field": {
@@ -272,7 +273,39 @@
         "websiteUrl": { "label": "URL webu" },
         "logoUrl": { "label": "URL loga" },
         "contactEmail": { "label": "Kontaktný email" },
-        "contactPhone": { "label": "Kontaktný telefón (E.164)" }
+        "contactPhone": { "label": "Kontaktný telefón (E.164)" },
+        "providesEvCharging": { "label": "Táto firma prevádzkuje EV nabíjacie stanice" },
+        "evPowerSource": {
+          "label": "Zdroj elektriny",
+          "GRID": "Sieť (bežná elektrina)",
+          "MIXED": "Zmiešané (sieť + vlastné OZE / certifikovaná zelená)",
+          "RENEWABLE_ONLY": "Iba zelená (100% vlastné solárne / veterné / off-grid)"
+        },
+        "evStationCount": { "label": "Počet prevádzkovaných nabíjacích staníc" },
+        "evConnectorTypes": {
+          "label": "Typy konektorov",
+          "CCS2": "CCS2", "CHAdeMO": "CHAdeMO", "TYPE2": "Type 2",
+          "TYPE1": "Type 1", "TESLA": "Tesla", "GB_T": "GB/T", "SCHUKO": "Schuko"
+        },
+        "evPowerLevels": {
+          "label": "Úrovne výkonu",
+          "AC_SLOW": "AC pomalé (≤7 kW)",
+          "AC_FAST": "AC rýchle (11–22 kW)",
+          "DC_FAST": "DC rýchle (50–150 kW)",
+          "DC_ULTRA": "DC ultra (≥150 kW)"
+        },
+        "evUsageType": {
+          "label": "Typ prístupu",
+          "PUBLIC": "Verejný (každý môže použiť)",
+          "MEMBERSHIP": "Členské (iba registrovaní)",
+          "PRIVATE": "Súkromný (vlastný fleet / zamestnanci)",
+          "PAY_AT_LOCATION": "Platba na mieste (hotovosť / karta)"
+        },
+        "evMaxPowerKw": { "label": "Max. výkon na bod (kW)" },
+        "evDescription": {
+          "label": "Popis vašej EV nabíjacej infraštruktúry",
+          "placeholder": "napr. 12 staníc pozdĺž koridoru Bratislava–Viedeň, napájané 240 kW strešnými PV + záloha zo siete, 24/7 verejné s aktiváciou cez mobilnú aplikáciu"
+        }
       },
       "status": {
         "PENDING": "Čaká na schválenie", "APPROVED": "Schválené", "REJECTED": "Zamietnuté", "SUSPENDED": "Pozastavené"
@@ -444,7 +477,8 @@
         "renewable": "Zdroj",
         "all": "Všetky",
         "apply": "Použiť",
-        "clear": "Vyčistiť"
+        "clear": "Vyčistiť",
+        "evOnly": "Iba EV operátori"
       },
       "detail": {
         "about": "O firme",
@@ -460,7 +494,9 @@
         "legalName": "Právny názov",
         "registrationNumber": "IČO",
         "foundedYear": "Založené",
-        "back": "Späť na dodávateľov"
+        "back": "Späť na dodávateľov",
+        "ev": "Nabíjacia infraštruktúra pre EV",
+        "evBadge": "EV"
       },
       "homepage": {
         "title": "Postavte si vlastnú elektráreň",

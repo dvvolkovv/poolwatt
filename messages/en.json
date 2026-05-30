@@ -254,7 +254,8 @@
         "section": {
           "identity": "Company identity",
           "work": "What you do",
-          "contact": "Contact & profile"
+          "contact": "Contact & profile",
+          "ev": "EV Charging Infrastructure"
         }
       },
       "field": {
@@ -272,7 +273,39 @@
         "websiteUrl": { "label": "Website URL" },
         "logoUrl": { "label": "Logo URL" },
         "contactEmail": { "label": "Contact email" },
-        "contactPhone": { "label": "Contact phone (E.164)" }
+        "contactPhone": { "label": "Contact phone (E.164)" },
+        "providesEvCharging": { "label": "This company operates EV charging stations" },
+        "evPowerSource": {
+          "label": "Power source",
+          "GRID": "Grid (regular utility power)",
+          "MIXED": "Mixed (grid + own renewable / certified green)",
+          "RENEWABLE_ONLY": "Renewable only (100% own solar / wind / off-grid)"
+        },
+        "evStationCount": { "label": "Number of charging stations operated" },
+        "evConnectorTypes": {
+          "label": "Connector types",
+          "CCS2": "CCS2", "CHAdeMO": "CHAdeMO", "TYPE2": "Type 2",
+          "TYPE1": "Type 1", "TESLA": "Tesla", "GB_T": "GB/T", "SCHUKO": "Schuko"
+        },
+        "evPowerLevels": {
+          "label": "Power levels",
+          "AC_SLOW": "AC slow (≤7 kW)",
+          "AC_FAST": "AC fast (11–22 kW)",
+          "DC_FAST": "DC fast (50–150 kW)",
+          "DC_ULTRA": "DC ultra (≥150 kW)"
+        },
+        "evUsageType": {
+          "label": "Access type",
+          "PUBLIC": "Public (anyone can use)",
+          "MEMBERSHIP": "Membership (registered users only)",
+          "PRIVATE": "Private (own fleet / employees only)",
+          "PAY_AT_LOCATION": "Pay at location (cash / card)"
+        },
+        "evMaxPowerKw": { "label": "Max power per point (kW)" },
+        "evDescription": {
+          "label": "Description of your EV charging infrastructure",
+          "placeholder": "e.g. 12 stations along the Bratislava–Vienna corridor, powered by 240 kW rooftop PV + grid backup, 24/7 public with mobile app activation"
+        }
       },
       "status": {
         "PENDING": "Pending review", "APPROVED": "Approved", "REJECTED": "Rejected", "SUSPENDED": "Suspended"
@@ -444,7 +477,8 @@
         "renewable": "Renewable",
         "all": "All",
         "apply": "Apply",
-        "clear": "Clear filters"
+        "clear": "Clear filters",
+        "evOnly": "Only EV charging operators"
       },
       "detail": {
         "about": "About",
@@ -460,7 +494,9 @@
         "legalName": "Legal name",
         "registrationNumber": "Registration #",
         "foundedYear": "Founded",
-        "back": "Back to contractors"
+        "back": "Back to contractors",
+        "ev": "EV Charging Infrastructure",
+        "evBadge": "EV"
       },
       "homepage": {
         "title": "Build your own power station",
