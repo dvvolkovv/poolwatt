@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { createContractor, updateContractor, withdrawContractor } from "./actions";
+import type { ContractorInput } from "@/lib/contractor-schema";
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/resend-contractor", () => ({
@@ -20,17 +21,17 @@ async function ensureUser(username: string) {
   });
 }
 
-const baseInput = {
-  entityType: "LEGAL_ENTITY" as const,
+const baseInput: ContractorInput = {
+  entityType: "LEGAL_ENTITY",
   displayName: "TestCo s.r.o.",
   legalName: "TestCo Renewable Energy s.r.o.",
   registrationNumber: "12345678",
   country: "SK",
   city: "Bratislava",
   foundedYear: 2020,
-  workCategories: ["DESIGN", "INSTALLATION"] as const,
-  renewableTypes: ["SOLAR"] as const,
-  countriesServed: ["SK", "CZ"] as const,
+  workCategories: ["DESIGN", "INSTALLATION"],
+  renewableTypes: ["SOLAR"],
+  countriesServed: ["SK", "CZ"],
   bio: "We design and install solar power stations across Slovakia and Czech Republic. ".repeat(3),
   contactEmail: "info@testco.sk",
   contactPhone: "+421900000001",
