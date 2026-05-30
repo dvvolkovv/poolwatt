@@ -11,6 +11,12 @@ export function LocaleSwitcher() {
 
   function onChange(next: Locale) {
     if (next === current) return;
+    // Persist the explicit choice. next-intl's middleware prefers the
+    // NEXT_LOCALE cookie over Accept-Language, so subsequent visits to "/"
+    // honour the user's pick instead of bouncing back to their system locale.
+    // Without this cookie, a Russian-system user who picks English would land
+    // on /ru the next time they hit poolwatt.com.
+    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
     // Replace the leading /<locale> segment.
     const stripped = pathname.replace(/^\/[a-z]{2}(?:-[A-Z]{2})?/, "");
     router.push(`/${next}${stripped || ""}`);

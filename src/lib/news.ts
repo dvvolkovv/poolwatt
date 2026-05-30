@@ -156,11 +156,16 @@ export function extractImage(item: Record<string, unknown>): string | null {
     if (t.startsWith("image/") || IMG_EXT.test(enc.url)) return enc.url;
   }
 
-  const html = [item.contentEncoded, item.content].find((v) => typeof v === "string") as
-    | string
-    | undefined;
-  if (html) {
-    const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  // Most of our feeds (Electrek, CleanTechnica, Canary, PV Magazine) embed the
+  // article thumbnail as a plain <img> inside <description>, NOT in media:*.
+  // rss-parser maps <description> → item.content (HTML) and exposes our custom
+  // <content:encoded> → contentEncoded. We try the richer one first, then fall
+  // back; filter empty strings (customFields default to "" even when missing,
+  // which would otherwise short-circuit the find()).
+  const candidates = [item.contentEncoded, item.content, item.description];
+  for (const v of candidates) {
+    if (typeof v !== "string" || v.length === 0) continue;
+    const m = v.match(/<img[^>]+src=["']([^"']+)["']/i);
     if (m && isHttpUrl(m[1])) return m[1];
   }
   return null;
