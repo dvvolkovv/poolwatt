@@ -151,6 +151,7 @@ messages/
   - [x] **Contractor cabinet (V2a)** — homeowner registers a contractor company at `/me/contractor`; admin triages at `/admin/contractors`. See `docs/superpowers/specs/2026-05-30-contractor-cabinet-v2a-design.md`.
   - [x] **Public contractor listing (V2b)** — `/contractors` directory + homepage block of newest approved contractors. See `docs/superpowers/specs/2026-05-30-contractor-public-listing-v2b-design.md`.
   - [x] **Contractor EV charging extension** — optional EV charging questionnaire on the contractor profile; ⚡ badge + `?ev=true` filter on `/contractors`. See `docs/superpowers/specs/2026-05-30-contractor-ev-charging-design.md`.
+  - [x] **BuildRequest ↔ Contractor matching (V2d)** — contractors express interest in open requests at `/me/contractor/[id]/requests`; homeowners pick one from their BR detail page, triggering full mutual contact reveal. See `docs/superpowers/specs/2026-05-30-build-request-matching-v2d-design.md`.
 - **Phase 2:** Prisma migrations, real producer fleet seeded from partner
   aggregators, Redis-backed snapshots, grid worker (60s/5min/30min cadences),
   Auth.js v5 wired (Google + GitHub + Telegram).
