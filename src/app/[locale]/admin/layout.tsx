@@ -17,7 +17,7 @@ export default async function AdminLayout({
   if (!session?.user) redirect(`/${locale}/login?callbackUrl=/${locale}/admin/build-requests`);
   if (session.user.role !== "ADMIN") notFound();
 
-  const t = await getTranslations("admin.buildRequest");
+  const tNav = await getTranslations("admin");
 
   return (
     <main className="bg-bg min-h-[calc(100vh-4rem)]">
@@ -34,7 +34,14 @@ export default async function AdminLayout({
                 prefetch={false}
                 className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
               >
-                🔧 {t("title")}
+                🔧 {tNav("buildRequest.title")}
+              </Link>
+              <Link
+                href={`/${locale}/admin/contractors`}
+                prefetch={false}
+                className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
+              >
+                🏢 {tNav("contractor.title")}
               </Link>
             </nav>
           </aside>
