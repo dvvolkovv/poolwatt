@@ -139,14 +139,14 @@ describe("createContractor — EV charging", () => {
     const u = await ensureUser("test_ctr_ev_alice");
     mockedAuth.mockResolvedValueOnce({ user: { id: u.id, username: u.username, role: "USER" } } as never);
 
-    const input = {
+    const input: ContractorInput = {
       ...baseInput,
       providesEvCharging: true,
-      evPowerSource: "MIXED" as const,
+      evPowerSource: "MIXED",
       evStationCount: 7,
-      evConnectorTypes: ["CCS2", "TYPE2"] as const,
-      evPowerLevels: ["DC_FAST", "AC_FAST"] as const,
-      evUsageType: "PUBLIC" as const,
+      evConnectorTypes: ["CCS2", "TYPE2"],
+      evPowerLevels: ["DC_FAST", "AC_FAST"],
+      evUsageType: "PUBLIC",
       evMaxPowerKw: 150,
       evDescription: "Seven public DC fast chargers along the Bratislava-Žilina highway, powered by rooftop solar.",
     };
