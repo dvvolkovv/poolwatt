@@ -234,10 +234,13 @@
       },
       "action": {
         "submit": "Submit", "save": "Save", "cancel": "Cancel request",
-        "edit": "Edit", "back": "Back to list", "newRequest": "New request"
+        "edit": "Edit", "back": "Back to list", "newRequest": "New request",
+        "goToSettings": "Go to settings →"
       },
       "error": {
         "phoneRequired": "Add your phone number in settings before filing a request.",
+        "nameRequired": "Add your name in settings before filing a request.",
+        "contactRequired": "Add your name and phone number in settings before filing a request.",
         "notEditable": "This request is being processed and can no longer be edited."
       }
     }
@@ -295,6 +298,12 @@
       "submit": "Send link",
       "submitting": "Sending…",
       "successPending": "Verification email sent. Click the link to confirm."
+    },
+    "name": {
+      "title": "Name",
+      "placeholder": "Your name",
+      "submit": "Save",
+      "success": "Name updated"
     },
     "phone": {
       "title": "Phone",

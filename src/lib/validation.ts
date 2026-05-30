@@ -63,3 +63,12 @@ export const phoneSchema = z
 export const updatePhoneSchema = z.object({
   phone: z.union([phoneSchema, z.literal("")]),  // empty string = clear
 });
+
+export const nameSchema = z
+  .string()
+  .min(1, "Введите имя")
+  .max(80, "Максимум 80 символов");
+
+export const updateNameSchema = z.object({
+  name: z.union([nameSchema, z.literal("")]),  // empty string = clear
+});

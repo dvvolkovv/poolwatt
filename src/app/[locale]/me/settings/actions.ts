@@ -9,6 +9,7 @@ import {
   changePasswordSchema,
   addEmailSchema,
   updatePhoneSchema,
+  updateNameSchema,
 } from "@/lib/validation";
 
 export type FieldError = { fieldErrors?: Record<string, string>; formError?: string; ok?: boolean };
@@ -157,6 +158,29 @@ export async function updatePhoneAction(
   await prisma.user.update({
     where: { id: session.user.id },
     data: { phone: parsed.data.phone === "" ? null : parsed.data.phone },
+  });
+  revalidatePath("/[locale]/me/settings", "page");
+  return { ok: true };
+}
+
+// ─── Name ─────────────────────────────────────────────────────────────────
+
+export async function updateNameAction(
+  _prev: FieldError,
+  formData: FormData,
+): Promise<FieldError> {
+  const session = await auth();
+  if (!session?.user) return { formError: "Не авторизован" };
+
+  const raw = { name: String(formData.get("name") ?? "").trim() };
+  const parsed = updateNameSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { fieldErrors: { name: parsed.error.issues[0].message } };
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { name: parsed.data.name === "" ? null : parsed.data.name },
   });
   revalidatePath("/[locale]/me/settings", "page");
   return { ok: true };

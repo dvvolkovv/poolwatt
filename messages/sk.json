@@ -234,10 +234,13 @@
       },
       "action": {
         "submit": "Odoslať", "save": "Uložiť", "cancel": "Zrušiť žiadosť",
-        "edit": "Upraviť", "back": "Späť na zoznam", "newRequest": "Nová žiadosť"
+        "edit": "Upraviť", "back": "Späť na zoznam", "newRequest": "Nová žiadosť",
+        "goToSettings": "Prejsť do nastavení →"
       },
       "error": {
         "phoneRequired": "Pred odoslaním pridajte telefónne číslo v nastaveniach.",
+        "nameRequired": "Pred odoslaním pridajte meno v nastaveniach.",
+        "contactRequired": "Pred odoslaním pridajte meno a telefón v nastaveniach.",
         "notEditable": "Žiadosť sa spracováva a už nie je možné ju upraviť."
       }
     }
@@ -295,6 +298,12 @@
       "submit": "Odoslať odkaz",
       "submitting": "Odosiela sa…",
       "successPending": "Overovací email odoslaný. Kliknutím na odkaz potvrďte."
+    },
+    "name": {
+      "title": "Meno",
+      "placeholder": "Vaše meno",
+      "submit": "Uložiť",
+      "success": "Meno aktualizované"
     },
     "phone": {
       "title": "Telefón",

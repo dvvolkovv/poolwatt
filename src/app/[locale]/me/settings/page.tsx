@@ -2,6 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { NameSection } from "@/components/settings/name-section";
 import { EmailSection } from "@/components/settings/email-section";
 import { PhoneSection } from "@/components/settings/phone-section";
 import { PasswordSection } from "@/components/settings/password-section";
@@ -22,6 +23,7 @@ export default async function SettingsPage({
     where: { id: session.user.id },
     select: {
       username: true,
+      name: true,
       email: true,
       emailVerified: true,
       phone: true,
@@ -42,6 +44,16 @@ export default async function SettingsPage({
       <p className="text-sm text-muted mb-8">@{user.username}</p>
 
       <div className="space-y-2">
+        <NameSection
+          currentName={user.name}
+          labels={{
+            title: t("name.title"),
+            placeholder: t("name.placeholder"),
+            submit: t("name.submit"),
+            success: t("name.success"),
+          }}
+        />
+
         <EmailSection
           currentEmail={user.email}
           emailVerified={user.emailVerified != null}
