@@ -21,6 +21,7 @@ model User {
   email             String?   @unique
   name              String?
   image             String?
+  phone             String?                    // E.164, optional
   role              Role      @default(USER)
   preferredLocale   String    @default("en")
   preferredCurrency String    @default("USD")
@@ -41,6 +42,8 @@ model User {
   adminAddedProducers     Producer[]              @relation("AdminProducerAdditions")
   auditLogs               AdminAuditLog[]         @relation("AdminAuditActor")
   buyContracts            Contract[]              @relation("ContractBuyer")
+  buildRequests           BuildRequest[]          @relation("BuildRequestOwner")
+  reviewedBuildRequests   BuildRequest[]          @relation("BuildRequestReviewer")
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -364,6 +367,50 @@ enum AdminAction {
   SET_USER_ROLE
 }
 
+enum BuildRequestSource {
+  SOLAR
+  WIND
+  HYBRID
+}
+
+enum BuildRequestSiteType {
+  PRIVATE_HOUSE
+  APARTMENT_ROOF
+  LAND_PLOT
+  COMMERCIAL
+}
+
+enum BuildRequestRoofOrientation {
+  S
+  SE
+  SW
+  E
+  W
+  UNKNOWN
+}
+
+enum BuildRequestBudget {
+  UNDER_5K
+  FROM_5K_TO_15K
+  FROM_15K_TO_30K
+  FROM_30K_TO_60K
+  OVER_60K
+  AWAITING_QUOTE
+}
+
+enum BuildRequestTimeline {
+  URGENT_1_3M
+  WITHIN_YEAR
+  EXPLORING
+}
+
+enum BuildRequestStatus {
+  OPEN
+  MATCHED
+  FULFILLED
+  CANCELLED
+}
+
 model AdminAuditLog {
   id         String      @id @default(cuid())
   actorId    String
@@ -376,4 +423,44 @@ model AdminAuditLog {
 
   @@index([actorId, createdAt])
   @@index([action, createdAt])
+}
+
+model BuildRequest {
+  id                String                       @id @default(cuid())
+  userId            String
+  user              User                         @relation("BuildRequestOwner", fields: [userId], references: [id], onDelete: Cascade)
+
+  source            BuildRequestSource
+  peakKw            Decimal                      @db.Decimal(8, 2)
+  wantPowerbank     Boolean                      @default(false)
+  powerbankKwh      Decimal?                     @db.Decimal(8, 2)
+  wantEvCharger     Boolean                      @default(false)
+  evChargerPorts    Int?
+  evPublicForSale   Boolean                      @default(false)
+
+  country           String
+  city              String
+  addressLine       String
+  lat               Float?
+  lng               Float?
+  siteType          BuildRequestSiteType
+  availableAreaM2   Int?
+  roofOrientation   BuildRequestRoofOrientation?
+
+  budget            BuildRequestBudget           @default(AWAITING_QUOTE)
+  timeline          BuildRequestTimeline         @default(EXPLORING)
+  notes             String?                      @db.Text
+
+  status            BuildRequestStatus           @default(OPEN)
+  adminNote         String?                      @db.Text
+  statusChangedAt   DateTime?
+  statusChangedById String?
+  statusChangedBy   User?                        @relation("BuildRequestReviewer", fields: [statusChangedById], references: [id])
+
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([country, status])
 }
