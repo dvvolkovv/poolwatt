@@ -23,7 +23,7 @@ export default async function NewBuildRequestPage({
       select: { name: true, phone: true },
     }),
     getTranslations("cabinet.buildRequest"),
-    getBuildRequestFormLabels(),
+    getBuildRequestFormLabels(locale),
   ]);
 
   return (

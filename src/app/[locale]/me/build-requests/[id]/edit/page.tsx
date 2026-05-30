@@ -30,7 +30,7 @@ export default async function EditBuildRequestPage({
       select: { name: true, phone: true },
     }),
     getTranslations("cabinet.buildRequest"),
-    getBuildRequestFormLabels(),
+    getBuildRequestFormLabels(locale),
   ]);
 
   return (

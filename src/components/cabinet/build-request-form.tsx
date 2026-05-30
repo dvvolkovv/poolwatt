@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { BuildRequestInput } from "@/lib/build-request-schema";
 import type { BuildRequestFormLabels } from "@/lib/build-request-form-labels";
 import { createBuildRequest, updateBuildRequest } from "@/app/[locale]/me/build-requests/actions";
@@ -74,9 +75,21 @@ export function BuildRequestForm({ mode, locale, initial, hasPhone, hasName, lab
   return (
     <form action={onSubmit} className="space-y-8 max-w-2xl">
       {!canSubmit && (
-        <p className="bg-yellow-50 text-yellow-900 p-3 rounded text-sm">
-          {labels.error.phoneRequired}
-        </p>
+        <div className="bg-yellow-50 text-yellow-900 p-3 rounded text-sm">
+          <p>
+            {!hasName && !hasPhone
+              ? labels.error.contactRequired
+              : !hasName
+              ? labels.error.nameRequired
+              : labels.error.phoneRequired}
+          </p>
+          <Link
+            href={labels.settingsHref}
+            className="inline-block mt-2 underline font-medium"
+          >
+            {labels.settingsLinkText}
+          </Link>
+        </div>
       )}
 
       <fieldset className="space-y-4">

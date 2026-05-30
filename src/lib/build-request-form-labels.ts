@@ -4,10 +4,12 @@ export type BuildRequestFormLabels = {
   section: { what: string; where: string; money: string; contact: string };
   field: Record<string, Record<string, string>>;
   action: { submit: string; save: string };
-  error: { phoneRequired: string };
+  error: { phoneRequired: string; nameRequired: string; contactRequired: string };
+  settingsHref: string;  // pre-built href so client doesn't need to know locale
+  settingsLinkText: string;
 };
 
-export async function getBuildRequestFormLabels(): Promise<BuildRequestFormLabels> {
+export async function getBuildRequestFormLabels(locale: string): Promise<BuildRequestFormLabels> {
   const t = await getTranslations("cabinet.buildRequest");
   return {
     section: {
@@ -35,6 +37,12 @@ export async function getBuildRequestFormLabels(): Promise<BuildRequestFormLabel
       notes: { label: t("field.notes.label") },
     },
     action: { submit: t("action.submit"), save: t("action.save") },
-    error: { phoneRequired: t("error.phoneRequired") },
+    error: {
+      phoneRequired: t("error.phoneRequired"),
+      nameRequired: t("error.nameRequired"),
+      contactRequired: t("error.contactRequired"),
+    },
+    settingsHref: `/${locale}/me/settings`,
+    settingsLinkText: t("action.goToSettings"),
   };
 }
