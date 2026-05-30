@@ -22,7 +22,15 @@ export default async function AdminBuildRequestDetail({
 
   const r = await prisma.buildRequest.findUnique({
     where: { id },
-    include: { user: { select: { username: true, name: true, email: true, phone: true } } },
+    include: {
+      user: { select: { username: true, name: true, email: true, phone: true } },
+      claims: {
+        orderBy: { createdAt: "asc" },
+        include: {
+          contractor: { select: { id: true, slug: true, displayName: true, country: true } },
+        },
+      },
+    },
   });
   if (!r) notFound();
 
@@ -70,6 +78,34 @@ export default async function AdminBuildRequestDetail({
           submit: t("action.submit"),
         }}
       />
+
+      {r.claims.length > 0 && (
+        <section className="border border-hairline rounded p-4">
+          <h2 className="text-sm uppercase tracking-wide text-muted mb-2">{t("claims.title")}</h2>
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-muted border-b border-hairline">
+                <th className="py-1 text-left">Created</th>
+                <th className="text-left">Contractor</th>
+                <th className="text-left">Status</th>
+                <th className="text-left">Responded</th>
+                <th className="text-left">Message</th>
+              </tr>
+            </thead>
+            <tbody>
+              {r.claims.map((c) => (
+                <tr key={c.id} className="border-b border-hairline">
+                  <td className="py-1">{c.createdAt.toISOString().slice(0, 16).replace("T", " ")}</td>
+                  <td>{c.contractor.displayName} ({c.contractor.country})</td>
+                  <td>{c.status}</td>
+                  <td>{c.respondedAt ? c.respondedAt.toISOString().slice(0, 16).replace("T", " ") : "—"}</td>
+                  <td className="whitespace-pre-wrap max-w-md">{c.message ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
     </div>
   );
 }
