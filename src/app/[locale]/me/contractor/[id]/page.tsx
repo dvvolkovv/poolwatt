@@ -51,6 +51,14 @@ export default async function ContractorDetailPage({
             />
           </>
         )}
+        {c.status === "APPROVED" && (
+          <Link
+            href={`/${locale}/me/contractor/${id}/requests`}
+            className="text-sm font-semibold text-accent hover:underline"
+          >
+            {t("sidebar.requests")} →
+          </Link>
+        )}
       </div>
 
       <dl className="grid grid-cols-[180px_1fr] gap-y-2 text-sm">
