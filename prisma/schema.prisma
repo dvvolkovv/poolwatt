@@ -462,6 +462,8 @@ model BuildRequest {
   createdAt         DateTime                     @default(now())
   updatedAt         DateTime                     @updatedAt
 
+  claims            BuildRequestClaim[]
+
   @@index([userId, createdAt])
   @@index([status, createdAt])
   @@index([country, status])
@@ -536,6 +538,13 @@ enum EvUsageType {
   PAY_AT_LOCATION
 }
 
+enum BuildRequestClaimStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
 model Contractor {
   id                 String                       @id @default(cuid())
   slug               String                       @unique
@@ -575,6 +584,7 @@ model Contractor {
   evDescription        String?              @db.Text
 
   members            ContractorMember[]
+  claims             BuildRequestClaim[]
   createdAt          DateTime                     @default(now())
   updatedAt          DateTime                     @updatedAt
 
@@ -592,4 +602,22 @@ model ContractorMember {
 
   @@id([contractorId, userId])
   @@index([userId])
+}
+
+model BuildRequestClaim {
+  id              String                    @id @default(cuid())
+  buildRequestId  String
+  buildRequest    BuildRequest              @relation(fields: [buildRequestId], references: [id], onDelete: Cascade)
+  contractorId    String
+  contractor      Contractor                @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+
+  status          BuildRequestClaimStatus   @default(PENDING)
+  message         String?                   @db.Text
+
+  createdAt       DateTime                  @default(now())
+  respondedAt     DateTime?
+
+  @@unique([buildRequestId, contractorId])
+  @@index([buildRequestId, status])
+  @@index([contractorId, status])
 }
