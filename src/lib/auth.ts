@@ -43,6 +43,11 @@ declare module "@auth/core/jwt" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // We sit behind nginx in production; Auth.js v5 rejects the forwarded host
+  // unless told to trust the reverse-proxy chain. Equivalent to setting
+  // AUTH_TRUST_HOST=true but kept in code so a missing env var doesn't break
+  // the whole sign-in flow silently.
+  trustHost: true,
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },  // 30-day rolling
   pages: {
     signIn: "/login",
