@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
       environment: "node",
       setupFiles: ["./src/test-setup.ts"],
       clearMocks: true,
+      exclude: ["**/node_modules/**", "**/dist/**", "**/.next/**", "tests/e2e/**"],
     },
     resolve: {
       alias: {

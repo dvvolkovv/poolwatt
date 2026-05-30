@@ -36,7 +36,12 @@ const formInput = {
 };
 
 beforeEach(async () => {
+  await prisma.buildRequestClaim.deleteMany({
+    where: { contractor: { slug: { startsWith: "test_br_accept_slug_" } } },
+  });
   await prisma.buildRequest.deleteMany({ where: { user: { username: { startsWith: "test_br_" } } } });
+  await prisma.contractor.deleteMany({ where: { slug: { startsWith: "test_br_accept_slug_" } } });
+  await prisma.user.deleteMany({ where: { username: { startsWith: "test_br_" } } });
 });
 
 describe("createBuildRequest", () => {
