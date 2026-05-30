@@ -166,7 +166,8 @@
     "sidebar": {
       "favorites": "Obľúbené",
       "settings": "Nastavenia",
-      "signOut": "Odhlásiť sa"
+      "signOut": "Odhlásiť sa",
+      "buildRequests": "Žiadosti o výstavbu"
     },
     "favorites": {
       "title": "Obľúbené",
@@ -176,6 +177,84 @@
       "emptyProducersBody": "Otvorte [zoznam výrobcov] a kliknite na hviezdičku, aby ste pridali sem.",
       "emptyChargersTitle": "Zatiaľ tu nič nie je",
       "emptyChargersBody": "Otvorte [navigátor] a kliknite na hviezdičku, aby ste pridali sem."
+    },
+    "buildRequest": {
+      "title": "Žiadosti o výstavbu",
+      "empty": "Zatiaľ nemáte žiadne žiadosti.",
+      "newButton": "+ Nová žiadosť",
+      "new": {
+        "title": "Nová žiadosť",
+        "section": {
+          "what": "Čo postaviť",
+          "where": "Kde postaviť",
+          "money": "Rozpočet a termín",
+          "contact": "Kontakt"
+        }
+      },
+      "field": {
+        "source": { "label": "Zdroj", "SOLAR": "Solárna", "WIND": "Veterná", "HYBRID": "Solárna + veterná" },
+        "peakKw": { "label": "Špičkový výkon (kW)" },
+        "wantPowerbank": { "label": "Pridať powerbank" },
+        "powerbankKwh": { "label": "Kapacita powerbanku (kWh)" },
+        "wantEvCharger": { "label": "Pridať EV nabíjačku" },
+        "evChargerPorts": { "label": "Počet nabíjacích portov" },
+        "evPublicForSale": { "label": "Ponúkať nabíjanie okoloidúcim vodičom" },
+        "country": { "label": "Krajina" },
+        "city": { "label": "Mesto" },
+        "addressLine": { "label": "Adresa" },
+        "siteType": {
+          "label": "Typ objektu",
+          "PRIVATE_HOUSE": "Rodinný dom",
+          "APARTMENT_ROOF": "Strecha bytového domu",
+          "LAND_PLOT": "Pozemok",
+          "COMMERCIAL": "Komerčné"
+        },
+        "availableAreaM2": { "label": "Dostupná plocha (m²)" },
+        "roofOrientation": {
+          "label": "Orientácia strechy",
+          "S": "Juh", "SE": "Juhovýchod", "SW": "Juhozápad",
+          "E": "Východ", "W": "Západ", "UNKNOWN": "Neviem"
+        },
+        "budget": {
+          "label": "Rozpočet",
+          "UNDER_5K": "do €5k", "FROM_5K_TO_15K": "€5–15k",
+          "FROM_15K_TO_30K": "€15–30k", "FROM_30K_TO_60K": "€30–60k",
+          "OVER_60K": "€60k+", "AWAITING_QUOTE": "Čakám na ponuku"
+        },
+        "timeline": {
+          "label": "Termín",
+          "URGENT_1_3M": "Urgentne (1–3 mes.)",
+          "WITHIN_YEAR": "Do roka",
+          "EXPLORING": "Zatiaľ sa rozhliadam"
+        },
+        "notes": { "label": "Poznámka (nepovinné)" }
+      },
+      "status": {
+        "OPEN": "Otvorená", "MATCHED": "Prevzatá", "FULFILLED": "Dokončená", "CANCELLED": "Zrušená"
+      },
+      "action": {
+        "submit": "Odoslať", "save": "Uložiť", "cancel": "Zrušiť žiadosť",
+        "edit": "Upraviť", "back": "Späť na zoznam", "newRequest": "Nová žiadosť"
+      },
+      "error": {
+        "phoneRequired": "Pred odoslaním pridajte telefónne číslo v nastaveniach.",
+        "notEditable": "Žiadosť sa spracováva a už nie je možné ju upraviť."
+      }
+    }
+  },
+  "admin": {
+    "buildRequest": {
+      "title": "Žiadosti o výstavbu",
+      "filter": { "status": "Stav", "country": "Krajina", "all": "Všetko" },
+      "table": {
+        "id": "ID", "createdAt": "Vytvorené", "owner": "Vlastník",
+        "source": "Zdroj", "country": "Krajina", "status": "Stav"
+      },
+      "action": {
+        "setStatus": "Zmeniť stav",
+        "adminNote": "Interná poznámka",
+        "submit": "Použiť"
+      }
     }
   },
   "charger": {

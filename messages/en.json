@@ -166,7 +166,8 @@
     "sidebar": {
       "favorites": "Favorites",
       "settings": "Settings",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "buildRequests": "Build requests"
     },
     "favorites": {
       "title": "Favorites",
@@ -176,6 +177,84 @@
       "emptyProducersBody": "Open the [producer list] and tap the star on a card to save it here.",
       "emptyChargersTitle": "No favorite chargers yet",
       "emptyChargersBody": "Open the [navigator] and tap the star on a charger to save it here."
+    },
+    "buildRequest": {
+      "title": "Build requests",
+      "empty": "You haven't filed any build requests yet.",
+      "newButton": "+ New request",
+      "new": {
+        "title": "New build request",
+        "section": {
+          "what": "What to build",
+          "where": "Where to build",
+          "money": "Budget & timeline",
+          "contact": "Contact"
+        }
+      },
+      "field": {
+        "source": { "label": "Source", "SOLAR": "Solar", "WIND": "Wind", "HYBRID": "Solar + Wind" },
+        "peakKw": { "label": "Peak power (kW)" },
+        "wantPowerbank": { "label": "Include a powerbank" },
+        "powerbankKwh": { "label": "Powerbank capacity (kWh)" },
+        "wantEvCharger": { "label": "Include an EV charger" },
+        "evChargerPorts": { "label": "Number of charging ports" },
+        "evPublicForSale": { "label": "Offer EV charging to passing drivers" },
+        "country": { "label": "Country" },
+        "city": { "label": "City" },
+        "addressLine": { "label": "Address" },
+        "siteType": {
+          "label": "Site type",
+          "PRIVATE_HOUSE": "Private house",
+          "APARTMENT_ROOF": "Apartment building rooftop",
+          "LAND_PLOT": "Land plot",
+          "COMMERCIAL": "Commercial"
+        },
+        "availableAreaM2": { "label": "Available area (m²)" },
+        "roofOrientation": {
+          "label": "Roof orientation",
+          "S": "South", "SE": "South-east", "SW": "South-west",
+          "E": "East", "W": "West", "UNKNOWN": "I don't know"
+        },
+        "budget": {
+          "label": "Budget",
+          "UNDER_5K": "Up to €5k", "FROM_5K_TO_15K": "€5–15k",
+          "FROM_15K_TO_30K": "€15–30k", "FROM_30K_TO_60K": "€30–60k",
+          "OVER_60K": "€60k+", "AWAITING_QUOTE": "Awaiting quote"
+        },
+        "timeline": {
+          "label": "Timeline",
+          "URGENT_1_3M": "Urgent (1–3 months)",
+          "WITHIN_YEAR": "Within a year",
+          "EXPLORING": "Just exploring"
+        },
+        "notes": { "label": "Notes (optional)" }
+      },
+      "status": {
+        "OPEN": "Open", "MATCHED": "Matched", "FULFILLED": "Fulfilled", "CANCELLED": "Cancelled"
+      },
+      "action": {
+        "submit": "Submit", "save": "Save", "cancel": "Cancel request",
+        "edit": "Edit", "back": "Back to list", "newRequest": "New request"
+      },
+      "error": {
+        "phoneRequired": "Add your phone number in settings before filing a request.",
+        "notEditable": "This request is being processed and can no longer be edited."
+      }
+    }
+  },
+  "admin": {
+    "buildRequest": {
+      "title": "Build requests",
+      "filter": { "status": "Status", "country": "Country", "all": "All" },
+      "table": {
+        "id": "ID", "createdAt": "Created", "owner": "Owner",
+        "source": "Source", "country": "Country", "status": "Status"
+      },
+      "action": {
+        "setStatus": "Change status",
+        "adminNote": "Internal note",
+        "submit": "Apply"
+      }
     }
   },
   "charger": {

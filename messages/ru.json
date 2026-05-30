@@ -166,7 +166,8 @@
     "sidebar": {
       "favorites": "Избранное",
       "settings": "Настройки",
-      "signOut": "Выйти"
+      "signOut": "Выйти",
+      "buildRequests": "Заявки на строительство"
     },
     "favorites": {
       "title": "Избранное",
@@ -176,6 +177,84 @@
       "emptyProducersBody": "Откройте [список производителей] и нажмите звёздочку на карточке, чтобы добавить сюда.",
       "emptyChargersTitle": "Здесь пока пусто",
       "emptyChargersBody": "Откройте [навигатор] и нажмите звёздочку на зарядке, чтобы добавить сюда."
+    },
+    "buildRequest": {
+      "title": "Заявки на строительство",
+      "empty": "У вас пока нет заявок.",
+      "newButton": "+ Новая заявка",
+      "new": {
+        "title": "Новая заявка",
+        "section": {
+          "what": "Что строить",
+          "where": "Где строить",
+          "money": "Бюджет и сроки",
+          "contact": "Контакт"
+        }
+      },
+      "field": {
+        "source": { "label": "Источник", "SOLAR": "Солнечная", "WIND": "Ветровая", "HYBRID": "Солнце + ветер" },
+        "peakKw": { "label": "Пиковая мощность (кВт)" },
+        "wantPowerbank": { "label": "Добавить пауэрбанк" },
+        "powerbankKwh": { "label": "Ёмкость пауэрбанка (кВт·ч)" },
+        "wantEvCharger": { "label": "Добавить EV-зарядку" },
+        "evChargerPorts": { "label": "Количество портов" },
+        "evPublicForSale": { "label": "Предлагать зарядку проезжающим водителям" },
+        "country": { "label": "Страна" },
+        "city": { "label": "Город" },
+        "addressLine": { "label": "Адрес" },
+        "siteType": {
+          "label": "Тип объекта",
+          "PRIVATE_HOUSE": "Частный дом",
+          "APARTMENT_ROOF": "Крыша многоквартирного дома",
+          "LAND_PLOT": "Земельный участок",
+          "COMMERCIAL": "Коммерческое"
+        },
+        "availableAreaM2": { "label": "Доступная площадь (м²)" },
+        "roofOrientation": {
+          "label": "Ориентация крыши",
+          "S": "Юг", "SE": "Юго-восток", "SW": "Юго-запад",
+          "E": "Восток", "W": "Запад", "UNKNOWN": "Не знаю"
+        },
+        "budget": {
+          "label": "Бюджет",
+          "UNDER_5K": "до €5k", "FROM_5K_TO_15K": "€5–15k",
+          "FROM_15K_TO_30K": "€15–30k", "FROM_30K_TO_60K": "€30–60k",
+          "OVER_60K": "€60k+", "AWAITING_QUOTE": "Жду оценки"
+        },
+        "timeline": {
+          "label": "Сроки",
+          "URGENT_1_3M": "Срочно (1–3 мес)",
+          "WITHIN_YEAR": "В течение года",
+          "EXPLORING": "Просто изучаю"
+        },
+        "notes": { "label": "Комментарий (необязательно)" }
+      },
+      "status": {
+        "OPEN": "Открыта", "MATCHED": "В работе", "FULFILLED": "Выполнена", "CANCELLED": "Отменена"
+      },
+      "action": {
+        "submit": "Отправить", "save": "Сохранить", "cancel": "Отменить заявку",
+        "edit": "Редактировать", "back": "К списку", "newRequest": "Новая заявка"
+      },
+      "error": {
+        "phoneRequired": "Сначала добавьте телефон в настройках.",
+        "notEditable": "Заявка в работе и больше не редактируется."
+      }
+    }
+  },
+  "admin": {
+    "buildRequest": {
+      "title": "Заявки на строительство",
+      "filter": { "status": "Статус", "country": "Страна", "all": "Все" },
+      "table": {
+        "id": "ID", "createdAt": "Создана", "owner": "Владелец",
+        "source": "Источник", "country": "Страна", "status": "Статус"
+      },
+      "action": {
+        "setStatus": "Изменить статус",
+        "adminNote": "Внутренний комментарий",
+        "submit": "Применить"
+      }
     }
   },
   "charger": {
