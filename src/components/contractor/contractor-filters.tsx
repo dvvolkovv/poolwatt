@@ -9,6 +9,7 @@ type Props = {
   locale: string;
   initialCountry: string;
   initialRenewable: string;
+  initialEv: boolean;
   countryOptions: string[]; // ISO-2 codes that have at least one APPROVED contractor
   labels: {
     country: string;
@@ -16,6 +17,7 @@ type Props = {
     all: string;
     apply: string;
     clear: string;
+    evOnly: string;
     renewableLabels: Record<string, string>;
   };
 };
@@ -24,18 +26,21 @@ export function ContractorFilters({
   locale,
   initialCountry,
   initialRenewable,
+  initialEv,
   countryOptions,
   labels,
 }: Props) {
   const router = useRouter();
   const [country, setCountry] = useState(initialCountry);
   const [renewable, setRenewable] = useState(initialRenewable);
+  const [ev, setEv] = useState<boolean>(initialEv);
 
   function apply(e: React.FormEvent) {
     e.preventDefault();
     const qs = new URLSearchParams();
     if (country) qs.set("country", country);
     if (renewable) qs.set("renewable", renewable);
+    if (ev) qs.set("ev", "true");
     const url = `/${locale}/contractors${qs.toString() ? `?${qs}` : ""}`;
     router.push(url);
   }
@@ -43,10 +48,11 @@ export function ContractorFilters({
   function clear() {
     setCountry("");
     setRenewable("");
+    setEv(false);
     router.push(`/${locale}/contractors`);
   }
 
-  const hasFilters = country || renewable;
+  const hasFilters = country || renewable || ev;
 
   return (
     <form onSubmit={apply} className="flex flex-wrap gap-2 items-center mb-6 text-sm">
@@ -76,6 +82,15 @@ export function ContractorFilters({
             <option key={r} value={r}>{labels.renewableLabels[r] ?? r}</option>
           ))}
         </select>
+      </label>
+
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={ev}
+          onChange={(e) => setEv(e.target.checked)}
+        />
+        ⚡ {labels.evOnly}
       </label>
 
       <button type="submit" className="px-3 py-1 bg-foreground text-bg rounded">{labels.apply}</button>

@@ -18,21 +18,22 @@ export default async function ContractorsListPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ country?: string; renewable?: string; page?: string }>;
+  searchParams: Promise<{ country?: string; renewable?: string; ev?: string; page?: string }>;
 }) {
   const { locale } = await params;
-  const { country: rc, renewable: rr, page: rp } = await searchParams;
+  const { country: rc, renewable: rr, ev: re, page: rp } = await searchParams;
   setRequestLocale(locale);
 
   const country = rc?.match(/^[A-Z]{2}$/) ? rc : undefined;
   const renewable = RENEWABLES.includes(rr as ContractorRenewableType)
     ? (rr as ContractorRenewableType)
     : undefined;
+  const ev = re === "true" ? true : undefined;
   const page = Math.max(1, Number(rp) || 1);
   const pageSize = 24;
 
   const [{ rows, total }, distinctCountries, tListing, tFilter, tField] = await Promise.all([
-    readApprovedContractors({ country, renewable, page, pageSize }),
+    readApprovedContractors({ country, renewable, ev, page, pageSize }),
     prisma.contractor.findMany({
       where: { status: "APPROVED" },
       select: { country: true },
@@ -63,6 +64,7 @@ export default async function ContractorsListPage({
           locale={locale}
           initialCountry={country ?? ""}
           initialRenewable={renewable ?? ""}
+          initialEv={ev === true}
           countryOptions={countryOptions}
           labels={{
             country: tFilter("country"),
@@ -70,6 +72,7 @@ export default async function ContractorsListPage({
             all: tFilter("all"),
             apply: tFilter("apply"),
             clear: tFilter("clear"),
+            evOnly: tFilter("evOnly"),
             renewableLabels,
           }}
         />
@@ -97,6 +100,7 @@ export default async function ContractorsListPage({
                     href={`/${locale}/contractors?${new URLSearchParams({
                       ...(country ? { country } : {}),
                       ...(renewable ? { renewable } : {}),
+                      ...(ev ? { ev: "true" } : {}),
                       page: String(page - 1),
                     })}`}
                     className="px-3 py-1 border border-hairline rounded"
@@ -110,6 +114,7 @@ export default async function ContractorsListPage({
                     href={`/${locale}/contractors?${new URLSearchParams({
                       ...(country ? { country } : {}),
                       ...(renewable ? { renewable } : {}),
+                      ...(ev ? { ev: "true" } : {}),
                       page: String(page + 1),
                     })}`}
                     className="px-3 py-1 border border-hairline rounded"
