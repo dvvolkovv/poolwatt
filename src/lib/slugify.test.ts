@@ -39,4 +39,10 @@ describe("slugify", () => {
     expect(slugify("")).toBe("x");
     expect(slugify("!!!")).toBe("x");
   });
+
+  it("does not end with a dash even when cap lands on a boundary", () => {
+    const s = slugify("a".repeat(59) + "-" + "b".repeat(10));
+    expect(s.endsWith("-")).toBe(false);
+    expect(s.length).toBeLessThanOrEqual(60);
+  });
 });

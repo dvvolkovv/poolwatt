@@ -15,6 +15,10 @@ const TRANSLIT: Record<string, string> = {
   ö:"o",ü:"u",ß:"ss",
 };
 
+/**
+ * Returns a URL-safe slug from any string input.
+ * Returns "x" if the input has no alphanumeric characters.
+ */
 export function slugify(input: string): string {
   const lower = input.toLowerCase();
   const ascii = Array.from(lower).map((ch) => TRANSLIT[ch] ?? ch).join("");
@@ -22,7 +26,8 @@ export function slugify(input: string): string {
     // collapse abbreviations like s.r.o. → sro (letter-dot sequences)
     .replace(/\b([a-z])\.([a-z]\.)*/g, (m) => m.replace(/\./g, ""))
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
+    .replace(/^-+/, "")
+    .slice(0, 60)
+    .replace(/-+$/, "");
   return slug || "x";
 }
