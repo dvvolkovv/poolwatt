@@ -33,7 +33,7 @@ test("homeowner files request, admin marks it MATCHED", async ({ page }) => {
   await page.fill('input[name="username"]', OWNER.username);
   await page.fill('input[name="password"]', OWNER.password);
   await page.click('button[type="submit"]');
-  await page.waitForURL(/\/en\/me\//);
+  await page.waitForURL(/\/en\/me(\/|$)/);
 
   // New request
   await page.goto("/en/me/build-requests/new");
@@ -48,13 +48,13 @@ test("homeowner files request, admin marks it MATCHED", async ({ page }) => {
   const detailUrl = page.url();
   const requestId = detailUrl.split("/").pop()!;
 
-  // Log out, log in as admin
-  await page.goto("/en/api/auth/signout");
-  await page.click('button[type="submit"]');
+  // Log out (clear cookies — Auth.js signout endpoint requires CSRF flow that's brittle in tests)
+  await page.context().clearCookies();
   await page.goto("/en/login");
   await page.fill('input[name="username"]', ADMIN.username);
   await page.fill('input[name="password"]', ADMIN.password);
   await page.click('button[type="submit"]');
+  await page.waitForURL(/\/en\/me(\/|$)/);
 
   // Admin detail + status change
   await page.goto(`/en/admin/build-requests/${requestId}`);
