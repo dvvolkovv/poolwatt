@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { createContractor, updateContractor } from "./actions";
+import { createContractor, updateContractor, withdrawContractor } from "./actions";
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/resend-contractor", () => ({
@@ -129,5 +129,45 @@ describe("updateContractor", () => {
     const r = await updateContractor(created.id!, { ...baseInput, displayName: "Stealing" });
     expect(r.ok).toBe(false);
     expect(r.formError).toMatch(/not found|forbidden/i);
+  });
+});
+
+describe("withdrawContractor", () => {
+  it("deletes a PENDING contractor and its members", async () => {
+    const u = await ensureUser("test_ctr_ivy");
+    mockedAuth.mockResolvedValue({ user: { id: u.id, username: u.username, role: "USER" } } as never);
+    const created = await createContractor(baseInput);
+
+    const r = await withdrawContractor(created.id!);
+    expect(r.ok).toBe(true);
+
+    const reloaded = await prisma.contractor.findUnique({ where: { id: created.id! } });
+    expect(reloaded).toBeNull();
+    const memberRows = await prisma.contractorMember.findMany({
+      where: { contractorId: created.id! },
+    });
+    expect(memberRows).toHaveLength(0);
+  });
+
+  it("refuses to withdraw a non-PENDING contractor", async () => {
+    const u = await ensureUser("test_ctr_jake");
+    mockedAuth.mockResolvedValue({ user: { id: u.id, username: u.username, role: "USER" } } as never);
+    const created = await createContractor(baseInput);
+    await prisma.contractor.update({ where: { id: created.id! }, data: { status: "APPROVED" } });
+
+    const r = await withdrawContractor(created.id!);
+    expect(r.ok).toBe(false);
+  });
+
+  it("refuses to withdraw when caller is not OWNER", async () => {
+    const owner = await ensureUser("test_ctr_kara");
+    mockedAuth.mockResolvedValueOnce({ user: { id: owner.id, username: owner.username, role: "USER" } } as never);
+    const created = await createContractor(baseInput);
+
+    const intruder = await ensureUser("test_ctr_liam");
+    mockedAuth.mockResolvedValueOnce({ user: { id: intruder.id, username: intruder.username, role: "USER" } } as never);
+
+    const r = await withdrawContractor(created.id!);
+    expect(r.ok).toBe(false);
   });
 });

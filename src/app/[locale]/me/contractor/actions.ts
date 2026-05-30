@@ -150,3 +150,34 @@ export async function updateContractor(
   revalidatePath(`/[locale]/me/contractor/${id}`, "page");
   return { ok: true, id };
 }
+
+export async function withdrawContractor(id: string): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user) return { ok: false, formError: "Not authenticated" };
+
+  const existing = await prisma.contractor.findUnique({
+    where: { id },
+    select: { id: true, status: true, displayName: true, country: true, entityType: true },
+  });
+  if (!existing) return { ok: false, formError: "Contractor not found" };
+
+  const isOwner = await requireOwnerMembership(id, session.user.id);
+  if (!isOwner) return { ok: false, formError: "Contractor not found" };
+
+  if (existing.status !== "PENDING") {
+    return { ok: false, formError: "Cannot withdraw a contractor that is no longer PENDING" };
+  }
+
+  // Delete row; ContractorMember rows cascade.
+  await prisma.contractor.delete({ where: { id } });
+
+  try {
+    const { sendContractorWithdrawnToAdmin } = await import("@/lib/resend-contractor");
+    await sendContractorWithdrawnToAdmin(existing);
+  } catch (err) {
+    console.error("[contractor] withdraw notification failed:", err);
+  }
+
+  revalidatePath("/[locale]/me/contractor", "page");
+  return { ok: true };
+}
