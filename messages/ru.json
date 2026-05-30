@@ -167,7 +167,8 @@
       "favorites": "Избранное",
       "settings": "Настройки",
       "signOut": "Выйти",
-      "buildRequests": "Заявки на строительство"
+      "buildRequests": "Заявки на строительство",
+      "contractor": "Моя компания"
     },
     "favorites": {
       "title": "Избранное",
@@ -243,6 +244,51 @@
         "contactRequired": "Сначала добавьте имя и телефон в настройках.",
         "notEditable": "Заявка в работе и больше не редактируется."
       }
+    },
+    "contractor": {
+      "title": "Моя компания",
+      "empty": "Вы ещё не зарегистрировали компанию.",
+      "newButton": "+ Зарегистрировать компанию",
+      "new": {
+        "title": "Регистрация компании",
+        "section": {
+          "identity": "Реквизиты",
+          "work": "Чем занимаетесь",
+          "contact": "Контакты и профиль"
+        }
+      },
+      "field": {
+        "entityType": { "label": "Тип", "LEGAL_ENTITY": "Юр.лицо (ООО / s.r.o. / a.s.)", "SOLE_TRADER": "ИП / OSVČ / ФОП", "INDIVIDUAL": "Физлицо-специалист" },
+        "displayName": { "label": "Название компании" },
+        "legalName": { "label": "Полное юридическое название" },
+        "registrationNumber": { "label": "Регистрационный номер (IČO / EDRPOU / др.)" },
+        "country": { "label": "Страна регистрации" },
+        "city": { "label": "Город" },
+        "foundedYear": { "label": "Год основания" },
+        "workCategories": { "label": "Чем занимаетесь", "DESIGN": "Проектирование", "MANUFACTURE": "Производство оборудования", "SUPPLY": "Поставка оборудования", "INSTALLATION": "Монтаж / стройработы", "COMMISSIONING": "Пусконаладка", "MAINTENANCE": "Сервис / O&M" },
+        "renewableTypes": { "label": "Типы источников", "SOLAR": "Солнце", "WIND": "Ветер", "HYDRO": "Гидро", "BIOMASS": "Биомасса / биогаз", "GEOTHERMAL": "Геотермал", "HYBRID": "Гибрид" },
+        "countriesServed": { "label": "Страны работы (ISO-2 коды, через запятую)" },
+        "bio": { "label": "О компании (100–2000 знаков)" },
+        "websiteUrl": { "label": "URL сайта" },
+        "logoUrl": { "label": "URL логотипа" },
+        "contactEmail": { "label": "Email для связи" },
+        "contactPhone": { "label": "Телефон (E.164)" }
+      },
+      "status": {
+        "PENDING": "На модерации", "APPROVED": "Одобрена", "REJECTED": "Отклонена", "SUSPENDED": "Заморожена"
+      },
+      "action": {
+        "submit": "Отправить заявку",
+        "save": "Сохранить",
+        "edit": "Редактировать",
+        "withdraw": "Отозвать заявку",
+        "back": "К списку",
+        "newContractor": "Зарегистрировать новую",
+        "confirmWithdraw": "Уверены? Заявка удаляется."
+      },
+      "error": {
+        "notEditable": "Заявка обрабатывается и больше не редактируется."
+      }
     }
   },
   "admin": {
@@ -258,6 +304,12 @@
         "adminNote": "Внутренний комментарий",
         "submit": "Применить"
       }
+    },
+    "contractor": {
+      "title": "Подрядчики",
+      "filter": { "status": "Статус", "country": "Страна", "entityType": "Тип", "all": "Все" },
+      "table": { "createdAt": "Создана", "owner": "Владелец", "displayName": "Название", "entityType": "Тип", "country": "Страна", "status": "Статус" },
+      "action": { "setStatus": "Изменить статус", "adminNote": "Внутренний комментарий (обязательно)", "submit": "Применить", "approve": "Одобрить", "reject": "Отклонить" }
     }
   },
   "charger": {

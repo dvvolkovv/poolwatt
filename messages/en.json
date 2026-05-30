@@ -167,7 +167,8 @@
       "favorites": "Favorites",
       "settings": "Settings",
       "signOut": "Sign out",
-      "buildRequests": "Build requests"
+      "buildRequests": "Build requests",
+      "contractor": "My company"
     },
     "favorites": {
       "title": "Favorites",
@@ -243,6 +244,51 @@
         "contactRequired": "Add your name and phone number in settings before filing a request.",
         "notEditable": "This request is being processed and can no longer be edited."
       }
+    },
+    "contractor": {
+      "title": "My company",
+      "empty": "You haven't registered a company yet.",
+      "newButton": "+ Register company",
+      "new": {
+        "title": "Register your company",
+        "section": {
+          "identity": "Company identity",
+          "work": "What you do",
+          "contact": "Contact & profile"
+        }
+      },
+      "field": {
+        "entityType": { "label": "Entity type", "LEGAL_ENTITY": "Legal entity (Ltd / s.r.o. / a.s.)", "SOLE_TRADER": "Sole trader (ИП / OSVČ / ФОП)", "INDIVIDUAL": "Individual specialist" },
+        "displayName": { "label": "Display name" },
+        "legalName": { "label": "Full legal name" },
+        "registrationNumber": { "label": "Registration number (IČO / EDRPOU / etc.)" },
+        "country": { "label": "Headquarters country" },
+        "city": { "label": "City" },
+        "foundedYear": { "label": "Year founded" },
+        "workCategories": { "label": "What you do", "DESIGN": "Design / engineering", "MANUFACTURE": "Equipment manufacturing", "SUPPLY": "Equipment supply", "INSTALLATION": "Installation / construction", "COMMISSIONING": "Commissioning", "MAINTENANCE": "Maintenance / O&M" },
+        "renewableTypes": { "label": "Renewable types", "SOLAR": "Solar", "WIND": "Wind", "HYDRO": "Hydro", "BIOMASS": "Biomass / biogas", "GEOTHERMAL": "Geothermal", "HYBRID": "Hybrid" },
+        "countriesServed": { "label": "Countries served (ISO-2 codes, comma-separated)" },
+        "bio": { "label": "About your company (100–2000 chars)" },
+        "websiteUrl": { "label": "Website URL" },
+        "logoUrl": { "label": "Logo URL" },
+        "contactEmail": { "label": "Contact email" },
+        "contactPhone": { "label": "Contact phone (E.164)" }
+      },
+      "status": {
+        "PENDING": "Pending review", "APPROVED": "Approved", "REJECTED": "Rejected", "SUSPENDED": "Suspended"
+      },
+      "action": {
+        "submit": "Submit registration",
+        "save": "Save changes",
+        "edit": "Edit",
+        "withdraw": "Withdraw registration",
+        "back": "Back to list",
+        "newContractor": "Register new company",
+        "confirmWithdraw": "Are you sure? This deletes the registration."
+      },
+      "error": {
+        "notEditable": "This registration is being processed and can no longer be edited."
+      }
     }
   },
   "admin": {
@@ -258,6 +304,12 @@
         "adminNote": "Internal note",
         "submit": "Apply"
       }
+    },
+    "contractor": {
+      "title": "Contractors",
+      "filter": { "status": "Status", "country": "Country", "entityType": "Entity type", "all": "All" },
+      "table": { "createdAt": "Created", "owner": "Owner", "displayName": "Name", "entityType": "Type", "country": "Country", "status": "Status" },
+      "action": { "setStatus": "Change status", "adminNote": "Internal note (required)", "submit": "Apply", "approve": "Approve", "reject": "Reject" }
     }
   },
   "charger": {

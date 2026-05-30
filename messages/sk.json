@@ -167,7 +167,8 @@
       "favorites": "Obľúbené",
       "settings": "Nastavenia",
       "signOut": "Odhlásiť sa",
-      "buildRequests": "Žiadosti o výstavbu"
+      "buildRequests": "Žiadosti o výstavbu",
+      "contractor": "Moja firma"
     },
     "favorites": {
       "title": "Obľúbené",
@@ -243,6 +244,51 @@
         "contactRequired": "Pred odoslaním pridajte meno a telefón v nastaveniach.",
         "notEditable": "Žiadosť sa spracováva a už nie je možné ju upraviť."
       }
+    },
+    "contractor": {
+      "title": "Moja firma",
+      "empty": "Zatiaľ ste si nezaregistrovali firmu.",
+      "newButton": "+ Zaregistrovať firmu",
+      "new": {
+        "title": "Registrácia firmy",
+        "section": {
+          "identity": "Identita firmy",
+          "work": "Čo robíte",
+          "contact": "Kontakt a profil"
+        }
+      },
+      "field": {
+        "entityType": { "label": "Typ subjektu", "LEGAL_ENTITY": "Právnická osoba (s.r.o. / a.s.)", "SOLE_TRADER": "Živnostník (OSVČ)", "INDIVIDUAL": "Individuálny špecialista" },
+        "displayName": { "label": "Názov firmy" },
+        "legalName": { "label": "Plný právny názov" },
+        "registrationNumber": { "label": "IČO / registračné číslo" },
+        "country": { "label": "Krajina sídla" },
+        "city": { "label": "Mesto" },
+        "foundedYear": { "label": "Rok založenia" },
+        "workCategories": { "label": "Čo robíte", "DESIGN": "Projektovanie / inžiniering", "MANUFACTURE": "Výroba zariadení", "SUPPLY": "Dodávka zariadení", "INSTALLATION": "Inštalácia / stavebné práce", "COMMISSIONING": "Uvedenie do prevádzky", "MAINTENANCE": "Servis / O&M" },
+        "renewableTypes": { "label": "Typy zdrojov", "SOLAR": "Solárne", "WIND": "Veterné", "HYDRO": "Vodné", "BIOMASS": "Biomasa / bioplyn", "GEOTHERMAL": "Geotermálne", "HYBRID": "Hybridné" },
+        "countriesServed": { "label": "Krajiny pôsobenia (ISO-2 kódy)" },
+        "bio": { "label": "O firme (100–2000 znakov)" },
+        "websiteUrl": { "label": "URL webu" },
+        "logoUrl": { "label": "URL loga" },
+        "contactEmail": { "label": "Kontaktný email" },
+        "contactPhone": { "label": "Kontaktný telefón (E.164)" }
+      },
+      "status": {
+        "PENDING": "Čaká na schválenie", "APPROVED": "Schválené", "REJECTED": "Zamietnuté", "SUSPENDED": "Pozastavené"
+      },
+      "action": {
+        "submit": "Odoslať žiadosť",
+        "save": "Uložiť",
+        "edit": "Upraviť",
+        "withdraw": "Stiahnuť žiadosť",
+        "back": "Späť na zoznam",
+        "newContractor": "Zaregistrovať novú",
+        "confirmWithdraw": "Naozaj? Žiadosť sa zmaže."
+      },
+      "error": {
+        "notEditable": "Žiadosť sa spracováva a už nie je možné ju upraviť."
+      }
     }
   },
   "admin": {
@@ -258,6 +304,12 @@
         "adminNote": "Interná poznámka",
         "submit": "Použiť"
       }
+    },
+    "contractor": {
+      "title": "Dodávatelia",
+      "filter": { "status": "Stav", "country": "Krajina", "entityType": "Typ", "all": "Všetko" },
+      "table": { "createdAt": "Vytvorené", "owner": "Vlastník", "displayName": "Názov", "entityType": "Typ", "country": "Krajina", "status": "Stav" },
+      "action": { "setStatus": "Zmeniť stav", "adminNote": "Interná poznámka (povinné)", "submit": "Použiť", "approve": "Schváliť", "reject": "Zamietnuť" }
     }
   },
   "charger": {
