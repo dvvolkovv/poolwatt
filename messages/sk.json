@@ -428,5 +428,45 @@
       "body": "Odkazy sú jednorazové a platia hodinu.",
       "cta": "Vyžiadať nový odkaz"
     }
+  },
+  "public": {
+    "contractor": {
+      "listing": {
+        "title": "Dodávatelia",
+        "subtitle": "Partneri pre obnoviteľné zdroje — projekt, inštalácia a uvedenie do prevádzky vašej elektrárne.",
+        "empty": "Zatiaľ nie sú žiadni schválení dodávatelia.",
+        "emptyCta": "Buďte prví — zaregistrujte svoju firmu →",
+        "page": "Strana {page} z {total}",
+        "total": "spolu {count}"
+      },
+      "filter": {
+        "country": "Krajina",
+        "renewable": "Zdroj",
+        "all": "Všetky",
+        "apply": "Použiť",
+        "clear": "Vyčistiť"
+      },
+      "detail": {
+        "about": "O firme",
+        "whatWeDo": "Čo robíme",
+        "workCategories": "Služby",
+        "renewableTypes": "Typy zdrojov",
+        "countriesServed": "Krajiny pôsobenia",
+        "contact": "Kontakt",
+        "contactEmail": "Email",
+        "contactPhone": "Telefón",
+        "website": "Web",
+        "companyInfo": "Údaje o firme",
+        "legalName": "Právny názov",
+        "registrationNumber": "IČO",
+        "foundedYear": "Založené",
+        "back": "Späť na dodávateľov"
+      },
+      "homepage": {
+        "title": "Postavte si vlastnú elektráreň",
+        "subtitle": "Partneri po celej Európe pripravení projektovať, inštalovať a uvádzať do prevádzky vaše solárne, veterné alebo hybridné riešenie.",
+        "viewAll": "Všetci dodávatelia →"
+      }
+    }
   }
 }

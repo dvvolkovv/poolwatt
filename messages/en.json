@@ -428,5 +428,45 @@
       "body": "Reset links work once and last one hour.",
       "cta": "Request a new link"
     }
+  },
+  "public": {
+    "contractor": {
+      "listing": {
+        "title": "Contractors",
+        "subtitle": "Renewable energy partners — design, install, commission your power station.",
+        "empty": "No approved contractors yet.",
+        "emptyCta": "Be the first — register your company →",
+        "page": "Page {page} of {total}",
+        "total": "{count} contractors"
+      },
+      "filter": {
+        "country": "Country",
+        "renewable": "Renewable",
+        "all": "All",
+        "apply": "Apply",
+        "clear": "Clear filters"
+      },
+      "detail": {
+        "about": "About",
+        "whatWeDo": "What we do",
+        "workCategories": "Services",
+        "renewableTypes": "Renewable types",
+        "countriesServed": "Countries served",
+        "contact": "Contact",
+        "contactEmail": "Email",
+        "contactPhone": "Phone",
+        "website": "Website",
+        "companyInfo": "Company info",
+        "legalName": "Legal name",
+        "registrationNumber": "Registration #",
+        "foundedYear": "Founded",
+        "back": "Back to contractors"
+      },
+      "homepage": {
+        "title": "Build your own power station",
+        "subtitle": "Partners across Europe ready to design, install and commission your solar, wind, or hybrid setup.",
+        "viewAll": "View all contractors →"
+      }
+    }
   }
 }
