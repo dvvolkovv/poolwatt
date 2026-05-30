@@ -67,7 +67,9 @@ async function seedContractor(opts: {
 }
 
 beforeEach(async () => {
-  await prisma.buildRequestClaim.deleteMany({});
+  // Claims cascade from both BR and Contractor (onDelete: Cascade), so deleting
+  // those is enough — no global claim wipe (which would race with other test
+  // files in the parallel vitest suite).
   await prisma.buildRequest.deleteMany({ where: { user: { username: { startsWith: PREFIX } } } });
   await prisma.contractor.deleteMany({ where: { slug: { startsWith: PREFIX } } });
   await prisma.user.deleteMany({ where: { username: { startsWith: PREFIX } } });
