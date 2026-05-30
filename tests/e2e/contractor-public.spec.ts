@@ -32,6 +32,14 @@ test.beforeAll(async () => {
       contactEmail: "info@publicco-solar.test",
       contactPhone: "+421900555111",
       websiteUrl: "https://publicco-solar.test",
+      providesEvCharging: true,
+      evPowerSource: "MIXED",
+      evStationCount: 12,
+      evConnectorTypes: ["CCS2", "TYPE2"],
+      evPowerLevels: ["DC_FAST"],
+      evUsageType: "PUBLIC",
+      evMaxPowerKw: 150,
+      evDescription: "Twelve DC fast chargers along the Bratislava–Vienna corridor, powered by rooftop solar plus grid backup. 24/7 public with mobile app activation.",
       status: "APPROVED",
       adminNote: "INTERNAL-ONLY-MUST-NOT-LEAK",
       members: { create: { userId: owner.id, role: "OWNER" } },
@@ -99,4 +107,24 @@ test("country filter narrows results", async ({ page }) => {
   await page.goto("/en/contractors?country=CZ");
   // Our SK-only test row should be absent
   await expect(page.locator("text=PublicCo Solar s.r.o.")).not.toBeVisible();
+});
+
+test("listing card shows ⚡ EV badge for contractors providing EV charging", async ({ page }) => {
+  await page.goto("/en/contractors");
+  // Card text "EV" appears inside the EV badge chip
+  await expect(page.locator("text=PublicCo Solar s.r.o.")).toBeVisible();
+  // Badge text "EV" should appear at least once
+  await expect(page.locator("text=EV").first()).toBeVisible();
+});
+
+test("?ev=true filter shows EV operators", async ({ page }) => {
+  await page.goto("/en/contractors?ev=true");
+  await expect(page.locator("text=PublicCo Solar s.r.o.")).toBeVisible();
+});
+
+test("public detail page renders EV section when providesEvCharging is true", async ({ page }) => {
+  await page.goto(`/en/contractors/${PREFIX}solarco`);
+  await expect(page.locator("text=EV Charging Infrastructure").first()).toBeVisible();
+  await expect(page.locator("text=CCS2").first()).toBeVisible();
+  await expect(page.locator("text=150").first()).toBeVisible();  // kW value
 });
