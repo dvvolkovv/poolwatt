@@ -61,6 +61,13 @@ export const buildRequestSchema = z
         message: "roofOrientation is required for SOLAR/HYBRID",
       });
     }
+    if ((data.lat == null) !== (data.lng == null)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [data.lat == null ? "lat" : "lng"],
+        message: "lat and lng must be provided together",
+      });
+    }
   });
 
 export type BuildRequestInput = z.infer<typeof buildRequestSchema>;

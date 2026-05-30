@@ -29,6 +29,9 @@ describe("buildRequestSchema", () => {
   it("requires powerbankKwh when wantPowerbank is true", () => {
     const r = buildRequestSchema.safeParse({ ...valid, wantPowerbank: true });
     expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(r.error.issues.some(i => i.path[0] === "powerbankKwh")).toBe(true);
+    }
   });
 
   it("accepts wantPowerbank with valid powerbankKwh", () => {
@@ -39,17 +42,26 @@ describe("buildRequestSchema", () => {
   it("requires evChargerPorts when wantEvCharger is true", () => {
     const r = buildRequestSchema.safeParse({ ...valid, wantEvCharger: true });
     expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(r.error.issues.some(i => i.path[0] === "evChargerPorts")).toBe(true);
+    }
   });
 
   it("rejects evPublicForSale=true without wantEvCharger", () => {
     const r = buildRequestSchema.safeParse({ ...valid, evPublicForSale: true });
     expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(r.error.issues.some(i => i.path[0] === "evPublicForSale")).toBe(true);
+    }
   });
 
   it("requires roofOrientation when source is SOLAR or HYBRID", () => {
     const { roofOrientation: _, ...withoutOrientation } = valid;
     const r = buildRequestSchema.safeParse(withoutOrientation);
     expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(r.error.issues.some(i => i.path[0] === "roofOrientation")).toBe(true);
+    }
   });
 
   it("allows missing roofOrientation when source is WIND", () => {
@@ -66,5 +78,16 @@ describe("buildRequestSchema", () => {
   it("rejects notes longer than 1000 chars", () => {
     const r = buildRequestSchema.safeParse({ ...valid, notes: "x".repeat(1001) });
     expect(r.success).toBe(false);
+  });
+
+  it("rejects lat without lng", () => {
+    const r = buildRequestSchema.safeParse({ ...valid, lat: 48.1 });
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.issues.some(i => i.path[0] === "lng")).toBe(true);
+  });
+
+  it("accepts lat and lng together", () => {
+    const r = buildRequestSchema.safeParse({ ...valid, lat: 48.1, lng: 17.1 });
+    expect(r.success).toBe(true);
   });
 });
