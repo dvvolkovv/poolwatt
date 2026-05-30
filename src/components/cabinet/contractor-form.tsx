@@ -11,6 +11,10 @@ type Mode = { kind: "create" } | { kind: "edit"; id: string };
 const WORK_VALUES = ["DESIGN", "MANUFACTURE", "SUPPLY", "INSTALLATION", "COMMISSIONING", "MAINTENANCE"] as const;
 const RENEWABLE_VALUES = ["SOLAR", "WIND", "HYDRO", "BIOMASS", "GEOTHERMAL", "HYBRID"] as const;
 const ENTITY_VALUES = ["LEGAL_ENTITY", "SOLE_TRADER", "INDIVIDUAL"] as const;
+const EV_POWER_SOURCES = ["GRID", "MIXED", "RENEWABLE_ONLY"] as const;
+const EV_CONNECTOR_TYPES = ["CCS2", "CHAdeMO", "TYPE2", "TYPE1", "TESLA", "GB_T", "SCHUKO"] as const;
+const EV_POWER_LEVELS = ["AC_SLOW", "AC_FAST", "DC_FAST", "DC_ULTRA"] as const;
+const EV_USAGE_TYPES = ["PUBLIC", "MEMBERSHIP", "PRIVATE", "PAY_AT_LOCATION"] as const;
 
 type Props = {
   mode: Mode;
@@ -35,6 +39,12 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
     (initial?.renewableTypes as string[] | undefined) ?? [],
   );
 
+  const [providesEvCharging, setProvidesEvCharging] = useState<boolean>(initial?.providesEvCharging ?? false);
+  const [evPowerSource, setEvPowerSource] = useState<"GRID" | "MIXED" | "RENEWABLE_ONLY" | "">(initial?.evPowerSource ?? "");
+  const [evConnectorTypes, setEvConnectorTypes] = useState<string[]>((initial?.evConnectorTypes as string[] | undefined) ?? []);
+  const [evPowerLevels, setEvPowerLevels] = useState<string[]>((initial?.evPowerLevels as string[] | undefined) ?? []);
+  const [evUsageType, setEvUsageType] = useState<"PUBLIC" | "MEMBERSHIP" | "PRIVATE" | "PAY_AT_LOCATION" | "">(initial?.evUsageType ?? "");
+
   function toggle(list: string[], v: string, set: (xs: string[]) => void) {
     if (list.includes(v)) set(list.filter((x) => x !== v));
     else set([...list, v]);
@@ -52,6 +62,9 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
 
     const foundedYearRaw = String(formData.get("foundedYear") ?? "");
     const foundedYear = foundedYearRaw ? Number(foundedYearRaw) : undefined;
+
+    const evStationCountRaw = String(formData.get("evStationCount") ?? "");
+    const evMaxPowerKwRaw = String(formData.get("evMaxPowerKw") ?? "");
 
     const input = {
       entityType,
@@ -73,6 +86,14 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
       logoUrl: String(formData.get("logoUrl") ?? "").trim() || undefined,
       contactEmail: String(formData.get("contactEmail") ?? "").trim(),
       contactPhone: String(formData.get("contactPhone") ?? "").trim(),
+      providesEvCharging,
+      evPowerSource: providesEvCharging ? (evPowerSource || undefined) : undefined,
+      evStationCount: providesEvCharging && evStationCountRaw ? Number(evStationCountRaw) : undefined,
+      evConnectorTypes: providesEvCharging ? (evConnectorTypes as ContractorInput["evConnectorTypes"]) : undefined,
+      evPowerLevels: providesEvCharging ? (evPowerLevels as ContractorInput["evPowerLevels"]) : undefined,
+      evUsageType: providesEvCharging ? (evUsageType || undefined) : undefined,
+      evMaxPowerKw: providesEvCharging && evMaxPowerKwRaw ? Number(evMaxPowerKwRaw) : undefined,
+      evDescription: providesEvCharging ? (String(formData.get("evDescription") ?? "") || undefined) : undefined,
     } as ContractorInput;
 
     startTransition(async () => {
@@ -185,6 +206,130 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
         {errors.contactEmail && <p className="text-red-600 text-xs">{errors.contactEmail}</p>}
         <input name="contactPhone" type="tel" defaultValue={initial?.contactPhone ?? ""} placeholder={labels.field.contactPhone.label} className="border border-hairline rounded px-3 py-2 w-full" />
         {errors.contactPhone && <p className="text-red-600 text-xs">{errors.contactPhone}</p>}
+      </fieldset>
+
+      <fieldset className="space-y-4">
+        <legend className="text-lg font-semibold">{labels.section.ev}</legend>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={providesEvCharging}
+            onChange={(e) => setProvidesEvCharging(e.target.checked)}
+          />
+          {labels.field.providesEvCharging.label}
+        </label>
+
+        {providesEvCharging && (
+          <div className="space-y-4 pl-6 border-l-2 border-accent/30">
+            <div>
+              <p className="text-sm mb-2">{labels.field.evPowerSource.label}</p>
+              <div className="space-y-2">
+                {EV_POWER_SOURCES.map((v) => (
+                  <label key={v} className="flex items-start gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="evPowerSource"
+                      value={v}
+                      checked={evPowerSource === v}
+                      onChange={() => setEvPowerSource(v)}
+                      className="mt-1"
+                    />
+                    <span>{labels.field.evPowerSource[v]}</span>
+                  </label>
+                ))}
+              </div>
+              {errors.evPowerSource && <p className="text-red-600 text-xs mt-1">{errors.evPowerSource}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">{labels.field.evStationCount.label}</label>
+              <input
+                name="evStationCount" type="number" min="1" max="10000"
+                defaultValue={initial?.evStationCount ?? ""}
+                className="border border-hairline rounded px-3 py-2 w-40"
+              />
+              {errors.evStationCount && <p className="text-red-600 text-xs mt-1">{errors.evStationCount}</p>}
+            </div>
+
+            <div>
+              <p className="text-sm mb-2">{labels.field.evConnectorTypes.label}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {EV_CONNECTOR_TYPES.map((v) => (
+                  <label key={v} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={evConnectorTypes.includes(v)}
+                      onChange={() => toggle(evConnectorTypes, v, setEvConnectorTypes)}
+                    />
+                    {labels.field.evConnectorTypes[v]}
+                  </label>
+                ))}
+              </div>
+              {errors.evConnectorTypes && <p className="text-red-600 text-xs mt-1">{errors.evConnectorTypes}</p>}
+            </div>
+
+            <div>
+              <p className="text-sm mb-2">{labels.field.evPowerLevels.label}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {EV_POWER_LEVELS.map((v) => (
+                  <label key={v} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={evPowerLevels.includes(v)}
+                      onChange={() => toggle(evPowerLevels, v, setEvPowerLevels)}
+                    />
+                    {labels.field.evPowerLevels[v]}
+                  </label>
+                ))}
+              </div>
+              {errors.evPowerLevels && <p className="text-red-600 text-xs mt-1">{errors.evPowerLevels}</p>}
+            </div>
+
+            <div>
+              <p className="text-sm mb-2">{labels.field.evUsageType.label}</p>
+              <div className="space-y-2">
+                {EV_USAGE_TYPES.map((v) => (
+                  <label key={v} className="flex items-start gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="evUsageType"
+                      value={v}
+                      checked={evUsageType === v}
+                      onChange={() => setEvUsageType(v)}
+                      className="mt-1"
+                    />
+                    <span>{labels.field.evUsageType[v]}</span>
+                  </label>
+                ))}
+              </div>
+              {errors.evUsageType && <p className="text-red-600 text-xs mt-1">{errors.evUsageType}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">{labels.field.evMaxPowerKw.label}</label>
+              <input
+                name="evMaxPowerKw" type="number" step="0.1" min="3.7" max="400"
+                defaultValue={initial?.evMaxPowerKw ?? ""}
+                className="border border-hairline rounded px-3 py-2 w-40"
+              />
+              {errors.evMaxPowerKw && <p className="text-red-600 text-xs mt-1">{errors.evMaxPowerKw}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">{labels.field.evDescription.label}</label>
+              <textarea
+                name="evDescription"
+                defaultValue={initial?.evDescription ?? ""}
+                rows={4}
+                maxLength={2000}
+                placeholder={labels.field.evDescription.placeholder}
+                className="border border-hairline rounded px-3 py-2 w-full"
+              />
+              {errors.evDescription && <p className="text-red-600 text-xs mt-1">{errors.evDescription}</p>}
+            </div>
+          </div>
+        )}
       </fieldset>
 
       {formError && <p className="text-red-600 text-sm">{formError}</p>}
