@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { expressInterest } from "./actions";
+import { expressInterest, withdrawClaim } from "./actions";
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/resend-match", () => ({
@@ -144,5 +144,46 @@ describe("expressInterest", () => {
     const second = await expressInterest({ buildRequestId: br.id, contractorId: contractor.id });
     expect(second.ok).toBe(false);
     expect(second.formError).toMatch(/already/i);
+  });
+});
+
+describe("withdrawClaim", () => {
+  it("withdraws a PENDING claim when caller is OWNER", async () => {
+    const { br } = await seedHomeowner();
+    const { user, contractor } = await seedContractor({ username: "ctr_wd1" });
+    mockedAuth.mockResolvedValue({ user: { id: user.id, username: user.username, role: "USER" } } as never);
+
+    const c = await expressInterest({ buildRequestId: br.id, contractorId: contractor.id });
+    expect(c.ok).toBe(true);
+
+    const r = await withdrawClaim({ claimId: c.claimId!, contractorId: contractor.id });
+    expect(r.ok).toBe(true);
+    const reloaded = await prisma.buildRequestClaim.findUniqueOrThrow({ where: { id: c.claimId! } });
+    expect(reloaded.status).toBe("WITHDRAWN");
+    expect(reloaded.respondedAt).not.toBeNull();
+  });
+
+  it("refuses if caller is not OWNER", async () => {
+    const { br } = await seedHomeowner();
+    const { user, contractor } = await seedContractor({ username: "ctr_wd2" });
+    mockedAuth.mockResolvedValueOnce({ user: { id: user.id, username: user.username, role: "USER" } } as never);
+    const c = await expressInterest({ buildRequestId: br.id, contractorId: contractor.id });
+
+    const intruder = await ensureUser(`${PREFIX}wd_intruder`);
+    mockedAuth.mockResolvedValueOnce({ user: { id: intruder.id, username: intruder.username, role: "USER" } } as never);
+
+    const r = await withdrawClaim({ claimId: c.claimId!, contractorId: contractor.id });
+    expect(r.ok).toBe(false);
+  });
+
+  it("refuses if claim not PENDING", async () => {
+    const { br } = await seedHomeowner();
+    const { user, contractor } = await seedContractor({ username: "ctr_wd3" });
+    mockedAuth.mockResolvedValue({ user: { id: user.id, username: user.username, role: "USER" } } as never);
+    const c = await expressInterest({ buildRequestId: br.id, contractorId: contractor.id });
+    await prisma.buildRequestClaim.update({ where: { id: c.claimId! }, data: { status: "ACCEPTED" } });
+
+    const r = await withdrawClaim({ claimId: c.claimId!, contractorId: contractor.id });
+    expect(r.ok).toBe(false);
   });
 });
