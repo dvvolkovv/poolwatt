@@ -42,12 +42,12 @@ export async function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href={`/${locale}/hubs`} className="text-muted hover:text-foreground transition-colors">
+                <Link href={`/${locale}/hubs`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
                   {t("hubs")}
                 </Link>
               </li>
               <li>
-                <Link href={`/${locale}/offers`} className="text-muted hover:text-foreground transition-colors">
+                <Link href={`/${locale}/offers`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
                   {t("offers")}
                 </Link>
               </li>
@@ -61,17 +61,17 @@ export async function Footer() {
             </div>
             <ul className="space-y-2 text-[14px]">
               <li>
-                <Link href={`/${locale}/login`} className="text-muted hover:text-foreground transition-colors">
+                <Link href={`/${locale}/login`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
                   {t("signIn")}
                 </Link>
               </li>
               <li>
-                <Link href={`/${locale}/settings`} className="text-muted hover:text-foreground transition-colors">
+                <Link href={`/${locale}/settings`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
                   {t("settings")}
                 </Link>
               </li>
               <li>
-                <Link href={`/${locale}/request`} className="text-muted hover:text-foreground transition-colors">
+                <Link href={`/${locale}/request`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
                   {t("request")}
                 </Link>
               </li>

@@ -76,6 +76,7 @@ export default async function Home({
                 </Link>
                 <Link
                   href={`/${locale}/request`}
+                  prefetch={false}
                   className="inline-flex items-center px-5 py-3 rounded-full font-semibold text-[13px] uppercase tracking-[0.18em] border border-hairline text-muted-strong hover:text-foreground hover:border-accent/60 transition-all"
                 >
                   {th("ctaSecondary")}
