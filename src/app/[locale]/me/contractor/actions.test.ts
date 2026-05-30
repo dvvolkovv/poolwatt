@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { createContractor } from "./actions";
+import { createContractor, updateContractor } from "./actions";
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/resend-contractor", () => ({
@@ -92,5 +92,42 @@ describe("createContractor", () => {
     const r = await createContractor({ ...baseInput, bio: "too short" });
     expect(r.ok).toBe(false);
     expect(r.fieldErrors?.bio).toBeDefined();
+  });
+});
+
+describe("updateContractor", () => {
+  it("updates a PENDING contractor when caller is OWNER", async () => {
+    const u = await ensureUser("test_ctr_eve");
+    mockedAuth.mockResolvedValue({ user: { id: u.id, username: u.username, role: "USER" } } as never);
+    const created = await createContractor(baseInput);
+
+    const r = await updateContractor(created.id!, { ...baseInput, displayName: "TestCo Renamed s.r.o." });
+    expect(r.ok).toBe(true);
+    const reloaded = await prisma.contractor.findUniqueOrThrow({ where: { id: created.id! } });
+    expect(reloaded.displayName).toBe("TestCo Renamed s.r.o.");
+  });
+
+  it("refuses to update a non-PENDING contractor", async () => {
+    const u = await ensureUser("test_ctr_frank");
+    mockedAuth.mockResolvedValue({ user: { id: u.id, username: u.username, role: "USER" } } as never);
+    const created = await createContractor(baseInput);
+    await prisma.contractor.update({ where: { id: created.id! }, data: { status: "APPROVED" } });
+
+    const r = await updateContractor(created.id!, { ...baseInput, displayName: "Should fail" });
+    expect(r.ok).toBe(false);
+    expect(r.formError).toMatch(/cannot edit/i);
+  });
+
+  it("refuses to update when caller is not OWNER", async () => {
+    const owner = await ensureUser("test_ctr_grace");
+    mockedAuth.mockResolvedValueOnce({ user: { id: owner.id, username: owner.username, role: "USER" } } as never);
+    const created = await createContractor(baseInput);
+
+    const intruder = await ensureUser("test_ctr_henry");
+    mockedAuth.mockResolvedValueOnce({ user: { id: intruder.id, username: intruder.username, role: "USER" } } as never);
+
+    const r = await updateContractor(created.id!, { ...baseInput, displayName: "Stealing" });
+    expect(r.ok).toBe(false);
+    expect(r.formError).toMatch(/not found|forbidden/i);
   });
 });

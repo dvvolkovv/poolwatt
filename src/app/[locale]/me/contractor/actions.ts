@@ -84,3 +84,69 @@ export async function createContractor(input: ContractorInput): Promise<ActionRe
   revalidatePath("/[locale]/me/contractor", "page");
   return { ok: true, id: created.id };
 }
+
+async function requireOwnerMembership(contractorId: string, userId: string) {
+  const member = await prisma.contractorMember.findUnique({
+    where: { contractorId_userId: { contractorId, userId } },
+    select: { role: true },
+  });
+  return member?.role === "OWNER";
+}
+
+export async function updateContractor(
+  id: string,
+  input: ContractorInput,
+): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user) return { ok: false, formError: "Not authenticated" };
+
+  const existing = await prisma.contractor.findUnique({
+    where: { id },
+    select: { id: true, status: true },
+  });
+  if (!existing) return { ok: false, formError: "Contractor not found" };
+
+  const isOwner = await requireOwnerMembership(id, session.user.id);
+  if (!isOwner) return { ok: false, formError: "Contractor not found" };  // 404-style, don't leak existence
+
+  if (existing.status !== "PENDING") {
+    return { ok: false, formError: "Cannot edit a contractor that is no longer PENDING" };
+  }
+
+  const parsed = contractorSchema.safeParse(input);
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const k = issue.path[0];
+      if (typeof k === "string" && !fieldErrors[k]) fieldErrors[k] = issue.message;
+    }
+    return { ok: false, fieldErrors };
+  }
+
+  const d = parsed.data;
+  // keep in sync with createContractor's data block
+  await prisma.contractor.update({
+    where: { id },
+    data: {
+      entityType: d.entityType,
+      displayName: d.displayName,
+      legalName: d.legalName ?? null,
+      registrationNumber: d.registrationNumber ?? null,
+      country: d.country,
+      city: d.city,
+      foundedYear: d.foundedYear ?? null,
+      workCategories: d.workCategories,
+      renewableTypes: d.renewableTypes,
+      countriesServed: d.countriesServed,
+      bio: d.bio,
+      websiteUrl: d.websiteUrl ?? null,
+      logoUrl: d.logoUrl ?? null,
+      contactEmail: d.contactEmail,
+      contactPhone: d.contactPhone,
+    },
+  });
+
+  revalidatePath("/[locale]/me/contractor", "page");
+  revalidatePath(`/[locale]/me/contractor/${id}`, "page");
+  return { ok: true, id };
+}
