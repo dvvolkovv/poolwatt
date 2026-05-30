@@ -14,6 +14,7 @@ import { getCurrency } from "@/lib/get-currency";
 import type { NewsTheme } from "@/lib/news";
 import { auth } from "@/lib/auth";
 import { readFavoriteProducerHandles } from "@/lib/favorites";
+import { ContractorsBlock } from "@/components/contractor/contractors-block";
 
 export const revalidate = 60;
 
@@ -142,6 +143,9 @@ export default async function Home({
             <p className="text-muted">{tl("loadingFallback")}</p>
           )}
         </section>
+
+        <ContractorsBlock locale={locale} />
+
       </div>
     </main>
   );
