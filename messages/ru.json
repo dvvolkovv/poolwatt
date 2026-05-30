@@ -17,7 +17,10 @@
     "themeLabel": "Тема",
     "themeLight": "Светлая",
     "themeDark": "Тёмная",
-    "themeSystem": "Системная"
+    "themeSystem": "Системная",
+    "cabinet": "Кабинет",
+    "cancel": "Отмена",
+    "save": "Сохранить"
   },
   "home": {
     "heroEyebrow": "Live · Poolwatt Grid · обновление каждые 60 с",
@@ -124,5 +127,55 @@
   },
   "bot": {
     "siblingNote": "Telegram-бот @PoolwattBot шлёт live-оповещения и позволяет производителям публиковать офферы прямо с телефона."
+  },
+  "auth": {
+    "register": {
+      "title": "Создать аккаунт",
+      "subtitle": "Придумайте ник и пароль — этого достаточно, чтобы начать.",
+      "usernameLabel": "Ник",
+      "usernamePlaceholder": "например, solar_jane",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "от 8 символов, буквы + цифры",
+      "submit": "Создать аккаунт",
+      "submitting": "Создание…",
+      "haveAccount": "Уже есть аккаунт?",
+      "signIn": "Войти",
+      "emailNote": "Email можно добавить позже в кабинете — он нужен для восстановления пароля. Без email забытый пароль восстановить нельзя."
+    },
+    "login": {
+      "title": "С возвращением",
+      "subtitle": "Войдите по нику и паролю.",
+      "usernameLabel": "Ник",
+      "usernamePlaceholder": "ваш ник",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "ваш пароль",
+      "submit": "Войти",
+      "submitting": "Вход…",
+      "noAccount": "Впервые здесь?",
+      "register": "Зарегистрироваться",
+      "forgotPassword": "Забыли пароль?"
+    }
+  },
+  "cabinet": {
+    "addEmailBanner": {
+      "title": "Добавьте email для восстановления пароля",
+      "body": "Без email мы не сможем помочь восстановить забытый пароль.",
+      "cta": "Добавить email",
+      "dismiss": "Позже"
+    },
+    "sidebar": {
+      "favorites": "Избранное",
+      "settings": "Настройки",
+      "signOut": "Выйти"
+    },
+    "favorites": {
+      "title": "Избранное",
+      "tabProducers": "Производители",
+      "tabChargers": "Зарядки",
+      "emptyProducersTitle": "Здесь пока пусто",
+      "emptyProducersBody": "Откройте [список производителей] и нажмите звёздочку на карточке, чтобы добавить сюда.",
+      "emptyChargersTitle": "Здесь пока пусто",
+      "emptyChargersBody": "Откройте [навигатор] и нажмите звёздочку на зарядке, чтобы добавить сюда."
+    }
   }
 }

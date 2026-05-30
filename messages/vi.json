@@ -3,7 +3,7 @@
     "appName": "Poolwatt",
     "tagline": "Hộ gia đình cung cấp năng lượng tái tạo. Lưới điện trả lại cho họ.",
     "signIn": "Đăng nhập",
-    "signOut": "Đăng xuất",
+    "signOut": "Sign out",
     "settings": "Cài đặt",
     "admin": "Quản trị",
     "watchlist": "Theo dõi",
@@ -17,7 +17,10 @@
     "themeLabel": "Giao diện",
     "themeLight": "Sáng",
     "themeDark": "Tối",
-    "themeSystem": "Hệ thống"
+    "themeSystem": "Hệ thống",
+    "cabinet": "Cabinet",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "home": {
     "heroEyebrow": "Trực tiếp · Lưới Poolwatt · cập nhật mỗi 60 giây",
@@ -124,5 +127,55 @@
   },
   "bot": {
     "siblingNote": "Bot Telegram @PoolwattBot gửi thông báo trực tiếp và cho phép nhà sản xuất đăng ưu đãi từ điện thoại."
+  },
+  "auth": {
+    "register": {
+      "title": "Create account",
+      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "usernameLabel": "Nickname",
+      "usernamePlaceholder": "e.g. solar_jane",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "min 8 chars, letters + digits",
+      "submit": "Create account",
+      "submitting": "Creating…",
+      "haveAccount": "Already have one?",
+      "signIn": "Sign in",
+      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in with your nickname and password.",
+      "usernameLabel": "Nickname",
+      "usernamePlaceholder": "your nickname",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "your password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "noAccount": "First time here?",
+      "register": "Register",
+      "forgotPassword": "Forgot password?"
+    }
+  },
+  "cabinet": {
+    "addEmailBanner": {
+      "title": "Add an email for password recovery",
+      "body": "Without an email we can't help you recover a forgotten password.",
+      "cta": "Add email",
+      "dismiss": "Later"
+    },
+    "sidebar": {
+      "favorites": "Favorites",
+      "settings": "Settings",
+      "signOut": "Sign out"
+    },
+    "favorites": {
+      "title": "Favorites",
+      "tabProducers": "Producers",
+      "tabChargers": "Chargers",
+      "emptyProducersTitle": "No favorite producers yet",
+      "emptyProducersBody": "Open the [producer list] and tap the star on a card to save it here.",
+      "emptyChargersTitle": "No favorite chargers yet",
+      "emptyChargersBody": "Open the [navigator] and tap the star on a charger to save it here."
+    }
   }
 }

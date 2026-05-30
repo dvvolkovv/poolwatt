@@ -3,7 +3,7 @@
     "appName": "Poolwatt",
     "tagline": "Домогосподарства постачають відновлювану енергію. Мережа їм платить.",
     "signIn": "Увійти",
-    "signOut": "Вийти",
+    "signOut": "Sign out",
     "settings": "Налаштування",
     "admin": "Адмін",
     "watchlist": "Обране",
@@ -17,7 +17,10 @@
     "themeLabel": "Тема",
     "themeLight": "Світла",
     "themeDark": "Темна",
-    "themeSystem": "Системна"
+    "themeSystem": "Системна",
+    "cabinet": "Cabinet",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "home": {
     "heroEyebrow": "Наживо · Мережа Poolwatt · оновлення кожні 60 с",
@@ -124,5 +127,55 @@
   },
   "bot": {
     "siblingNote": "Telegram-бот @PoolwattBot надсилає сповіщення в реальному часі та дозволяє виробникам публікувати пропозиції безпосередньо з телефону."
+  },
+  "auth": {
+    "register": {
+      "title": "Create account",
+      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "usernameLabel": "Nickname",
+      "usernamePlaceholder": "e.g. solar_jane",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "min 8 chars, letters + digits",
+      "submit": "Create account",
+      "submitting": "Creating…",
+      "haveAccount": "Already have one?",
+      "signIn": "Sign in",
+      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+    },
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in with your nickname and password.",
+      "usernameLabel": "Nickname",
+      "usernamePlaceholder": "your nickname",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "your password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "noAccount": "First time here?",
+      "register": "Register",
+      "forgotPassword": "Forgot password?"
+    }
+  },
+  "cabinet": {
+    "addEmailBanner": {
+      "title": "Add an email for password recovery",
+      "body": "Without an email we can't help you recover a forgotten password.",
+      "cta": "Add email",
+      "dismiss": "Later"
+    },
+    "sidebar": {
+      "favorites": "Favorites",
+      "settings": "Settings",
+      "signOut": "Sign out"
+    },
+    "favorites": {
+      "title": "Favorites",
+      "tabProducers": "Producers",
+      "tabChargers": "Chargers",
+      "emptyProducersTitle": "No favorite producers yet",
+      "emptyProducersBody": "Open the [producer list] and tap the star on a card to save it here.",
+      "emptyChargersTitle": "No favorite chargers yet",
+      "emptyChargersBody": "Open the [navigator] and tap the star on a charger to save it here."
+    }
   }
 }

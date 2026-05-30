@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { LocaleSwitcher } from "./locale-switcher";
+import { ProfilePill } from "./cabinet/profile-pill";
+import { auth } from "@/lib/auth";
 
 export async function Navbar() {
   const locale = await getLocale();
   const t = await getTranslations("common");
+  const session = await auth();
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur-md bg-[rgba(12,16,20,0.85)] border-b border-hairline">
@@ -48,13 +51,25 @@ export async function Navbar() {
 
         <div className="ml-auto flex items-center gap-2">
           <LocaleSwitcher />
-          <Link
-            href={`/${locale}/login`}
-            prefetch={false}
-            className="hidden md:inline-block ml-2 text-xs px-4 py-1.5 rounded-full font-semibold uppercase tracking-wider bg-blue text-blue-foreground transition-all hover:brightness-110"
-          >
-            {t("signIn")}
-          </Link>
+          {session?.user ? (
+            <ProfilePill
+              username={session.user.username}
+              locale={locale}
+              labels={{
+                cabinet: t("cabinet"),
+                settings: t("settings"),
+                signOut: t("signOut"),
+              }}
+            />
+          ) : (
+            <Link
+              href={`/${locale}/login`}
+              prefetch={false}
+              className="hidden md:inline-block ml-2 text-xs px-4 py-1.5 rounded-full font-semibold uppercase tracking-wider bg-blue text-blue-foreground transition-all hover:brightness-110"
+            >
+              {t("signIn")}
+            </Link>
+          )}
         </div>
       </div>
     </header>

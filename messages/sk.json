@@ -17,7 +17,10 @@
     "themeLabel": "Téma",
     "themeLight": "Svetlá",
     "themeDark": "Tmavá",
-    "themeSystem": "Systém"
+    "themeSystem": "Systém",
+    "cabinet": "Kabinet",
+    "cancel": "Zrušiť",
+    "save": "Uložiť"
   },
   "home": {
     "heroEyebrow": "Naživo · Poolwatt sieť · obnovené každých 60 s",
@@ -124,5 +127,55 @@
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot doručuje živé upozornenia a umožňuje výrobcom zverejňovať ponuky priamo z telefónu."
+  },
+  "auth": {
+    "register": {
+      "title": "Vytvoriť účet",
+      "subtitle": "Vyberte si prezývku a heslo — to je všetko, čo potrebujete.",
+      "usernameLabel": "Prezývka",
+      "usernamePlaceholder": "napr. solar_jane",
+      "passwordLabel": "Heslo",
+      "passwordPlaceholder": "min. 8 znakov, písmená + číslice",
+      "submit": "Vytvoriť účet",
+      "submitting": "Vytvára sa…",
+      "haveAccount": "Máte už účet?",
+      "signIn": "Prihlásiť sa",
+      "emailNote": "Email môžete pridať neskôr v kabinete na obnovenie hesla. Bez emailu zabudnuté heslo nemožno obnoviť."
+    },
+    "login": {
+      "title": "Vitajte späť",
+      "subtitle": "Prihláste sa prezývkou a heslom.",
+      "usernameLabel": "Prezývka",
+      "usernamePlaceholder": "vaša prezývka",
+      "passwordLabel": "Heslo",
+      "passwordPlaceholder": "vaše heslo",
+      "submit": "Prihlásiť sa",
+      "submitting": "Prihlasovanie…",
+      "noAccount": "Prvýkrát tu?",
+      "register": "Registrovať sa",
+      "forgotPassword": "Zabudli ste heslo?"
+    }
+  },
+  "cabinet": {
+    "addEmailBanner": {
+      "title": "Pridajte email pre obnovenie hesla",
+      "body": "Bez emailu vám nedokážeme pomôcť obnoviť zabudnuté heslo.",
+      "cta": "Pridať email",
+      "dismiss": "Neskôr"
+    },
+    "sidebar": {
+      "favorites": "Obľúbené",
+      "settings": "Nastavenia",
+      "signOut": "Odhlásiť sa"
+    },
+    "favorites": {
+      "title": "Obľúbené",
+      "tabProducers": "Výrobcovia",
+      "tabChargers": "Nabíjačky",
+      "emptyProducersTitle": "Zatiaľ tu nič nie je",
+      "emptyProducersBody": "Otvorte [zoznam výrobcov] a kliknite na hviezdičku, aby ste pridali sem.",
+      "emptyChargersTitle": "Zatiaľ tu nič nie je",
+      "emptyChargersBody": "Otvorte [navigátor] a kliknite na hviezdičku, aby ste pridali sem."
+    }
   }
 }
