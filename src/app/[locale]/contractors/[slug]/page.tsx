@@ -116,6 +116,31 @@ export default async function ContractorDetailPage({
           </dl>
         </section>
 
+        {c.providesEvCharging && (
+          <section className="border border-hairline rounded-lg p-5 mb-8">
+            <h2 className="text-sm uppercase tracking-wider text-muted mb-3">
+              ⚡ {tDetail("ev")}
+            </h2>
+            <dl className="grid grid-cols-[180px_1fr] gap-y-2 text-sm">
+              <dt className="text-muted">{tField("evPowerSource.label")}</dt>
+              <dd>{c.evPowerSource ? tField(`evPowerSource.${c.evPowerSource}`) : "—"}</dd>
+              <dt className="text-muted">{tField("evStationCount.label")}</dt>
+              <dd className="num">{c.evStationCount}</dd>
+              <dt className="text-muted">{tField("evConnectorTypes.label")}</dt>
+              <dd>{c.evConnectorTypes.map(k => tField(`evConnectorTypes.${k}`)).join(", ")}</dd>
+              <dt className="text-muted">{tField("evPowerLevels.label")}</dt>
+              <dd>{c.evPowerLevels.map(k => tField(`evPowerLevels.${k}`)).join(", ")}</dd>
+              <dt className="text-muted">{tField("evUsageType.label")}</dt>
+              <dd>{c.evUsageType ? tField(`evUsageType.${c.evUsageType}`) : "—"}</dd>
+              <dt className="text-muted">{tField("evMaxPowerKw.label")}</dt>
+              <dd><span className="num">{c.evMaxPowerKw?.toString()}</span> kW</dd>
+            </dl>
+            {c.evDescription && (
+              <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed">{c.evDescription}</p>
+            )}
+          </section>
+        )}
+
         {(c.legalName || c.registrationNumber || c.foundedYear) && (
           <section className="border border-hairline rounded-lg p-5">
             <h2 className="text-sm uppercase tracking-wider text-muted mb-3">{tDetail("companyInfo")}</h2>

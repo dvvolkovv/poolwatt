@@ -7,12 +7,13 @@ type Props = {
   contractor: Pick<
     PublicContractor,
     "slug" | "displayName" | "entityType" | "country" | "city" |
-    "workCategories" | "renewableTypes" | "logoUrl"
+    "workCategories" | "renewableTypes" | "logoUrl" | "providesEvCharging"
   >;
 };
 
 export async function ContractorCard({ locale, contractor: c }: Props) {
   const t = await getTranslations("cabinet.contractor");
+  const tPublic = await getTranslations("public.contractor.detail");
 
   const initial = c.displayName.charAt(0).toUpperCase();
   const topWorks = c.workCategories.slice(0, 2);
@@ -56,6 +57,11 @@ export async function ContractorCard({ locale, contractor: c }: Props) {
             {t(`field.renewableTypes.${r}`)}
           </span>
         ))}
+        {c.providesEvCharging && (
+          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-yellow-500/10 text-yellow-700 dark:text-yellow-300">
+            ⚡ {tPublic("evBadge")}
+          </span>
+        )}
       </div>
     </Link>
   );
