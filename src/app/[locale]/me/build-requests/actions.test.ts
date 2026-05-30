@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { createBuildRequest, updateBuildRequest } from "./actions";
+import { createBuildRequest, updateBuildRequest, cancelBuildRequest } from "./actions";
 
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
@@ -110,5 +110,39 @@ describe("updateBuildRequest", () => {
     const r = await updateBuildRequest(created.id!, { ...formInput, peakKw: 8 });
     expect(r.ok).toBe(false);
     expect(r.formError).toMatch(/not found|forbidden/i);
+  });
+});
+
+describe("cancelBuildRequest", () => {
+  it("cancels an OPEN request", async () => {
+    const u = await ensureUser("test_br_grace");
+    mockedAuth.mockResolvedValue({ user: { id: u.id, username: u.username, role: "USER" } } as never);
+    const created = await createBuildRequest(formInput);
+
+    const r = await cancelBuildRequest(created.id!);
+    expect(r.ok).toBe(true);
+    const reloaded = await prisma.buildRequest.findUniqueOrThrow({ where: { id: created.id! } });
+    expect(reloaded.status).toBe("CANCELLED");
+    expect(reloaded.statusChangedById).toBe(u.id);
+  });
+
+  it("cancels a MATCHED request", async () => {
+    const u = await ensureUser("test_br_henry");
+    mockedAuth.mockResolvedValue({ user: { id: u.id, username: u.username, role: "USER" } } as never);
+    const created = await createBuildRequest(formInput);
+    await prisma.buildRequest.update({ where: { id: created.id! }, data: { status: "MATCHED" } });
+
+    const r = await cancelBuildRequest(created.id!);
+    expect(r.ok).toBe(true);
+  });
+
+  it("refuses to cancel a FULFILLED request", async () => {
+    const u = await ensureUser("test_br_ivy");
+    mockedAuth.mockResolvedValue({ user: { id: u.id, username: u.username, role: "USER" } } as never);
+    const created = await createBuildRequest(formInput);
+    await prisma.buildRequest.update({ where: { id: created.id! }, data: { status: "FULFILLED" } });
+
+    const r = await cancelBuildRequest(created.id!);
+    expect(r.ok).toBe(false);
   });
 });

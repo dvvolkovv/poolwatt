@@ -121,3 +121,35 @@ export async function updateBuildRequest(
   revalidatePath(`/[locale]/me/build-requests/${id}`, "page");
   return { ok: true, id };
 }
+
+export async function cancelBuildRequest(id: string): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user) return { ok: false, formError: "Not authenticated" };
+
+  const existing = await prisma.buildRequest.findUnique({
+    where: { id },
+    select: { id: true, userId: true, status: true },
+  });
+  if (!existing || existing.userId !== session.user.id) {
+    return { ok: false, formError: "Request not found" };
+  }
+  if (existing.status === "FULFILLED") {
+    return { ok: false, formError: "Cannot cancel a fulfilled request" };
+  }
+  if (existing.status === "CANCELLED") {
+    return { ok: true, id };  // idempotent
+  }
+
+  await prisma.buildRequest.update({
+    where: { id },
+    data: {
+      status: "CANCELLED",
+      statusChangedAt: new Date(),
+      statusChangedById: session.user.id,
+    },
+  });
+
+  revalidatePath("/[locale]/me/build-requests", "page");
+  revalidatePath(`/[locale]/me/build-requests/${id}`, "page");
+  return { ok: true, id };
+}
