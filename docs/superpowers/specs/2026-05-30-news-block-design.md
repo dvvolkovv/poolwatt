@@ -66,14 +66,23 @@ matches `policy` (EPA) and `solar` — we want `policy`.
 
 Direct analog to trientes' four-feed set.
 
-| Source           | URL                                              |
-| ---------------- | ------------------------------------------------ |
-| Electrek         | `https://electrek.co/feed/`                      |
-| CleanTechnica    | `https://cleantechnica.com/feed/`                |
-| PV Magazine      | `https://www.pv-magazine.com/feed/`              |
-| Canary Media     | `https://www.canarymedia.com/articles.rss`       |
+| Source              | URL                                          |
+| ------------------- | -------------------------------------------- |
+| Electrek            | `https://electrek.co/feed/`                  |
+| Energy Storage News | `https://www.energy-storage.news/feed/`      |
+| PV Tech             | `https://www.pv-tech.org/feed/`              |
+| Power Engineering   | `https://www.power-eng.com/feed/`            |
 
-> **Note:** Renewables Now was the spec's original 4th source (matching trientes' four-source count); after deploy probing showed their feed sits behind a Cloudflare managed-challenge that rejects server-side fetches, we swapped to Canary Media. Both are mainstream English-language renewable-energy outlets with comparable cadence.
+> **Note on the source set.** The original spec listed Renewables Now alongside
+> the trientes-style four. After initial deploy a probe showed Renewables Now
+> sits behind a Cloudflare managed-challenge, and a second iteration with
+> CleanTechnica + Canary Media + PV Magazine landed on poor image coverage:
+> those feeds (0/10, 0/10, 1/10 respectively) don't put `<img>` tags in either
+> `<description>` or `<content:encoded>`. The final four were chosen for two
+> properties together: renewable-energy focus AND a reliable thumbnail in the
+> feed body (10/10 image rate each). If image presence ever becomes a
+> non-issue (e.g. we add an og:image fallback that scrapes the article URL),
+> CleanTechnica / Canary Media are worth reconsidering for content breadth.
 
 All four verified to serve valid RSS with a browser User-Agent and `follow`
 redirects. None require an API key. If any feed turns out to be unreliable

@@ -34,11 +34,16 @@ export type NewsItem = {
 };
 
 // All four serve valid RSS without an API key (browser UA + redirects).
+// Chosen for two properties together: renewable-energy focus and a real
+// thumbnail in <description>/<content:encoded> (a probe of the obvious
+// alternatives — CleanTechnica, Canary Media, Renewables Now — showed
+// 0% image inclusion or Cloudflare-challenged, leaving the cards on
+// the gradient placeholder).
 export const FEEDS: { url: string; source: string }[] = [
   { url: "https://electrek.co/feed/", source: "Electrek" },
-  { url: "https://cleantechnica.com/feed/", source: "CleanTechnica" },
-  { url: "https://www.pv-magazine.com/feed/", source: "PV Magazine" },
-  { url: "https://www.canarymedia.com/articles.rss", source: "Canary Media" },
+  { url: "https://www.energy-storage.news/feed/", source: "Energy Storage News" },
+  { url: "https://www.pv-tech.org/feed/", source: "PV Tech" },
+  { url: "https://www.power-eng.com/feed/", source: "Power Engineering" },
 ];
 
 // Checked most-specific first. A headline matching several buckets takes the
