@@ -506,6 +506,36 @@ enum ContractorMemberRole {
   MEMBER
 }
 
+enum EvPowerSource {
+  GRID
+  MIXED
+  RENEWABLE_ONLY
+}
+
+enum EvConnectorType {
+  CCS2
+  CHAdeMO
+  TYPE2
+  TYPE1
+  TESLA
+  GB_T
+  SCHUKO
+}
+
+enum EvPowerLevel {
+  AC_SLOW
+  AC_FAST
+  DC_FAST
+  DC_ULTRA
+}
+
+enum EvUsageType {
+  PUBLIC
+  MEMBERSHIP
+  PRIVATE
+  PAY_AT_LOCATION
+}
+
 model Contractor {
   id                 String                       @id @default(cuid())
   slug               String                       @unique
@@ -533,6 +563,16 @@ model Contractor {
   reviewedAt         DateTime?
   reviewedById       String?
   reviewer           User?                        @relation("ContractorReviewer", fields: [reviewedById], references: [id])
+
+  // EV charging extension
+  providesEvCharging   Boolean              @default(false)
+  evPowerSource        EvPowerSource?
+  evStationCount       Int?
+  evConnectorTypes     EvConnectorType[]
+  evPowerLevels        EvPowerLevel[]
+  evUsageType          EvUsageType?
+  evMaxPowerKw         Decimal?             @db.Decimal(6, 2)
+  evDescription        String?              @db.Text
 
   members            ContractorMember[]
   createdAt          DateTime                     @default(now())
