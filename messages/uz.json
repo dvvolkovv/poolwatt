@@ -1,12 +1,128 @@
 {
-  "common": { "appName": "Poolwatt", "tagline": "Uy xoʻjaliklari qayta tiklanadigan energiya yetkazadi. Tarmoq ularga toʻlaydi.", "signIn": "Kirish", "signOut": "Chiqish", "settings": "Sozlamalar", "admin": "Admin", "watchlist": "Sevimlilar", "request": "Uyingizni roʻyxatga oling", "hubs": "Xablar", "producers": "Ishlab chiqaruvchilar", "offers": "Takliflar", "navigator": "Zaryadlash", "languageLabel": "Til", "currencyLabel": "Valyuta", "themeLabel": "Mavzu", "themeLight": "Yorugʻ", "themeDark": "Qorongʻi", "themeSystem": "Tizim" },
-  "home": { "heroEyebrow": "Jonli · Poolwatt tarmogʻi · har 60 s yangilanadi", "heroLine1": "Tarmoq", "heroLine2Before": "", "heroLine2Accent": "uy xoʻjaliklari", "heroLine2After": " tomonidan quvvatlanadi.", "heroSubtitle": "Poolwatt — uy xoʻjaliklari batareyalarda saqlangan qayta tiklanadigan energiyani sotadigan peer-to-peer bozor. Tarmoqdagi har bir kilovatt-soat quyosh, shamol, suv yoki biomassa energiyasidan keladi.", "ctaPrimary": "Ishlab chiqaruvchilarni koʻrish", "ctaSecondary": "Uyingizni roʻyxatga oling" },
-  "stats": { "totalCapacity": "Umumiy sigʻim", "delivered24h": "Yetkazilgan (24s)", "lifetimeDelivered": "Jami yetkazilgan", "activeProducers": "Faol ishlab chiqaruvchilar", "activeHubs": "Faol xablar", "solarShare": "Quyosh ulushi", "windShare": "Shamol ulushi", "hydroShare": "Suv ulushi", "carbonOffset": "CO₂ kamaytirish (24s)", "greenIndex": "Yashil indeks" },
-  "greenIndex": { "carbon-heavy": "Yuqori uglerod", "mixed": "Aralash", "neutral": "Muvozanatli", "renewable": "Qayta tiklanadigan", "fully-renewable": "Toʻliq qayta tiklanadigan" },
-  "listing": { "rank": "#", "producer": "Ishlab chiqaruvchi", "source": "Manba", "stateOfCharge": "Zaryad", "available": "Mavjud", "price": "Narx / kVt·s", "delivered24h": "24s", "lifetime": "Jami", "change24h": "24s %", "weekly": "7 kunlik ishlab chiqarish", "uptime": "Ishlash vaqti", "loadingFallback": "Tarmoq maʻlumotlari yuklanmoqda…", "search": "Nom, shahar yoki operator boʻyicha qidirish…" },
-  "source": { "SOLAR": "Quyosh", "WIND": "Shamol", "HYDRO": "Suv", "BIOMASS": "Biomassa", "GEOTHERMAL": "Geotermal", "HYBRID": "Gibrid" },
-  "weather": { "SUNNY": "Quyoshli", "CLOUDY": "Bulutli", "WINDY": "Shamolli", "CALM": "Tinch", "RAINY": "Yomgʻirli" },
-  "footer": { "dataNote": "Ishlab chiqaruvchilar flotidan jonli telemetriya. Yangilanish: narxlar 60 s, zaryad 5 daq, ob-havo 30 daq.", "section": { "grid": "Tarmoq", "account": "Hisob", "data": "Maʻlumotlar" } },
-  "navigator": { "title": "Zaryadlash stansiyalari", "metaDescription": "Yaqin atrofdagi elektromobil zaryadlash stansiyalarini toping.", "loading": "Stansiyalar yuklanmoqda…", "stationsFound": "stansiya topildi", "searchPlaceholder": "Nom, shahar, operator boʻyicha qidirish…", "filters": "Filtrlar", "connectorType": "Konnektr", "powerLevel": "Quvvat", "statusLabel": "Holat", "all": "Hammasi", "status_operational": "Ishlayapti", "status_planned": "Rejalashtirilgan", "status_temporarily_unavailable": "Vaqtincha mavjud emas", "noStations": "Bu hududda stansiyalar yoʻq. Qidirish uchun xaritani suring.", "pts": "ball", "connections": "Ulanishlar", "points": "Zaryadlash nuqtalari", "maxPower": "Maks. quvvat", "rating": "Reyting", "cost": "Narx", "lastVerified": "Oxirgi tekshiruv", "directions": "Yoʻnalish" },
-  "bot": { "siblingNote": "Telegram bot @PoolwattBot jonli bildirishnomalar yuboradi va ishlab chiqaruvchilarga telefondan takliflar eʻlon qilish imkonini beradi." }
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "Uy xoʻjaliklari qayta tiklanadigan energiya yetkazadi. Tarmoq ularga toʻlaydi.",
+    "signIn": "Kirish",
+    "signOut": "Chiqish",
+    "settings": "Sozlamalar",
+    "admin": "Admin",
+    "watchlist": "Sevimlilar",
+    "request": "Uyingizni roʻyxatga oling",
+    "hubs": "Xablar",
+    "producers": "Ishlab chiqaruvchilar",
+    "offers": "Takliflar",
+    "navigator": "Zaryadlash",
+    "languageLabel": "Til",
+    "currencyLabel": "Valyuta",
+    "themeLabel": "Mavzu",
+    "themeLight": "Yorugʻ",
+    "themeDark": "Qorongʻi",
+    "themeSystem": "Tizim"
+  },
+  "home": {
+    "heroEyebrow": "Jonli · Poolwatt tarmogʻi · har 60 s yangilanadi",
+    "heroLine1": "Tarmoq",
+    "heroLine2Before": "",
+    "heroLine2Accent": "uy xoʻjaliklari",
+    "heroLine2After": " tomonidan quvvatlanadi.",
+    "heroSubtitle": "Poolwatt — uy xoʻjaliklari batareyalarda saqlangan qayta tiklanadigan energiyani sotadigan peer-to-peer bozor. Tarmoqdagi har bir kilovatt-soat quyosh, shamol, suv yoki biomassa energiyasidan keladi.",
+    "ctaPrimary": "Ishlab chiqaruvchilarni koʻrish",
+    "ctaSecondary": "Uyingizni roʻyxatga oling",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
+  },
+  "stats": {
+    "totalCapacity": "Umumiy sigʻim",
+    "delivered24h": "Yetkazilgan (24s)",
+    "lifetimeDelivered": "Jami yetkazilgan",
+    "activeProducers": "Faol ishlab chiqaruvchilar",
+    "activeHubs": "Faol xablar",
+    "solarShare": "Quyosh ulushi",
+    "windShare": "Shamol ulushi",
+    "hydroShare": "Suv ulushi",
+    "carbonOffset": "CO₂ kamaytirish (24s)",
+    "greenIndex": "Yashil indeks"
+  },
+  "greenIndex": {
+    "carbon-heavy": "Yuqori uglerod",
+    "mixed": "Aralash",
+    "neutral": "Muvozanatli",
+    "renewable": "Qayta tiklanadigan",
+    "fully-renewable": "Toʻliq qayta tiklanadigan"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "Ishlab chiqaruvchi",
+    "source": "Manba",
+    "stateOfCharge": "Zaryad",
+    "available": "Mavjud",
+    "price": "Narx / kVt·s",
+    "delivered24h": "24s",
+    "lifetime": "Jami",
+    "change24h": "24s %",
+    "weekly": "7 kunlik ishlab chiqarish",
+    "uptime": "Ishlash vaqti",
+    "loadingFallback": "Tarmoq maʻlumotlari yuklanmoqda…",
+    "search": "Nom, shahar yoki operator boʻyicha qidirish…"
+  },
+  "source": {
+    "SOLAR": "Quyosh",
+    "WIND": "Shamol",
+    "HYDRO": "Suv",
+    "BIOMASS": "Biomassa",
+    "GEOTHERMAL": "Geotermal",
+    "HYBRID": "Gibrid"
+  },
+  "weather": {
+    "SUNNY": "Quyoshli",
+    "CLOUDY": "Bulutli",
+    "WINDY": "Shamolli",
+    "CALM": "Tinch",
+    "RAINY": "Yomgʻirli"
+  },
+  "footer": {
+    "dataNote": "Ishlab chiqaruvchilar flotidan jonli telemetriya. Yangilanish: narxlar 60 s, zaryad 5 daq, ob-havo 30 daq.",
+    "section": {
+      "grid": "Tarmoq",
+      "account": "Hisob",
+      "data": "Maʻlumotlar"
+    }
+  },
+  "navigator": {
+    "title": "Zaryadlash stansiyalari",
+    "metaDescription": "Yaqin atrofdagi elektromobil zaryadlash stansiyalarini toping.",
+    "loading": "Stansiyalar yuklanmoqda…",
+    "stationsFound": "stansiya topildi",
+    "searchPlaceholder": "Nom, shahar, operator boʻyicha qidirish…",
+    "filters": "Filtrlar",
+    "connectorType": "Konnektr",
+    "powerLevel": "Quvvat",
+    "statusLabel": "Holat",
+    "all": "Hammasi",
+    "status_operational": "Ishlayapti",
+    "status_planned": "Rejalashtirilgan",
+    "status_temporarily_unavailable": "Vaqtincha mavjud emas",
+    "noStations": "Bu hududda stansiyalar yoʻq. Qidirish uchun xaritani suring.",
+    "pts": "ball",
+    "connections": "Ulanishlar",
+    "points": "Zaryadlash nuqtalari",
+    "maxPower": "Maks. quvvat",
+    "rating": "Reyting",
+    "cost": "Narx",
+    "lastVerified": "Oxirgi tekshiruv",
+    "directions": "Yoʻnalish"
+  },
+  "bot": {
+    "siblingNote": "Telegram bot @PoolwattBot jonli bildirishnomalar yuboradi va ishlab chiqaruvchilarga telefondan takliflar eʻlon qilish imkonini beradi."
+  }
 }

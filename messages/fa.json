@@ -1,12 +1,128 @@
 {
-  "common": { "appName": "Poolwatt", "tagline": "خانوارها انرژی تجدیدپذیر تأمین می‌کنند. شبکه به آنها پرداخت می‌کند.", "signIn": "ورود", "signOut": "خروج", "settings": "تنظیمات", "admin": "مدیر", "watchlist": "علاقه‌مندی‌ها", "request": "خانه خود را ثبت کنید", "hubs": "هاب‌ها", "producers": "تولیدکنندگان", "offers": "پیشنهادها", "navigator": "شارژرها", "languageLabel": "زبان", "currencyLabel": "ارز", "themeLabel": "پوسته", "themeLight": "روشن", "themeDark": "تاریک", "themeSystem": "سیستم" },
-  "home": { "heroEyebrow": "زنده · شبکه Poolwatt · هر ۶۰ ثانیه به‌روز", "heroLine1": "شبکه", "heroLine2Before": "با نیروی ", "heroLine2Accent": "خانوارها", "heroLine2After": " کار می‌کند.", "heroSubtitle": "Poolwatt یک بازار همتا به همتا است که خانوارها انرژی تجدیدپذیر ذخیره شده در باتری را می‌فروشند. هر کیلووات ساعت در شبکه از خورشیدی، بادی، آبی یا زیست‌توده است.", "ctaPrimary": "مشاهده تولیدکنندگان", "ctaSecondary": "خانه خود را ثبت کنید" },
-  "stats": { "totalCapacity": "ظرفیت کل", "delivered24h": "تحویل داده شده (۲۴ ساعت)", "lifetimeDelivered": "کل تحویل", "activeProducers": "تولیدکنندگان فعال", "activeHubs": "هاب‌های فعال", "solarShare": "سهم خورشیدی", "windShare": "سهم بادی", "hydroShare": "سهم آبی", "carbonOffset": "کاهش CO₂ (۲۴ ساعت)", "greenIndex": "شاخص سبز" },
-  "greenIndex": { "carbon-heavy": "کربن بالا", "mixed": "مختلط", "neutral": "متعادل", "renewable": "تجدیدپذیر", "fully-renewable": "کاملاً تجدیدپذیر" },
-  "listing": { "rank": "#", "producer": "تولیدکننده", "source": "منبع", "stateOfCharge": "شارژ", "available": "موجود", "price": "قیمت / کیلووات ساعت", "delivered24h": "۲۴ ساعت", "lifetime": "کل", "change24h": "۲۴ ساعت %", "weekly": "تولید ۷ روزه", "uptime": "آپتایم", "loadingFallback": "بارگذاری داده‌های شبکه…", "search": "جستجو بر اساس نام، شهر یا اپراتور…" },
-  "source": { "SOLAR": "خورشیدی", "WIND": "بادی", "HYDRO": "آبی", "BIOMASS": "زیست‌توده", "GEOTHERMAL": "زمین‌گرمایی", "HYBRID": "ترکیبی" },
-  "weather": { "SUNNY": "آفتابی", "CLOUDY": "ابری", "WINDY": "بادی", "CALM": "آرام", "RAINY": "بارانی" },
-  "footer": { "dataNote": "تله‌متری زنده از ناوگان تولیدکنندگان. به‌روزرسانی: قیمت ۶۰ ثانیه، شارژ ۵ دقیقه، آب‌وهوا ۳۰ دقیقه.", "section": { "grid": "شبکه", "account": "حساب", "data": "داده‌ها" } },
-  "navigator": { "title": "ایستگاه‌های شارژ خودروی برقی", "metaDescription": "ایستگاه‌های شارژ خودروی برقی نزدیک خود را با مشخصات فنی کامل بیابید.", "loading": "بارگذاری ایستگاه‌ها…", "stationsFound": "ایستگاه یافت شد", "searchPlaceholder": "جستجو بر اساس نام، شهر، اپراتور…", "filters": "فیلترها", "connectorType": "اتصال‌دهنده", "powerLevel": "توان", "statusLabel": "وضعیت", "all": "همه", "status_operational": "فعال", "status_planned": "برنامه‌ریزی شده", "status_temporarily_unavailable": "موقتاً غیرفعال", "noStations": "ایستگاهی در این منطقه نیست. نقشه را جابجا کنید.", "pts": "امتیاز", "connections": "اتصالات", "points": "نقاط شارژ", "maxPower": "حداکثر توان", "rating": "امتیاز", "cost": "هزینه", "lastVerified": "آخرین تأیید", "directions": "مسیریابی" },
-  "bot": { "siblingNote": "ربات تلگرام @PoolwattBot اعلان‌های زنده ارسال می‌کند و به تولیدکنندگان امکان انتشار پیشنهاد از گوشی را می‌دهد." }
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "خانوارها انرژی تجدیدپذیر تأمین می‌کنند. شبکه به آنها پرداخت می‌کند.",
+    "signIn": "ورود",
+    "signOut": "خروج",
+    "settings": "تنظیمات",
+    "admin": "مدیر",
+    "watchlist": "علاقه‌مندی‌ها",
+    "request": "خانه خود را ثبت کنید",
+    "hubs": "هاب‌ها",
+    "producers": "تولیدکنندگان",
+    "offers": "پیشنهادها",
+    "navigator": "شارژرها",
+    "languageLabel": "زبان",
+    "currencyLabel": "ارز",
+    "themeLabel": "پوسته",
+    "themeLight": "روشن",
+    "themeDark": "تاریک",
+    "themeSystem": "سیستم"
+  },
+  "home": {
+    "heroEyebrow": "زنده · شبکه Poolwatt · هر ۶۰ ثانیه به‌روز",
+    "heroLine1": "شبکه",
+    "heroLine2Before": "با نیروی ",
+    "heroLine2Accent": "خانوارها",
+    "heroLine2After": " کار می‌کند.",
+    "heroSubtitle": "Poolwatt یک بازار همتا به همتا است که خانوارها انرژی تجدیدپذیر ذخیره شده در باتری را می‌فروشند. هر کیلووات ساعت در شبکه از خورشیدی، بادی، آبی یا زیست‌توده است.",
+    "ctaPrimary": "مشاهده تولیدکنندگان",
+    "ctaSecondary": "خانه خود را ثبت کنید",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
+  },
+  "stats": {
+    "totalCapacity": "ظرفیت کل",
+    "delivered24h": "تحویل داده شده (۲۴ ساعت)",
+    "lifetimeDelivered": "کل تحویل",
+    "activeProducers": "تولیدکنندگان فعال",
+    "activeHubs": "هاب‌های فعال",
+    "solarShare": "سهم خورشیدی",
+    "windShare": "سهم بادی",
+    "hydroShare": "سهم آبی",
+    "carbonOffset": "کاهش CO₂ (۲۴ ساعت)",
+    "greenIndex": "شاخص سبز"
+  },
+  "greenIndex": {
+    "carbon-heavy": "کربن بالا",
+    "mixed": "مختلط",
+    "neutral": "متعادل",
+    "renewable": "تجدیدپذیر",
+    "fully-renewable": "کاملاً تجدیدپذیر"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "تولیدکننده",
+    "source": "منبع",
+    "stateOfCharge": "شارژ",
+    "available": "موجود",
+    "price": "قیمت / کیلووات ساعت",
+    "delivered24h": "۲۴ ساعت",
+    "lifetime": "کل",
+    "change24h": "۲۴ ساعت %",
+    "weekly": "تولید ۷ روزه",
+    "uptime": "آپتایم",
+    "loadingFallback": "بارگذاری داده‌های شبکه…",
+    "search": "جستجو بر اساس نام، شهر یا اپراتور…"
+  },
+  "source": {
+    "SOLAR": "خورشیدی",
+    "WIND": "بادی",
+    "HYDRO": "آبی",
+    "BIOMASS": "زیست‌توده",
+    "GEOTHERMAL": "زمین‌گرمایی",
+    "HYBRID": "ترکیبی"
+  },
+  "weather": {
+    "SUNNY": "آفتابی",
+    "CLOUDY": "ابری",
+    "WINDY": "بادی",
+    "CALM": "آرام",
+    "RAINY": "بارانی"
+  },
+  "footer": {
+    "dataNote": "تله‌متری زنده از ناوگان تولیدکنندگان. به‌روزرسانی: قیمت ۶۰ ثانیه، شارژ ۵ دقیقه، آب‌وهوا ۳۰ دقیقه.",
+    "section": {
+      "grid": "شبکه",
+      "account": "حساب",
+      "data": "داده‌ها"
+    }
+  },
+  "navigator": {
+    "title": "ایستگاه‌های شارژ خودروی برقی",
+    "metaDescription": "ایستگاه‌های شارژ خودروی برقی نزدیک خود را با مشخصات فنی کامل بیابید.",
+    "loading": "بارگذاری ایستگاه‌ها…",
+    "stationsFound": "ایستگاه یافت شد",
+    "searchPlaceholder": "جستجو بر اساس نام، شهر، اپراتور…",
+    "filters": "فیلترها",
+    "connectorType": "اتصال‌دهنده",
+    "powerLevel": "توان",
+    "statusLabel": "وضعیت",
+    "all": "همه",
+    "status_operational": "فعال",
+    "status_planned": "برنامه‌ریزی شده",
+    "status_temporarily_unavailable": "موقتاً غیرفعال",
+    "noStations": "ایستگاهی در این منطقه نیست. نقشه را جابجا کنید.",
+    "pts": "امتیاز",
+    "connections": "اتصالات",
+    "points": "نقاط شارژ",
+    "maxPower": "حداکثر توان",
+    "rating": "امتیاز",
+    "cost": "هزینه",
+    "lastVerified": "آخرین تأیید",
+    "directions": "مسیریابی"
+  },
+  "bot": {
+    "siblingNote": "ربات تلگرام @PoolwattBot اعلان‌های زنده ارسال می‌کند و به تولیدکنندگان امکان انتشار پیشنهاد از گوشی را می‌دهد."
+  }
 }

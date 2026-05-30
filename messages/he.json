@@ -1,12 +1,128 @@
 {
-  "common": { "appName": "Poolwatt", "tagline": "משקי בית תורמים אנרגיה מתחדשת. הרשת משלמת להם.", "signIn": "התחברות", "signOut": "התנתקות", "settings": "הגדרות", "admin": "מנהל", "watchlist": "מועדפים", "request": "רשום את ביתך", "hubs": "מרכזים", "producers": "יצרנים", "offers": "הצעות", "navigator": "עמדות טעינה", "languageLabel": "שפה", "currencyLabel": "מטבע", "themeLabel": "ערכת נושא", "themeLight": "בהיר", "themeDark": "כהה", "themeSystem": "מערכת" },
-  "home": { "heroEyebrow": "חי · רשת Poolwatt · מתעדכן כל 60 שניות", "heroLine1": "הרשת", "heroLine2Before": "מופעלת על ידי ", "heroLine2Accent": "משקי בית", "heroLine2After": ".", "heroSubtitle": "Poolwatt הוא שוק עמית-לעמית שבו בתים מוכרים אנרגיה מתחדשת המאוחסנת בסוללות. כל קילוואט-שעה ברשת מגיע משמש, רוח, מים או ביומסה — ואנחנו יכולים להוכיח את זה.", "ctaPrimary": "עיין ביצרנים", "ctaSecondary": "רשום את ביתך" },
-  "stats": { "totalCapacity": "קיבולת כוללת", "delivered24h": "סופק (24 שעות)", "lifetimeDelivered": "סה\"כ סופק", "activeProducers": "יצרנים פעילים", "activeHubs": "מרכזים פעילים", "solarShare": "חלק סולארי", "windShare": "חלק רוח", "hydroShare": "חלק מים", "carbonOffset": "הפחתת CO₂ (24 שעות)", "greenIndex": "מדד ירוק" },
-  "greenIndex": { "carbon-heavy": "עתיר פחמן", "mixed": "מעורב", "neutral": "מאוזן", "renewable": "מתחדש", "fully-renewable": "מתחדש לחלוטין" },
-  "listing": { "rank": "#", "producer": "יצרן", "source": "מקור", "stateOfCharge": "טעינה", "available": "זמין", "price": "מחיר / קוט\"ש", "delivered24h": "24 שעות", "lifetime": "סה\"כ", "change24h": "24 שעות %", "weekly": "תפוקת 7 ימים", "uptime": "זמינות", "loadingFallback": "טוען נתוני רשת…", "search": "חיפוש לפי שם, עיר או מפעיל…" },
-  "source": { "SOLAR": "סולארי", "WIND": "רוח", "HYDRO": "מים", "BIOMASS": "ביומסה", "GEOTHERMAL": "גיאותרמי", "HYBRID": "היברידי" },
-  "weather": { "SUNNY": "שמשי", "CLOUDY": "מעונן", "WINDY": "סוער", "CALM": "רגוע", "RAINY": "גשום" },
-  "footer": { "dataNote": "טלמטריה חיה מצי היצרנים. תדירות עדכון: מחירים 60 שניות, מצב טעינה 5 דקות, מזג אוויר 30 דקות.", "section": { "grid": "רשת", "account": "חשבון", "data": "נתונים" } },
-  "navigator": { "title": "עמדות טעינה לרכב חשמלי", "metaDescription": "מצא עמדות טעינה לרכב חשמלי בקרבתך עם מפרט טכני מלא.", "loading": "טוען עמדות…", "stationsFound": "עמדות נמצאו", "searchPlaceholder": "חיפוש לפי שם, עיר, מפעיל…", "filters": "מסננים", "connectorType": "מחבר", "powerLevel": "הספק", "statusLabel": "סטטוס", "all": "הכל", "status_operational": "פעיל", "status_planned": "מתוכנן", "status_temporarily_unavailable": "לא זמין זמנית", "noStations": "אין עמדות באזור זה. הזז את המפה לחיפוש.", "pts": "נקודות", "connections": "חיבורים", "points": "נקודות טעינה", "maxPower": "הספק מרבי", "rating": "דירוג", "cost": "עלות", "lastVerified": "אימות אחרון", "directions": "ניווט" },
-  "bot": { "siblingNote": "בוט הטלגרם @PoolwattBot שולח התראות בזמן אמת ומאפשר ליצרנים לפרסם הצעות מהטלפון." }
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "משקי בית תורמים אנרגיה מתחדשת. הרשת משלמת להם.",
+    "signIn": "התחברות",
+    "signOut": "התנתקות",
+    "settings": "הגדרות",
+    "admin": "מנהל",
+    "watchlist": "מועדפים",
+    "request": "רשום את ביתך",
+    "hubs": "מרכזים",
+    "producers": "יצרנים",
+    "offers": "הצעות",
+    "navigator": "עמדות טעינה",
+    "languageLabel": "שפה",
+    "currencyLabel": "מטבע",
+    "themeLabel": "ערכת נושא",
+    "themeLight": "בהיר",
+    "themeDark": "כהה",
+    "themeSystem": "מערכת"
+  },
+  "home": {
+    "heroEyebrow": "חי · רשת Poolwatt · מתעדכן כל 60 שניות",
+    "heroLine1": "הרשת",
+    "heroLine2Before": "מופעלת על ידי ",
+    "heroLine2Accent": "משקי בית",
+    "heroLine2After": ".",
+    "heroSubtitle": "Poolwatt הוא שוק עמית-לעמית שבו בתים מוכרים אנרגיה מתחדשת המאוחסנת בסוללות. כל קילוואט-שעה ברשת מגיע משמש, רוח, מים או ביומסה — ואנחנו יכולים להוכיח את זה.",
+    "ctaPrimary": "עיין ביצרנים",
+    "ctaSecondary": "רשום את ביתך",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
+  },
+  "stats": {
+    "totalCapacity": "קיבולת כוללת",
+    "delivered24h": "סופק (24 שעות)",
+    "lifetimeDelivered": "סה\"כ סופק",
+    "activeProducers": "יצרנים פעילים",
+    "activeHubs": "מרכזים פעילים",
+    "solarShare": "חלק סולארי",
+    "windShare": "חלק רוח",
+    "hydroShare": "חלק מים",
+    "carbonOffset": "הפחתת CO₂ (24 שעות)",
+    "greenIndex": "מדד ירוק"
+  },
+  "greenIndex": {
+    "carbon-heavy": "עתיר פחמן",
+    "mixed": "מעורב",
+    "neutral": "מאוזן",
+    "renewable": "מתחדש",
+    "fully-renewable": "מתחדש לחלוטין"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "יצרן",
+    "source": "מקור",
+    "stateOfCharge": "טעינה",
+    "available": "זמין",
+    "price": "מחיר / קוט\"ש",
+    "delivered24h": "24 שעות",
+    "lifetime": "סה\"כ",
+    "change24h": "24 שעות %",
+    "weekly": "תפוקת 7 ימים",
+    "uptime": "זמינות",
+    "loadingFallback": "טוען נתוני רשת…",
+    "search": "חיפוש לפי שם, עיר או מפעיל…"
+  },
+  "source": {
+    "SOLAR": "סולארי",
+    "WIND": "רוח",
+    "HYDRO": "מים",
+    "BIOMASS": "ביומסה",
+    "GEOTHERMAL": "גיאותרמי",
+    "HYBRID": "היברידי"
+  },
+  "weather": {
+    "SUNNY": "שמשי",
+    "CLOUDY": "מעונן",
+    "WINDY": "סוער",
+    "CALM": "רגוע",
+    "RAINY": "גשום"
+  },
+  "footer": {
+    "dataNote": "טלמטריה חיה מצי היצרנים. תדירות עדכון: מחירים 60 שניות, מצב טעינה 5 דקות, מזג אוויר 30 דקות.",
+    "section": {
+      "grid": "רשת",
+      "account": "חשבון",
+      "data": "נתונים"
+    }
+  },
+  "navigator": {
+    "title": "עמדות טעינה לרכב חשמלי",
+    "metaDescription": "מצא עמדות טעינה לרכב חשמלי בקרבתך עם מפרט טכני מלא.",
+    "loading": "טוען עמדות…",
+    "stationsFound": "עמדות נמצאו",
+    "searchPlaceholder": "חיפוש לפי שם, עיר, מפעיל…",
+    "filters": "מסננים",
+    "connectorType": "מחבר",
+    "powerLevel": "הספק",
+    "statusLabel": "סטטוס",
+    "all": "הכל",
+    "status_operational": "פעיל",
+    "status_planned": "מתוכנן",
+    "status_temporarily_unavailable": "לא זמין זמנית",
+    "noStations": "אין עמדות באזור זה. הזז את המפה לחיפוש.",
+    "pts": "נקודות",
+    "connections": "חיבורים",
+    "points": "נקודות טעינה",
+    "maxPower": "הספק מרבי",
+    "rating": "דירוג",
+    "cost": "עלות",
+    "lastVerified": "אימות אחרון",
+    "directions": "ניווט"
+  },
+  "bot": {
+    "siblingNote": "בוט הטלגרם @PoolwattBot שולח התראות בזמן אמת ומאפשר ליצרנים לפרסם הצעות מהטלפון."
+  }
 }

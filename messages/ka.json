@@ -1,12 +1,128 @@
 {
-  "common": { "appName": "Poolwatt", "tagline": "საოჯახო მეურნეობები აწვდიან განახლებად ენერგიას. ქსელი უხდის მათ.", "signIn": "შესვლა", "signOut": "გასვლა", "settings": "პარამეტრები", "admin": "ადმინი", "watchlist": "რჩეულები", "request": "დაარეგისტრირე შენი სახლი", "hubs": "ჰაბები", "producers": "მწარმოებლები", "offers": "შეთავაზებები", "navigator": "დამტენები", "languageLabel": "ენა", "currencyLabel": "ვალუტა", "themeLabel": "თემა", "themeLight": "ნათელი", "themeDark": "მუქი", "themeSystem": "სისტემა" },
-  "home": { "heroEyebrow": "პირდაპირ · Poolwatt ქსელი · განახლება ყოველ 60 წმ", "heroLine1": "ქსელი", "heroLine2Before": "რომელსაც ", "heroLine2Accent": "საოჯახო მეურნეობები", "heroLine2After": " აწვდიან ენერგიას.", "heroSubtitle": "Poolwatt არის peer-to-peer ბაზარი, სადაც სახლები ყიდიან ბატარეებში დაგროვებულ განახლებად ენერგიას. ქსელში ყოველი კილოვატ-საათი მზის, ქარის, წყლის ან ბიომასის ენერგიიდან მოდის.", "ctaPrimary": "მწარმოებლების ნახვა", "ctaSecondary": "სახლის რეგისტრაცია" },
-  "stats": { "totalCapacity": "ჯამური ტევადობა", "delivered24h": "მიწოდებული (24სთ)", "lifetimeDelivered": "სულ მიწოდებული", "activeProducers": "აქტიური მწარმოებლები", "activeHubs": "აქტიური ჰაბები", "solarShare": "მზის წილი", "windShare": "ქარის წილი", "hydroShare": "წყლის წილი", "carbonOffset": "CO₂ შემცირება (24სთ)", "greenIndex": "მწვანე ინდექსი" },
-  "greenIndex": { "carbon-heavy": "ნახშირბადით მძიმე", "mixed": "შერეული", "neutral": "დაბალანსებული", "renewable": "განახლებადი", "fully-renewable": "სრულად განახლებადი" },
-  "listing": { "rank": "#", "producer": "მწარმოებელი", "source": "წყარო", "stateOfCharge": "დამუხტვა", "available": "ხელმისაწვდომი", "price": "ფასი / კვტ·სთ", "delivered24h": "24სთ", "lifetime": "სულ", "change24h": "24სთ %", "weekly": "7-დღიანი გამოშვება", "uptime": "ხელმისაწვდომობა", "loadingFallback": "ქსელის მონაცემების ჩატვირთვა…", "search": "ძიება სახელით, ქალაქით ან ოპერატორით…" },
-  "source": { "SOLAR": "მზის", "WIND": "ქარის", "HYDRO": "წყლის", "BIOMASS": "ბიომასა", "GEOTHERMAL": "გეოთერმული", "HYBRID": "ჰიბრიდი" },
-  "weather": { "SUNNY": "მზიანი", "CLOUDY": "ღრუბლიანი", "WINDY": "ქარიანი", "CALM": "წყნარი", "RAINY": "წვიმიანი" },
-  "footer": { "dataNote": "პირდაპირი ტელემეტრია მწარმოებლების ფლოტიდან. განახლების სიხშირე: 60 წმ ფასები, 5 წთ დამუხტვა, 30 წთ ამინდი.", "section": { "grid": "ქსელი", "account": "ანგარიში", "data": "მონაცემები" } },
-  "navigator": { "title": "დამტენი სადგურები", "metaDescription": "იპოვეთ ელექტრომობილების დამტენი სადგურები თქვენს მახლობლად.", "loading": "სადგურების ჩატვირთვა…", "stationsFound": "სადგური ნაპოვნია", "searchPlaceholder": "ძიება სახელით, ქალაქით, ოპერატორით…", "filters": "ფილტრები", "connectorType": "კონექტორი", "powerLevel": "სიმძლავრე", "statusLabel": "სტატუსი", "all": "ყველა", "status_operational": "მოქმედი", "status_planned": "დაგეგმილი", "status_temporarily_unavailable": "დროებით მიუწვდომელი", "noStations": "ამ ზონაში სადგურები არ არის. გადაიტანეთ რუკა საძიებლად.", "pts": "ქულა", "connections": "კავშირები", "points": "დამტენი წერტილები", "maxPower": "მაქს. სიმძლავრე", "rating": "რეიტინგი", "cost": "ღირებულება", "lastVerified": "ბოლო შემოწმება", "directions": "მარშრუტი" },
-  "bot": { "siblingNote": "Telegram ბოტი @PoolwattBot აგზავნის შეტყობინებებს რეალურ დროში და მწარმოებლებს საშუალებას აძლევს გამოაქვეყნონ შეთავაზებები ტელეფონიდან." }
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "საოჯახო მეურნეობები აწვდიან განახლებად ენერგიას. ქსელი უხდის მათ.",
+    "signIn": "შესვლა",
+    "signOut": "გასვლა",
+    "settings": "პარამეტრები",
+    "admin": "ადმინი",
+    "watchlist": "რჩეულები",
+    "request": "დაარეგისტრირე შენი სახლი",
+    "hubs": "ჰაბები",
+    "producers": "მწარმოებლები",
+    "offers": "შეთავაზებები",
+    "navigator": "დამტენები",
+    "languageLabel": "ენა",
+    "currencyLabel": "ვალუტა",
+    "themeLabel": "თემა",
+    "themeLight": "ნათელი",
+    "themeDark": "მუქი",
+    "themeSystem": "სისტემა"
+  },
+  "home": {
+    "heroEyebrow": "პირდაპირ · Poolwatt ქსელი · განახლება ყოველ 60 წმ",
+    "heroLine1": "ქსელი",
+    "heroLine2Before": "რომელსაც ",
+    "heroLine2Accent": "საოჯახო მეურნეობები",
+    "heroLine2After": " აწვდიან ენერგიას.",
+    "heroSubtitle": "Poolwatt არის peer-to-peer ბაზარი, სადაც სახლები ყიდიან ბატარეებში დაგროვებულ განახლებად ენერგიას. ქსელში ყოველი კილოვატ-საათი მზის, ქარის, წყლის ან ბიომასის ენერგიიდან მოდის.",
+    "ctaPrimary": "მწარმოებლების ნახვა",
+    "ctaSecondary": "სახლის რეგისტრაცია",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
+  },
+  "stats": {
+    "totalCapacity": "ჯამური ტევადობა",
+    "delivered24h": "მიწოდებული (24სთ)",
+    "lifetimeDelivered": "სულ მიწოდებული",
+    "activeProducers": "აქტიური მწარმოებლები",
+    "activeHubs": "აქტიური ჰაბები",
+    "solarShare": "მზის წილი",
+    "windShare": "ქარის წილი",
+    "hydroShare": "წყლის წილი",
+    "carbonOffset": "CO₂ შემცირება (24სთ)",
+    "greenIndex": "მწვანე ინდექსი"
+  },
+  "greenIndex": {
+    "carbon-heavy": "ნახშირბადით მძიმე",
+    "mixed": "შერეული",
+    "neutral": "დაბალანსებული",
+    "renewable": "განახლებადი",
+    "fully-renewable": "სრულად განახლებადი"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "მწარმოებელი",
+    "source": "წყარო",
+    "stateOfCharge": "დამუხტვა",
+    "available": "ხელმისაწვდომი",
+    "price": "ფასი / კვტ·სთ",
+    "delivered24h": "24სთ",
+    "lifetime": "სულ",
+    "change24h": "24სთ %",
+    "weekly": "7-დღიანი გამოშვება",
+    "uptime": "ხელმისაწვდომობა",
+    "loadingFallback": "ქსელის მონაცემების ჩატვირთვა…",
+    "search": "ძიება სახელით, ქალაქით ან ოპერატორით…"
+  },
+  "source": {
+    "SOLAR": "მზის",
+    "WIND": "ქარის",
+    "HYDRO": "წყლის",
+    "BIOMASS": "ბიომასა",
+    "GEOTHERMAL": "გეოთერმული",
+    "HYBRID": "ჰიბრიდი"
+  },
+  "weather": {
+    "SUNNY": "მზიანი",
+    "CLOUDY": "ღრუბლიანი",
+    "WINDY": "ქარიანი",
+    "CALM": "წყნარი",
+    "RAINY": "წვიმიანი"
+  },
+  "footer": {
+    "dataNote": "პირდაპირი ტელემეტრია მწარმოებლების ფლოტიდან. განახლების სიხშირე: 60 წმ ფასები, 5 წთ დამუხტვა, 30 წთ ამინდი.",
+    "section": {
+      "grid": "ქსელი",
+      "account": "ანგარიში",
+      "data": "მონაცემები"
+    }
+  },
+  "navigator": {
+    "title": "დამტენი სადგურები",
+    "metaDescription": "იპოვეთ ელექტრომობილების დამტენი სადგურები თქვენს მახლობლად.",
+    "loading": "სადგურების ჩატვირთვა…",
+    "stationsFound": "სადგური ნაპოვნია",
+    "searchPlaceholder": "ძიება სახელით, ქალაქით, ოპერატორით…",
+    "filters": "ფილტრები",
+    "connectorType": "კონექტორი",
+    "powerLevel": "სიმძლავრე",
+    "statusLabel": "სტატუსი",
+    "all": "ყველა",
+    "status_operational": "მოქმედი",
+    "status_planned": "დაგეგმილი",
+    "status_temporarily_unavailable": "დროებით მიუწვდომელი",
+    "noStations": "ამ ზონაში სადგურები არ არის. გადაიტანეთ რუკა საძიებლად.",
+    "pts": "ქულა",
+    "connections": "კავშირები",
+    "points": "დამტენი წერტილები",
+    "maxPower": "მაქს. სიმძლავრე",
+    "rating": "რეიტინგი",
+    "cost": "ღირებულება",
+    "lastVerified": "ბოლო შემოწმება",
+    "directions": "მარშრუტი"
+  },
+  "bot": {
+    "siblingNote": "Telegram ბოტი @PoolwattBot აგზავნის შეტყობინებებს რეალურ დროში და მწარმოებლებს საშუალებას აძლევს გამოაქვეყნონ შეთავაზებები ტელეფონიდან."
+  }
 }

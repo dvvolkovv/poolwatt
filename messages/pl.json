@@ -27,7 +27,19 @@
     "heroLine2After": ".",
     "heroSubtitle": "Poolwatt to rynek peer-to-peer, na którym domy sprzedają energię odnawialną przechowywaną w bateriach. Każda kilowatogodzina w sieci pochodzi z energii słonecznej, wiatrowej, wodnej lub biomasy — i możemy to udowodnić.",
     "ctaPrimary": "Przeglądaj producentów",
-    "ctaSecondary": "Zarejestruj gospodarstwo"
+    "ctaSecondary": "Zarejestruj gospodarstwo",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
   },
   "stats": {
     "totalCapacity": "Całkowita pojemność",

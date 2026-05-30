@@ -5,10 +5,13 @@ import {
   readGridStats,
   readExchangeRates,
   readGreenIndex,
+  readNews,
 } from "@/lib/snapshot";
 import { GridStatsHero } from "@/components/grid-stats-hero";
 import { ProducerListClient } from "@/components/producer-list-client";
+import { NewsRail } from "@/components/news-rail";
 import { getCurrency } from "@/lib/get-currency";
+import type { NewsTheme } from "@/lib/news";
 
 export const revalidate = 60;
 
@@ -23,13 +26,23 @@ export default async function Home({
   const th = await getTranslations("home");
   const tc = await getTranslations("common");
 
-  const [rows, stats, rates, currency, greenIndex] = await Promise.all([
+  const [rows, stats, rates, currency, greenIndex, news] = await Promise.all([
     readTopProducers(),
     readGridStats(),
     readExchangeRates(),
     getCurrency(),
     readGreenIndex(),
+    readNews(),
   ]);
+
+  const newsLabels: Record<NewsTheme, string> = {
+    solar: th("newsflow.categories.solar"),
+    wind: th("newsflow.categories.wind"),
+    storage: th("newsflow.categories.storage"),
+    grid: th("newsflow.categories.grid"),
+    policy: th("newsflow.categories.policy"),
+    general: th("newsflow.categories.general"),
+  };
 
   return (
     <main className="bg-bg">
@@ -85,6 +98,22 @@ export default async function Home({
             </div>
           </div>
         </section>
+
+        {/* NEWSFLOW BANNER */}
+        {news.length > 0 && (
+          <section className="pb-12">
+            <div className="flex items-baseline justify-between mb-5">
+              <div className="num text-[11px] uppercase tracking-[0.3em] text-accent inline-flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-accent" aria-hidden />
+                {th("newsflow.eyebrow")}
+              </div>
+              <span className="hidden sm:inline text-muted text-[12px] font-light">
+                {th("newsflow.subtitle")}
+              </span>
+            </div>
+            <NewsRail items={news} locale={locale} labels={newsLabels} />
+          </section>
+        )}
 
         {/* PRODUCER TABLE */}
         <section id="producers" className="py-12 scroll-mt-24">

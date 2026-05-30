@@ -1,12 +1,128 @@
 {
-  "common": { "appName": "Poolwatt", "tagline": "Цlенош карарду энерги хьалха бо. Сетина цаьрга бахьа ло.", "signIn": "Чубовла", "signOut": "Арабола", "settings": "Нисдарш", "admin": "Адмиран", "watchlist": "Билгалдаьхна", "request": "Цlа дlабилла", "hubs": "Хабаш", "producers": "Хlумнехаш", "offers": "Деанаш", "navigator": "Зарядка", "languageLabel": "Мотт", "currencyLabel": "Ахча", "themeLabel": "Тема", "themeLight": "Серло", "themeDark": "Бода", "themeSystem": "Система" },
-  "home": { "heroEyebrow": "Дlахьалуш · Poolwatt сеть · 60 секундехь керла ду", "heroLine1": "Сеть", "heroLine2Before": "", "heroLine2Accent": "цlенош", "heroLine2After": " лелаю.", "heroSubtitle": "Poolwatt — цlенош батарейнашкахь лаьцна карарду энерги дохку peer-to-peer маркет.", "ctaPrimary": "Хlумнехаш хьажа", "ctaSecondary": "Цlа дlабилла" },
-  "stats": { "totalCapacity": "Юкъара сийна", "delivered24h": "Дlадахьийтна (24сахь)", "lifetimeDelivered": "Массо дlадахьийтна", "activeProducers": "Болх бечу хlумнехаш", "activeHubs": "Болх бечу хабаш", "solarShare": "Малхан дакъа", "windShare": "Мохан дакъа", "hydroShare": "Хин дакъа", "carbonOffset": "CO₂ кlезиг даккхар (24сахь)", "greenIndex": "Баьццара индекс" },
-  "greenIndex": { "carbon-heavy": "Дукха карбон", "mixed": "Гlоьнаш", "neutral": "Мерзалла", "renewable": "Карарду", "fully-renewable": "Чlогlа карарду" },
-  "listing": { "rank": "#", "producer": "Хlумнаха", "source": "Хьалха", "stateOfCharge": "Заряд", "available": "Болу", "price": "Мах / кВт·сахь", "delivered24h": "24сахь", "lifetime": "Массо", "change24h": "24сахь %", "weekly": "7 де хlума", "uptime": "Болх бар", "loadingFallback": "Маьlна хаамаш дlабохуш ду…", "search": "Цlе, гlала я оператор тlехь лаха…" },
-  "source": { "SOLAR": "Малха", "WIND": "Мох", "HYDRO": "Хи", "BIOMASS": "Биомасса", "GEOTHERMAL": "Геотермал", "HYBRID": "Гибрид" },
-  "weather": { "SUNNY": "Малх", "CLOUDY": "Маршала", "WINDY": "Мох", "CALM": "Меттах", "RAINY": "Догlа" },
-  "footer": { "dataNote": "Хlумнехой флотах телеметри. Керла хилар: мах 60 сек, заряд 5 мин, хlаваал 30 мин.", "section": { "grid": "Сеть", "account": "Аккаунт", "data": "Хаамаш" } },
-  "navigator": { "title": "Зарядкан станцеш", "metaDescription": "Уллохь зарядкан станцеш лаха.", "loading": "Станцеш дlабохуш ю…", "stationsFound": "станци карийна", "searchPlaceholder": "Цlе, гlала, оператор тlехь лаха…", "filters": "Фильтраш", "connectorType": "Коннектор", "powerLevel": "Мощность", "statusLabel": "Хьал", "all": "Массо", "status_operational": "Болх беш", "status_planned": "Планехь", "status_temporarily_unavailable": "Цкъа хlинца бац", "noStations": "Кху метте станцеш дац. Лахарна карта тlеIайоьвла.", "pts": "балл", "connections": "Цхьанакхетарш", "points": "Зарядкан нуктеш", "maxPower": "Мах мощность", "rating": "Рейтинг", "cost": "Мах", "lastVerified": "Тlехьа хьажар", "directions": "Некъ" },
-  "bot": { "siblingNote": "Telegram бот @PoolwattBot дlахьалуш хаамаш дlадохьу." }
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "Цlенош карарду энерги хьалха бо. Сетина цаьрга бахьа ло.",
+    "signIn": "Чубовла",
+    "signOut": "Арабола",
+    "settings": "Нисдарш",
+    "admin": "Адмиран",
+    "watchlist": "Билгалдаьхна",
+    "request": "Цlа дlабилла",
+    "hubs": "Хабаш",
+    "producers": "Хlумнехаш",
+    "offers": "Деанаш",
+    "navigator": "Зарядка",
+    "languageLabel": "Мотт",
+    "currencyLabel": "Ахча",
+    "themeLabel": "Тема",
+    "themeLight": "Серло",
+    "themeDark": "Бода",
+    "themeSystem": "Система"
+  },
+  "home": {
+    "heroEyebrow": "Дlахьалуш · Poolwatt сеть · 60 секундехь керла ду",
+    "heroLine1": "Сеть",
+    "heroLine2Before": "",
+    "heroLine2Accent": "цlенош",
+    "heroLine2After": " лелаю.",
+    "heroSubtitle": "Poolwatt — цlенош батарейнашкахь лаьцна карарду энерги дохку peer-to-peer маркет.",
+    "ctaPrimary": "Хlумнехаш хьажа",
+    "ctaSecondary": "Цlа дlабилла",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
+  },
+  "stats": {
+    "totalCapacity": "Юкъара сийна",
+    "delivered24h": "Дlадахьийтна (24сахь)",
+    "lifetimeDelivered": "Массо дlадахьийтна",
+    "activeProducers": "Болх бечу хlумнехаш",
+    "activeHubs": "Болх бечу хабаш",
+    "solarShare": "Малхан дакъа",
+    "windShare": "Мохан дакъа",
+    "hydroShare": "Хин дакъа",
+    "carbonOffset": "CO₂ кlезиг даккхар (24сахь)",
+    "greenIndex": "Баьццара индекс"
+  },
+  "greenIndex": {
+    "carbon-heavy": "Дукха карбон",
+    "mixed": "Гlоьнаш",
+    "neutral": "Мерзалла",
+    "renewable": "Карарду",
+    "fully-renewable": "Чlогlа карарду"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "Хlумнаха",
+    "source": "Хьалха",
+    "stateOfCharge": "Заряд",
+    "available": "Болу",
+    "price": "Мах / кВт·сахь",
+    "delivered24h": "24сахь",
+    "lifetime": "Массо",
+    "change24h": "24сахь %",
+    "weekly": "7 де хlума",
+    "uptime": "Болх бар",
+    "loadingFallback": "Маьlна хаамаш дlабохуш ду…",
+    "search": "Цlе, гlала я оператор тlехь лаха…"
+  },
+  "source": {
+    "SOLAR": "Малха",
+    "WIND": "Мох",
+    "HYDRO": "Хи",
+    "BIOMASS": "Биомасса",
+    "GEOTHERMAL": "Геотермал",
+    "HYBRID": "Гибрид"
+  },
+  "weather": {
+    "SUNNY": "Малх",
+    "CLOUDY": "Маршала",
+    "WINDY": "Мох",
+    "CALM": "Меттах",
+    "RAINY": "Догlа"
+  },
+  "footer": {
+    "dataNote": "Хlумнехой флотах телеметри. Керла хилар: мах 60 сек, заряд 5 мин, хlаваал 30 мин.",
+    "section": {
+      "grid": "Сеть",
+      "account": "Аккаунт",
+      "data": "Хаамаш"
+    }
+  },
+  "navigator": {
+    "title": "Зарядкан станцеш",
+    "metaDescription": "Уллохь зарядкан станцеш лаха.",
+    "loading": "Станцеш дlабохуш ю…",
+    "stationsFound": "станци карийна",
+    "searchPlaceholder": "Цlе, гlала, оператор тlехь лаха…",
+    "filters": "Фильтраш",
+    "connectorType": "Коннектор",
+    "powerLevel": "Мощность",
+    "statusLabel": "Хьал",
+    "all": "Массо",
+    "status_operational": "Болх беш",
+    "status_planned": "Планехь",
+    "status_temporarily_unavailable": "Цкъа хlинца бац",
+    "noStations": "Кху метте станцеш дац. Лахарна карта тlеIайоьвла.",
+    "pts": "балл",
+    "connections": "Цхьанакхетарш",
+    "points": "Зарядкан нуктеш",
+    "maxPower": "Мах мощность",
+    "rating": "Рейтинг",
+    "cost": "Мах",
+    "lastVerified": "Тlехьа хьажар",
+    "directions": "Некъ"
+  },
+  "bot": {
+    "siblingNote": "Telegram бот @PoolwattBot дlахьалуш хаамаш дlадохьу."
+  }
 }

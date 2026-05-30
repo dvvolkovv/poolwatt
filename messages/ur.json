@@ -1,12 +1,128 @@
 {
-  "common": { "appName": "Poolwatt", "tagline": "گھرانے قابل تجدید توانائی فراہم کرتے ہیں۔ گرِڈ انہیں ادائیگی کرتا ہے۔", "signIn": "لاگ ان", "signOut": "لاگ آؤٹ", "settings": "ترتیبات", "admin": "ایڈمن", "watchlist": "پسندیدہ", "request": "اپنا گھر رجسٹر کریں", "hubs": "ہب", "producers": "پروڈیوسرز", "offers": "آفرز", "navigator": "چارجرز", "languageLabel": "زبان", "currencyLabel": "کرنسی", "themeLabel": "تھیم", "themeLight": "روشن", "themeDark": "تاریک", "themeSystem": "سسٹم" },
-  "home": { "heroEyebrow": "لائیو · Poolwatt گرِڈ · ہر 60 سیکنڈ اپ ڈیٹ", "heroLine1": "گرِڈ", "heroLine2Before": "", "heroLine2Accent": "گھرانوں", "heroLine2After": " سے چلتا ہے۔", "heroSubtitle": "Poolwatt ایک peer-to-peer مارکیٹ پلیس ہے جہاں گھرانے بیٹریوں میں ذخیرہ شدہ قابل تجدید توانائی فروخت کرتے ہیں۔ نیٹ ورک پر ہر کلو واٹ گھنٹہ شمسی، ہوائی، پانی یا بائیوماس سے آتا ہے۔", "ctaPrimary": "پروڈیوسرز دیکھیں", "ctaSecondary": "اپنا گھر رجسٹر کریں" },
-  "stats": { "totalCapacity": "کل صلاحیت", "delivered24h": "فراہم (24 گھنٹے)", "lifetimeDelivered": "کل فراہم", "activeProducers": "فعال پروڈیوسرز", "activeHubs": "فعال ہب", "solarShare": "شمسی حصہ", "windShare": "ہوائی حصہ", "hydroShare": "پانی حصہ", "carbonOffset": "CO₂ کمی (24 گھنٹے)", "greenIndex": "سبز اشاریہ" },
-  "greenIndex": { "carbon-heavy": "زیادہ کاربن", "mixed": "مخلوط", "neutral": "متوازن", "renewable": "قابل تجدید", "fully-renewable": "مکمل قابل تجدید" },
-  "listing": { "rank": "#", "producer": "پروڈیوسر", "source": "ذریعہ", "stateOfCharge": "چارج", "available": "دستیاب", "price": "قیمت / kWh", "delivered24h": "24 گھنٹے", "lifetime": "کل", "change24h": "24 گھنٹے %", "weekly": "7 دن پیداوار", "uptime": "اپ ٹائم", "loadingFallback": "گرِڈ ڈیٹا لوڈ ہو رہا ہے…", "search": "نام، شہر یا آپریٹر سے تلاش…" },
-  "source": { "SOLAR": "شمسی", "WIND": "ہوائی", "HYDRO": "پانی", "BIOMASS": "بائیوماس", "GEOTHERMAL": "جیوتھرمل", "HYBRID": "ہائبرڈ" },
-  "weather": { "SUNNY": "دھوپ", "CLOUDY": "بادل", "WINDY": "ہوا", "CALM": "پرسکون", "RAINY": "بارش" },
-  "footer": { "dataNote": "پروڈیوسر فلیٹ سے لائیو ٹیلی میٹری۔ اپ ڈیٹ: قیمتیں 60 سیکنڈ، چارج 5 منٹ، موسم 30 منٹ۔", "section": { "grid": "گرِڈ", "account": "اکاؤنٹ", "data": "ڈیٹا" } },
-  "navigator": { "title": "EV چارجنگ اسٹیشن", "metaDescription": "اپنے قریب الیکٹرک گاڑیوں کے چارجنگ اسٹیشن مکمل تکنیکی تفصیلات کے ساتھ تلاش کریں۔", "loading": "اسٹیشن لوڈ ہو رہے ہیں…", "stationsFound": "اسٹیشن ملے", "searchPlaceholder": "نام، شہر، آپریٹر سے تلاش…", "filters": "فلٹرز", "connectorType": "کنیکٹر", "powerLevel": "طاقت", "statusLabel": "حالت", "all": "سب", "status_operational": "فعال", "status_planned": "منصوبہ بند", "status_temporarily_unavailable": "عارضی طور پر غیر دستیاب", "noStations": "اس علاقے میں کوئی اسٹیشن نہیں۔ تلاش کے لیے نقشہ کھسکائیں۔", "pts": "پوائنٹ", "connections": "کنکشنز", "points": "چارجنگ پوائنٹس", "maxPower": "زیادہ سے زیادہ طاقت", "rating": "درجہ بندی", "cost": "لاگت", "lastVerified": "آخری تصدیق", "directions": "سمت" },
-  "bot": { "siblingNote": "ٹیلیگرام بوٹ @PoolwattBot لائیو الرٹس بھیجتا ہے اور پروڈیوسرز کو فون سے آفرز شائع کرنے دیتا ہے۔" }
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "گھرانے قابل تجدید توانائی فراہم کرتے ہیں۔ گرِڈ انہیں ادائیگی کرتا ہے۔",
+    "signIn": "لاگ ان",
+    "signOut": "لاگ آؤٹ",
+    "settings": "ترتیبات",
+    "admin": "ایڈمن",
+    "watchlist": "پسندیدہ",
+    "request": "اپنا گھر رجسٹر کریں",
+    "hubs": "ہب",
+    "producers": "پروڈیوسرز",
+    "offers": "آفرز",
+    "navigator": "چارجرز",
+    "languageLabel": "زبان",
+    "currencyLabel": "کرنسی",
+    "themeLabel": "تھیم",
+    "themeLight": "روشن",
+    "themeDark": "تاریک",
+    "themeSystem": "سسٹم"
+  },
+  "home": {
+    "heroEyebrow": "لائیو · Poolwatt گرِڈ · ہر 60 سیکنڈ اپ ڈیٹ",
+    "heroLine1": "گرِڈ",
+    "heroLine2Before": "",
+    "heroLine2Accent": "گھرانوں",
+    "heroLine2After": " سے چلتا ہے۔",
+    "heroSubtitle": "Poolwatt ایک peer-to-peer مارکیٹ پلیس ہے جہاں گھرانے بیٹریوں میں ذخیرہ شدہ قابل تجدید توانائی فروخت کرتے ہیں۔ نیٹ ورک پر ہر کلو واٹ گھنٹہ شمسی، ہوائی، پانی یا بائیوماس سے آتا ہے۔",
+    "ctaPrimary": "پروڈیوسرز دیکھیں",
+    "ctaSecondary": "اپنا گھر رجسٹر کریں",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
+  },
+  "stats": {
+    "totalCapacity": "کل صلاحیت",
+    "delivered24h": "فراہم (24 گھنٹے)",
+    "lifetimeDelivered": "کل فراہم",
+    "activeProducers": "فعال پروڈیوسرز",
+    "activeHubs": "فعال ہب",
+    "solarShare": "شمسی حصہ",
+    "windShare": "ہوائی حصہ",
+    "hydroShare": "پانی حصہ",
+    "carbonOffset": "CO₂ کمی (24 گھنٹے)",
+    "greenIndex": "سبز اشاریہ"
+  },
+  "greenIndex": {
+    "carbon-heavy": "زیادہ کاربن",
+    "mixed": "مخلوط",
+    "neutral": "متوازن",
+    "renewable": "قابل تجدید",
+    "fully-renewable": "مکمل قابل تجدید"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "پروڈیوسر",
+    "source": "ذریعہ",
+    "stateOfCharge": "چارج",
+    "available": "دستیاب",
+    "price": "قیمت / kWh",
+    "delivered24h": "24 گھنٹے",
+    "lifetime": "کل",
+    "change24h": "24 گھنٹے %",
+    "weekly": "7 دن پیداوار",
+    "uptime": "اپ ٹائم",
+    "loadingFallback": "گرِڈ ڈیٹا لوڈ ہو رہا ہے…",
+    "search": "نام، شہر یا آپریٹر سے تلاش…"
+  },
+  "source": {
+    "SOLAR": "شمسی",
+    "WIND": "ہوائی",
+    "HYDRO": "پانی",
+    "BIOMASS": "بائیوماس",
+    "GEOTHERMAL": "جیوتھرمل",
+    "HYBRID": "ہائبرڈ"
+  },
+  "weather": {
+    "SUNNY": "دھوپ",
+    "CLOUDY": "بادل",
+    "WINDY": "ہوا",
+    "CALM": "پرسکون",
+    "RAINY": "بارش"
+  },
+  "footer": {
+    "dataNote": "پروڈیوسر فلیٹ سے لائیو ٹیلی میٹری۔ اپ ڈیٹ: قیمتیں 60 سیکنڈ، چارج 5 منٹ، موسم 30 منٹ۔",
+    "section": {
+      "grid": "گرِڈ",
+      "account": "اکاؤنٹ",
+      "data": "ڈیٹا"
+    }
+  },
+  "navigator": {
+    "title": "EV چارجنگ اسٹیشن",
+    "metaDescription": "اپنے قریب الیکٹرک گاڑیوں کے چارجنگ اسٹیشن مکمل تکنیکی تفصیلات کے ساتھ تلاش کریں۔",
+    "loading": "اسٹیشن لوڈ ہو رہے ہیں…",
+    "stationsFound": "اسٹیشن ملے",
+    "searchPlaceholder": "نام، شہر، آپریٹر سے تلاش…",
+    "filters": "فلٹرز",
+    "connectorType": "کنیکٹر",
+    "powerLevel": "طاقت",
+    "statusLabel": "حالت",
+    "all": "سب",
+    "status_operational": "فعال",
+    "status_planned": "منصوبہ بند",
+    "status_temporarily_unavailable": "عارضی طور پر غیر دستیاب",
+    "noStations": "اس علاقے میں کوئی اسٹیشن نہیں۔ تلاش کے لیے نقشہ کھسکائیں۔",
+    "pts": "پوائنٹ",
+    "connections": "کنکشنز",
+    "points": "چارجنگ پوائنٹس",
+    "maxPower": "زیادہ سے زیادہ طاقت",
+    "rating": "درجہ بندی",
+    "cost": "لاگت",
+    "lastVerified": "آخری تصدیق",
+    "directions": "سمت"
+  },
+  "bot": {
+    "siblingNote": "ٹیلیگرام بوٹ @PoolwattBot لائیو الرٹس بھیجتا ہے اور پروڈیوسرز کو فون سے آفرز شائع کرنے دیتا ہے۔"
+  }
 }

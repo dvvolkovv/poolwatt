@@ -1,12 +1,128 @@
 {
-  "common": { "appName": "Poolwatt", "tagline": "가정이 재생에너지를 공급합니다. 그리드가 보상합니다.", "signIn": "로그인", "signOut": "로그아웃", "settings": "설정", "admin": "관리자", "watchlist": "관심목록", "request": "가정 등록", "hubs": "허브", "producers": "생산자", "offers": "오퍼", "navigator": "충전소", "languageLabel": "언어", "currencyLabel": "통화", "themeLabel": "테마", "themeLight": "라이트", "themeDark": "다크", "themeSystem": "시스템" },
-  "home": { "heroEyebrow": "실시간 · Poolwatt 그리드 · 60초마다 갱신", "heroLine1": "그리드는", "heroLine2Before": "", "heroLine2Accent": "가정", "heroLine2After": "이 운영합니다.", "heroSubtitle": "Poolwatt는 가정이 배터리에 저장된 재생에너지를 판매하는 P2P 마켓플레이스입니다. 네트워크의 모든 킬로와트시는 태양광, 풍력, 수력 또는 바이오매스에서 옵니다.", "ctaPrimary": "생산자 둘러보기", "ctaSecondary": "가정 등록" },
-  "stats": { "totalCapacity": "총 용량", "delivered24h": "공급량 (24시간)", "lifetimeDelivered": "누적 공급량", "activeProducers": "활성 생산자", "activeHubs": "활성 허브", "solarShare": "태양광 비율", "windShare": "풍력 비율", "hydroShare": "수력 비율", "carbonOffset": "CO₂ 감축 (24시간)", "greenIndex": "그린 인덱스" },
-  "greenIndex": { "carbon-heavy": "고탄소", "mixed": "혼합", "neutral": "균형", "renewable": "재생가능", "fully-renewable": "완전 재생가능" },
-  "listing": { "rank": "#", "producer": "생산자", "source": "전원", "stateOfCharge": "충전율", "available": "이용가능", "price": "가격 / kWh", "delivered24h": "24시간", "lifetime": "누적", "change24h": "24시간 %", "weekly": "7일 생산량", "uptime": "가동률", "loadingFallback": "그리드 데이터 로딩 중…", "search": "이름, 도시 또는 운영자로 검색…" },
-  "source": { "SOLAR": "태양광", "WIND": "풍력", "HYDRO": "수력", "BIOMASS": "바이오매스", "GEOTHERMAL": "지열", "HYBRID": "하이브리드" },
-  "weather": { "SUNNY": "맑음", "CLOUDY": "흐림", "WINDY": "바람", "CALM": "고요", "RAINY": "비" },
-  "footer": { "dataNote": "생산자 플릿의 실시간 텔레메트리. 갱신 주기: 가격 60초, 충전상태 5분, 날씨 30분.", "section": { "grid": "그리드", "account": "계정", "data": "데이터" } },
-  "navigator": { "title": "EV 충전소", "metaDescription": "가까운 전기차 충전소를 상세 사양과 함께 찾아보세요.", "loading": "충전소 로딩 중…", "stationsFound": "개 충전소 발견", "searchPlaceholder": "이름, 도시, 운영자로 검색…", "filters": "필터", "connectorType": "커넥터", "powerLevel": "출력", "statusLabel": "상태", "all": "전체", "status_operational": "운영중", "status_planned": "계획중", "status_temporarily_unavailable": "일시 이용불가", "noStations": "이 지역에 충전소가 없습니다. 지도를 이동하여 검색하세요.", "pts": "점", "connections": "연결", "points": "충전 포인트", "maxPower": "최대 출력", "rating": "평점", "cost": "비용", "lastVerified": "최종 확인", "directions": "길찾기" },
-  "bot": { "siblingNote": "텔레그램 봇 @PoolwattBot이 실시간 알림을 보내고 생산자가 폰에서 오퍼를 게시할 수 있게 합니다." }
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "가정이 재생에너지를 공급합니다. 그리드가 보상합니다.",
+    "signIn": "로그인",
+    "signOut": "로그아웃",
+    "settings": "설정",
+    "admin": "관리자",
+    "watchlist": "관심목록",
+    "request": "가정 등록",
+    "hubs": "허브",
+    "producers": "생산자",
+    "offers": "오퍼",
+    "navigator": "충전소",
+    "languageLabel": "언어",
+    "currencyLabel": "통화",
+    "themeLabel": "테마",
+    "themeLight": "라이트",
+    "themeDark": "다크",
+    "themeSystem": "시스템"
+  },
+  "home": {
+    "heroEyebrow": "실시간 · Poolwatt 그리드 · 60초마다 갱신",
+    "heroLine1": "그리드는",
+    "heroLine2Before": "",
+    "heroLine2Accent": "가정",
+    "heroLine2After": "이 운영합니다.",
+    "heroSubtitle": "Poolwatt는 가정이 배터리에 저장된 재생에너지를 판매하는 P2P 마켓플레이스입니다. 네트워크의 모든 킬로와트시는 태양광, 풍력, 수력 또는 바이오매스에서 옵니다.",
+    "ctaPrimary": "생산자 둘러보기",
+    "ctaSecondary": "가정 등록",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
+  },
+  "stats": {
+    "totalCapacity": "총 용량",
+    "delivered24h": "공급량 (24시간)",
+    "lifetimeDelivered": "누적 공급량",
+    "activeProducers": "활성 생산자",
+    "activeHubs": "활성 허브",
+    "solarShare": "태양광 비율",
+    "windShare": "풍력 비율",
+    "hydroShare": "수력 비율",
+    "carbonOffset": "CO₂ 감축 (24시간)",
+    "greenIndex": "그린 인덱스"
+  },
+  "greenIndex": {
+    "carbon-heavy": "고탄소",
+    "mixed": "혼합",
+    "neutral": "균형",
+    "renewable": "재생가능",
+    "fully-renewable": "완전 재생가능"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "생산자",
+    "source": "전원",
+    "stateOfCharge": "충전율",
+    "available": "이용가능",
+    "price": "가격 / kWh",
+    "delivered24h": "24시간",
+    "lifetime": "누적",
+    "change24h": "24시간 %",
+    "weekly": "7일 생산량",
+    "uptime": "가동률",
+    "loadingFallback": "그리드 데이터 로딩 중…",
+    "search": "이름, 도시 또는 운영자로 검색…"
+  },
+  "source": {
+    "SOLAR": "태양광",
+    "WIND": "풍력",
+    "HYDRO": "수력",
+    "BIOMASS": "바이오매스",
+    "GEOTHERMAL": "지열",
+    "HYBRID": "하이브리드"
+  },
+  "weather": {
+    "SUNNY": "맑음",
+    "CLOUDY": "흐림",
+    "WINDY": "바람",
+    "CALM": "고요",
+    "RAINY": "비"
+  },
+  "footer": {
+    "dataNote": "생산자 플릿의 실시간 텔레메트리. 갱신 주기: 가격 60초, 충전상태 5분, 날씨 30분.",
+    "section": {
+      "grid": "그리드",
+      "account": "계정",
+      "data": "데이터"
+    }
+  },
+  "navigator": {
+    "title": "EV 충전소",
+    "metaDescription": "가까운 전기차 충전소를 상세 사양과 함께 찾아보세요.",
+    "loading": "충전소 로딩 중…",
+    "stationsFound": "개 충전소 발견",
+    "searchPlaceholder": "이름, 도시, 운영자로 검색…",
+    "filters": "필터",
+    "connectorType": "커넥터",
+    "powerLevel": "출력",
+    "statusLabel": "상태",
+    "all": "전체",
+    "status_operational": "운영중",
+    "status_planned": "계획중",
+    "status_temporarily_unavailable": "일시 이용불가",
+    "noStations": "이 지역에 충전소가 없습니다. 지도를 이동하여 검색하세요.",
+    "pts": "점",
+    "connections": "연결",
+    "points": "충전 포인트",
+    "maxPower": "최대 출력",
+    "rating": "평점",
+    "cost": "비용",
+    "lastVerified": "최종 확인",
+    "directions": "길찾기"
+  },
+  "bot": {
+    "siblingNote": "텔레그램 봇 @PoolwattBot이 실시간 알림을 보내고 생산자가 폰에서 오퍼를 게시할 수 있게 합니다."
+  }
 }

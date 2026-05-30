@@ -1,12 +1,128 @@
 {
-  "common": { "appName": "Poolwatt", "tagline": "घर नवीकरणीय ऊर्जा देते हैं। ग्रिड उन्हें भुगतान करता है।", "signIn": "लॉग इन", "signOut": "लॉग आउट", "settings": "सेटिंग्स", "admin": "एडमिन", "watchlist": "वॉचलिस्ट", "request": "अपना घर रजिस्टर करें", "hubs": "हब", "producers": "उत्पादक", "offers": "ऑफ़र", "navigator": "चार्जर", "languageLabel": "भाषा", "currencyLabel": "मुद्रा", "themeLabel": "थीम", "themeLight": "लाइट", "themeDark": "डार्क", "themeSystem": "सिस्टम" },
-  "home": { "heroEyebrow": "लाइव · Poolwatt ग्रिड · हर 60 सेकंड अपडेट", "heroLine1": "ग्रिड", "heroLine2Before": "", "heroLine2Accent": "घरों", "heroLine2After": " द्वारा संचालित।", "heroSubtitle": "Poolwatt एक पीयर-टू-पीयर मार्केटप्लेस है जहाँ घर बैटरी में संग्रहीत नवीकरणीय ऊर्जा बेचते हैं। नेटवर्क पर हर किलोवाट-घंटा सौर, पवन, जल या बायोमास से आती है।", "ctaPrimary": "उत्पादक देखें", "ctaSecondary": "अपना घर रजिस्टर करें" },
-  "stats": { "totalCapacity": "कुल क्षमता", "delivered24h": "वितरित (24 घंटे)", "lifetimeDelivered": "कुल वितरित", "activeProducers": "सक्रिय उत्पादक", "activeHubs": "सक्रिय हब", "solarShare": "सौर हिस्सा", "windShare": "पवन हिस्सा", "hydroShare": "जल हिस्सा", "carbonOffset": "CO₂ कटौती (24 घंटे)", "greenIndex": "ग्रीन इंडेक्स" },
-  "greenIndex": { "carbon-heavy": "उच्च कार्बन", "mixed": "मिश्रित", "neutral": "संतुलित", "renewable": "नवीकरणीय", "fully-renewable": "पूर्ण नवीकरणीय" },
-  "listing": { "rank": "#", "producer": "उत्पादक", "source": "स्रोत", "stateOfCharge": "चार्ज", "available": "उपलब्ध", "price": "मूल्य / kWh", "delivered24h": "24 घंटे", "lifetime": "कुल", "change24h": "24 घंटे %", "weekly": "7 दिन उत्पादन", "uptime": "अपटाइम", "loadingFallback": "ग्रिड डेटा लोड हो रहा है…", "search": "नाम, शहर या ऑपरेटर से खोजें…" },
-  "source": { "SOLAR": "सौर", "WIND": "पवन", "HYDRO": "जल", "BIOMASS": "बायोमास", "GEOTHERMAL": "भूतापीय", "HYBRID": "हाइब्रिड" },
-  "weather": { "SUNNY": "धूप", "CLOUDY": "बादल", "WINDY": "हवादार", "CALM": "शांत", "RAINY": "बारिश" },
-  "footer": { "dataNote": "उत्पादक बेड़े से लाइव टेलीमेट्री। अपडेट: मूल्य 60 सेकंड, चार्ज 5 मिनट, मौसम 30 मिनट।", "section": { "grid": "ग्रिड", "account": "खाता", "data": "डेटा" } },
-  "navigator": { "title": "EV चार्जिंग स्टेशन", "metaDescription": "अपने पास इलेक्ट्रिक वाहन चार्जिंग स्टेशन पूर्ण तकनीकी विशिष्टताओं के साथ खोजें।", "loading": "स्टेशन लोड हो रहे हैं…", "stationsFound": "स्टेशन मिले", "searchPlaceholder": "नाम, शहर, ऑपरेटर से खोजें…", "filters": "फ़िल्टर", "connectorType": "कनेक्टर", "powerLevel": "पावर", "statusLabel": "स्थिति", "all": "सभी", "status_operational": "चालू", "status_planned": "नियोजित", "status_temporarily_unavailable": "अस्थायी रूप से अनुपलब्ध", "noStations": "इस क्षेत्र में कोई स्टेशन नहीं। खोजने के लिए मैप खिसकाएँ।", "pts": "अंक", "connections": "कनेक्शन", "points": "चार्जिंग पॉइंट", "maxPower": "अधिकतम पावर", "rating": "रेटिंग", "cost": "लागत", "lastVerified": "अंतिम सत्यापन", "directions": "दिशा" },
-  "bot": { "siblingNote": "Telegram बॉट @PoolwattBot लाइव अलर्ट भेजता है और उत्पादकों को फोन से ऑफ़र पोस्ट करने देता है।" }
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "घर नवीकरणीय ऊर्जा देते हैं। ग्रिड उन्हें भुगतान करता है।",
+    "signIn": "लॉग इन",
+    "signOut": "लॉग आउट",
+    "settings": "सेटिंग्स",
+    "admin": "एडमिन",
+    "watchlist": "वॉचलिस्ट",
+    "request": "अपना घर रजिस्टर करें",
+    "hubs": "हब",
+    "producers": "उत्पादक",
+    "offers": "ऑफ़र",
+    "navigator": "चार्जर",
+    "languageLabel": "भाषा",
+    "currencyLabel": "मुद्रा",
+    "themeLabel": "थीम",
+    "themeLight": "लाइट",
+    "themeDark": "डार्क",
+    "themeSystem": "सिस्टम"
+  },
+  "home": {
+    "heroEyebrow": "लाइव · Poolwatt ग्रिड · हर 60 सेकंड अपडेट",
+    "heroLine1": "ग्रिड",
+    "heroLine2Before": "",
+    "heroLine2Accent": "घरों",
+    "heroLine2After": " द्वारा संचालित।",
+    "heroSubtitle": "Poolwatt एक पीयर-टू-पीयर मार्केटप्लेस है जहाँ घर बैटरी में संग्रहीत नवीकरणीय ऊर्जा बेचते हैं। नेटवर्क पर हर किलोवाट-घंटा सौर, पवन, जल या बायोमास से आती है।",
+    "ctaPrimary": "उत्पादक देखें",
+    "ctaSecondary": "अपना घर रजिस्टर करें",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
+  },
+  "stats": {
+    "totalCapacity": "कुल क्षमता",
+    "delivered24h": "वितरित (24 घंटे)",
+    "lifetimeDelivered": "कुल वितरित",
+    "activeProducers": "सक्रिय उत्पादक",
+    "activeHubs": "सक्रिय हब",
+    "solarShare": "सौर हिस्सा",
+    "windShare": "पवन हिस्सा",
+    "hydroShare": "जल हिस्सा",
+    "carbonOffset": "CO₂ कटौती (24 घंटे)",
+    "greenIndex": "ग्रीन इंडेक्स"
+  },
+  "greenIndex": {
+    "carbon-heavy": "उच्च कार्बन",
+    "mixed": "मिश्रित",
+    "neutral": "संतुलित",
+    "renewable": "नवीकरणीय",
+    "fully-renewable": "पूर्ण नवीकरणीय"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "उत्पादक",
+    "source": "स्रोत",
+    "stateOfCharge": "चार्ज",
+    "available": "उपलब्ध",
+    "price": "मूल्य / kWh",
+    "delivered24h": "24 घंटे",
+    "lifetime": "कुल",
+    "change24h": "24 घंटे %",
+    "weekly": "7 दिन उत्पादन",
+    "uptime": "अपटाइम",
+    "loadingFallback": "ग्रिड डेटा लोड हो रहा है…",
+    "search": "नाम, शहर या ऑपरेटर से खोजें…"
+  },
+  "source": {
+    "SOLAR": "सौर",
+    "WIND": "पवन",
+    "HYDRO": "जल",
+    "BIOMASS": "बायोमास",
+    "GEOTHERMAL": "भूतापीय",
+    "HYBRID": "हाइब्रिड"
+  },
+  "weather": {
+    "SUNNY": "धूप",
+    "CLOUDY": "बादल",
+    "WINDY": "हवादार",
+    "CALM": "शांत",
+    "RAINY": "बारिश"
+  },
+  "footer": {
+    "dataNote": "उत्पादक बेड़े से लाइव टेलीमेट्री। अपडेट: मूल्य 60 सेकंड, चार्ज 5 मिनट, मौसम 30 मिनट।",
+    "section": {
+      "grid": "ग्रिड",
+      "account": "खाता",
+      "data": "डेटा"
+    }
+  },
+  "navigator": {
+    "title": "EV चार्जिंग स्टेशन",
+    "metaDescription": "अपने पास इलेक्ट्रिक वाहन चार्जिंग स्टेशन पूर्ण तकनीकी विशिष्टताओं के साथ खोजें।",
+    "loading": "स्टेशन लोड हो रहे हैं…",
+    "stationsFound": "स्टेशन मिले",
+    "searchPlaceholder": "नाम, शहर, ऑपरेटर से खोजें…",
+    "filters": "फ़िल्टर",
+    "connectorType": "कनेक्टर",
+    "powerLevel": "पावर",
+    "statusLabel": "स्थिति",
+    "all": "सभी",
+    "status_operational": "चालू",
+    "status_planned": "नियोजित",
+    "status_temporarily_unavailable": "अस्थायी रूप से अनुपलब्ध",
+    "noStations": "इस क्षेत्र में कोई स्टेशन नहीं। खोजने के लिए मैप खिसकाएँ।",
+    "pts": "अंक",
+    "connections": "कनेक्शन",
+    "points": "चार्जिंग पॉइंट",
+    "maxPower": "अधिकतम पावर",
+    "rating": "रेटिंग",
+    "cost": "लागत",
+    "lastVerified": "अंतिम सत्यापन",
+    "directions": "दिशा"
+  },
+  "bot": {
+    "siblingNote": "Telegram बॉट @PoolwattBot लाइव अलर्ट भेजता है और उत्पादकों को फोन से ऑफ़र पोस्ट करने देता है।"
+  }
 }

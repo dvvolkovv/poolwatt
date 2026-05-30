@@ -27,7 +27,19 @@
     "heroLine2After": ".",
     "heroSubtitle": "Poolwatt je peer-to-peer trhovisko, kde domácnosti predávajú energiu uloženú v batériách z obnoviteľných zdrojov. Každá kilowatthodina v sieti pochádza zo solárnej, veternej, vodnej alebo biomasovej energie — a vieme to dokázať.",
     "ctaPrimary": "Prehliadať výrobcov",
-    "ctaSecondary": "Zaregistrovať domácnosť"
+    "ctaSecondary": "Zaregistrovať domácnosť",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Najnovšie titulky o OZE · obnova každých 30 min",
+      "categories": {
+        "solar": "Solár",
+        "wind": "Vietor",
+        "storage": "Úložiská",
+        "grid": "Sieť",
+        "policy": "Politika",
+        "general": "Všeobecné"
+      }
+    }
   },
   "stats": {
     "totalCapacity": "Celková kapacita",

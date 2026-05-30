@@ -1,12 +1,128 @@
 {
-  "common": { "appName": "Poolwatt", "tagline": "کورنۍ د نوي کیدونکي انرژي برابروي. شبکه ورته پیسې ورکوي.", "signIn": "ننوتل", "signOut": "وتل", "settings": "امستنې", "admin": "اداره‌وال", "watchlist": "خوښې", "request": "خپل کور ثبت کړئ", "hubs": "مرکزونه", "producers": "تولیدوونکي", "offers": "وړاندیزونه", "navigator": "چارجرونه", "languageLabel": "ژبه", "currencyLabel": "اسعار", "themeLabel": "بڼه", "themeLight": "روښانه", "themeDark": "تیاره", "themeSystem": "سیستم" },
-  "home": { "heroEyebrow": "ژوندی · Poolwatt شبکه · هره 60 ثانیه تازه", "heroLine1": "شبکه", "heroLine2Before": "د ", "heroLine2Accent": "کورنیو", "heroLine2After": " لخوا پرمخ وړل کیږي.", "heroSubtitle": "Poolwatt یو peer-to-peer بازار دی چیرته کورنۍ د بطرۍ ذخیره شوي نوي کیدونکي انرژي پلوري. په شبکه کې هر کیلووات-ساعت د لمر، باد، اوبو یا بایوماس څخه راځي.", "ctaPrimary": "تولیدوونکي وګورئ", "ctaSecondary": "خپل کور ثبت کړئ" },
-  "stats": { "totalCapacity": "ټوله ظرفیت", "delivered24h": "سپارل شوي (24 ساعته)", "lifetimeDelivered": "ټول سپارل شوي", "activeProducers": "فعاله تولیدوونکي", "activeHubs": "فعاله مرکزونه", "solarShare": "د لمر برخه", "windShare": "د باد برخه", "hydroShare": "د اوبو برخه", "carbonOffset": "CO₂ کمول (24 ساعته)", "greenIndex": "شنه شاخص" },
-  "greenIndex": { "carbon-heavy": "لوړ کاربن", "mixed": "ګډ", "neutral": "متوازن", "renewable": "نوي کیدونکی", "fully-renewable": "بشپړ نوي کیدونکی" },
-  "listing": { "rank": "#", "producer": "تولیدوونکی", "source": "سرچینه", "stateOfCharge": "چارج", "available": "شتون لري", "price": "بیه / kWh", "delivered24h": "24 ساعته", "lifetime": "ټول", "change24h": "24 ساعته %", "weekly": "7 ورځني تولید", "uptime": "کاري وخت", "loadingFallback": "د شبکې ډاټا لوډیږي…", "search": "د نوم، ښار یا چلوونکي پر بنسټ لټون…" },
-  "source": { "SOLAR": "لمریز", "WIND": "بادي", "HYDRO": "اوبلن", "BIOMASS": "بایوماس", "GEOTHERMAL": "زمیني تودوخه", "HYBRID": "هایبرید" },
-  "weather": { "SUNNY": "لمریز", "CLOUDY": "وریځ", "WINDY": "بادي", "CALM": "آرام", "RAINY": "بارانی" },
-  "footer": { "dataNote": "د تولیدوونکو فلیټ څخه ژوندۍ ټیلیمیټري. تازه کول: بیې 60 ثانیه، چارج 5 دقیقې، هوا 30 دقیقې.", "section": { "grid": "شبکه", "account": "حساب", "data": "ډاټا" } },
-  "navigator": { "title": "د بریښنایي ګاډو چارج سټیشنونه", "metaDescription": "خپل نږدې د بریښنایي ګاډو چارج سټیشنونه ومومئ.", "loading": "سټیشنونه لوډیږي…", "stationsFound": "سټیشنونه وموندل شول", "searchPlaceholder": "د نوم، ښار، چلوونکي پر بنسټ لټون…", "filters": "فلټرونه", "connectorType": "نښلونکی", "powerLevel": "بریښنا", "statusLabel": "حالت", "all": "ټول", "status_operational": "فعال", "status_planned": "پلان شوی", "status_temporarily_unavailable": "لنډ مهاله شتون نلري", "noStations": "پدې سیمه کې سټیشن نشته. د لټون لپاره نقشه حرکت ورکړئ.", "pts": "ټکي", "connections": "اړیکې", "points": "د چارج ټکي", "maxPower": "اعظمي بریښنا", "rating": "درجه بندي", "cost": "لګښت", "lastVerified": "وروستی تایید", "directions": "لارښوونه" },
-  "bot": { "siblingNote": "د ټلیګرام بوټ @PoolwattBot ژوندۍ خبرتیاوې لیږي او تولیدوونکو ته اجازه ورکوي چې له تلیفون څخه وړاندیزونه خپاره کړي." }
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "کورنۍ د نوي کیدونکي انرژي برابروي. شبکه ورته پیسې ورکوي.",
+    "signIn": "ننوتل",
+    "signOut": "وتل",
+    "settings": "امستنې",
+    "admin": "اداره‌وال",
+    "watchlist": "خوښې",
+    "request": "خپل کور ثبت کړئ",
+    "hubs": "مرکزونه",
+    "producers": "تولیدوونکي",
+    "offers": "وړاندیزونه",
+    "navigator": "چارجرونه",
+    "languageLabel": "ژبه",
+    "currencyLabel": "اسعار",
+    "themeLabel": "بڼه",
+    "themeLight": "روښانه",
+    "themeDark": "تیاره",
+    "themeSystem": "سیستم"
+  },
+  "home": {
+    "heroEyebrow": "ژوندی · Poolwatt شبکه · هره 60 ثانیه تازه",
+    "heroLine1": "شبکه",
+    "heroLine2Before": "د ",
+    "heroLine2Accent": "کورنیو",
+    "heroLine2After": " لخوا پرمخ وړل کیږي.",
+    "heroSubtitle": "Poolwatt یو peer-to-peer بازار دی چیرته کورنۍ د بطرۍ ذخیره شوي نوي کیدونکي انرژي پلوري. په شبکه کې هر کیلووات-ساعت د لمر، باد، اوبو یا بایوماس څخه راځي.",
+    "ctaPrimary": "تولیدوونکي وګورئ",
+    "ctaSecondary": "خپل کور ثبت کړئ",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
+  },
+  "stats": {
+    "totalCapacity": "ټوله ظرفیت",
+    "delivered24h": "سپارل شوي (24 ساعته)",
+    "lifetimeDelivered": "ټول سپارل شوي",
+    "activeProducers": "فعاله تولیدوونکي",
+    "activeHubs": "فعاله مرکزونه",
+    "solarShare": "د لمر برخه",
+    "windShare": "د باد برخه",
+    "hydroShare": "د اوبو برخه",
+    "carbonOffset": "CO₂ کمول (24 ساعته)",
+    "greenIndex": "شنه شاخص"
+  },
+  "greenIndex": {
+    "carbon-heavy": "لوړ کاربن",
+    "mixed": "ګډ",
+    "neutral": "متوازن",
+    "renewable": "نوي کیدونکی",
+    "fully-renewable": "بشپړ نوي کیدونکی"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "تولیدوونکی",
+    "source": "سرچینه",
+    "stateOfCharge": "چارج",
+    "available": "شتون لري",
+    "price": "بیه / kWh",
+    "delivered24h": "24 ساعته",
+    "lifetime": "ټول",
+    "change24h": "24 ساعته %",
+    "weekly": "7 ورځني تولید",
+    "uptime": "کاري وخت",
+    "loadingFallback": "د شبکې ډاټا لوډیږي…",
+    "search": "د نوم، ښار یا چلوونکي پر بنسټ لټون…"
+  },
+  "source": {
+    "SOLAR": "لمریز",
+    "WIND": "بادي",
+    "HYDRO": "اوبلن",
+    "BIOMASS": "بایوماس",
+    "GEOTHERMAL": "زمیني تودوخه",
+    "HYBRID": "هایبرید"
+  },
+  "weather": {
+    "SUNNY": "لمریز",
+    "CLOUDY": "وریځ",
+    "WINDY": "بادي",
+    "CALM": "آرام",
+    "RAINY": "بارانی"
+  },
+  "footer": {
+    "dataNote": "د تولیدوونکو فلیټ څخه ژوندۍ ټیلیمیټري. تازه کول: بیې 60 ثانیه، چارج 5 دقیقې، هوا 30 دقیقې.",
+    "section": {
+      "grid": "شبکه",
+      "account": "حساب",
+      "data": "ډاټا"
+    }
+  },
+  "navigator": {
+    "title": "د بریښنایي ګاډو چارج سټیشنونه",
+    "metaDescription": "خپل نږدې د بریښنایي ګاډو چارج سټیشنونه ومومئ.",
+    "loading": "سټیشنونه لوډیږي…",
+    "stationsFound": "سټیشنونه وموندل شول",
+    "searchPlaceholder": "د نوم، ښار، چلوونکي پر بنسټ لټون…",
+    "filters": "فلټرونه",
+    "connectorType": "نښلونکی",
+    "powerLevel": "بریښنا",
+    "statusLabel": "حالت",
+    "all": "ټول",
+    "status_operational": "فعال",
+    "status_planned": "پلان شوی",
+    "status_temporarily_unavailable": "لنډ مهاله شتون نلري",
+    "noStations": "پدې سیمه کې سټیشن نشته. د لټون لپاره نقشه حرکت ورکړئ.",
+    "pts": "ټکي",
+    "connections": "اړیکې",
+    "points": "د چارج ټکي",
+    "maxPower": "اعظمي بریښنا",
+    "rating": "درجه بندي",
+    "cost": "لګښت",
+    "lastVerified": "وروستی تایید",
+    "directions": "لارښوونه"
+  },
+  "bot": {
+    "siblingNote": "د ټلیګرام بوټ @PoolwattBot ژوندۍ خبرتیاوې لیږي او تولیدوونکو ته اجازه ورکوي چې له تلیفون څخه وړاندیزونه خپاره کړي."
+  }
 }

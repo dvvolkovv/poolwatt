@@ -1,12 +1,128 @@
 {
-  "common": { "appName": "Poolwatt", "tagline": "ครัวเรือนจ่ายพลังงานหมุนเวียน กริดจ่ายเงินคืน", "signIn": "เข้าสู่ระบบ", "signOut": "ออกจากระบบ", "settings": "ตั้งค่า", "admin": "ผู้ดูแล", "watchlist": "รายการโปรด", "request": "ลงทะเบียนบ้านของคุณ", "hubs": "ฮับ", "producers": "ผู้ผลิต", "offers": "ข้อเสนอ", "navigator": "สถานีชาร์จ", "languageLabel": "ภาษา", "currencyLabel": "สกุลเงิน", "themeLabel": "ธีม", "themeLight": "สว่าง", "themeDark": "มืด", "themeSystem": "ระบบ" },
-  "home": { "heroEyebrow": "สด · กริด Poolwatt · อัปเดตทุก 60 วินาที", "heroLine1": "กริด", "heroLine2Before": "ขับเคลื่อนโดย", "heroLine2Accent": "ครัวเรือน", "heroLine2After": "", "heroSubtitle": "Poolwatt คือตลาด peer-to-peer ที่บ้านขายพลังงานหมุนเวียนที่เก็บในแบตเตอรี่ ทุกกิโลวัตต์-ชั่วโมงบนเครือข่ายมาจากแสงอาทิตย์ ลม น้ำ หรือชีวมวล", "ctaPrimary": "ดูผู้ผลิต", "ctaSecondary": "ลงทะเบียนบ้านของคุณ" },
-  "stats": { "totalCapacity": "ความจุรวม", "delivered24h": "จ่ายแล้ว (24 ชม.)", "lifetimeDelivered": "จ่ายรวม", "activeProducers": "ผู้ผลิตที่ใช้งาน", "activeHubs": "ฮับที่ใช้งาน", "solarShare": "สัดส่วนแสงอาทิตย์", "windShare": "สัดส่วนลม", "hydroShare": "สัดส่วนน้ำ", "carbonOffset": "ลด CO₂ (24 ชม.)", "greenIndex": "ดัชนีเขียว" },
-  "greenIndex": { "carbon-heavy": "คาร์บอนสูง", "mixed": "ผสม", "neutral": "สมดุล", "renewable": "หมุนเวียน", "fully-renewable": "หมุนเวียนเต็มที่" },
-  "listing": { "rank": "#", "producer": "ผู้ผลิต", "source": "แหล่ง", "stateOfCharge": "ชาร์จ", "available": "พร้อมใช้", "price": "ราคา / kWh", "delivered24h": "24 ชม.", "lifetime": "รวม", "change24h": "24 ชม. %", "weekly": "ผลผลิต 7 วัน", "uptime": "เวลาทำงาน", "loadingFallback": "กำลังโหลดข้อมูลกริด…", "search": "ค้นหาตามชื่อ เมือง หรือผู้ดำเนินการ…" },
-  "source": { "SOLAR": "แสงอาทิตย์", "WIND": "ลม", "HYDRO": "น้ำ", "BIOMASS": "ชีวมวล", "GEOTHERMAL": "ความร้อนใต้พิภพ", "HYBRID": "ไฮบริด" },
-  "weather": { "SUNNY": "แดดจ้า", "CLOUDY": "มีเมฆ", "WINDY": "ลมแรง", "CALM": "สงบ", "RAINY": "ฝนตก" },
-  "footer": { "dataNote": "ข้อมูลสดจากกองยานผู้ผลิต อัปเดต: ราคา 60 วินาที ชาร์จ 5 นาที สภาพอากาศ 30 นาที", "section": { "grid": "กริด", "account": "บัญชี", "data": "ข้อมูล" } },
-  "navigator": { "title": "สถานีชาร์จ EV", "metaDescription": "ค้นหาสถานีชาร์จรถยนต์ไฟฟ้าใกล้คุณพร้อมข้อมูลจำเพาะทางเทคนิคครบถ้วน", "loading": "กำลังโหลดสถานี…", "stationsFound": "สถานีที่พบ", "searchPlaceholder": "ค้นหาตามชื่อ เมือง ผู้ดำเนินการ…", "filters": "ตัวกรอง", "connectorType": "ขั้วต่อ", "powerLevel": "กำลังไฟ", "statusLabel": "สถานะ", "all": "ทั้งหมด", "status_operational": "ใช้งานได้", "status_planned": "วางแผน", "status_temporarily_unavailable": "ไม่พร้อมชั่วคราว", "noStations": "ไม่มีสถานีในพื้นที่นี้ เลื่อนแผนที่เพื่อค้นหา", "pts": "คะแนน", "connections": "การเชื่อมต่อ", "points": "จุดชาร์จ", "maxPower": "กำลังสูงสุด", "rating": "คะแนน", "cost": "ค่าใช้จ่าย", "lastVerified": "ตรวจสอบล่าสุด", "directions": "นำทาง" },
-  "bot": { "siblingNote": "บอท Telegram @PoolwattBot ส่งการแจ้งเตือนสดและให้ผู้ผลิตโพสต์ข้อเสนอจากโทรศัพท์" }
+  "common": {
+    "appName": "Poolwatt",
+    "tagline": "ครัวเรือนจ่ายพลังงานหมุนเวียน กริดจ่ายเงินคืน",
+    "signIn": "เข้าสู่ระบบ",
+    "signOut": "ออกจากระบบ",
+    "settings": "ตั้งค่า",
+    "admin": "ผู้ดูแล",
+    "watchlist": "รายการโปรด",
+    "request": "ลงทะเบียนบ้านของคุณ",
+    "hubs": "ฮับ",
+    "producers": "ผู้ผลิต",
+    "offers": "ข้อเสนอ",
+    "navigator": "สถานีชาร์จ",
+    "languageLabel": "ภาษา",
+    "currencyLabel": "สกุลเงิน",
+    "themeLabel": "ธีม",
+    "themeLight": "สว่าง",
+    "themeDark": "มืด",
+    "themeSystem": "ระบบ"
+  },
+  "home": {
+    "heroEyebrow": "สด · กริด Poolwatt · อัปเดตทุก 60 วินาที",
+    "heroLine1": "กริด",
+    "heroLine2Before": "ขับเคลื่อนโดย",
+    "heroLine2Accent": "ครัวเรือน",
+    "heroLine2After": "",
+    "heroSubtitle": "Poolwatt คือตลาด peer-to-peer ที่บ้านขายพลังงานหมุนเวียนที่เก็บในแบตเตอรี่ ทุกกิโลวัตต์-ชั่วโมงบนเครือข่ายมาจากแสงอาทิตย์ ลม น้ำ หรือชีวมวล",
+    "ctaPrimary": "ดูผู้ผลิต",
+    "ctaSecondary": "ลงทะเบียนบ้านของคุณ",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
+  },
+  "stats": {
+    "totalCapacity": "ความจุรวม",
+    "delivered24h": "จ่ายแล้ว (24 ชม.)",
+    "lifetimeDelivered": "จ่ายรวม",
+    "activeProducers": "ผู้ผลิตที่ใช้งาน",
+    "activeHubs": "ฮับที่ใช้งาน",
+    "solarShare": "สัดส่วนแสงอาทิตย์",
+    "windShare": "สัดส่วนลม",
+    "hydroShare": "สัดส่วนน้ำ",
+    "carbonOffset": "ลด CO₂ (24 ชม.)",
+    "greenIndex": "ดัชนีเขียว"
+  },
+  "greenIndex": {
+    "carbon-heavy": "คาร์บอนสูง",
+    "mixed": "ผสม",
+    "neutral": "สมดุล",
+    "renewable": "หมุนเวียน",
+    "fully-renewable": "หมุนเวียนเต็มที่"
+  },
+  "listing": {
+    "rank": "#",
+    "producer": "ผู้ผลิต",
+    "source": "แหล่ง",
+    "stateOfCharge": "ชาร์จ",
+    "available": "พร้อมใช้",
+    "price": "ราคา / kWh",
+    "delivered24h": "24 ชม.",
+    "lifetime": "รวม",
+    "change24h": "24 ชม. %",
+    "weekly": "ผลผลิต 7 วัน",
+    "uptime": "เวลาทำงาน",
+    "loadingFallback": "กำลังโหลดข้อมูลกริด…",
+    "search": "ค้นหาตามชื่อ เมือง หรือผู้ดำเนินการ…"
+  },
+  "source": {
+    "SOLAR": "แสงอาทิตย์",
+    "WIND": "ลม",
+    "HYDRO": "น้ำ",
+    "BIOMASS": "ชีวมวล",
+    "GEOTHERMAL": "ความร้อนใต้พิภพ",
+    "HYBRID": "ไฮบริด"
+  },
+  "weather": {
+    "SUNNY": "แดดจ้า",
+    "CLOUDY": "มีเมฆ",
+    "WINDY": "ลมแรง",
+    "CALM": "สงบ",
+    "RAINY": "ฝนตก"
+  },
+  "footer": {
+    "dataNote": "ข้อมูลสดจากกองยานผู้ผลิต อัปเดต: ราคา 60 วินาที ชาร์จ 5 นาที สภาพอากาศ 30 นาที",
+    "section": {
+      "grid": "กริด",
+      "account": "บัญชี",
+      "data": "ข้อมูล"
+    }
+  },
+  "navigator": {
+    "title": "สถานีชาร์จ EV",
+    "metaDescription": "ค้นหาสถานีชาร์จรถยนต์ไฟฟ้าใกล้คุณพร้อมข้อมูลจำเพาะทางเทคนิคครบถ้วน",
+    "loading": "กำลังโหลดสถานี…",
+    "stationsFound": "สถานีที่พบ",
+    "searchPlaceholder": "ค้นหาตามชื่อ เมือง ผู้ดำเนินการ…",
+    "filters": "ตัวกรอง",
+    "connectorType": "ขั้วต่อ",
+    "powerLevel": "กำลังไฟ",
+    "statusLabel": "สถานะ",
+    "all": "ทั้งหมด",
+    "status_operational": "ใช้งานได้",
+    "status_planned": "วางแผน",
+    "status_temporarily_unavailable": "ไม่พร้อมชั่วคราว",
+    "noStations": "ไม่มีสถานีในพื้นที่นี้ เลื่อนแผนที่เพื่อค้นหา",
+    "pts": "คะแนน",
+    "connections": "การเชื่อมต่อ",
+    "points": "จุดชาร์จ",
+    "maxPower": "กำลังสูงสุด",
+    "rating": "คะแนน",
+    "cost": "ค่าใช้จ่าย",
+    "lastVerified": "ตรวจสอบล่าสุด",
+    "directions": "นำทาง"
+  },
+  "bot": {
+    "siblingNote": "บอท Telegram @PoolwattBot ส่งการแจ้งเตือนสดและให้ผู้ผลิตโพสต์ข้อเสนอจากโทรศัพท์"
+  }
 }

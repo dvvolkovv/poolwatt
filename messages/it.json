@@ -27,7 +27,19 @@
     "heroLine2After": ".",
     "heroSubtitle": "Poolwatt è un mercato peer-to-peer dove le famiglie vendono energia rinnovabile accumulata in batterie. Ogni kilowattora nella rete proviene da solare, eolico, idroelettrico o biomassa — e possiamo dimostrarlo.",
     "ctaPrimary": "Sfoglia i produttori",
-    "ctaSecondary": "Registra la tua casa"
+    "ctaSecondary": "Registra la tua casa",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
   },
   "stats": {
     "totalCapacity": "Capacità totale",

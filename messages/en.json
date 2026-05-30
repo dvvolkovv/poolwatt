@@ -27,7 +27,19 @@
     "heroLine2After": ".",
     "heroSubtitle": "Poolwatt is a peer-to-peer marketplace where homes sell battery-stored renewable energy. Every kilowatt-hour on the network came from solar, wind, hydro or biomass — and we can prove it.",
     "ctaPrimary": "Browse producers",
-    "ctaSecondary": "List your household"
+    "ctaSecondary": "List your household",
+    "newsflow": {
+      "eyebrow": "Newsflow",
+      "subtitle": "Latest renewable-energy headlines · refreshed every 30 min",
+      "categories": {
+        "solar": "Solar",
+        "wind": "Wind",
+        "storage": "Storage",
+        "grid": "Grid",
+        "policy": "Policy",
+        "general": "General"
+      }
+    }
   },
   "stats": {
     "totalCapacity": "Total capacity",
