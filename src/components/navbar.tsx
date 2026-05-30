@@ -26,19 +26,22 @@ export async function Navbar() {
           <Link href={`/${locale}`} className="hover:text-foreground transition-colors">
             {t("producers")}
           </Link>
-          <Link href={`/${locale}/hubs`} className="hover:text-foreground transition-colors">
+          {/* Phase-2 routes — prefetch disabled until /hubs, /offers, /watchlist
+              and /request actually exist; otherwise every landing visit fires
+              a stream of 404 RSC prefetches into the browser console. */}
+          <Link href={`/${locale}/hubs`} prefetch={false} className="hover:text-foreground transition-colors">
             {t("hubs")}
           </Link>
-          <Link href={`/${locale}/offers`} className="hover:text-foreground transition-colors">
+          <Link href={`/${locale}/offers`} prefetch={false} className="hover:text-foreground transition-colors">
             {t("offers")}
           </Link>
           <Link href={`/${locale}/navigator`} className="hover:text-foreground transition-colors">
             {t("navigator")}
           </Link>
-          <Link href={`/${locale}/watchlist`} className="hover:text-foreground transition-colors">
+          <Link href={`/${locale}/watchlist`} prefetch={false} className="hover:text-foreground transition-colors">
             {t("watchlist")}
           </Link>
-          <Link href={`/${locale}/request`} className="hover:text-foreground transition-colors">
+          <Link href={`/${locale}/request`} prefetch={false} className="hover:text-foreground transition-colors">
             {t("request")}
           </Link>
         </nav>
@@ -47,6 +50,7 @@ export async function Navbar() {
           <LocaleSwitcher />
           <Link
             href={`/${locale}/login`}
+            prefetch={false}
             className="hidden md:inline-block ml-2 text-xs px-4 py-1.5 rounded-full font-semibold uppercase tracking-wider bg-blue text-blue-foreground transition-all hover:brightness-110"
           >
             {t("signIn")}
