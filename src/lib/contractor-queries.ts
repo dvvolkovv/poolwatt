@@ -22,6 +22,14 @@ const PUBLIC_SELECT = {
   contactPhone: true,
   createdAt: true,
   updatedAt: true,
+  providesEvCharging: true,
+  evPowerSource: true,
+  evStationCount: true,
+  evConnectorTypes: true,
+  evPowerLevels: true,
+  evUsageType: true,
+  evMaxPowerKw: true,
+  evDescription: true,
 } as const;
 
 export type PublicContractor = Prisma.ContractorGetPayload<{
@@ -43,6 +51,7 @@ export async function readContractorBySlug(slug: string) {
 export async function readApprovedContractors(args: {
   country?: string;
   renewable?: ContractorRenewableType;
+  ev?: boolean;
   page?: number;
   pageSize?: number;
 }): Promise<PublicContractorList> {
@@ -52,6 +61,7 @@ export async function readApprovedContractors(args: {
     status: "APPROVED" as const,
     ...(args.country ? { country: args.country } : {}),
     ...(args.renewable ? { renewableTypes: { has: args.renewable } } : {}),
+    ...(args.ev === true ? { providesEvCharging: true } : {}),
   };
   const [rows, total] = await Promise.all([
     prisma.contractor.findMany({

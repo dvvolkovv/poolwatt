@@ -64,6 +64,50 @@ beforeAll(async () => {
   await seedContractor({ slug: "f-suspended-sk", status: "SUSPENDED", country: "SK", renewables: ["SOLAR"] });
 });
 
+describe("readApprovedContractors — EV filter", () => {
+  it("includes EV fields in PUBLIC_SELECT", async () => {
+    const { rows } = await readApprovedContractors({ pageSize: 50 });
+    const ours = rows.filter((r) => r.slug.startsWith(PREFIX));
+    expect(ours.length).toBeGreaterThan(0);
+    for (const r of ours) {
+      expect(r).toHaveProperty("providesEvCharging");
+      expect(r).toHaveProperty("evPowerSource");
+      expect(r).toHaveProperty("evConnectorTypes");
+    }
+  });
+
+  it("filters to EV-only when ev=true", async () => {
+    // mark one of our seeded approved contractors as EV
+    const target = await prisma.contractor.findFirstOrThrow({
+      where: { slug: `${PREFIX}a-approved-sk-solar` },
+    });
+    await prisma.contractor.update({
+      where: { id: target.id },
+      data: {
+        providesEvCharging: true,
+        evPowerSource: "MIXED",
+        evStationCount: 3,
+        evConnectorTypes: ["TYPE2"],
+        evPowerLevels: ["AC_FAST"],
+        evUsageType: "PUBLIC",
+        evMaxPowerKw: 22,
+        evDescription: "Three Type 2 AC stations powered by our rooftop solar plus grid backup for visitors.",
+      },
+    });
+
+    const { rows } = await readApprovedContractors({ ev: true, pageSize: 50 });
+    const ours = rows.filter((r) => r.slug.startsWith(PREFIX));
+    expect(ours.length).toBe(1);
+    expect(ours[0].slug).toBe(`${PREFIX}a-approved-sk-solar`);
+
+    // restore
+    await prisma.contractor.update({
+      where: { id: target.id },
+      data: { providesEvCharging: false },
+    });
+  });
+});
+
 afterAll(async () => {
   await prisma.contractor.deleteMany({ where: { slug: { startsWith: PREFIX } } });
   await prisma.user.deleteMany({ where: { username: { startsWith: PREFIX } } });
