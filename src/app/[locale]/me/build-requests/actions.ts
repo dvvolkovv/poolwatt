@@ -94,6 +94,7 @@ export async function updateBuildRequest(
   const d = parsed.data;
   await prisma.buildRequest.update({
     where: { id },
+    // keep in sync with createBuildRequest's data block
     data: {
       source: d.source,
       peakKw: d.peakKw,

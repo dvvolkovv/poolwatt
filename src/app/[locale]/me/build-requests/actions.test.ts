@@ -35,11 +35,11 @@ const formInput = {
   timeline: "EXPLORING" as const,
 };
 
-describe("createBuildRequest", () => {
-  beforeEach(async () => {
-    await prisma.buildRequest.deleteMany({ where: { user: { username: { startsWith: "test_br_" } } } });
-  });
+beforeEach(async () => {
+  await prisma.buildRequest.deleteMany({ where: { user: { username: { startsWith: "test_br_" } } } });
+});
 
+describe("createBuildRequest", () => {
   it("rejects when not authenticated", async () => {
     mockedAuth.mockResolvedValueOnce(null as never);
     const r = await createBuildRequest(formInput);

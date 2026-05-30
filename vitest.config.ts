@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
     test: {
       environment: "node",
       setupFiles: ["./src/test-setup.ts"],
+      clearMocks: true,
     },
     resolve: {
       alias: {
