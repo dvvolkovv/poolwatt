@@ -28,7 +28,7 @@
 - Modify: `prisma/schema.prisma`
 - Create: `prisma/migrations/<timestamp>_add_build_request_claim/migration.sql`
 
-- [ ] **Step 1: Add enum**
+- [x] **Step 1: Add enum**
 
 Append to `prisma/schema.prisma` after the existing `EvUsageType` enum:
 
@@ -41,7 +41,7 @@ enum BuildRequestClaimStatus {
 }
 ```
 
-- [ ] **Step 2: Add `BuildRequestClaim` model**
+- [x] **Step 2: Add `BuildRequestClaim` model**
 
 Append after `Contractor` and its `ContractorMember` companion:
 
@@ -65,7 +65,7 @@ model BuildRequestClaim {
 }
 ```
 
-- [ ] **Step 3: Add back-relations**
+- [x] **Step 3: Add back-relations**
 
 In the existing `BuildRequest { ... }` block, add at the end (before the closing `}`):
 
@@ -79,7 +79,7 @@ In the existing `Contractor { ... }` block, add at the end:
   claims          BuildRequestClaim[]
 ```
 
-- [ ] **Step 4: Generate migration**
+- [x] **Step 4: Generate migration**
 
 ```bash
 set -a && source .env.local && set +a && npm run db:migrate -- --name add_build_request_claim
@@ -87,12 +87,12 @@ set -a && source .env.local && set +a && npm run db:migrate -- --name add_build_
 
 Expected: `Your database is now in sync with your schema.` + `✔ Generated Prisma Client`.
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: no new errors.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add prisma/schema.prisma prisma/migrations/
@@ -107,7 +107,7 @@ git commit -m "feat(matching): add BuildRequestClaim model + status enum"
 - Create: `src/lib/build-request-claim-schema.ts`
 - Create: `src/lib/build-request-claim-schema.test.ts`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Create `src/lib/build-request-claim-schema.test.ts`:
 
@@ -145,12 +145,12 @@ describe("expressInterestInputSchema", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run src/lib/build-request-claim-schema.test.ts`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement schema**
+- [x] **Step 3: Implement schema**
 
 Create `src/lib/build-request-claim-schema.ts`:
 
@@ -170,12 +170,12 @@ export const expressInterestInputSchema = z.object({
 export type ExpressInterestInput = z.infer<typeof expressInterestInputSchema>;
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run src/lib/build-request-claim-schema.test.ts`
 Expected: 6 passed.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/build-request-claim-schema.ts src/lib/build-request-claim-schema.test.ts
@@ -191,7 +191,7 @@ git commit -m "feat(matching): add zod schema for expressInterest input"
 - Create: `src/app/[locale]/me/contractor/[id]/requests/actions.ts`
 - Create: `src/app/[locale]/me/contractor/[id]/requests/actions.test.ts`
 
-- [ ] **Step 1: Create resend stub**
+- [x] **Step 1: Create resend stub**
 
 Create `src/lib/resend-match.ts`:
 
@@ -202,7 +202,7 @@ export async function sendClaimAcceptedToContractor(_claim: unknown): Promise<vo
 export async function sendClaimRejectedToContractor(_claim: unknown): Promise<void> {}
 ```
 
-- [ ] **Step 2: Write failing tests**
+- [x] **Step 2: Write failing tests**
 
 Create `src/app/[locale]/me/contractor/[id]/requests/actions.test.ts`:
 
@@ -348,12 +348,12 @@ describe("expressInterest", () => {
 });
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run: `npx vitest run src/app/[locale]/me/contractor/[id]/requests/actions.test.ts`
 Expected: FAIL — module `./actions` not found.
 
-- [ ] **Step 4: Implement expressInterest**
+- [x] **Step 4: Implement expressInterest**
 
 Create `src/app/[locale]/me/contractor/[id]/requests/actions.ts`:
 
@@ -451,12 +451,12 @@ export async function expressInterest(input: {
 }
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `npx vitest run src/app/[locale]/me/contractor/[id]/requests/actions.test.ts`
 Expected: 6 passed.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/resend-match.ts \
@@ -473,7 +473,7 @@ git commit -m "feat(matching): add expressInterest action + Resend stub"
 - Modify: `src/app/[locale]/me/contractor/[id]/requests/actions.ts`
 - Modify: `src/app/[locale]/me/contractor/[id]/requests/actions.test.ts`
 
-- [ ] **Step 1: Append failing tests**
+- [x] **Step 1: Append failing tests**
 
 Append to `actions.test.ts`:
 
@@ -522,12 +522,12 @@ describe("withdrawClaim", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run src/app/[locale]/me/contractor/[id]/requests/actions.test.ts`
 Expected: 3 new tests FAIL — `withdrawClaim is not a function`.
 
-- [ ] **Step 3: Append implementation**
+- [x] **Step 3: Append implementation**
 
 Append to `actions.ts`:
 
@@ -569,12 +569,12 @@ export async function withdrawClaim(input: {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `npx vitest run src/app/[locale]/me/contractor/[id]/requests/actions.test.ts`
 Expected: 9 passed.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/[locale]/me/contractor/[id]/requests/actions.ts \
@@ -590,7 +590,7 @@ git commit -m "feat(matching): add withdrawClaim action"
 - Modify: `src/app/[locale]/me/build-requests/actions.ts`
 - Modify: `src/app/[locale]/me/build-requests/actions.test.ts`
 
-- [ ] **Step 1: Append failing tests**
+- [x] **Step 1: Append failing tests**
 
 Append to `src/app/[locale]/me/build-requests/actions.test.ts`:
 
@@ -677,12 +677,12 @@ describe("acceptClaim", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `npx vitest run src/app/[locale]/me/build-requests/actions.test.ts`
 Expected: 4 new tests FAIL.
 
-- [ ] **Step 3: Append implementation**
+- [x] **Step 3: Append implementation**
 
 Append to `src/app/[locale]/me/build-requests/actions.ts`:
 
@@ -767,7 +767,7 @@ export async function acceptClaim(claimId: string): Promise<ActionResult> {
 }
 ```
 
-- [ ] **Step 4: Extend cancelBuildRequest to cascade-withdraw PENDING claims**
+- [x] **Step 4: Extend cancelBuildRequest to cascade-withdraw PENDING claims**
 
 In the same file, find the existing `cancelBuildRequest` action. After the line that sets `status: "CANCELLED"` (likely a `prisma.buildRequest.update(...)`), wrap the existing prisma.update in a transaction with an extra step to mark all PENDING claims as WITHDRAWN:
 
@@ -803,12 +803,12 @@ await prisma.$transaction([
 ]);
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `npx vitest run src/app/[locale]/me/build-requests/actions.test.ts`
 Expected: all pass (existing + 4 new acceptClaim tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/app/[locale]/me/build-requests/actions.ts \
@@ -823,7 +823,7 @@ git commit -m "feat(matching): add acceptClaim + cascade-withdraw on BR cancel"
 **Files:**
 - Modify (overwrite): `src/lib/resend-match.ts`
 
-- [ ] **Step 1: Overwrite stub with real impl**
+- [x] **Step 1: Overwrite stub with real impl**
 
 ```ts
 import { Resend } from "resend";
@@ -978,12 +978,12 @@ export async function sendClaimRejectedToContractor(p: ClaimRejectedPayload): Pr
 }
 ```
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit && npm run test`
 Expected: tsc clean; all unit/integration tests pass (actions still mock this module).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/resend-match.ts
@@ -997,7 +997,7 @@ git commit -m "feat(matching): add real Resend email helpers"
 **Files:**
 - Modify: `messages/en.json`, `messages/ru.json`, `messages/sk.json`
 
-- [ ] **Step 1: Add EN keys**
+- [x] **Step 1: Add EN keys**
 
 Read each file first; MERGE non-destructively.
 
@@ -1045,7 +1045,7 @@ Add new block under `admin.buildRequest`:
 }
 ```
 
-- [ ] **Step 2: Translate to RU (`messages/ru.json`)**
+- [x] **Step 2: Translate to RU (`messages/ru.json`)**
 
 Mirror structure with these values:
 - `cabinet.contractor.sidebar.requests` → `"Доступные заявки"`
@@ -1067,7 +1067,7 @@ Mirror structure with these values:
 - `cabinet.buildRequest.matched.rejectedSiblings` → `"Остальные подрядчики (не выбраны)"`
 - `admin.buildRequest.claims.title` → `"Аудит заявок"`
 
-- [ ] **Step 3: Translate to SK (`messages/sk.json`)**
+- [x] **Step 3: Translate to SK (`messages/sk.json`)**
 
 - `cabinet.contractor.sidebar.requests` → `"Dostupné žiadosti"`
 - `cabinet.contractor.requests.title` → `"Dostupné žiadosti o výstavbu"`
@@ -1088,12 +1088,12 @@ Mirror structure with these values:
 - `cabinet.buildRequest.matched.rejectedSiblings` → `"Ostatní dodávatelia (nevybraní)"`
 - `admin.buildRequest.claims.title` → `"Audit záujmov"`
 
-- [ ] **Step 4: Verify JSON parses**
+- [x] **Step 4: Verify JSON parses**
 
 Run: `node -e "['en','ru','sk'].forEach(l => JSON.parse(require('fs').readFileSync('messages/'+l+'.json','utf-8')))"`
 Expected: no output.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add messages/en.json messages/ru.json messages/sk.json
@@ -1109,7 +1109,7 @@ git commit -m "feat(matching): add EN/RU/SK i18n strings"
 
 The current `/me/contractor/[id]` is a single page with no internal sub-navigation. The requests link goes in the main detail content as a prominent CTA if the contractor is APPROVED.
 
-- [ ] **Step 1: Add link**
+- [x] **Step 1: Add link**
 
 Open `src/app/[locale]/me/contractor/[id]/page.tsx`. Near the top of the JSX render (just under the heading and status pill), if `c.status === "APPROVED"`, render a link:
 
@@ -1130,12 +1130,12 @@ The `t` instance is already `getTranslations("cabinet.contractor")` so `t("sideb
 
 `Link` should already be imported; if not, add `import Link from "next/link";`.
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit && npm run lint`
 Expected: no new errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/app/[locale]/me/contractor/[id]/page.tsx
@@ -1151,7 +1151,7 @@ git commit -m "feat(matching): add Available requests link in contractor detail"
 - Create: `src/components/matching/withdraw-claim-button.tsx`
 - Create: `src/app/[locale]/me/contractor/[id]/requests/page.tsx`
 
-- [ ] **Step 1: Express-interest client form**
+- [x] **Step 1: Express-interest client form**
 
 Create `src/components/matching/express-interest-form.tsx`:
 
@@ -1232,7 +1232,7 @@ export function ExpressInterestForm({ buildRequestId, contractorId, labels }: Pr
 }
 ```
 
-- [ ] **Step 2: Withdraw-claim client button**
+- [x] **Step 2: Withdraw-claim client button**
 
 Create `src/components/matching/withdraw-claim-button.tsx`:
 
@@ -1272,7 +1272,7 @@ export function WithdrawClaimButton({ claimId, contractorId, label }: Props) {
 }
 ```
 
-- [ ] **Step 3: Feed page**
+- [x] **Step 3: Feed page**
 
 Create `src/app/[locale]/me/contractor/[id]/requests/page.tsx`:
 
@@ -1441,12 +1441,12 @@ export default async function ContractorRequestsPage({
 }
 ```
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run: `npx tsc --noEmit && npm run lint`
 Expected: no new errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/matching/express-interest-form.tsx \
@@ -1463,7 +1463,7 @@ git commit -m "feat(matching): add contractor feed page with express-interest + 
 - Create: `src/components/matching/accept-claim-button.tsx`
 - Modify: `src/app/[locale]/me/build-requests/[id]/page.tsx`
 
-- [ ] **Step 1: Accept-claim client button**
+- [x] **Step 1: Accept-claim client button**
 
 Create `src/components/matching/accept-claim-button.tsx`:
 
@@ -1504,7 +1504,7 @@ export function AcceptClaimButton({ claimId, label, confirmText }: Props) {
 }
 ```
 
-- [ ] **Step 2: Extend BR detail page with claims sections**
+- [x] **Step 2: Extend BR detail page with claims sections**
 
 In `src/app/[locale]/me/build-requests/[id]/page.tsx`:
 
@@ -1620,12 +1620,12 @@ const r = await prisma.buildRequest.findUnique({
 })()}
 ```
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Run: `npx tsc --noEmit && npm run lint`
 Expected: no new errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/components/matching/accept-claim-button.tsx \
@@ -1640,7 +1640,7 @@ git commit -m "feat(matching): render claims sections on homeowner BR detail"
 **Files:**
 - Modify: `src/app/[locale]/admin/build-requests/[id]/page.tsx`
 
-- [ ] **Step 1: Extend the page query**
+- [x] **Step 1: Extend the page query**
 
 In `src/app/[locale]/admin/build-requests/[id]/page.tsx`, find the existing prisma call (likely `prisma.buildRequest.findUnique({ where: { id } })`). Add a `claims` include:
 
@@ -1658,7 +1658,7 @@ const r = await prisma.buildRequest.findUnique({
 });
 ```
 
-- [ ] **Step 2: Render claims audit section**
+- [x] **Step 2: Render claims audit section**
 
 Add the following section near the end of the page (before the existing status-change form or wherever you decide it fits):
 
@@ -1692,12 +1692,12 @@ Add the following section near the end of the page (before the existing status-c
 )}
 ```
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Run: `npx tsc --noEmit && npm run lint`
 Expected: no new errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/app/[locale]/admin/build-requests/[id]/page.tsx
@@ -1713,7 +1713,7 @@ git commit -m "feat(matching): add claims audit section on admin BR detail"
 
 Pre-flight: orchestrator rebuilds + restarts `poolwatt-web` BEFORE running e2e.
 
-- [ ] **Step 1: Write spec**
+- [x] **Step 1: Write spec**
 
 ```ts
 import { test, expect } from "@playwright/test";
@@ -1837,7 +1837,7 @@ test("contractor expresses interest → homeowner accepts → both see contacts"
 });
 ```
 
-- [ ] **Step 2: Run**
+- [x] **Step 2: Run**
 
 ```bash
 set -a && source .env.local && set +a && npx playwright test matching-flow 2>&1 | tail -25
@@ -1846,7 +1846,7 @@ Expected: 1 passed.
 
 If a selector is ambiguous, use `.first()` or more specific locators. If genuinely broken, inspect rendered HTML.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add tests/e2e/matching-flow.spec.ts
@@ -1860,7 +1860,7 @@ git commit -m "test(matching): add e2e — express-interest → accept → conta
 **Files:**
 - Modify: `README.md`
 
-- [ ] **Step 1: Add the line**
+- [x] **Step 1: Add the line**
 
 Right after the V2b / EV extension entries in the roadmap:
 
@@ -1868,7 +1868,7 @@ Right after the V2b / EV extension entries in the roadmap:
   - [x] **BuildRequest ↔ Contractor matching (V2d)** — contractors express interest in open requests at `/me/contractor/[id]/requests`; homeowners pick one from their BR detail page, triggering full mutual contact reveal. See `docs/superpowers/specs/2026-05-30-build-request-matching-v2d-design.md`.
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add README.md
