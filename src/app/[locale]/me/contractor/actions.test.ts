@@ -35,6 +35,7 @@ const baseInput: ContractorInput = {
   bio: "We design and install solar power stations across Slovakia and Czech Republic. ".repeat(3),
   contactEmail: "info@testco.sk",
   contactPhone: "+421900000001",
+  providesEvCharging: false,
 };
 
 beforeEach(async () => {
@@ -130,6 +131,84 @@ describe("updateContractor", () => {
     const r = await updateContractor(created.id!, { ...baseInput, displayName: "Stealing" });
     expect(r.ok).toBe(false);
     expect(r.formError).toMatch(/not found|forbidden/i);
+  });
+});
+
+describe("createContractor — EV charging", () => {
+  it("persists all ev* fields when providesEvCharging=true", async () => {
+    const u = await ensureUser("test_ctr_ev_alice");
+    mockedAuth.mockResolvedValueOnce({ user: { id: u.id, username: u.username, role: "USER" } } as never);
+
+    const input = {
+      ...baseInput,
+      providesEvCharging: true,
+      evPowerSource: "MIXED" as const,
+      evStationCount: 7,
+      evConnectorTypes: ["CCS2", "TYPE2"] as const,
+      evPowerLevels: ["DC_FAST", "AC_FAST"] as const,
+      evUsageType: "PUBLIC" as const,
+      evMaxPowerKw: 150,
+      evDescription: "Seven public DC fast chargers along the Bratislava-Žilina highway, powered by rooftop solar.",
+    };
+
+    const r = await createContractor(input);
+    expect(r.ok).toBe(true);
+    const stored = await prisma.contractor.findUniqueOrThrow({ where: { id: r.id! } });
+    expect(stored.providesEvCharging).toBe(true);
+    expect(stored.evPowerSource).toBe("MIXED");
+    expect(stored.evStationCount).toBe(7);
+    expect(stored.evConnectorTypes).toEqual(["CCS2", "TYPE2"]);
+    expect(stored.evPowerLevels).toEqual(["DC_FAST", "AC_FAST"]);
+    expect(stored.evUsageType).toBe("PUBLIC");
+    expect(stored.evMaxPowerKw?.toNumber()).toBe(150);
+    expect(stored.evDescription).toContain("Bratislava");
+  });
+
+  it("stores false + nulls when providesEvCharging=false", async () => {
+    const u = await ensureUser("test_ctr_ev_bob");
+    mockedAuth.mockResolvedValueOnce({ user: { id: u.id, username: u.username, role: "USER" } } as never);
+
+    const r = await createContractor({ ...baseInput, providesEvCharging: false });
+    expect(r.ok).toBe(true);
+    const stored = await prisma.contractor.findUniqueOrThrow({ where: { id: r.id! } });
+    expect(stored.providesEvCharging).toBe(false);
+    expect(stored.evPowerSource).toBeNull();
+    expect(stored.evStationCount).toBeNull();
+    expect(stored.evConnectorTypes).toEqual([]);
+    expect(stored.evPowerLevels).toEqual([]);
+  });
+});
+
+describe("updateContractor — EV charging", () => {
+  it("wipes ev fields to null/empty when toggled off", async () => {
+    const u = await ensureUser("test_ctr_ev_carol");
+    mockedAuth.mockResolvedValue({ user: { id: u.id, username: u.username, role: "USER" } } as never);
+
+    const created = await createContractor({
+      ...baseInput,
+      providesEvCharging: true,
+      evPowerSource: "GRID",
+      evStationCount: 3,
+      evConnectorTypes: ["TYPE2"],
+      evPowerLevels: ["AC_FAST"],
+      evUsageType: "MEMBERSHIP",
+      evMaxPowerKw: 22,
+      evDescription: "Three 22 kW AC Type 2 stations behind the Bratislava office for member-only use.",
+    });
+    expect(created.ok).toBe(true);
+
+    const upd = await updateContractor(created.id!, { ...baseInput, providesEvCharging: false });
+    expect(upd.ok).toBe(true);
+
+    const reloaded = await prisma.contractor.findUniqueOrThrow({ where: { id: created.id! } });
+    expect(reloaded.providesEvCharging).toBe(false);
+    expect(reloaded.evPowerSource).toBeNull();
+    expect(reloaded.evStationCount).toBeNull();
+    expect(reloaded.evConnectorTypes).toEqual([]);
+    expect(reloaded.evPowerLevels).toEqual([]);
+    expect(reloaded.evUsageType).toBeNull();
+    expect(reloaded.evMaxPowerKw).toBeNull();
+    expect(reloaded.evDescription).toBeNull();
   });
 });
 
