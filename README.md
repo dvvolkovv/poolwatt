@@ -147,6 +147,7 @@ messages/
 ## Roadmap
 
 - **Phase 1 (current):** Scaffold, mock data, landing page, Telegram bot stub.
+  - [x] **Build-request cabinet (V1)** — homeowner files solar/wind requests at `/me/build-requests`; admin triages at `/admin/build-requests`. See `docs/superpowers/specs/2026-05-30-build-request-cabinet-design.md`.
 - **Phase 2:** Prisma migrations, real producer fleet seeded from partner
   aggregators, Redis-backed snapshots, grid worker (60s/5min/30min cadences),
   Auth.js v5 wired (Google + GitHub + Telegram).
