@@ -243,12 +243,39 @@
         "nameRequired": "Add your name in settings before filing a request.",
         "contactRequired": "Add your name and phone number in settings before filing a request.",
         "notEditable": "This request is being processed and can no longer be edited."
+      },
+      "claims": {
+        "title": "Interested contractors ({count})",
+        "empty": "No contractors have expressed interest yet.",
+        "accept": "Accept this contractor",
+        "confirmAccept": "Accept this contractor? Other interested contractors will be auto-rejected and this build request will move to MATCHED."
+      },
+      "matched": {
+        "title": "Your matched contractor",
+        "rejectedSiblings": "Other contractors (not selected)"
       }
     },
     "contractor": {
       "title": "My company",
       "empty": "You haven't registered a company yet.",
       "newButton": "+ Register company",
+      "sidebar": {
+        "requests": "Available requests"
+      },
+      "requests": {
+        "title": "Available build requests",
+        "subtitle": "Open requests matching your country and renewable types.",
+        "empty": "No matching open requests right now.",
+        "expressInterest": "Express interest",
+        "message": {
+          "label": "Optional message to the homeowner",
+          "placeholder": "Why you'd be a great fit for this project (10–500 characters, optional)"
+        },
+        "submit": "Send",
+        "submitting": "Sending…",
+        "withdraw": "Withdraw",
+        "youExpressedInterest": "You expressed interest. Status: PENDING"
+      },
       "new": {
         "title": "Register your company",
         "section": {
@@ -336,6 +363,9 @@
         "setStatus": "Change status",
         "adminNote": "Internal note",
         "submit": "Apply"
+      },
+      "claims": {
+        "title": "Claims audit"
       }
     },
     "contractor": {

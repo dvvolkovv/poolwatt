@@ -243,12 +243,39 @@
         "nameRequired": "Pred odoslaním pridajte meno v nastaveniach.",
         "contactRequired": "Pred odoslaním pridajte meno a telefón v nastaveniach.",
         "notEditable": "Žiadosť sa spracováva a už nie je možné ju upraviť."
+      },
+      "claims": {
+        "title": "Záujemcovia ({count})",
+        "empty": "Zatiaľ nikto neprejavil záujem.",
+        "accept": "Vybrať tohto dodávateľa",
+        "confirmAccept": "Vybrať tohto dodávateľa? Ostatní záujemcovia budú automaticky zamietnutí a žiadosť prejde do stavu MATCHED."
+      },
+      "matched": {
+        "title": "Vybraný dodávateľ",
+        "rejectedSiblings": "Ostatní dodávatelia (nevybraní)"
       }
     },
     "contractor": {
       "title": "Moja firma",
       "empty": "Zatiaľ ste si nezaregistrovali firmu.",
       "newButton": "+ Zaregistrovať firmu",
+      "sidebar": {
+        "requests": "Dostupné žiadosti"
+      },
+      "requests": {
+        "title": "Dostupné žiadosti o výstavbu",
+        "subtitle": "Otvorené žiadosti vyhovujúce vašej krajine a typom OZE.",
+        "empty": "Momentálne nie sú žiadne vyhovujúce otvorené žiadosti.",
+        "expressInterest": "Prejaviť záujem",
+        "message": {
+          "label": "Voliteľná správa pre zákazníka",
+          "placeholder": "Prečo by ste boli skvelý kandidát (10–500 znakov, voliteľné)"
+        },
+        "submit": "Odoslať",
+        "submitting": "Odosielam…",
+        "withdraw": "Stiahnuť",
+        "youExpressedInterest": "Prejavili ste záujem. Stav: PENDING"
+      },
       "new": {
         "title": "Registrácia firmy",
         "section": {
@@ -336,6 +363,9 @@
         "setStatus": "Zmeniť stav",
         "adminNote": "Interná poznámka",
         "submit": "Použiť"
+      },
+      "claims": {
+        "title": "Audit záujmov"
       }
     },
     "contractor": {
