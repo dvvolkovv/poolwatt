@@ -44,6 +44,8 @@ model User {
   buyContracts            Contract[]              @relation("ContractBuyer")
   buildRequests           BuildRequest[]          @relation("BuildRequestOwner")
   reviewedBuildRequests   BuildRequest[]          @relation("BuildRequestReviewer")
+  contractorMemberships   ContractorMember[]      @relation("ContractorMembership")
+  reviewedContractors     Contractor[]            @relation("ContractorReviewer")
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -463,4 +465,91 @@ model BuildRequest {
   @@index([userId, createdAt])
   @@index([status, createdAt])
   @@index([country, status])
+}
+
+// ─── Contractor Cabinet (V2a) ────────────────────────────────────────────────
+
+enum ContractorEntityType {
+  LEGAL_ENTITY
+  SOLE_TRADER
+  INDIVIDUAL
+}
+
+enum ContractorWorkCategory {
+  DESIGN
+  MANUFACTURE
+  SUPPLY
+  INSTALLATION
+  COMMISSIONING
+  MAINTENANCE
+}
+
+enum ContractorRenewableType {
+  SOLAR
+  WIND
+  HYDRO
+  BIOMASS
+  GEOTHERMAL
+  HYBRID
+}
+
+enum ContractorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum ContractorMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Contractor {
+  id                 String                       @id @default(cuid())
+  slug               String                       @unique
+
+  entityType         ContractorEntityType
+  displayName        String
+  legalName          String?
+  registrationNumber String?
+  country            String
+  city               String
+  foundedYear        Int?
+
+  workCategories     ContractorWorkCategory[]
+  renewableTypes     ContractorRenewableType[]
+  countriesServed    String[]
+
+  bio                String                       @db.Text
+  websiteUrl         String?
+  logoUrl            String?
+  contactEmail       String
+  contactPhone       String
+
+  status             ContractorStatus             @default(PENDING)
+  adminNote          String?                      @db.Text
+  reviewedAt         DateTime?
+  reviewedById       String?
+  reviewer           User?                        @relation("ContractorReviewer", fields: [reviewedById], references: [id])
+
+  members            ContractorMember[]
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+
+  @@index([status, createdAt])
+  @@index([country, status])
+}
+
+model ContractorMember {
+  contractorId       String
+  contractor         Contractor                   @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User                         @relation("ContractorMembership", fields: [userId], references: [id], onDelete: Cascade)
+  role               ContractorMemberRole         @default(OWNER)
+  addedAt            DateTime                     @default(now())
+
+  @@id([contractorId, userId])
+  @@index([userId])
 }
