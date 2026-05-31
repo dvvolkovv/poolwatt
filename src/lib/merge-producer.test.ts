@@ -36,6 +36,8 @@ function fakeDb(overrides: Partial<Producer> = {}, profile: DbProducerProfile | 
     category: "ENERGY_PRODUCER",
     equipment: [],
     manufactures: [],
+    claimedById: null,
+    claimedAt: null,
     ...overrides,
   };
   return { ...base, profile };
