@@ -6,7 +6,7 @@ vi.mock("@/lib/auth", () => ({
   auth: vi.fn(async () => (mockUserId ? { user: { id: mockUserId } } : null)),
 }));
 
-import { updateChargerOperatorCard, unlinkChargerOperatorClaim } from "./actions";
+import { updateChargerOperatorCard, unlinkChargerOperatorClaim, updateChargerOperatorPrice } from "./actions";
 
 const TEST_SLUG = "test-co-cabinet";
 const TEST_USERNAME = "test_co_user";
@@ -83,6 +83,82 @@ describe("updateChargerOperatorCard", () => {
     });
     expect(r.ok).toBe(false);
     expect(r.fieldErrors?.displayName).toBeDefined();
+  });
+});
+
+describe("updateChargerOperatorPrice", () => {
+  it("sets price + currency + timestamp when owner submits", async () => {
+    const before = Date.now();
+    const r = await updateChargerOperatorPrice({
+      operatorId: testOpId,
+      pricePerKwh: 0.42,
+      currency: "EUR",
+    });
+    expect(r.ok).toBe(true);
+    const after = await prisma.chargerOperator.findUnique({ where: { id: testOpId } });
+    expect(after?.pricePerKwh?.toString()).toBe("0.42");
+    expect(after?.priceCurrency).toBe("EUR");
+    expect(after?.priceUpdatedAt).toBeInstanceOf(Date);
+    expect(after?.priceUpdatedAt!.getTime()).toBeGreaterThanOrEqual(before);
+  });
+
+  it("clears all three fields when pricePerKwh is null", async () => {
+    await prisma.chargerOperator.update({
+      where: { id: testOpId },
+      data: { pricePerKwh: "0.55", priceCurrency: "USD", priceUpdatedAt: new Date() },
+    });
+    const r = await updateChargerOperatorPrice({
+      operatorId: testOpId,
+      pricePerKwh: null,
+      currency: null,
+    });
+    expect(r.ok).toBe(true);
+    const after = await prisma.chargerOperator.findUnique({ where: { id: testOpId } });
+    expect(after?.pricePerKwh).toBeNull();
+    expect(after?.priceCurrency).toBeNull();
+    expect(after?.priceUpdatedAt).toBeNull();
+  });
+
+  it("rejects price without currency", async () => {
+    const r = await updateChargerOperatorPrice({
+      operatorId: testOpId,
+      pricePerKwh: 0.5,
+      currency: null,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.fieldErrors?.currency).toBeDefined();
+  });
+
+  it("rejects zero / negative price", async () => {
+    const r = await updateChargerOperatorPrice({
+      operatorId: testOpId,
+      pricePerKwh: 0,
+      currency: "EUR",
+    });
+    expect(r.ok).toBe(false);
+    expect(r.fieldErrors?.pricePerKwh).toBeDefined();
+  });
+
+  it("rejects unsupported currency", async () => {
+    const r = await updateChargerOperatorPrice({
+      operatorId: testOpId,
+      pricePerKwh: 0.4,
+      // @ts-expect-error testing runtime rejection of a non-enum currency
+      currency: "XYZ",
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects when caller is not the owner", async () => {
+    mockUserId = otherUserId;
+    const r = await updateChargerOperatorPrice({
+      operatorId: testOpId,
+      pricePerKwh: 0.4,
+      currency: "EUR",
+    });
+    expect(r.ok).toBe(false);
+    const after = await prisma.chargerOperator.findUnique({ where: { id: testOpId } });
+    expect(after?.pricePerKwh).toBeNull();
   });
 });
 

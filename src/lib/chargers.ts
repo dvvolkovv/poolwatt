@@ -61,6 +61,10 @@ export type ChargerStation = {
   photoUrl: string | null;
   operatorInfo?: OperatorInfo;
   renewable?: boolean;
+  // Operator-published price (Step 2): set when a verified ChargerOperator
+  // has a current tariff matching this station's `operator` string. Takes
+  // precedence over OCM `costInfo` because it's authoritative + real-time.
+  operatorPrice?: { pricePerKwh: string; currency: string; updatedAt: string } | null;
 };
 
 export function classifyPower(kw: number): PowerLevel {

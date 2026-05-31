@@ -73,6 +73,54 @@ export async function updateChargerOperatorCard(input: UpdateChargerOperatorCard
   return { ok: true };
 }
 
+const SUPPORTED_CURRENCIES = ["EUR", "USD", "GBP", "CZK", "PLN", "CHF", "RUB", "UAH"] as const;
+
+const priceSchema = z.object({
+  operatorId: z.string().min(1),
+  // null clears the operator's published tariff.
+  pricePerKwh: z
+    .number()
+    .positive("Price must be greater than zero.")
+    .max(99.9999, "Price must be at most 99.9999.")
+    .nullable(),
+  currency: z.enum(SUPPORTED_CURRENCIES).nullable(),
+});
+
+export type UpdateChargerOperatorPriceInput = z.input<typeof priceSchema>;
+
+export async function updateChargerOperatorPrice(input: UpdateChargerOperatorPriceInput): Promise<ActionResult> {
+  const parsed = priceSchema.safeParse(input);
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0]?.toString();
+      if (key) fieldErrors[key] = issue.message;
+    }
+    return { ok: false, fieldErrors };
+  }
+  const { operatorId, pricePerKwh, currency } = parsed.data;
+  // A price without a currency would render as a bare number — refuse it.
+  if (pricePerKwh !== null && currency === null) {
+    return { ok: false, fieldErrors: { currency: "Currency is required when price is set." } };
+  }
+
+  const owner = await assertOwner(operatorId);
+  if (!owner.ok) return owner.result;
+
+  await prisma.chargerOperator.update({
+    where: { id: operatorId },
+    data: {
+      pricePerKwh,
+      priceCurrency: pricePerKwh === null ? null : currency,
+      priceUpdatedAt: pricePerKwh === null ? null : new Date(),
+    },
+  });
+
+  revalidatePath(`/[locale]/c`, "page");
+  revalidatePath(`/[locale]/navigator`, "page");
+  return { ok: true };
+}
+
 export async function unlinkChargerOperatorClaim(input: { operatorId: string }): Promise<ActionResult> {
   const owner = await assertOwner(input.operatorId);
   if (!owner.ok) return owner.result;

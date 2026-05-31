@@ -131,7 +131,9 @@
     "errorLoad": "Nepodarilo sa načítať stanice. Skúšame iný zdroj…",
     "retry": "Skúsiť znova",
     "priceLabel": "Cena / kWh",
-    "priceFallback": "Cenu si overte u prevádzkovateľa"
+    "priceFallback": "Cenu si overte u prevádzkovateľa",
+    "priceLive": "Aktuálne",
+    "priceUpdated": "Aktualizované"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot doručuje živé upozornenia a umožňuje výrobcom zverejňovať ponuky priamo z telefónu."
@@ -287,7 +289,17 @@
       "dangerSection": "Nebezpečná zóna",
       "unlinkHint": "Odpojí túto sieť od vášho účtu. Iný používateľ ju môže prevziať.",
       "unlinkButton": "Odpojiť",
-      "unlinkConfirm": "Naozaj? Toto odpojí sieť od vášho účtu."
+      "unlinkConfirm": "Naozaj? Toto odpojí sieť od vášho účtu.",
+      "priceSection": "Verejná cena",
+      "priceHelp": "Táto cena sa zobrazí na každej karte stanice, kde je vaša sieť uvedená ako prevádzkovateľ. Aktualizujte ju, keď sa zmení reálna cena.",
+      "pricePerKwhLabel": "Cena za kWh",
+      "pricePerKwhPlaceholder": "0,42",
+      "priceCurrencyLabel": "Mena",
+      "priceSave": "Zverejniť",
+      "priceClear": "Vymazať cenu",
+      "priceCleared": "Vymazané",
+      "priceNotSet": "Cena zatiaľ nie je zverejnená.",
+      "priceUpdatedAtPrefix": "Naposledy aktualizované"
     },
     "producer": {
       "availableRequests": "Dostupné požiadavky",
@@ -502,7 +514,9 @@
       "claimCta": "Toto je naša spoločnosť — prevziať kartu"
     },
     "priceLabel": "Cena / kWh",
-    "priceFallback": "Cenu si overte u prevádzkovateľa"
+    "priceFallback": "Cenu si overte u prevádzkovateľa",
+    "priceLive": "Aktuálne",
+    "priceUpdated": "Aktualizované"
   },
   "settings": {
     "title": "Nastavenia",

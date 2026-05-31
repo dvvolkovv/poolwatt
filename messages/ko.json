@@ -131,7 +131,9 @@
     "errorLoad": "Could not load stations. Retrying with a different source…",
     "retry": "Retry",
     "priceLabel": "Price / kWh",
-    "priceFallback": "Tariff varies — contact operator"
+    "priceFallback": "Tariff varies — contact operator",
+    "priceLive": "Live",
+    "priceUpdated": "Updated"
   },
   "bot": {
     "siblingNote": "텔레그램 봇 @PoolwattBot이 실시간 알림을 보내고 생산자가 폰에서 오퍼를 게시할 수 있게 합니다."
@@ -213,7 +215,9 @@
       "pay_at_location": "Pay at location"
     },
     "priceLabel": "Price / kWh",
-    "priceFallback": "Tariff varies — contact operator"
+    "priceFallback": "Tariff varies — contact operator",
+    "priceLive": "Live",
+    "priceUpdated": "Updated"
   },
   "settings": {
     "title": "Settings",

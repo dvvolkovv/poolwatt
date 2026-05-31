@@ -29,10 +29,22 @@ export default async function ChargerDetailPage({
   const operator = charger.operator
     ? await prisma.chargerOperator.findFirst({
         where: { aliases: { has: charger.operator } },
-        select: { id: true, displayName: true, description: true, websiteUrl: true, logoUrl: true, email: true, phone: true, claimedById: true },
+        select: {
+          id: true, displayName: true, description: true, websiteUrl: true,
+          logoUrl: true, email: true, phone: true, claimedById: true,
+          pricePerKwh: true, priceCurrency: true, priceUpdatedAt: true,
+        },
       })
     : null;
   const isVerified = !!operator?.claimedById;
+  const livePrice =
+    operator?.pricePerKwh && operator.priceCurrency && operator.priceUpdatedAt
+      ? {
+          pricePerKwh: operator.pricePerKwh.toString(),
+          currency: operator.priceCurrency,
+          updatedAt: operator.priceUpdatedAt.toISOString(),
+        }
+      : null;
 
   const t = await getTranslations("charger");
   const tOp = await getTranslations("charger.operatorSection");
@@ -129,7 +141,17 @@ export default async function ChargerDetailPage({
           {charger.openHours && <Field label={t("openHours")} value={charger.openHours} />}
           <Field
             label={t("priceLabel")}
-            value={charger.costInfo ?? t("priceFallback")}
+            value={
+              livePrice
+                ? `${Number(livePrice.pricePerKwh).toFixed(Number(livePrice.pricePerKwh) < 1 ? 3 : 2)} ${livePrice.currency}/kWh`
+                : charger.costInfo ?? t("priceFallback")
+            }
+            badge={livePrice ? t("priceLive") : null}
+            hint={
+              livePrice
+                ? `${t("priceUpdated")} ${new Date(livePrice.updatedAt).toLocaleString(locale)}`
+                : null
+            }
           />
           {typeof charger.rating === "number" && (
             <Field label={t("rating")} value={`★ ${charger.rating.toFixed(1)}`} />
@@ -163,11 +185,29 @@ export default async function ChargerDetailPage({
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function Field({
+  label,
+  value,
+  badge,
+  hint,
+}: {
+  label: string;
+  value: string;
+  badge?: string | null;
+  hint?: string | null;
+}) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-[0.18em] text-muted mb-1">{label}</div>
+      <div className="text-[10px] uppercase tracking-[0.18em] text-muted mb-1 flex items-center gap-2">
+        <span>{label}</span>
+        {badge && (
+          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green/15 text-green normal-case tracking-normal">
+            ● {badge}
+          </span>
+        )}
+      </div>
       <div className="text-foreground">{value}</div>
+      {hint && <div className="text-[11px] text-muted mt-0.5">{hint}</div>}
     </div>
   );
 }

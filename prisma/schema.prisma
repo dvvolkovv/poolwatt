@@ -186,6 +186,13 @@ model ChargerOperator {
   email         String?
   phone         String?
 
+  // Operator-level default tariff. Travelers see this on every station whose
+  // OCM `operator` string matches one of `aliases`. Step 4 will add an API
+  // for operators to update this in real time; for now it's set via cabinet.
+  pricePerKwh    Decimal?  @db.Decimal(8, 4)
+  priceCurrency  String?   @db.VarChar(8)
+  priceUpdatedAt DateTime?
+
   claimedById   String?
   claimedBy     User?    @relation("ChargerOperatorClaims", fields: [claimedById], references: [id])
   claimedAt     DateTime?

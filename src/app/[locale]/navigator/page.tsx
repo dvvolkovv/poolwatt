@@ -38,6 +38,8 @@ export default async function NavigatorPage({ params }: Props) {
     cost: t("cost"),
     priceLabel: t("priceLabel"),
     priceFallback: t("priceFallback"),
+    priceLive: t("priceLive"),
+    priceUpdated: t("priceUpdated"),
     lastVerified: t("lastVerified"),
     directions: t("directions"),
     metaDescription: t("metaDescription"),

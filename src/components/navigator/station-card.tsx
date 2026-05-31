@@ -1,9 +1,38 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import type { ChargerStation } from "@/lib/chargers";
 import { powerLevelLabel } from "@/lib/chargers";
 import { OPERATOR_INFO } from "@/lib/charger-operators";
 import { X, Zap, MapPin, Clock, Star, ExternalLink, Navigation, Phone, Mail, Globe, Smartphone } from "lucide-react";
+
+const CURRENCY_SYMBOL: Record<string, string> = {
+  EUR: "€",
+  USD: "$",
+  GBP: "£",
+  CZK: "Kč",
+  PLN: "zł",
+  CHF: "₣",
+  RUB: "₽",
+  UAH: "₴",
+};
+
+function formatPrice(value: string, currency: string): string {
+  // Trim trailing zeros past 2 decimals while keeping at least 2 sig figures.
+  const n = Number(value);
+  if (!Number.isFinite(n)) return `${value} ${currency}`;
+  const symbol = CURRENCY_SYMBOL[currency] ?? currency;
+  return `${n.toFixed(n < 0.1 ? 4 : n < 1 ? 3 : 2)} ${symbol}/kWh`;
+}
+
+function relativeTime(iso: string, locale: string): string {
+  const diff = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  if (diff < 60) return rtf.format(-diff, "second");
+  if (diff < 3600) return rtf.format(-Math.round(diff / 60), "minute");
+  if (diff < 86400) return rtf.format(-Math.round(diff / 3600), "hour");
+  return rtf.format(-Math.round(diff / 86400), "day");
+}
 
 type Props = {
   station: ChargerStation;
@@ -32,6 +61,7 @@ const CONNECTOR_ICON: Record<string, string> = {
 };
 
 export function StationCard({ station: s, onClose, labels }: Props) {
+  const locale = useLocale();
   const badge = STATUS_BADGE[s.status] ?? STATUS_BADGE.operational;
 
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`;
@@ -151,17 +181,34 @@ export function StationCard({ station: s, onClose, labels }: Props) {
         </div>
       </div>
 
-      {/* Price per kWh — always rendered. OCM populates costInfo for ~10%
-          of stations as free text; otherwise fall back to operator contact. */}
+      {/* Price per kWh — always rendered. Preference order:
+          1. Operator-published price (Step 2, live from cabinet/API)
+          2. OCM free-text costInfo (~10% of stations)
+          3. Fallback to operator contact link */}
       {(() => {
         const op = s.operatorInfo ?? OPERATOR_INFO[s.operator];
         const operatorHost = op?.website?.replace(/^https?:\/\//, "").split("/")[0];
         return (
           <div className="px-4 py-3 border-b border-hairline">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted mb-1">
-              {labels.priceLabel ?? "Price / kWh"}
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted mb-1 flex items-center justify-between">
+              <span>{labels.priceLabel ?? "Price / kWh"}</span>
+              {s.operatorPrice && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green/15 text-green normal-case tracking-normal">
+                  ● {labels.priceLive ?? "Live"}
+                </span>
+              )}
             </div>
-            {s.costInfo ? (
+            {s.operatorPrice ? (
+              <>
+                <p className="num text-[15px] font-semibold text-foreground">
+                  {formatPrice(s.operatorPrice.pricePerKwh, s.operatorPrice.currency)}
+                </p>
+                <p className="text-[11px] text-muted mt-0.5">
+                  {labels.priceUpdated ?? "Updated"}{" "}
+                  <span className="num">{relativeTime(s.operatorPrice.updatedAt, locale)}</span>
+                </p>
+              </>
+            ) : s.costInfo ? (
               <p className="text-[13px] text-foreground">{s.costInfo}</p>
             ) : (
               <p className="text-[12px] text-muted">

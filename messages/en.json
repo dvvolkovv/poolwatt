@@ -131,7 +131,9 @@
     "errorLoad": "Could not load stations. Retrying with a different source…",
     "retry": "Retry",
     "priceLabel": "Price / kWh",
-    "priceFallback": "Tariff varies — contact operator"
+    "priceFallback": "Tariff varies — contact operator",
+    "priceLive": "Live",
+    "priceUpdated": "Updated"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot delivers live alerts and lets producers post offers from their phone."
@@ -287,7 +289,17 @@
       "dangerSection": "Danger zone",
       "unlinkHint": "Unlinks this network from your account. Someone else can re-claim it later.",
       "unlinkButton": "Unlink claim",
-      "unlinkConfirm": "Are you sure? This unlinks the network from your account."
+      "unlinkConfirm": "Are you sure? This unlinks the network from your account.",
+      "priceSection": "Public tariff",
+      "priceHelp": "This price will appear on every station card that lists your network as the operator. Update it whenever your real-world tariff changes.",
+      "pricePerKwhLabel": "Price per kWh",
+      "pricePerKwhPlaceholder": "0.42",
+      "priceCurrencyLabel": "Currency",
+      "priceSave": "Publish",
+      "priceClear": "Clear price",
+      "priceCleared": "Cleared",
+      "priceNotSet": "No price published yet.",
+      "priceUpdatedAtPrefix": "Last updated"
     },
     "producer": {
       "listTitle": "My producer cards",
@@ -502,7 +514,9 @@
       "claimCta": "This is our company — claim this card"
     },
     "priceLabel": "Price / kWh",
-    "priceFallback": "Tariff varies — contact operator"
+    "priceFallback": "Tariff varies — contact operator",
+    "priceLive": "Live",
+    "priceUpdated": "Updated"
   },
   "settings": {
     "title": "Settings",

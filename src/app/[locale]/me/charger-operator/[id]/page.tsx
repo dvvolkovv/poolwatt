@@ -4,6 +4,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CardForm } from "./card-form";
+import { PriceForm } from "./price-form";
 import { UnlinkButton } from "./unlink-button";
 
 type Props = {
@@ -62,6 +63,30 @@ export default async function ChargerOperatorCabinetPage({ params, searchParams 
           saved: t("saved"),
         }}
       />
+
+      <div className="pt-6 border-t border-hairline">
+        <PriceForm
+          operatorId={op.id}
+          initial={{
+            pricePerKwh: op.pricePerKwh ? op.pricePerKwh.toString() : null,
+            priceCurrency: op.priceCurrency,
+            priceUpdatedAt: op.priceUpdatedAt ? op.priceUpdatedAt.toISOString() : null,
+          }}
+          labels={{
+            sectionTitle: t("priceSection"),
+            help: t("priceHelp"),
+            pricePerKwh: t("pricePerKwhLabel"),
+            pricePerKwhPlaceholder: t("pricePerKwhPlaceholder"),
+            currency: t("priceCurrencyLabel"),
+            save: t("priceSave"),
+            clear: t("priceClear"),
+            cleared: t("priceCleared"),
+            saved: t("saved"),
+            notSet: t("priceNotSet"),
+            updatedAtPrefix: t("priceUpdatedAtPrefix"),
+          }}
+        />
+      </div>
 
       <div className="pt-6 border-t border-hairline">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">{t("dangerSection")}</h2>

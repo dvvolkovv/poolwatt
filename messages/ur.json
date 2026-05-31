@@ -131,7 +131,9 @@
     "errorLoad": "Could not load stations. Retrying with a different source…",
     "retry": "Retry",
     "priceLabel": "Price / kWh",
-    "priceFallback": "Tariff varies — contact operator"
+    "priceFallback": "Tariff varies — contact operator",
+    "priceLive": "Live",
+    "priceUpdated": "Updated"
   },
   "bot": {
     "siblingNote": "ٹیلیگرام بوٹ @PoolwattBot لائیو الرٹس بھیجتا ہے اور پروڈیوسرز کو فون سے آفرز شائع کرنے دیتا ہے۔"
@@ -213,7 +215,9 @@
       "pay_at_location": "Pay at location"
     },
     "priceLabel": "Price / kWh",
-    "priceFallback": "Tariff varies — contact operator"
+    "priceFallback": "Tariff varies — contact operator",
+    "priceLive": "Live",
+    "priceUpdated": "Updated"
   },
   "settings": {
     "title": "Settings",
