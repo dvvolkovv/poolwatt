@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { verifyClaim } from "./actions";
 
 type Props = {
-  entityType: "PRODUCER";
+  entityType: "PRODUCER" | "CHARGER_OPERATOR";
   entityId: string;
   locale: string;
   labels: { code: string; submit: string };
@@ -23,7 +23,10 @@ export function VerifyForm({ entityType, entityId, locale, labels }: Props) {
     startTransition(async () => {
       const result = await verifyClaim({ entityType, entityId, code });
       if (result.ok) {
-        router.push(`/${locale}/me/producer/${entityId}?claimed=1`);
+        const cabinetPath = entityType === "PRODUCER"
+          ? `/${locale}/me/producer/${entityId}`
+          : `/${locale}/me/charger-operator/${entityId}`;
+        router.push(`${cabinetPath}?claimed=1`);
       } else {
         setError(result.formError ?? "Verification failed.");
       }

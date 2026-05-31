@@ -27,18 +27,39 @@ export async function submitClaim(input: SubmitClaimInput): Promise<SubmitClaimR
     return { ok: false, formError: "Not authenticated." };
   }
 
-  if (input.entityType !== "PRODUCER") {
+  let entity: { displayName: string; website: string | null; claimedById: string | null } | null = null;
+  if (input.entityType === "PRODUCER") {
+    const producer = await prisma.producer.findUnique({
+      where: { id: input.entityId },
+      include: { profile: true },
+    });
+    if (producer) {
+      entity = {
+        displayName: producer.displayName,
+        website: producer.profile?.website ?? null,
+        claimedById: producer.claimedById,
+      };
+    }
+  } else if (input.entityType === "CHARGER_OPERATOR") {
+    const op = await prisma.chargerOperator.findUnique({
+      where: { id: input.entityId },
+      select: { displayName: true, websiteUrl: true, claimedById: true },
+    });
+    if (op) {
+      entity = {
+        displayName: op.displayName,
+        website: op.websiteUrl,
+        claimedById: op.claimedById,
+      };
+    }
+  } else {
     return { ok: false, formError: "Unsupported entity type." };
   }
 
-  const producer = await prisma.producer.findUnique({
-    where: { id: input.entityId },
-    include: { profile: true },
-  });
-  if (!producer) return { ok: false, formError: "Producer not found." };
-  if (producer.claimedById) return { ok: false, formError: "Already claimed." };
+  if (!entity) return { ok: false, formError: "Entity not found." };
+  if (entity.claimedById) return { ok: false, formError: "Already claimed." };
 
-  const website = producer.profile?.website ?? null;
+  const website = entity.website;
   if (!matchesDomain(input.email, website)) {
     return { ok: false, fieldErrors: { email: "Email must match the company's website domain." } };
   }
@@ -55,6 +76,6 @@ export async function submitClaim(input: SubmitClaimInput): Promise<SubmitClaimR
     },
   });
 
-  await sendClaimVerificationEmail(input.email, token, producer.displayName);
+  await sendClaimVerificationEmail(input.email, token, entity.displayName);
   return { ok: true };
 }

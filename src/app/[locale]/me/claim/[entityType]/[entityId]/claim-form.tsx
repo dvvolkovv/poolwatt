@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { submitClaim } from "./actions";
 
 type Props = {
-  entityType: "PRODUCER";
+  entityType: "PRODUCER" | "CHARGER_OPERATOR";
   entityId: string;
   locale: string;
   website: string;

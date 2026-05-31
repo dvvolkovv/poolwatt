@@ -17,33 +17,61 @@ export default async function ClaimPage({ params }: Props) {
     redirect(`/${locale}/login?callbackUrl=/${locale}/me/claim/${entityType}/${entityId}`);
   }
 
-  if (entityType !== "PRODUCER") notFound();
+  let entity:
+    | { id: string; displayName: string; website: string | null; claimedById: string | null; publicPath: string }
+    | null = null;
 
-  const producer = await prisma.producer.findUnique({
-    where: { id: entityId },
-    include: { profile: true },
-  });
-  if (!producer) notFound();
-  if (producer.claimedById) {
-    redirect(`/${locale}/p/${producer.handle}`);
+  if (entityType === "PRODUCER") {
+    const producer = await prisma.producer.findUnique({
+      where: { id: entityId },
+      include: { profile: true },
+    });
+    if (producer) {
+      entity = {
+        id: producer.id,
+        displayName: producer.displayName,
+        website: producer.profile?.website ?? null,
+        claimedById: producer.claimedById,
+        publicPath: `/${locale}/p/${producer.handle}`,
+      };
+    }
+  } else if (entityType === "CHARGER_OPERATOR") {
+    const op = await prisma.chargerOperator.findUnique({
+      where: { id: entityId },
+      select: { id: true, displayName: true, websiteUrl: true, claimedById: true },
+    });
+    if (op) {
+      entity = {
+        id: op.id,
+        displayName: op.displayName,
+        website: op.websiteUrl,
+        claimedById: op.claimedById,
+        publicPath: `/${locale}/navigator`,
+      };
+    }
+  } else {
+    notFound();
   }
+
+  if (!entity) notFound();
+  if (entity.claimedById) redirect(entity.publicPath);
 
   const t = await getTranslations("claim");
 
   return (
     <div className="max-w-[560px] mx-auto px-6 py-12">
-      <h1 className="text-2xl font-bold mb-2">{t("title", { name: producer.displayName })}</h1>
+      <h1 className="text-2xl font-bold mb-2">{t("title", { name: entity.displayName })}</h1>
       <p className="text-sm text-muted mb-6">{t("instructions")}</p>
-      {producer.profile?.website ? (
+      {entity.website ? (
         <ClaimForm
-          entityType="PRODUCER"
-          entityId={producer.id}
+          entityType={entityType as "PRODUCER" | "CHARGER_OPERATOR"}
+          entityId={entity.id}
           locale={locale}
-          website={producer.profile.website}
+          website={entity.website}
           labels={{
             email: t("emailLabel"),
             submit: t("submitLabel"),
-            domainHint: t("domainHint", { website: producer.profile.website }),
+            domainHint: t("domainHint", { website: entity.website }),
           }}
         />
       ) : (
