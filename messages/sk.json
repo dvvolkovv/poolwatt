@@ -133,7 +133,10 @@
     "priceLabel": "Cena / kWh",
     "priceFallback": "Cenu si overte u prevádzkovateľa",
     "priceLive": "Aktuálne",
-    "priceUpdated": "Aktualizované"
+    "priceUpdated": "Aktualizované",
+    "sortLabel": "Triedenie",
+    "sortDefault": "Predvolené",
+    "sortPriceAsc": "Najlacnejšie prvé"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot doručuje živé upozornenia a umožňuje výrobcom zverejňovať ponuky priamo z telefónu."

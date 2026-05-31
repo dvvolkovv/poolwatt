@@ -34,6 +34,15 @@ function relativeTime(iso: string, locale: string): string {
   return rtf.format(-Math.round(diff / 86400), "day");
 }
 
+// Traffic-light freshness: green within 24h, yellow within 7d, grey older.
+// Tells travelers at a glance whether an operator-published price is current.
+function freshnessClass(iso: string): string {
+  const ageH = (Date.now() - new Date(iso).getTime()) / 3_600_000;
+  if (ageH < 24) return "bg-green/15 text-green";
+  if (ageH < 24 * 7) return "bg-accent/15 text-accent";
+  return "bg-card-alt text-muted";
+}
+
 type Props = {
   station: ChargerStation;
   onClose: () => void;
@@ -193,7 +202,9 @@ export function StationCard({ station: s, onClose, labels }: Props) {
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted mb-1 flex items-center justify-between">
               <span>{labels.priceLabel ?? "Price / kWh"}</span>
               {s.operatorPrice && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green/15 text-green normal-case tracking-normal">
+                <span
+                  className={`text-[9px] px-1.5 py-0.5 rounded-full normal-case tracking-normal ${freshnessClass(s.operatorPrice.updatedAt)}`}
+                >
                   ● {labels.priceLive ?? "Live"}
                 </span>
               )}

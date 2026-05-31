@@ -133,7 +133,10 @@
     "priceLabel": "Price / kWh",
     "priceFallback": "Tariff varies — contact operator",
     "priceLive": "Live",
-    "priceUpdated": "Updated"
+    "priceUpdated": "Updated",
+    "sortLabel": "Sort",
+    "sortDefault": "Default",
+    "sortPriceAsc": "Cheapest first"
   },
   "bot": {
     "siblingNote": "Bot Telegram @PoolwattBot dostarcza powiadomienia na żywo i pozwala producentom publikować oferty bezpośrednio z telefonu."

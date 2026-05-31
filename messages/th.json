@@ -133,7 +133,10 @@
     "priceLabel": "Price / kWh",
     "priceFallback": "Tariff varies — contact operator",
     "priceLive": "Live",
-    "priceUpdated": "Updated"
+    "priceUpdated": "Updated",
+    "sortLabel": "Sort",
+    "sortDefault": "Default",
+    "sortPriceAsc": "Cheapest first"
   },
   "bot": {
     "siblingNote": "บอท Telegram @PoolwattBot ส่งการแจ้งเตือนสดและให้ผู้ผลิตโพสต์ข้อเสนอจากโทรศัพท์"

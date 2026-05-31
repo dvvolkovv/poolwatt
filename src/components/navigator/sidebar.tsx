@@ -4,13 +4,16 @@ import { useState } from "react";
 import type { ChargerStation, ConnectorType, PowerLevel } from "@/lib/chargers";
 import { powerLevelLabel } from "@/lib/chargers";
 import { OPERATOR_INFO } from "@/lib/charger-operators";
-import { Search, Filter, Zap, MapPin, ChevronDown, ChevronUp, Globe, Phone, Smartphone } from "lucide-react";
+import { Search, Filter, Zap, MapPin, ChevronDown, ChevronUp, Globe, Phone, Smartphone, ArrowUpDown } from "lucide-react";
+
+type SortKey = "default" | "priceAsc";
 
 type Filters = {
   connector: ConnectorType | "";
   power: PowerLevel | "";
   status: string;
   query: string;
+  sort: SortKey;
 };
 
 type Props = {
@@ -132,6 +135,23 @@ export function Sidebar({
         </div>
       </div>
 
+      {/* Sort */}
+      <div className="px-4 py-2 border-b border-hairline flex items-center gap-2">
+        <ArrowUpDown size={12} className="text-muted" />
+        <label htmlFor="sort" className="text-[11px] uppercase tracking-wider text-muted">
+          {labels.sortLabel ?? "Sort"}
+        </label>
+        <select
+          id="sort"
+          value={filters.sort}
+          onChange={(e) => set({ sort: e.target.value as SortKey })}
+          className="flex-1 px-2 py-1 text-[12px] rounded bg-card border border-hairline text-foreground"
+        >
+          <option value="default">{labels.sortDefault ?? "Default"}</option>
+          <option value="priceAsc">{labels.sortPriceAsc ?? "Cheapest first"}</option>
+        </select>
+      </div>
+
       {/* Filter toggle */}
       <button
         onClick={() => setFiltersOpen(!filtersOpen)}
@@ -221,6 +241,11 @@ export function Sidebar({
               </div>
               <div className="shrink-0 flex items-center gap-1.5">
                 {s.renewable && <span className="text-[10px]" title="Renewable energy">🍃</span>}
+                {s.operatorPrice && (
+                  <span className="num text-[11px] font-semibold text-green flex items-center gap-0.5" title={labels.priceLive ?? "Live"}>
+                    ● {Number(s.operatorPrice.pricePerKwh).toFixed(Number(s.operatorPrice.pricePerKwh) < 1 ? 2 : 2)} {s.operatorPrice.currency}
+                  </span>
+                )}
                 <span className="num text-[12px] font-semibold text-accent flex items-center gap-0.5">
                   <Zap size={11} />
                   {s.maxPowerKw} kW

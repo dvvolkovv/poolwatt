@@ -133,7 +133,10 @@
     "priceLabel": "Price / kWh",
     "priceFallback": "Tariff varies — contact operator",
     "priceLive": "Live",
-    "priceUpdated": "Updated"
+    "priceUpdated": "Updated",
+    "sortLabel": "Sort",
+    "sortDefault": "Default",
+    "sortPriceAsc": "Cheapest first"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot göni habarnamalary iberýär we öndürijilere telefondan teklipleri çap etmäge mümkinçilik berýär."

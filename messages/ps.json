@@ -133,7 +133,10 @@
     "priceLabel": "Price / kWh",
     "priceFallback": "Tariff varies — contact operator",
     "priceLive": "Live",
-    "priceUpdated": "Updated"
+    "priceUpdated": "Updated",
+    "sortLabel": "Sort",
+    "sortDefault": "Default",
+    "sortPriceAsc": "Cheapest first"
   },
   "bot": {
     "siblingNote": "د ټلیګرام بوټ @PoolwattBot ژوندۍ خبرتیاوې لیږي او تولیدوونکو ته اجازه ورکوي چې له تلیفون څخه وړاندیزونه خپاره کړي."

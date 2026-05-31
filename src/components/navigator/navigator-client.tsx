@@ -7,11 +7,14 @@ import { Sidebar } from "./sidebar";
 import { StationCard } from "./station-card";
 import { PanelLeftClose, PanelLeftOpen, AlertTriangle, RotateCw, X } from "lucide-react";
 
+type SortKey = "default" | "priceAsc";
+
 type Filters = {
   connector: ConnectorType | "";
   power: PowerLevel | "";
   status: string;
   query: string;
+  sort: SortKey;
 };
 
 type SourceTag = "live" | "cache" | "stale" | "mock" | null;
@@ -30,6 +33,7 @@ export function NavigatorClient({ labels }: { labels: Record<string, string> }) 
     power: "",
     status: "",
     query: "",
+    sort: "default",
   });
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -119,6 +123,15 @@ export function NavigatorClient({ labels }: { labels: Record<string, string> }) 
           s.operator.toLowerCase().includes(q) ||
           s.address.toLowerCase().includes(q),
       );
+    }
+    if (filters.sort === "priceAsc") {
+      // Operator-published prices first (ascending); stations without a
+      // published price fall to the bottom in their original order.
+      result = [...result].sort((a, b) => {
+        const pa = a.operatorPrice ? Number(a.operatorPrice.pricePerKwh) : Number.POSITIVE_INFINITY;
+        const pb = b.operatorPrice ? Number(b.operatorPrice.pricePerKwh) : Number.POSITIVE_INFINITY;
+        return pa - pb;
+      });
     }
     return result;
   }, [stations, filters]);

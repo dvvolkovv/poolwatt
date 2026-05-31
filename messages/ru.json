@@ -133,7 +133,10 @@
     "priceLabel": "Цена / кВт·ч",
     "priceFallback": "Тариф уточняйте у оператора",
     "priceLive": "Актуальная",
-    "priceUpdated": "Обновлено"
+    "priceUpdated": "Обновлено",
+    "sortLabel": "Сортировка",
+    "sortDefault": "По умолчанию",
+    "sortPriceAsc": "Сначала дешевле"
   },
   "bot": {
     "siblingNote": "Telegram-бот @PoolwattBot шлёт live-оповещения и позволяет производителям публиковать офферы прямо с телефона."
