@@ -49,14 +49,18 @@ async function cleanup() {
   });
 }
 
-beforeAll(cleanup);
+let firstRunResult: { created: number; skipped: number };
+
+beforeAll(async () => {
+  await cleanup();
+  firstRunResult = await seedProducers(prisma, TEST_ROWS);
+});
 afterAll(cleanup);
 
 describe("seedProducers", () => {
   it("creates rows on first run and returns the count", async () => {
-    const r = await seedProducers(prisma, TEST_ROWS);
-    expect(r.created).toBe(3);
-    expect(r.skipped).toBe(0);
+    expect(firstRunResult.created).toBe(3);
+    expect(firstRunResult.skipped).toBe(0);
     const all = await prisma.producer.findMany({
       where: { handle: { in: TEST_HANDLES } },
       orderBy: { rank: "asc" },
@@ -74,7 +78,7 @@ describe("seedProducers", () => {
     const all = await prisma.producer.findMany({
       where: { handle: { in: TEST_HANDLES } },
     });
-    expect(all).toHaveLength(3); // still 3
+    expect(all).toHaveLength(3);
   });
 
   it("derives category — explicit EQUIPMENT_MANUFACTURER preserved, default ENERGY_PRODUCER", async () => {

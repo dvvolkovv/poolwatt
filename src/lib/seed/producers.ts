@@ -1,4 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
+import { ProducerCategory } from "@prisma/client";
 import type { ProducerRow } from "@/lib/producers";
 
 export type SeedResult = { created: number; skipped: number };
@@ -25,8 +26,8 @@ function toProducerData(row: ProducerRow) {
     primarySource: row.primarySource,
     category:
       row.category === "EQUIPMENT_MANUFACTURER"
-        ? ("EQUIPMENT_MANUFACTURER" as const)
-        : ("ENERGY_PRODUCER" as const),
+        ? ProducerCategory.EQUIPMENT_MANUFACTURER
+        : ProducerCategory.ENERGY_PRODUCER,
     capacityKwh: row.capacityKwh,
     inverterKw: row.inverterKw,
     rank: row.rank,
