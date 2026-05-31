@@ -253,12 +253,33 @@
       "matched": {
         "title": "Your matched contractor",
         "rejectedSiblings": "Other contractors (not selected)"
+      },
+      "producerClaims": {
+        "sectionTitle": "Producers interested ({count})",
+        "accept": "Accept",
+        "acceptConfirm": "Accept this producer? Other pending claims will be auto-rejected."
       }
     },
     "producer": {
       "listTitle": "My producer cards",
       "emptyState": "You haven't claimed any producer cards yet.",
       "emptyStateCta": "Browse the directory",
+      "availableRequests": "Available requests",
+      "requests": {
+        "back": "Back to cabinet",
+        "title": "Available requests",
+        "subtitle": "Open build requests matching {name}.",
+        "openSection": "Open requests",
+        "noOpen": "No open requests match your country and source right now.",
+        "myClaimsSection": "My claims",
+        "noClaims": "You haven't expressed interest in any request yet.",
+        "messagePlaceholder": "Optional message to the homeowner (max 2000 chars)",
+        "expressSubmit": "Express interest",
+        "expressSubmitting": "Sending…",
+        "status": "Status",
+        "withdraw": "Withdraw",
+        "withdrawConfirm": "Withdraw your interest in this request?"
+      },
       "backToList": "Back to my cards",
       "viewPublic": "View public page",
       "justClaimedBanner": "You've just claimed this card. Edits will appear publicly within 60 seconds.",

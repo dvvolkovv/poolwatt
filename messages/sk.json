@@ -253,9 +253,30 @@
       "matched": {
         "title": "Vybraný dodávateľ",
         "rejectedSiblings": "Ostatní dodávatelia (nevybraní)"
+      },
+      "producerClaims": {
+        "sectionTitle": "Zainteresovaní výrobcovia ({count})",
+        "accept": "Prijať",
+        "acceptConfirm": "Prijať tohto výrobcu? Ostatné čakajúce odpovede budú automaticky zamietnuté."
       }
     },
     "producer": {
+      "availableRequests": "Dostupné požiadavky",
+      "requests": {
+        "back": "Späť do kabinetu",
+        "title": "Dostupné požiadavky",
+        "subtitle": "Otvorené požiadavky vhodné pre {name}.",
+        "openSection": "Otvorené požiadavky",
+        "noOpen": "Momentálne nie sú dostupné žiadne požiadavky pre vašu krajinu a zdroj.",
+        "myClaimsSection": "Moje odpovede",
+        "noClaims": "Zatiaľ ste neodpovedali na žiadnu požiadavku.",
+        "messagePlaceholder": "Voliteľná správa domácnosti (max 2000 znakov)",
+        "expressSubmit": "Prejaviť záujem",
+        "expressSubmitting": "Odosielam…",
+        "status": "Stav",
+        "withdraw": "Stiahnuť",
+        "withdrawConfirm": "Stiahnuť váš záujem o túto požiadavku?"
+      },
       "listTitle": "Moje karty výrobcu",
       "emptyState": "Zatiaľ ste neprevzali žiadnu kartu výrobcu.",
       "emptyStateCta": "Otvoriť katalóg",

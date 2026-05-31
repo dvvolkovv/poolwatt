@@ -162,7 +162,7 @@ export default async function BuildRequestDetailPage({
       {producerClaims.length > 0 && (
         <section className="mt-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
-            Producers interested ({producerClaims.length})
+            {t("producerClaims.sectionTitle", { count: producerClaims.length })}
           </h2>
           <ul className="space-y-3">
             {producerClaims.map((c) => (
@@ -183,8 +183,8 @@ export default async function BuildRequestDetailPage({
                       buildRequestId={r.id}
                       claimId={c.id}
                       labels={{
-                        button: "Accept",
-                        confirm: "Accept this producer? Other pending claims will be auto-rejected.",
+                        button: t("producerClaims.accept"),
+                        confirm: t("producerClaims.acceptConfirm"),
                       }}
                     />
                   )}
