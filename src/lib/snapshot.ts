@@ -4,14 +4,30 @@
 // Redis-backed reads in Phase 2 only changes implementations, not call sites.
 
 import { unstable_cache } from "next/cache";
+import { prisma } from "@/lib/prisma";
 import { MOCK_PRODUCERS, MOCK_GRID_STATS, type ProducerRow, type GridSnap } from "./producers";
+import { mergeProducer } from "@/lib/merge-producer";
 import { MOCK_GREEN_INDEX, type GreenIndex } from "./green-index";
 import type { ExchangeRates } from "./currency";
 import { fetchNews, type NewsItem } from "./news";
 import { translateHeadlines } from "./news-i18n";
 
 export async function readTopProducers(): Promise<ProducerRow[]> {
-  return MOCK_PRODUCERS;
+  const dbProducers = await prisma.producer.findMany({
+    orderBy: { rank: "asc" },
+    take: 100,
+    include: { profile: true },
+  });
+  const snapshotByHandle = new Map(MOCK_PRODUCERS.map((m) => [m.handle, m]));
+  return dbProducers.map((db) => {
+    const snapshot = snapshotByHandle.get(db.handle);
+    if (!snapshot) {
+      throw new Error(
+        `[readTopProducers] no mock snapshot for handle "${db.handle}" — seed inconsistency`,
+      );
+    }
+    return mergeProducer(db, snapshot);
+  });
 }
 
 export async function readGridStats(): Promise<GridSnap | null> {
