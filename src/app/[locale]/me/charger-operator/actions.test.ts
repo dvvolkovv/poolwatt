@@ -6,7 +6,14 @@ vi.mock("@/lib/auth", () => ({
   auth: vi.fn(async () => (mockUserId ? { user: { id: mockUserId } } : null)),
 }));
 
-import { updateChargerOperatorCard, unlinkChargerOperatorClaim, updateChargerOperatorPrice } from "./actions";
+import {
+  updateChargerOperatorCard,
+  unlinkChargerOperatorClaim,
+  updateChargerOperatorPrice,
+  createChargerOperatorApiKey,
+  revokeChargerOperatorApiKey,
+} from "./actions";
+import { hashToken } from "@/lib/charger-operator-tokens";
 
 const TEST_SLUG = "test-co-cabinet";
 const TEST_USERNAME = "test_co_user";
@@ -17,6 +24,9 @@ let ownerUserId: string;
 let otherUserId: string;
 
 async function cleanup() {
+  // ApiKey rows cascade-delete with the operator, but be explicit to keep the
+  // intent obvious in case the FK is ever changed.
+  await prisma.chargerOperatorApiKey.deleteMany({ where: { operator: { slug: TEST_SLUG } } });
   await prisma.chargerOperator.deleteMany({ where: { slug: TEST_SLUG } });
   await prisma.user.deleteMany({ where: { username: { in: [TEST_USERNAME, OTHER_USERNAME] } } });
 }
@@ -159,6 +169,61 @@ describe("updateChargerOperatorPrice", () => {
     expect(r.ok).toBe(false);
     const after = await prisma.chargerOperator.findUnique({ where: { id: testOpId } });
     expect(after?.pricePerKwh).toBeNull();
+  });
+});
+
+describe("createChargerOperatorApiKey", () => {
+  it("returns plaintext once and stores only the hash", async () => {
+    const r = await createChargerOperatorApiKey({
+      operatorId: testOpId,
+      label: "Production gateway",
+    });
+    if (!r.ok) throw new Error("expected ok");
+    expect(r.plaintext).toMatch(/^pwco_/);
+    const stored = await prisma.chargerOperatorApiKey.findUnique({ where: { id: r.id } });
+    expect(stored?.tokenHash).toBe(hashToken(r.plaintext));
+    expect(stored?.label).toBe("Production gateway");
+    expect(stored?.revokedAt).toBeNull();
+    expect(stored?.lastUsedAt).toBeNull();
+  });
+
+  it("rejects when caller is not the owner", async () => {
+    mockUserId = otherUserId;
+    const r = await createChargerOperatorApiKey({ operatorId: testOpId, label: "Hostile" });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects empty label", async () => {
+    const r = await createChargerOperatorApiKey({ operatorId: testOpId, label: "" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.fieldErrors?.label).toBeDefined();
+  });
+});
+
+describe("revokeChargerOperatorApiKey", () => {
+  it("sets revokedAt for the owner", async () => {
+    const created = await createChargerOperatorApiKey({
+      operatorId: testOpId,
+      label: "Temporary",
+    });
+    if (!created.ok) throw new Error("create failed");
+    const r = await revokeChargerOperatorApiKey({ keyId: created.id });
+    expect(r.ok).toBe(true);
+    const stored = await prisma.chargerOperatorApiKey.findUnique({ where: { id: created.id } });
+    expect(stored?.revokedAt).toBeInstanceOf(Date);
+  });
+
+  it("rejects non-owner revoke", async () => {
+    const created = await createChargerOperatorApiKey({
+      operatorId: testOpId,
+      label: "Yet another",
+    });
+    if (!created.ok) throw new Error("create failed");
+    mockUserId = otherUserId;
+    const r = await revokeChargerOperatorApiKey({ keyId: created.id });
+    expect(r.ok).toBe(false);
+    const stored = await prisma.chargerOperatorApiKey.findUnique({ where: { id: created.id } });
+    expect(stored?.revokedAt).toBeNull();
   });
 });
 

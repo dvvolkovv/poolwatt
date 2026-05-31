@@ -197,10 +197,29 @@ model ChargerOperator {
   claimedBy     User?    @relation("ChargerOperatorClaims", fields: [claimedById], references: [id])
   claimedAt     DateTime?
 
+  apiKeys       ChargerOperatorApiKey[]
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([claimedById])
+}
+
+// API tokens that let an operator's external system push tariff updates to
+// POST /api/v1/charger-operators/{id}/price. The plaintext token is shown
+// to the user exactly once at creation; we only persist a SHA-256 hash.
+model ChargerOperatorApiKey {
+  id           String   @id @default(cuid())
+  operatorId   String
+  operator     ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  label        String   // user-supplied, e.g. "Production gateway"
+  tokenHash    String   @unique // SHA-256 of the plaintext token
+  lastUsedAt   DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([operatorId])
+  @@index([tokenHash])
 }
 
 // A household (or small commercial) producer that contributes battery-stored

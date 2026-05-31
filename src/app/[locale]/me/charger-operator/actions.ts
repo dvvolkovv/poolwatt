@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateToken } from "@/lib/charger-operator-tokens";
 
 export type ActionResult = {
   ok: boolean;
@@ -118,6 +119,59 @@ export async function updateChargerOperatorPrice(input: UpdateChargerOperatorPri
 
   revalidatePath(`/[locale]/c`, "page");
   revalidatePath(`/[locale]/navigator`, "page");
+  return { ok: true };
+}
+
+// ---- API keys (Step 4) ----------------------------------------------------
+
+const createApiKeySchema = z.object({
+  operatorId: z.string().min(1),
+  label: z.string().min(1, "Label is required.").max(80),
+});
+
+export type CreateApiKeyResult =
+  | { ok: true; plaintext: string; id: string }
+  | { ok: false; fieldErrors?: Record<string, string>; formError?: string };
+
+export async function createChargerOperatorApiKey(
+  input: z.input<typeof createApiKeySchema>,
+): Promise<CreateApiKeyResult> {
+  const parsed = createApiKeySchema.safeParse(input);
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const k = issue.path[0]?.toString();
+      if (k) fieldErrors[k] = issue.message;
+    }
+    return { ok: false, fieldErrors };
+  }
+  const owner = await assertOwner(parsed.data.operatorId);
+  if (!owner.ok) return { ok: false, formError: owner.result.formError };
+
+  const { plaintext, hash } = generateToken();
+  const row = await prisma.chargerOperatorApiKey.create({
+    data: { operatorId: parsed.data.operatorId, label: parsed.data.label, tokenHash: hash },
+    select: { id: true },
+  });
+  return { ok: true, plaintext, id: row.id };
+}
+
+export async function revokeChargerOperatorApiKey(input: { keyId: string }): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user) return { ok: false, formError: "Not authenticated." };
+
+  const key = await prisma.chargerOperatorApiKey.findUnique({
+    where: { id: input.keyId },
+    select: { id: true, revokedAt: true, operator: { select: { claimedById: true } } },
+  });
+  if (!key) return { ok: false, formError: "API key not found." };
+  if (key.operator.claimedById !== session.user.id) return { ok: false, formError: "Not authorized." };
+  if (key.revokedAt) return { ok: true }; // idempotent
+
+  await prisma.chargerOperatorApiKey.update({
+    where: { id: input.keyId },
+    data: { revokedAt: new Date() },
+  });
   return { ok: true };
 }
 

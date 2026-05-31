@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CardForm } from "./card-form";
 import { PriceForm } from "./price-form";
+import { ApiKeysSection } from "./api-keys-section";
 import { UnlinkButton } from "./unlink-button";
 
 type Props = {
@@ -23,6 +24,12 @@ export default async function ChargerOperatorCabinetPage({ params, searchParams 
   const op = await prisma.chargerOperator.findUnique({ where: { id } });
   if (!op) notFound();
   if (op.claimedById !== session.user.id) notFound();
+
+  const apiKeys = await prisma.chargerOperatorApiKey.findMany({
+    where: { operatorId: op.id },
+    orderBy: [{ revokedAt: "asc" }, { createdAt: "desc" }],
+    select: { id: true, label: true, createdAt: true, lastUsedAt: true, revokedAt: true },
+  });
 
   const t = await getTranslations("cabinet.chargerOperator");
 
@@ -84,6 +91,40 @@ export default async function ChargerOperatorCabinetPage({ params, searchParams 
             saved: t("saved"),
             notSet: t("priceNotSet"),
             updatedAtPrefix: t("priceUpdatedAtPrefix"),
+          }}
+        />
+      </div>
+
+      <div className="pt-6 border-t border-hairline">
+        <ApiKeysSection
+          operatorId={op.id}
+          keys={apiKeys.map((k) => ({
+            id: k.id,
+            label: k.label,
+            createdAt: k.createdAt.toISOString(),
+            lastUsedAt: k.lastUsedAt ? k.lastUsedAt.toISOString() : null,
+            revokedAt: k.revokedAt ? k.revokedAt.toISOString() : null,
+          }))}
+          labels={{
+            sectionTitle: t("apiSection"),
+            help: t("apiHelp"),
+            labelField: t("apiKeyLabel"),
+            labelPlaceholder: t("apiKeyLabelPlaceholder"),
+            generate: t("apiGenerate"),
+            revoke: t("apiRevoke"),
+            revokeConfirm: t("apiRevokeConfirm"),
+            revoked: t("apiRevoked"),
+            active: t("apiActive"),
+            neverUsed: t("apiNeverUsed"),
+            lastUsedPrefix: t("apiLastUsedPrefix"),
+            plaintextHeading: t("apiPlaintextHeading"),
+            plaintextSubtitle: t("apiPlaintextSubtitle"),
+            copy: t("apiCopy"),
+            copied: t("apiCopied"),
+            dismiss: t("apiDismiss"),
+            empty: t("apiEmpty"),
+            createdPrefix: t("apiCreatedPrefix"),
+            endpointHint: t("apiEndpointHint"),
           }}
         />
       </div>
