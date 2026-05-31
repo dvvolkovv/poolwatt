@@ -123,7 +123,13 @@
     "rating": "评分",
     "cost": "费用",
     "lastVerified": "最后验证",
-    "directions": "导航"
+    "directions": "导航",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Telegram机器人 @PoolwattBot 发送实时通知，并允许生产者从手机发布报价。"

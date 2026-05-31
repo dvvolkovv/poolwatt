@@ -39,6 +39,12 @@ export default async function NavigatorPage({ params }: Props) {
     lastVerified: t("lastVerified"),
     directions: t("directions"),
     metaDescription: t("metaDescription"),
+    sourceLive: t("sourceLive"),
+    sourceCache: t("sourceCache"),
+    sourceStale: t("sourceStale"),
+    sourceMock: t("sourceMock"),
+    errorLoad: t("errorLoad"),
+    retry: t("retry"),
   };
 
   return <NavigatorClient labels={labels} />;

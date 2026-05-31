@@ -123,7 +123,13 @@
     "rating": "Рейтинг",
     "cost": "Нарх",
     "lastVerified": "Санҷиши охирин",
-    "directions": "Масир"
+    "directions": "Масир",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Боти Telegram @PoolwattBot огоҳиномаҳои зинда мефиристад ва ба истеҳсолкунандагон имкон медиҳад пешниҳодҳоро аз телефон нашр кунанд."

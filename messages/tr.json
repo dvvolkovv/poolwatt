@@ -123,7 +123,13 @@
     "rating": "Değerlendirme",
     "cost": "Ücret",
     "lastVerified": "Son doğrulama",
-    "directions": "Yol tarifi"
+    "directions": "Yol tarifi",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Telegram botu @PoolwattBot canlı bildirimler gönderir ve üreticilerin telefondan teklif yayınlamasına olanak tanır."

@@ -123,7 +123,13 @@
     "rating": "Valoración",
     "cost": "Coste",
     "lastVerified": "Última verificación",
-    "directions": "Cómo llegar"
+    "directions": "Cómo llegar",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "El bot de Telegram @PoolwattBot envía alertas en vivo y permite a los productores publicar ofertas desde su teléfono."

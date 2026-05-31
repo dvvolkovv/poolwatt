@@ -123,7 +123,13 @@
     "rating": "Evaluare",
     "cost": "Cost",
     "lastVerified": "Ultima verificare",
-    "directions": "Direcții"
+    "directions": "Direcții",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Bot-ul Telegram @PoolwattBot trimite alerte în timp real și permite producătorilor să publice oferte direct de pe telefon."

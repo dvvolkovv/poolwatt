@@ -123,7 +123,13 @@
     "rating": "امتیاز",
     "cost": "هزینه",
     "lastVerified": "آخرین تأیید",
-    "directions": "مسیریابی"
+    "directions": "مسیریابی",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "ربات تلگرام @PoolwattBot اعلان‌های زنده ارسال می‌کند و به تولیدکنندگان امکان انتشار پیشنهاد از گوشی را می‌دهد."

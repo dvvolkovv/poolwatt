@@ -123,7 +123,13 @@
     "rating": "Đánh giá",
     "cost": "Chi phí",
     "lastVerified": "Xác minh lần cuối",
-    "directions": "Chỉ đường"
+    "directions": "Chỉ đường",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Bot Telegram @PoolwattBot gửi thông báo trực tiếp và cho phép nhà sản xuất đăng ưu đãi từ điện thoại."

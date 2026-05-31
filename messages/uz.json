@@ -123,7 +123,13 @@
     "rating": "Reyting",
     "cost": "Narx",
     "lastVerified": "Oxirgi tekshiruv",
-    "directions": "Yoʻnalish"
+    "directions": "Yoʻnalish",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot jonli bildirishnomalar yuboradi va ishlab chiqaruvchilarga telefondan takliflar eʻlon qilish imkonini beradi."

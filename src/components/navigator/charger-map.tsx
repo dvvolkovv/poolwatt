@@ -21,11 +21,18 @@ const STYLES = MB
 
 type StyleKey = keyof typeof STYLES;
 
+export type Viewport = {
+  south: number;
+  west: number;
+  north: number;
+  east: number;
+};
+
 type Props = {
   stations: ChargerStation[];
   selectedId: string | null;
   onSelect: (station: ChargerStation) => void;
-  onBoundsChange: (center: { lat: number; lng: number }, radius: number) => void;
+  onViewportChange: (vp: Viewport) => void;
 };
 
 const STATUS_COLOR: Record<string, string> = {
@@ -42,7 +49,7 @@ const POWER_SIZE: Record<string, number> = {
   dc_ultra: 16,
 };
 
-export function ChargerMap({ stations, selectedId, onSelect, onBoundsChange }: Props) {
+export function ChargerMap({ stations, selectedId, onSelect, onViewportChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -51,15 +58,21 @@ export function ChargerMap({ stations, selectedId, onSelect, onBoundsChange }: P
 
   const notifyBounds = useCallback(
     (map: maplibregl.Map) => {
-      const center = map.getCenter();
       const bounds = map.getBounds();
       if (!bounds) return;
+      const sw = bounds.getSouthWest();
       const ne = bounds.getNorthEast();
-      const radiusKm =
-        center.distanceTo(new maplibregl.LngLat(ne.lng, ne.lat)) / 1000;
-      onBoundsChange({ lat: center.lat, lng: center.lng }, radiusKm);
+      // Clamp east>west: dragging across the antimeridian can produce
+      // east < west and crash the bbox query.
+      const east = ne.lng > sw.lng ? ne.lng : sw.lng + 0.01;
+      onViewportChange({
+        south: sw.lat,
+        west: sw.lng,
+        north: ne.lat,
+        east,
+      });
     },
-    [onBoundsChange],
+    [onViewportChange],
   );
 
   useEffect(() => {

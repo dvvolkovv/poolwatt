@@ -123,7 +123,13 @@
     "rating": "דירוג",
     "cost": "עלות",
     "lastVerified": "אימות אחרון",
-    "directions": "ניווט"
+    "directions": "ניווט",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "בוט הטלגרם @PoolwattBot שולח התראות בזמן אמת ומאפשר ליצרנים לפרסם הצעות מהטלפון."

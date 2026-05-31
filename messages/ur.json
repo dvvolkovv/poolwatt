@@ -123,7 +123,13 @@
     "rating": "درجہ بندی",
     "cost": "لاگت",
     "lastVerified": "آخری تصدیق",
-    "directions": "سمت"
+    "directions": "سمت",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "ٹیلیگرام بوٹ @PoolwattBot لائیو الرٹس بھیجتا ہے اور پروڈیوسرز کو فون سے آفرز شائع کرنے دیتا ہے۔"

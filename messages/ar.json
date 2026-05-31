@@ -123,7 +123,13 @@
     "rating": "التقييم",
     "cost": "التكلفة",
     "lastVerified": "آخر تحقق",
-    "directions": "الاتجاهات"
+    "directions": "الاتجاهات",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "بوت تيليجرام @PoolwattBot يرسل تنبيهات مباشرة ويتيح للمنتجين نشر العروض من هواتفهم."

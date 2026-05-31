@@ -123,7 +123,13 @@
     "rating": "평점",
     "cost": "비용",
     "lastVerified": "최종 확인",
-    "directions": "길찾기"
+    "directions": "길찾기",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "텔레그램 봇 @PoolwattBot이 실시간 알림을 보내고 생산자가 폰에서 오퍼를 게시할 수 있게 합니다."

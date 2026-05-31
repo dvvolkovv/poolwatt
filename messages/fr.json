@@ -123,7 +123,13 @@
     "rating": "Note",
     "cost": "Coût",
     "lastVerified": "Dernière vérification",
-    "directions": "Itinéraire"
+    "directions": "Itinéraire",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Le bot Telegram @PoolwattBot envoie des alertes en direct et permet aux producteurs de publier des offres depuis leur téléphone."

@@ -123,7 +123,13 @@
     "rating": "Ocena",
     "cost": "Koszt",
     "lastVerified": "Ostatnia weryfikacja",
-    "directions": "Nawigacja"
+    "directions": "Nawigacja",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Bot Telegram @PoolwattBot dostarcza powiadomienia na żywo i pozwala producentom publikować oferty bezpośrednio z telefonu."

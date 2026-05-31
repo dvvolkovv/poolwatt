@@ -123,7 +123,13 @@
     "rating": "Rating",
     "cost": "Cost",
     "lastVerified": "Last verified",
-    "directions": "Directions"
+    "directions": "Directions",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot delivers live alerts and lets producers post offers from their phone."

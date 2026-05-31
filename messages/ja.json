@@ -123,7 +123,13 @@
     "rating": "評価",
     "cost": "料金",
     "lastVerified": "最終確認",
-    "directions": "ナビ"
+    "directions": "ナビ",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Telegramボット @PoolwattBot がリアルタイム通知を配信し、プロデューサーがスマートフォンからオファーを投稿できます。"

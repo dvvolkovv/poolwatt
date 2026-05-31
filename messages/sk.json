@@ -123,7 +123,13 @@
     "rating": "Hodnotenie",
     "cost": "Cena",
     "lastVerified": "Posledná kontrola",
-    "directions": "Navigácia"
+    "directions": "Navigácia",
+    "sourceLive": "Naživo",
+    "sourceCache": "Z vyrovnávacej pamäte",
+    "sourceStale": "Z vyrovnávacej pamäte (živý zdroj nedostupný)",
+    "sourceMock": "Demo dáta (živý zdroj nedostupný)",
+    "errorLoad": "Nepodarilo sa načítať stanice. Skúšame iný zdroj…",
+    "retry": "Skúsiť znova"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot doručuje živé upozornenia a umožňuje výrobcom zverejňovať ponuky priamo z telefónu."

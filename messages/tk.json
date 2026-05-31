@@ -123,7 +123,13 @@
     "rating": "Reýting",
     "cost": "Baha",
     "lastVerified": "Soňky barlag",
-    "directions": "Ugur"
+    "directions": "Ugur",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot göni habarnamalary iberýär we öndürijilere telefondan teklipleri çap etmäge mümkinçilik berýär."

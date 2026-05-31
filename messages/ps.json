@@ -123,7 +123,13 @@
     "rating": "درجه بندي",
     "cost": "لګښت",
     "lastVerified": "وروستی تایید",
-    "directions": "لارښوونه"
+    "directions": "لارښوونه",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "د ټلیګرام بوټ @PoolwattBot ژوندۍ خبرتیاوې لیږي او تولیدوونکو ته اجازه ورکوي چې له تلیفون څخه وړاندیزونه خپاره کړي."

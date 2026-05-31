@@ -123,7 +123,13 @@
     "rating": "Reytinq",
     "cost": "Qiymət",
     "lastVerified": "Son yoxlama",
-    "directions": "İstiqamət"
+    "directions": "İstiqamət",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "Telegram botu @PoolwattBot canlı bildirişlər göndərir və istehsalçılara telefondan təklif dərc etməyə imkan verir."

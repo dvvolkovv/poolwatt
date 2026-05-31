@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChargerStation, ConnectorType, PowerLevel } from "@/lib/chargers";
-import { ChargerMap } from "./charger-map";
+import { ChargerMap, type Viewport } from "./charger-map";
 import { Sidebar } from "./sidebar";
 import { StationCard } from "./station-card";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, AlertTriangle, RotateCw, X } from "lucide-react";
 
 type Filters = {
   connector: ConnectorType | "";
@@ -14,9 +14,15 @@ type Filters = {
   query: string;
 };
 
+type SourceTag = "live" | "cache" | "stale" | "mock" | null;
+
+const FETCH_DEBOUNCE_MS = 600;
+
 export function NavigatorClient({ labels }: { labels: Record<string, string> }) {
   const [stations, setStations] = useState<ChargerStation[]>([]);
   const [loading, setLoading] = useState(false);
+  const [source, setSource] = useState<SourceTag>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [filters, setFilters] = useState<Filters>({
@@ -26,32 +32,73 @@ export function NavigatorClient({ labels }: { labels: Record<string, string> }) 
     query: "",
   });
 
-  const fetchStations = useCallback(
-    async (center: { lat: number; lng: number }, radius: number) => {
-      if (radius > 500) return;
-      setLoading(true);
-      try {
-        const params = new URLSearchParams({
-          lat: center.lat.toFixed(5),
-          lng: center.lng.toFixed(5),
-          radius: Math.min(Math.round(radius), 50).toString(),
-        });
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inflight = useRef<AbortController | null>(null);
+  const lastViewport = useRef<Viewport | null>(null);
 
-        const res = await fetch(`/api/chargers?${params}`);
-        if (res.ok) {
-          const data: ChargerStation[] = await res.json();
-          setStations(data);
-        }
-      } finally {
+  const runFetch = useCallback(async (vp: Viewport) => {
+    inflight.current?.abort();
+    const ac = new AbortController();
+    inflight.current = ac;
+
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const params = new URLSearchParams({
+        south: vp.south.toFixed(5),
+        west: vp.west.toFixed(5),
+        north: vp.north.toFixed(5),
+        east: vp.east.toFixed(5),
+      });
+      const res = await fetch(`/api/chargers?${params}`, { signal: ac.signal });
+      if (!res.ok) {
+        setErrorMsg(labels.errorLoad ?? "Could not load stations");
+        setStations([]);
+        setSource(null);
+        return;
+      }
+      const data = (await res.json()) as ChargerStation[];
+      const tag = (res.headers.get("X-Source") as SourceTag) ?? "live";
+      setStations(data);
+      setSource(tag);
+      if (tag === "stale" || tag === "mock") {
+        setErrorMsg(res.headers.get("X-Error") ?? null);
+      }
+    } catch (e) {
+      if ((e as Error).name === "AbortError") return;
+      setErrorMsg(labels.errorLoad ?? "Could not load stations");
+    } finally {
+      if (inflight.current === ac) {
+        inflight.current = null;
         setLoading(false);
       }
+    }
+  }, [labels.errorLoad]);
+
+  const scheduleFetch = useCallback(
+    (vp: Viewport) => {
+      lastViewport.current = vp;
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      debounceTimer.current = setTimeout(() => {
+        runFetch(vp);
+      }, FETCH_DEBOUNCE_MS);
     },
-    [],
+    [runFetch],
   );
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      inflight.current?.abort();
+    };
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    if (lastViewport.current) runFetch(lastViewport.current);
+  }, [runFetch]);
 
   const filtered = useMemo(() => {
     let result = stations;
-
     if (filters.connector) {
       result = result.filter((s) =>
         s.connections.some((c) => c.connectorType === filters.connector),
@@ -73,7 +120,6 @@ export function NavigatorClient({ labels }: { labels: Record<string, string> }) 
           s.address.toLowerCase().includes(q),
       );
     }
-
     return result;
   }, [stations, filters]);
 
@@ -88,7 +134,6 @@ export function NavigatorClient({ labels }: { labels: Record<string, string> }) 
 
   return (
     <div className="fixed inset-0 top-16 flex">
-      {/* Sidebar */}
       <div
         className={`${
           sidebarOpen ? "w-[380px]" : "w-0"
@@ -105,7 +150,6 @@ export function NavigatorClient({ labels }: { labels: Record<string, string> }) 
         />
       </div>
 
-      {/* Sidebar toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="absolute top-4 z-20 p-2 rounded-r-lg bg-card/90 backdrop-blur-sm border border-l-0 border-hairline text-muted hover:text-foreground transition-colors"
@@ -114,16 +158,23 @@ export function NavigatorClient({ labels }: { labels: Record<string, string> }) 
         {sidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
       </button>
 
-      {/* Map */}
       <div className="flex-1 relative">
         <ChargerMap
           stations={filtered}
           selectedId={selectedId}
           onSelect={handleSelect}
-          onBoundsChange={fetchStations}
+          onViewportChange={scheduleFetch}
         />
 
-        {/* Station detail card */}
+        <DataSourceBanner
+          source={source}
+          loading={loading}
+          errorMsg={errorMsg}
+          labels={labels}
+          onRetry={handleRetry}
+          onDismiss={() => setErrorMsg(null)}
+        />
+
         {selected && (
           <div className="absolute top-4 right-4 w-[360px] max-h-[calc(100vh-6rem)] overflow-y-auto z-10">
             <StationCard
@@ -133,6 +184,58 @@ export function NavigatorClient({ labels }: { labels: Record<string, string> }) 
             />
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function DataSourceBanner({
+  source,
+  loading,
+  errorMsg,
+  labels,
+  onRetry,
+  onDismiss,
+}: {
+  source: SourceTag;
+  loading: boolean;
+  errorMsg: string | null;
+  labels: Record<string, string>;
+  onRetry: () => void;
+  onDismiss: () => void;
+}) {
+  // Banner shows only when there is something useful to surface:
+  // a degraded data source or an error. Live + no-error = silent.
+  const degraded = source === "stale" || source === "mock";
+  const hardError = !source && errorMsg;
+  if (!degraded && !hardError) return null;
+
+  const message = hardError
+    ? labels.errorLoad
+    : source === "stale"
+      ? labels.sourceStale
+      : labels.sourceMock;
+
+  return (
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 max-w-[520px] w-[calc(100vw-2rem)]">
+      <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-card/95 backdrop-blur-sm border border-amber-500/40 shadow-lg">
+        <AlertTriangle size={16} className="text-amber-500 shrink-0" />
+        <span className="text-[13px] text-foreground flex-1 leading-snug">{message}</span>
+        <button
+          onClick={onRetry}
+          disabled={loading}
+          className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider rounded-md border border-hairline text-foreground hover:bg-card-alt disabled:opacity-50 transition-colors"
+        >
+          <RotateCw size={11} className={loading ? "animate-spin" : ""} />
+          {labels.retry}
+        </button>
+        <button
+          onClick={onDismiss}
+          className="p-1 text-muted hover:text-foreground transition-colors"
+          aria-label="Dismiss"
+        >
+          <X size={14} />
+        </button>
       </div>
     </div>
   );

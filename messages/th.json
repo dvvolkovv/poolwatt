@@ -123,7 +123,13 @@
     "rating": "คะแนน",
     "cost": "ค่าใช้จ่าย",
     "lastVerified": "ตรวจสอบล่าสุด",
-    "directions": "นำทาง"
+    "directions": "นำทาง",
+    "sourceLive": "Live",
+    "sourceCache": "Cached",
+    "sourceStale": "Cached (live source unreachable)",
+    "sourceMock": "Demo data (live source unreachable)",
+    "errorLoad": "Could not load stations. Retrying with a different source…",
+    "retry": "Retry"
   },
   "bot": {
     "siblingNote": "บอท Telegram @PoolwattBot ส่งการแจ้งเตือนสดและให้ผู้ผลิตโพสต์ข้อเสนอจากโทรศัพท์"
