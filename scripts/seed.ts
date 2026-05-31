@@ -8,6 +8,7 @@ import { MOCK_PRODUCERS } from "@/lib/producers";
 import { PRODUCER_PROFILES } from "@/lib/producer-profiles";
 import { seedProducers } from "@/lib/seed/producers";
 import { seedProducerProfiles } from "@/lib/seed/producer-profiles";
+import { seedChargerOperators, CHARGER_OPERATOR_SEED } from "@/lib/seed/charger-operators";
 
 async function main() {
   console.log(`[seed] producers: starting (${MOCK_PRODUCERS.length} rows in source)`);
@@ -22,6 +23,10 @@ async function main() {
   if (dropped > 0) {
     console.warn(`[seed] WARN: ${dropped} profile(s) silently dropped — handle has no matching Producer row. Check PRODUCER_PROFILES keys against MOCK_PRODUCERS handles.`);
   }
+
+  console.log(`[seed] charger operators: starting (${CHARGER_OPERATOR_SEED.length} rows in source)`);
+  const co = await seedChargerOperators(prisma, CHARGER_OPERATOR_SEED);
+  console.log(`[seed] charger operators: created=${co.created}, skipped=${co.skipped}`);
 
   console.log(`[seed] done`);
 }
