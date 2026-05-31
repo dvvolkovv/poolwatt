@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { readFavoriteChargerIds } from "@/lib/favorites";
 import { FavoriteButton } from "@/components/favorite-button";
 import { MapsDeepLink } from "@/components/maps-deep-link";
+import { prisma } from "@/lib/prisma";
 
 const STATUS_COLOR: Record<string, string> = {
   operational: "bg-up",
@@ -24,6 +25,14 @@ export default async function ChargerDetailPage({
 
   const charger = getChargerById(id);
   if (!charger) notFound();
+
+  const operator = charger.operator
+    ? await prisma.chargerOperator.findFirst({
+        where: { aliases: { has: charger.operator } },
+        select: { id: true, displayName: true, description: true, websiteUrl: true, logoUrl: true, email: true, phone: true, claimedById: true },
+      })
+    : null;
+  const isVerified = !!operator?.claimedById;
 
   const t = await getTranslations("charger");
   const session = await auth();
@@ -61,6 +70,11 @@ export default async function ChargerDetailPage({
             <span className="text-muted">{t(`status.${charger.status}`)}</span>
             <span className="text-muted">·</span>
             <span className="text-muted">{charger.operator}</span>
+              {isVerified && (
+                <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-up/10 text-up border border-up/30">
+                  ✓ Verified operator
+                </span>
+              )}
           </div>
           <h1 className="text-[28px] md:text-[40px] font-bold tracking-[-0.025em] leading-tight">
             {charger.title}
@@ -122,6 +136,24 @@ export default async function ChargerDetailPage({
           <span>{t("lastVerified")}: </span>
           <span className="num text-muted-strong">{charger.lastVerified ?? "—"}</span>
         </section>
+
+        {operator && (
+          <section className="mt-8 p-5 bg-card border border-hairline rounded-xl">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">About {operator.displayName}</h2>
+            {operator.description && <p className="text-sm text-muted-strong mb-3">{operator.description}</p>}
+            <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
+              {operator.websiteUrl && <a href={operator.websiteUrl} target="_blank" rel="noopener" className="text-accent hover:underline">{operator.websiteUrl.replace(/^https?:\/\//, "")}</a>}
+              {operator.email && <a href={`mailto:${operator.email}`} className="text-accent hover:underline">{operator.email}</a>}
+              {operator.phone && <span className="text-muted">{operator.phone}</span>}
+            </div>
+            {!isVerified && (
+              <Link href={`/${locale}/me/claim/CHARGER_OPERATOR/${operator.id}`}
+                className="inline-block mt-4 text-xs uppercase tracking-wider px-3 py-1.5 rounded border border-accent/40 text-accent hover:bg-accent/5">
+                This is our company — claim this card
+              </Link>
+            )}
+          </section>
+        )}
       </div>
     </main>
   );
