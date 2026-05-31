@@ -260,6 +260,27 @@
         "acceptConfirm": "Prijať tohto výrobcu? Ostatné čakajúce odpovede budú automaticky zamietnuté."
       }
     },
+    "chargerOperator": {
+      "listTitle": "Moje siete nabíjačiek",
+      "emptyState": "Zatiaľ ste neprevzali žiadnu sieť nabíjačiek.",
+      "emptyStateCta": "Otvoriť navigátor",
+      "backToList": "Späť na moje siete",
+      "viewOnMap": "Zobraziť na mape",
+      "justClaimedBanner": "Práve ste prevzali túto sieť. Zmeny sa zobrazia na stránkach staníc do minúty.",
+      "cardSection": "Informácie o sieti",
+      "displayName": "Zobrazované meno",
+      "description": "O sieti",
+      "websiteUrl": "URL webu",
+      "logoUrl": "URL loga",
+      "email": "Kontaktný e-mail",
+      "phone": "Telefón",
+      "save": "Uložiť",
+      "saved": "Uložené",
+      "dangerSection": "Nebezpečná zóna",
+      "unlinkHint": "Odpojí túto sieť od vášho účtu. Iný používateľ ju môže prevziať.",
+      "unlinkButton": "Odpojiť",
+      "unlinkConfirm": "Naozaj? Toto odpojí sieť od vášho účtu."
+    },
     "producer": {
       "availableRequests": "Dostupné požiadavky",
       "requests": {
@@ -466,6 +487,11 @@
       "membership": "Členský",
       "private": "Súkromný",
       "pay_at_location": "Platba na mieste"
+    },
+    "operatorSection": {
+      "title": "O {name}",
+      "verifiedBadge": "Overený prevádzkovateľ",
+      "claimCta": "Toto je naša spoločnosť — prevziať kartu"
     }
   },
   "settings": {

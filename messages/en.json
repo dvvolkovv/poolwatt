@@ -260,6 +260,27 @@
         "acceptConfirm": "Accept this producer? Other pending claims will be auto-rejected."
       }
     },
+    "chargerOperator": {
+      "listTitle": "My charger networks",
+      "emptyState": "You haven't claimed any charger network cards yet.",
+      "emptyStateCta": "Open the navigator",
+      "backToList": "Back to my networks",
+      "viewOnMap": "View on map",
+      "justClaimedBanner": "You've just claimed this network. Edits will appear on station pages within a minute.",
+      "cardSection": "Network info",
+      "displayName": "Display name",
+      "description": "About the network",
+      "websiteUrl": "Website URL",
+      "logoUrl": "Logo URL",
+      "email": "Contact email",
+      "phone": "Phone",
+      "save": "Save",
+      "saved": "Saved",
+      "dangerSection": "Danger zone",
+      "unlinkHint": "Unlinks this network from your account. Someone else can re-claim it later.",
+      "unlinkButton": "Unlink claim",
+      "unlinkConfirm": "Are you sure? This unlinks the network from your account."
+    },
     "producer": {
       "listTitle": "My producer cards",
       "emptyState": "You haven't claimed any producer cards yet.",
@@ -466,6 +487,11 @@
       "membership": "Membership",
       "private": "Private",
       "pay_at_location": "Pay at location"
+    },
+    "operatorSection": {
+      "title": "About {name}",
+      "verifiedBadge": "Verified operator",
+      "claimCta": "This is our company — claim this card"
     }
   },
   "settings": {

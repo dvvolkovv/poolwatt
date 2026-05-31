@@ -35,6 +35,7 @@ export default async function ChargerDetailPage({
   const isVerified = !!operator?.claimedById;
 
   const t = await getTranslations("charger");
+  const tOp = await getTranslations("charger.operatorSection");
   const session = await auth();
   const isFavorite = session?.user
     ? (await readFavoriteChargerIds(session.user.id)).has(charger.id)
@@ -72,7 +73,7 @@ export default async function ChargerDetailPage({
             <span className="text-muted">{charger.operator}</span>
               {isVerified && (
                 <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-up/10 text-up border border-up/30">
-                  ✓ Verified operator
+                  ✓ {tOp("verifiedBadge")}
                 </span>
               )}
           </div>
@@ -139,7 +140,7 @@ export default async function ChargerDetailPage({
 
         {operator && (
           <section className="mt-8 p-5 bg-card border border-hairline rounded-xl">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">About {operator.displayName}</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">{tOp("title", { name: operator.displayName })}</h2>
             {operator.description && <p className="text-sm text-muted-strong mb-3">{operator.description}</p>}
             <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
               {operator.websiteUrl && <a href={operator.websiteUrl} target="_blank" rel="noopener" className="text-accent hover:underline">{operator.websiteUrl.replace(/^https?:\/\//, "")}</a>}
@@ -149,7 +150,7 @@ export default async function ChargerDetailPage({
             {!isVerified && (
               <Link href={`/${locale}/me/claim/CHARGER_OPERATOR/${operator.id}`}
                 className="inline-block mt-4 text-xs uppercase tracking-wider px-3 py-1.5 rounded border border-accent/40 text-accent hover:bg-accent/5">
-                This is our company — claim this card
+                {tOp("claimCta")}
               </Link>
             )}
           </section>
