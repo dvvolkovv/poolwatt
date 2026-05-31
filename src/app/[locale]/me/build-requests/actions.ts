@@ -243,3 +243,64 @@ export async function acceptClaim(claimId: string): Promise<ActionResult> {
   revalidatePath(`/[locale]/me/contractor/[id]/requests`, "page");
   return { ok: true };
 }
+
+export async function acceptProducerClaim(input: {
+  buildRequestId: string;
+  claimId: string;
+}): Promise<{ ok: boolean; formError?: string }> {
+  const session = await auth();
+  if (!session?.user) return { ok: false, formError: "Not authenticated" };
+
+  const br = await prisma.buildRequest.findUnique({
+    where: { id: input.buildRequestId },
+    select: { id: true, userId: true, status: true },
+  });
+  if (!br) return { ok: false, formError: "Build request not found" };
+  if (br.userId !== session.user.id) return { ok: false, formError: "Not authorized" };
+  if (br.status !== "OPEN") return { ok: false, formError: "Build request is no longer open" };
+
+  const claim = await prisma.producerBuildRequestClaim.findUnique({
+    where: { id: input.claimId },
+    select: { id: true, buildRequestId: true, status: true, producerId: true },
+  });
+  if (!claim || claim.buildRequestId !== br.id) {
+    return { ok: false, formError: "Claim not found" };
+  }
+  if (claim.status !== "PENDING") {
+    return { ok: false, formError: "Claim is no longer pending" };
+  }
+
+  await prisma.$transaction([
+    prisma.producerBuildRequestClaim.update({
+      where: { id: claim.id },
+      data: { status: "ACCEPTED", respondedAt: new Date() },
+    }),
+    prisma.buildRequest.update({
+      where: { id: br.id },
+      data: { status: "MATCHED" },
+    }),
+    prisma.producerBuildRequestClaim.updateMany({
+      where: { buildRequestId: br.id, status: "PENDING", id: { not: claim.id } },
+      data: { status: "REJECTED", respondedAt: new Date() },
+    }),
+    prisma.buildRequestClaim.updateMany({
+      where: { buildRequestId: br.id, status: "PENDING" },
+      data: { status: "REJECTED", respondedAt: new Date() },
+    }),
+  ]);
+
+  try {
+    const { sendProducerClaimAcceptedToProducer } = await import("@/lib/resend-producer-match");
+    await sendProducerClaimAcceptedToProducer({
+      claimId: claim.id,
+      buildRequestId: br.id,
+      producerId: claim.producerId,
+    });
+  } catch (err) {
+    console.error("[r4] producer-accepted notification failed:", err);
+  }
+
+  revalidatePath(`/[locale]/me/build-requests/${br.id}`, "page");
+  revalidatePath(`/[locale]/me/producer/${claim.producerId}/requests`, "page");
+  return { ok: true };
+}

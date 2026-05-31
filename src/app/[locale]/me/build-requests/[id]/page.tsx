@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CancelBuildRequestButton } from "@/components/cabinet/cancel-build-request-button";
 import { AcceptClaimButton } from "@/components/matching/accept-claim-button";
+import { AcceptProducerClaimButton } from "./accept-producer-claim-button";
 
 export default async function BuildRequestDetailPage({
   params,
@@ -35,6 +36,15 @@ export default async function BuildRequestDetailPage({
     },
   });
   if (!r || r.userId !== session.user.id) notFound();
+
+  const producerClaims = await prisma.producerBuildRequestClaim.findMany({
+    where: { buildRequestId: r.id },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true, status: true, message: true, createdAt: true,
+      producer: { select: { id: true, handle: true, displayName: true, primarySource: true } },
+    },
+  });
 
   const t = await getTranslations("cabinet.buildRequest");
 
@@ -143,6 +153,42 @@ export default async function BuildRequestDetailPage({
             {rejectedClaims.map((c) => (
               <li key={c.id} className="text-sm text-muted">
                 · {c.contractor.displayName} — {c.contractor.city}, {c.contractor.country}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {producerClaims.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">
+            Producers interested ({producerClaims.length})
+          </h2>
+          <ul className="space-y-3">
+            {producerClaims.map((c) => (
+              <li key={c.id} className="bg-card border border-hairline rounded-xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold">
+                      <Link href={`/${locale}/p/${c.producer.handle}`} className="hover:underline">
+                        {c.producer.displayName}
+                      </Link>
+                      <span className="ml-2 text-[10px] uppercase text-muted">{c.producer.primarySource}</span>
+                    </div>
+                    <div className="text-xs text-muted mt-1">Status: <b>{c.status}</b></div>
+                    {c.message && <p className="text-xs text-muted-strong mt-2 italic">&quot;{c.message}&quot;</p>}
+                  </div>
+                  {c.status === "PENDING" && r.status === "OPEN" && (
+                    <AcceptProducerClaimButton
+                      buildRequestId={r.id}
+                      claimId={c.id}
+                      labels={{
+                        button: "Accept",
+                        confirm: "Accept this producer? Other pending claims will be auto-rejected.",
+                      }}
+                    />
+                  )}
+                </div>
               </li>
             ))}
           </ul>
