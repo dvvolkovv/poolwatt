@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { MOCK_PRODUCERS } from "@/lib/producers";
 import { prisma } from "@/lib/prisma";
 import { mergeProducer } from "@/lib/merge-producer";
@@ -48,6 +48,7 @@ export default async function ProducerPage({ params, searchParams }: Props) {
   const { locale, handle } = await params;
   const { claimed } = await searchParams;
   setRequestLocale(locale);
+  const tClaim = await getTranslations("claim");
 
   const dbProducer = await prisma.producer.findUnique({
     where: { handle },
@@ -69,7 +70,7 @@ export default async function ProducerPage({ params, searchParams }: Props) {
     <div className="max-w-[1200px] mx-auto px-6 md:px-12 xl:px-20 py-8">
       {justClaimed && (
         <div className="mb-6 p-4 rounded-xl bg-up/10 border border-up/30 text-sm">
-          ✓ You've claimed this card. The editing UI is coming in R3c.
+          ✓ {tClaim("publicBanner")}
         </div>
       )}
       <Link
@@ -92,7 +93,7 @@ export default async function ProducerPage({ params, searchParams }: Props) {
             )}
             {isClaimed && (
               <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-up/10 text-up border border-up/30">
-                ✓ Verified
+                ✓ {tClaim("publicBadge")}
               </span>
             )}
           </div>
@@ -109,7 +110,7 @@ export default async function ProducerPage({ params, searchParams }: Props) {
               href={`/${locale}/me/claim/PRODUCER/${dbProducer.id}`}
               className="inline-block mt-4 text-xs uppercase tracking-wider px-3 py-1.5 rounded border border-accent/40 text-accent hover:bg-accent/5 transition-colors"
             >
-              This is our company — claim this card
+              {tClaim("publicCta")}
             </Link>
           )}
         </div>

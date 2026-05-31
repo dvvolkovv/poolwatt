@@ -375,6 +375,21 @@
       "action": { "setStatus": "Zmeniť stav", "adminNote": "Interná poznámka (povinné)", "submit": "Použiť", "approve": "Schváliť", "reject": "Zamietnuť" }
     }
   },
+  "claim": {
+    "title": "Prevziať {name}",
+    "instructions": "Zadajte firemný e-mail na doméne spoločnosti. Pošleme 6-miestny overovací kód.",
+    "emailLabel": "Firemný e-mail",
+    "submitLabel": "Odoslať kód",
+    "domainHint": "Musí zodpovedať webu spoločnosti: {website}",
+    "noWebsiteFallback": "Táto karta nemá uvedený web. Pre prevzatie napíšte na admin@poolwatt.com.",
+    "verifyTitle": "Overenie kódu pre {name}",
+    "verifyInstructions": "Zadajte 6-miestny kód z e-mailu. Kód je platný 30 minút.",
+    "codeLabel": "6-miestny kód",
+    "verifySubmitLabel": "Overiť",
+    "publicCta": "Toto je naša spoločnosť — prevziať kartu",
+    "publicBadge": "Overené",
+    "publicBanner": "Prevzali ste túto kartu. Editácia príde v R3c."
+  },
   "charger": {
     "backToNavigator": "Späť na navigátor",
     "favoriteAdd": "Pridať do obľúbených",

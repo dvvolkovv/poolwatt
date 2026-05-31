@@ -375,6 +375,21 @@
       "action": { "setStatus": "Change status", "adminNote": "Internal note (required)", "submit": "Apply", "approve": "Approve", "reject": "Reject" }
     }
   },
+  "claim": {
+    "title": "Claim {name}",
+    "instructions": "Enter a corporate email on the company's domain. We'll send a 6-digit verification code to confirm ownership.",
+    "emailLabel": "Corporate email",
+    "submitLabel": "Send code",
+    "domainHint": "Must match the company website: {website}",
+    "noWebsiteFallback": "This card has no website on file. To claim it, please email admin@poolwatt.com.",
+    "verifyTitle": "Verify code for {name}",
+    "verifyInstructions": "Enter the 6-digit code from the email. The code is valid for 30 minutes.",
+    "codeLabel": "6-digit code",
+    "verifySubmitLabel": "Verify",
+    "publicCta": "This is our company — claim this card",
+    "publicBadge": "Verified",
+    "publicBanner": "You've claimed this card. The editing UI is coming in R3c."
+  },
   "charger": {
     "backToNavigator": "Back to navigator",
     "favoriteAdd": "Add to favorites",
