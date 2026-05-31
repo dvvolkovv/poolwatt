@@ -26,7 +26,10 @@ import {
 
 export const revalidate = 60;
 
-type Props = { params: Promise<{ locale: string; handle: string }> };
+type Props = {
+  params: Promise<{ locale: string; handle: string }>;
+  searchParams: Promise<{ claimed?: string }>;
+};
 
 export async function generateMetadata({ params }: Props) {
   const { handle } = await params;
@@ -41,8 +44,9 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-export default async function ProducerPage({ params }: Props) {
+export default async function ProducerPage({ params, searchParams }: Props) {
   const { locale, handle } = await params;
+  const { claimed } = await searchParams;
   setRequestLocale(locale);
 
   const dbProducer = await prisma.producer.findUnique({
@@ -58,8 +62,16 @@ export default async function ProducerPage({ params }: Props) {
   const profile = producer.profile ?? null;
   const isOEM = producer.category === "EQUIPMENT_MANUFACTURER";
 
+  const isClaimed = dbProducer.claimedById !== null;
+  const justClaimed = claimed === "1" && isClaimed;
+
   return (
     <div className="max-w-[1200px] mx-auto px-6 md:px-12 xl:px-20 py-8">
+      {justClaimed && (
+        <div className="mb-6 p-4 rounded-xl bg-up/10 border border-up/30 text-sm">
+          ✓ You've claimed this card. The editing UI is coming in R3c.
+        </div>
+      )}
       <Link
         href={`/${locale}`}
         className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors mb-6"
@@ -71,11 +83,16 @@ export default async function ProducerPage({ params }: Props) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
         <div>
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
             <h1 className="text-2xl font-bold text-foreground">{producer.displayName}</h1>
             {isOEM && (
               <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-accent/10 text-accent border border-accent/30">
                 Equipment Manufacturer
+              </span>
+            )}
+            {isClaimed && (
+              <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-up/10 text-up border border-up/30">
+                ✓ Verified
               </span>
             )}
           </div>
@@ -86,6 +103,14 @@ export default async function ProducerPage({ params }: Props) {
             <p className="text-muted-strong text-sm mt-3 max-w-[700px] leading-relaxed">
               {profile.description}
             </p>
+          )}
+          {!isClaimed && (
+            <Link
+              href={`/${locale}/me/claim/PRODUCER/${dbProducer.id}`}
+              className="inline-block mt-4 text-xs uppercase tracking-wider px-3 py-1.5 rounded border border-accent/40 text-accent hover:bg-accent/5 transition-colors"
+            >
+              This is our company — claim this card
+            </Link>
           )}
         </div>
         <div className="shrink-0">
