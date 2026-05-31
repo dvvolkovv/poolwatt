@@ -39,7 +39,7 @@ export function mergeProducer(
     inverterKw: Number(db.inverterKw),
     equipment: db.equipment,
     manufactures: db.manufactures,
-    profile: db.profile ? toMockProfile(db.profile) : undefined,
+    profile: db.profile ? toProfileRow(db.profile) : undefined,
     // Mock-sourced operational fields (until a real telemetry pipeline lands)
     stateOfChargePct: snapshot.stateOfChargePct,
     availableKwh: snapshot.availableKwh,
@@ -56,9 +56,13 @@ export function mergeProducer(
   };
 }
 
-function toMockProfile(db: DbProducerProfile): MockProducerProfile {
+function toProfileRow(db: DbProducerProfile): MockProducerProfile {
   return {
     description: db.description ?? "",
+    // founded is required in MockProducerProfile but nullable in Prisma; the
+    // seeded data always has it set, so the ?? 0 sentinel is currently
+    // unreachable. If R3 lets owners leave it blank, widen the mock type to
+    // `founded?: number` and conditionally render in the UI.
     founded: db.founded ?? 0,
     employees: db.employees ?? "",
     website: db.website ?? "",

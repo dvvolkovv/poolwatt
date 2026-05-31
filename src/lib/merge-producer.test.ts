@@ -60,6 +60,8 @@ describe("mergeProducer", () => {
   it("takes card fields from DB and operational fields from snapshot", () => {
     const db = fakeDb({ displayName: "Renamed", country: "FR" });
     const row = mergeProducer(db, SNAPSHOT);
+    expect(row.id).toBe("p_test");
+    expect(row.rank).toBe(42);
     expect(row.displayName).toBe("Renamed");
     expect(row.country).toBe("FR");
     expect(row.stateOfChargePct).toBe(88);
