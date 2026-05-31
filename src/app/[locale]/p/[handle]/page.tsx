@@ -24,6 +24,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+export const revalidate = 60;
+
 type Props = { params: Promise<{ locale: string; handle: string }> };
 
 export async function generateMetadata({ params }: Props) {
