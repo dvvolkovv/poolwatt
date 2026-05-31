@@ -86,6 +86,13 @@ ssh dv@77.221.159.163 'pm2 restart poolwatt-bot'
 # After lib changes that the worker imports — restart the worker too,
 # else tsx serves stale lib (worker pins source at boot).
 ssh dv@77.221.159.163 'pm2 restart poolwatt-bot poolwatt-worker'
+
+# After ANY change to a Next.js page / layout / server action /
+# component / i18n message — REBUILD before restarting the web
+# process. `npm start` is `next start` (serves pre-built `.next/`),
+# so `pm2 restart poolwatt-web` alone serves stale code. Curl smoke
+# checks may pass by coincidence (mock and DB data overlap).
+ssh dv@77.221.159.163 'cd ~/poolwatt && npm run build && pm2 restart poolwatt-web'
 ```
 
 
