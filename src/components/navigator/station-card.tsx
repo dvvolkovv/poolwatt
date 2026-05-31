@@ -151,15 +151,39 @@ export function StationCard({ station: s, onClose, labels }: Props) {
         </div>
       </div>
 
-      {/* Cost */}
-      {s.costInfo && (
-        <div className="px-4 py-3 border-b border-hairline">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-muted mb-1">
-            {labels.cost ?? "Cost"}
+      {/* Price per kWh — always rendered. OCM populates costInfo for ~10%
+          of stations as free text; otherwise fall back to operator contact. */}
+      {(() => {
+        const op = s.operatorInfo ?? OPERATOR_INFO[s.operator];
+        const operatorHost = op?.website?.replace(/^https?:\/\//, "").split("/")[0];
+        return (
+          <div className="px-4 py-3 border-b border-hairline">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted mb-1">
+              {labels.priceLabel ?? "Price / kWh"}
+            </div>
+            {s.costInfo ? (
+              <p className="text-[13px] text-foreground">{s.costInfo}</p>
+            ) : (
+              <p className="text-[12px] text-muted">
+                {labels.priceFallback ?? "Tariff varies — contact operator"}
+                {op?.website && (
+                  <>
+                    {" — "}
+                    <a
+                      href={op.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent hover:underline"
+                    >
+                      {operatorHost}
+                    </a>
+                  </>
+                )}
+              </p>
+            )}
           </div>
-          <p className="text-[13px] text-foreground">{s.costInfo}</p>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Last verified */}
       {s.lastVerified && (

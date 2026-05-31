@@ -129,7 +129,9 @@
     "sourceStale": "Cached (live source unreachable)",
     "sourceMock": "Demo data (live source unreachable)",
     "errorLoad": "Could not load stations. Retrying with a different source…",
-    "retry": "Retry"
+    "retry": "Retry",
+    "priceLabel": "Price / kWh",
+    "priceFallback": "Tariff varies — contact operator"
   },
   "bot": {
     "siblingNote": "텔레그램 봇 @PoolwattBot이 실시간 알림을 보내고 생산자가 폰에서 오퍼를 게시할 수 있게 합니다."
@@ -209,7 +211,9 @@
       "membership": "Membership",
       "private": "Private",
       "pay_at_location": "Pay at location"
-    }
+    },
+    "priceLabel": "Price / kWh",
+    "priceFallback": "Tariff varies — contact operator"
   },
   "settings": {
     "title": "Settings",

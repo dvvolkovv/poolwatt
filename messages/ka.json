@@ -129,7 +129,9 @@
     "sourceStale": "Cached (live source unreachable)",
     "sourceMock": "Demo data (live source unreachable)",
     "errorLoad": "Could not load stations. Retrying with a different source…",
-    "retry": "Retry"
+    "retry": "Retry",
+    "priceLabel": "Price / kWh",
+    "priceFallback": "Tariff varies — contact operator"
   },
   "bot": {
     "siblingNote": "Telegram ბოტი @PoolwattBot აგზავნის შეტყობინებებს რეალურ დროში და მწარმოებლებს საშუალებას აძლევს გამოაქვეყნონ შეთავაზებები ტელეფონიდან."
@@ -209,7 +211,9 @@
       "membership": "Membership",
       "private": "Private",
       "pay_at_location": "Pay at location"
-    }
+    },
+    "priceLabel": "Price / kWh",
+    "priceFallback": "Tariff varies — contact operator"
   },
   "settings": {
     "title": "Settings",

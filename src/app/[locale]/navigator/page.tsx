@@ -36,6 +36,8 @@ export default async function NavigatorPage({ params }: Props) {
     maxPower: t("maxPower"),
     rating: t("rating"),
     cost: t("cost"),
+    priceLabel: t("priceLabel"),
+    priceFallback: t("priceFallback"),
     lastVerified: t("lastVerified"),
     directions: t("directions"),
     metaDescription: t("metaDescription"),

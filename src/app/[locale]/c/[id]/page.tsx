@@ -127,7 +127,10 @@ export default async function ChargerDetailPage({
           <Field label={t("maxPower")} value={`${charger.maxPowerKw} kW`} />
           <Field label={t("usageType")} value={t(`usage.${charger.usageType}`)} />
           {charger.openHours && <Field label={t("openHours")} value={charger.openHours} />}
-          {charger.costInfo && <Field label={t("costInfo")} value={charger.costInfo} />}
+          <Field
+            label={t("priceLabel")}
+            value={charger.costInfo ?? t("priceFallback")}
+          />
           {typeof charger.rating === "number" && (
             <Field label={t("rating")} value={`★ ${charger.rating.toFixed(1)}`} />
           )}

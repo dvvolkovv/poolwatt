@@ -129,7 +129,9 @@
     "sourceStale": "Cached (live source unreachable)",
     "sourceMock": "Demo data (live source unreachable)",
     "errorLoad": "Could not load stations. Retrying with a different source…",
-    "retry": "Retry"
+    "retry": "Retry",
+    "priceLabel": "Price / kWh",
+    "priceFallback": "Tariff varies — contact operator"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot delivers live alerts and lets producers post offers from their phone."
@@ -498,7 +500,9 @@
       "title": "About {name}",
       "verifiedBadge": "Verified operator",
       "claimCta": "This is our company — claim this card"
-    }
+    },
+    "priceLabel": "Price / kWh",
+    "priceFallback": "Tariff varies — contact operator"
   },
   "settings": {
     "title": "Settings",

@@ -129,7 +129,9 @@
     "sourceStale": "Z vyrovnávacej pamäte (živý zdroj nedostupný)",
     "sourceMock": "Demo dáta (živý zdroj nedostupný)",
     "errorLoad": "Nepodarilo sa načítať stanice. Skúšame iný zdroj…",
-    "retry": "Skúsiť znova"
+    "retry": "Skúsiť znova",
+    "priceLabel": "Cena / kWh",
+    "priceFallback": "Cenu si overte u prevádzkovateľa"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot doručuje živé upozornenia a umožňuje výrobcom zverejňovať ponuky priamo z telefónu."
@@ -498,7 +500,9 @@
       "title": "O {name}",
       "verifiedBadge": "Overený prevádzkovateľ",
       "claimCta": "Toto je naša spoločnosť — prevziať kartu"
-    }
+    },
+    "priceLabel": "Cena / kWh",
+    "priceFallback": "Cenu si overte u prevádzkovateľa"
   },
   "settings": {
     "title": "Nastavenia",
