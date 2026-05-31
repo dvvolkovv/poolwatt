@@ -41,6 +41,7 @@ model User {
   reviewedRequests        ProducerRequest[]        @relation("RequestReviewer")
   adminAddedProducers     Producer[]               @relation("AdminProducerAdditions")
   claimedProducers        Producer[]               @relation("ProducerClaims")
+  claimedChargerOperators ChargerOperator[]        @relation("ChargerOperatorClaims")
   auditLogs               AdminAuditLog[]          @relation("AdminAuditActor")
   buyContracts            Contract[]               @relation("ContractBuyer")
   buildRequests           BuildRequest[]           @relation("BuildRequestOwner")
@@ -148,7 +149,7 @@ enum ProducerCategory {
 
 enum ClaimEntityType {
   PRODUCER
-  // CHARGER_OPERATOR — deliberately deferred to R5
+  CHARGER_OPERATOR
 }
 
 // One-time email-verification token used by the producer claim flow.
@@ -169,6 +170,30 @@ model ClaimToken {
 
   @@index([entityType, entityId])
   @@index([userId])
+}
+
+// EV-charging-network operator (IONITY, GreenWay, Tesla, ChargePoint, …).
+// Aliases hold the variations of operator/network/brand tags from OSM data
+// so a single ChargerOperator row matches all stations of that network.
+model ChargerOperator {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  displayName   String
+  aliases       String[] @default([])
+  description   String?  @db.Text
+  websiteUrl    String?
+  logoUrl       String?
+  email         String?
+  phone         String?
+
+  claimedById   String?
+  claimedBy     User?    @relation("ChargerOperatorClaims", fields: [claimedById], references: [id])
+  claimedAt     DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([claimedById])
 }
 
 // A household (or small commercial) producer that contributes battery-stored
