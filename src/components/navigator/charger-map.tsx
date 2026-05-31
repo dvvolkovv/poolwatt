@@ -5,19 +5,14 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { ChargerStation } from "@/lib/chargers";
 
-const MB = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-
-const STYLES = MB
-  ? {
-      dark: `https://api.mapbox.com/styles/v1/mapbox/dark-v11?access_token=${MB}`,
-      voyager: `https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=${MB}`,
-      satellite: `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12?access_token=${MB}`,
-    }
-  : {
-      dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-      voyager: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-      satellite: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
-    };
+// Mapbox-hosted styles aren't maplibre-compatible (spec diverged after Mapbox
+// went proprietary in 2020); maplibre rejects them with "unknown property" and
+// blanks the canvas. Stick to Carto basemaps, which are valid maplibre v8.
+const STYLES = {
+  dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  voyager: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+  satellite: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+} as const;
 
 type StyleKey = keyof typeof STYLES;
 
