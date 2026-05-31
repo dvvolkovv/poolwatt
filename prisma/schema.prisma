@@ -139,6 +139,11 @@ enum ProducerSource {
   SELF_ENROLLED   // household signed up through the portal
 }
 
+enum ProducerCategory {
+  ENERGY_PRODUCER
+  EQUIPMENT_MANUFACTURER
+}
+
 // A household (or small commercial) producer that contributes battery-stored
 // renewable electricity to the network.
 model Producer {
@@ -174,6 +179,10 @@ model Producer {
   approvedFromRequestId String?      @unique
   approvedFromRequest   ProducerRequest? @relation("ProducerRequestApproved", fields: [approvedFromRequestId], references: [id])
 
+  category     ProducerCategory @default(ENERGY_PRODUCER)
+  equipment    String[]         @default([])
+  manufactures String[]         @default([])
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   metadataFetchedAt DateTime?
@@ -181,11 +190,35 @@ model Producer {
   snapshots   ProducerSnapshot[]
   offers      Offer[]
   contracts   Contract[]
+  profile     ProducerProfile?
   // Watchlist FK was dropped in V1 personal cabinet — see comment on the
   // Watchlist model. When the producer cutover lands, restore: watchedBy Watchlist[]
 
   @@index([country, rank])
   @@index([primarySource])
+}
+
+// Rich profile data for a Producer: human-readable company info shown on the
+// detail page (founded year, CEO, contact, certifications, key products).
+// 1:1 with Producer; nullable so seed rows without a matching PRODUCER_PROFILES
+// entry stay valid.
+model ProducerProfile {
+  producerId     String   @id
+  producer       Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+
+  description    String?  @db.Text
+  founded        Int?
+  employees      String?
+  website        String?
+  email          String?
+  phone          String?
+  address        String?
+  ceo            String?
+  stockTicker    String?
+  certifications String[] @default([])
+  keyProducts    String[] @default([])
+
+  updatedAt      DateTime @updatedAt
 }
 
 // Periodic telemetry snapshot per producer: state-of-charge, last 24h delivery, prices.
