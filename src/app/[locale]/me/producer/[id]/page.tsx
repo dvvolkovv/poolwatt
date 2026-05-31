@@ -34,8 +34,9 @@ export default async function ProducerCabinetPage({ params, searchParams }: Prop
       <div>
         <Link href={`/${locale}/me/producer`} className="text-sm text-muted hover:text-foreground">← {t("backToList")}</Link>
         <h1 className="text-[28px] font-bold mt-2 mb-2">{producer.displayName}</h1>
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted flex flex-wrap gap-x-4 gap-y-1">
           <Link href={`/${locale}/p/${producer.handle}`} className="hover:underline">{t("viewPublic")} →</Link>
+          <Link href={`/${locale}/me/producer/${producer.id}/requests`} className="hover:underline text-accent">{t("availableRequests")} →</Link>
         </p>
         {claimed === "1" && (
           <div className="mt-4 p-3 rounded-xl bg-up/10 border border-up/30 text-sm">
