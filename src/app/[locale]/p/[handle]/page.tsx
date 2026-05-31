@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { MOCK_PRODUCERS } from "@/lib/producers";
-import { PRODUCER_PROFILES } from "@/lib/producer-profiles";
+import { prisma } from "@/lib/prisma";
+import { mergeProducer } from "@/lib/merge-producer";
 import { formatKwh } from "@/lib/format";
 import { Sparkline } from "@/components/sparkline";
 import { SourceBadge } from "@/components/source-badge";
@@ -27,11 +28,14 @@ type Props = { params: Promise<{ locale: string; handle: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { handle } = await params;
-  const producer = MOCK_PRODUCERS.find((p) => p.handle === handle);
+  const producer = await prisma.producer.findUnique({
+    where: { handle },
+    select: { displayName: true, primarySource: true, city: true, country: true },
+  });
   if (!producer) return { title: "Not Found — Poolwatt" };
   return {
     title: `${producer.displayName} — Poolwatt`,
-    description: `${producer.displayName} — renewable energy producer on the Poolwatt grid. ${producer.primarySource} · ${producer.city}, ${producer.country}`,
+    description: `${producer.displayName} — renewable energy producer on the Poolwatt grid. ${producer.primarySource} · ${producer.city ?? ""}, ${producer.country}`,
   };
 }
 
@@ -39,10 +43,17 @@ export default async function ProducerPage({ params }: Props) {
   const { locale, handle } = await params;
   setRequestLocale(locale);
 
-  const producer = MOCK_PRODUCERS.find((p) => p.handle === handle);
-  if (!producer) notFound();
+  const dbProducer = await prisma.producer.findUnique({
+    where: { handle },
+    include: { profile: true },
+  });
+  if (!dbProducer) notFound();
 
-  const profile = PRODUCER_PROFILES[handle] ?? null;
+  const snapshot = MOCK_PRODUCERS.find((m) => m.handle === handle);
+  if (!snapshot) notFound();
+
+  const producer = mergeProducer(dbProducer, snapshot);
+  const profile = producer.profile ?? null;
   const isOEM = producer.category === "EQUIPMENT_MANUFACTURER";
 
   return (
