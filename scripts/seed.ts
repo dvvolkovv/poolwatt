@@ -14,9 +14,14 @@ async function main() {
   const p = await seedProducers(prisma, MOCK_PRODUCERS);
   console.log(`[seed] producers: created=${p.created}, skipped=${p.skipped}`);
 
-  console.log(`[seed] producer profiles: starting (${Object.keys(PRODUCER_PROFILES).length} entries in source)`);
+  const profileSourceCount = Object.keys(PRODUCER_PROFILES).length;
+  console.log(`[seed] producer profiles: starting (${profileSourceCount} entries in source)`);
   const pp = await seedProducerProfiles(prisma, PRODUCER_PROFILES);
   console.log(`[seed] producer profiles: created=${pp.created}, skipped=${pp.skipped}`);
+  const dropped = profileSourceCount - (pp.created + pp.skipped);
+  if (dropped > 0) {
+    console.warn(`[seed] WARN: ${dropped} profile(s) silently dropped — handle has no matching Producer row. Check PRODUCER_PROFILES keys against MOCK_PRODUCERS handles.`);
+  }
 
   console.log(`[seed] done`);
 }
