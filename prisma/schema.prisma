@@ -40,12 +40,14 @@ model User {
   producerRequests        ProducerRequest[]
   reviewedRequests        ProducerRequest[]        @relation("RequestReviewer")
   adminAddedProducers     Producer[]               @relation("AdminProducerAdditions")
+  claimedProducers        Producer[]               @relation("ProducerClaims")
   auditLogs               AdminAuditLog[]          @relation("AdminAuditActor")
   buyContracts            Contract[]               @relation("ContractBuyer")
   buildRequests           BuildRequest[]           @relation("BuildRequestOwner")
   reviewedBuildRequests   BuildRequest[]           @relation("BuildRequestReviewer")
   contractorMemberships   ContractorMember[]       @relation("ContractorMembership")
   reviewedContractors     Contractor[]             @relation("ContractorReviewer")
+  claimTokens             ClaimToken[]
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -144,6 +146,31 @@ enum ProducerCategory {
   EQUIPMENT_MANUFACTURER
 }
 
+enum ClaimEntityType {
+  PRODUCER
+  // CHARGER_OPERATOR — deliberately deferred to R5
+}
+
+// One-time email-verification token used by the producer claim flow.
+// Created when a user submits the claim form with a corporate email; consumed
+// on successful verification. expiresAt is 30 minutes from creation by
+// convention (enforced by the application layer, not by the DB).
+model ClaimToken {
+  id          String           @id @default(cuid())
+  token       String           @unique
+  entityType  ClaimEntityType
+  entityId    String
+  email       String
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime         @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+}
+
 // A household (or small commercial) producer that contributes battery-stored
 // renewable electricity to the network.
 model Producer {
@@ -176,6 +203,9 @@ model Producer {
   owner                 User?            @relation("ProducerOwner", fields: [ownerId], references: [id])
   addedByAdminId        String?
   addedBy               User?            @relation("AdminProducerAdditions", fields: [addedByAdminId], references: [id])
+  claimedById   String?
+  claimedBy     User?            @relation("ProducerClaims", fields: [claimedById], references: [id])
+  claimedAt     DateTime?
   approvedFromRequestId String?          @unique
   approvedFromRequest   ProducerRequest? @relation("ProducerRequestApproved", fields: [approvedFromRequestId], references: [id])
 
@@ -194,6 +224,7 @@ model Producer {
   // Watchlist FK was dropped in V1 personal cabinet — see comment on the
   // Watchlist model. When the producer cutover lands, restore: watchedBy Watchlist[]
 
+  @@index([claimedById])
   @@index([country, rank])
   @@index([primarySource])
 }
