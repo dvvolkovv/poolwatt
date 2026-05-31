@@ -217,10 +217,11 @@ model Producer {
   updatedAt         DateTime  @updatedAt
   metadataFetchedAt DateTime?
 
-  snapshots ProducerSnapshot[]
-  offers    Offer[]
-  contracts Contract[]
-  profile   ProducerProfile?
+  snapshots      ProducerSnapshot[]
+  offers         Offer[]
+  contracts      Contract[]
+  profile        ProducerProfile?
+  producerClaims ProducerBuildRequestClaim[] @relation("ProducerClaimsByProducer")
   // Watchlist FK was dropped in V1 personal cabinet — see comment on the
   // Watchlist model. When the producer cutover lands, restore: watchedBy Watchlist[]
 
@@ -526,7 +527,8 @@ model BuildRequest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  claims BuildRequestClaim[]
+  claims             BuildRequestClaim[]
+  producerClaims     ProducerBuildRequestClaim[] @relation("ProducerClaimsOnBR")
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
@@ -684,4 +686,26 @@ model BuildRequestClaim {
   @@unique([buildRequestId, contractorId])
   @@index([buildRequestId, status])
   @@index([contractorId, status])
+}
+
+// Producer-side mirror of BuildRequestClaim.
+// Lives in a parallel table (rather than polymorphic on BuildRequestClaim) so the
+// existing contractor flow is untouched. Status enum is shared (BuildRequestClaimStatus).
+// Eventually both tables could be unified — deferred until ChargerOperator joins (R5+).
+model ProducerBuildRequestClaim {
+  id             String       @id @default(cuid())
+  buildRequestId String
+  buildRequest   BuildRequest @relation("ProducerClaimsOnBR", fields: [buildRequestId], references: [id], onDelete: Cascade)
+  producerId     String
+  producer       Producer     @relation("ProducerClaimsByProducer", fields: [producerId], references: [id], onDelete: Cascade)
+
+  status  BuildRequestClaimStatus @default(PENDING)
+  message String?                 @db.Text
+
+  createdAt   DateTime  @default(now())
+  respondedAt DateTime?
+
+  @@unique([buildRequestId, producerId])
+  @@index([buildRequestId, status])
+  @@index([producerId, status])
 }
