@@ -255,6 +255,36 @@
         "rejectedSiblings": "Ostatní dodávatelia (nevybraní)"
       }
     },
+    "producer": {
+      "listTitle": "Moje karty výrobcu",
+      "emptyState": "Zatiaľ ste neprevzali žiadnu kartu výrobcu.",
+      "emptyStateCta": "Otvoriť katalóg",
+      "backToList": "Späť na moje karty",
+      "viewPublic": "Otvoriť verejnú stránku",
+      "justClaimedBanner": "Práve ste prevzali túto kartu. Zmeny sa zobrazia verejne do 60 sekúnd.",
+      "cardSection": "Karta",
+      "displayName": "Zobrazované meno",
+      "bio": "Krátky popis",
+      "logoUrl": "URL loga",
+      "websiteUrl": "URL webu",
+      "twitterUrl": "URL Twitter",
+      "profileSection": "Profil spoločnosti",
+      "description": "O spoločnosti",
+      "founded": "Rok založenia",
+      "employees": "Zamestnanci",
+      "website": "Web",
+      "email": "Kontaktný e-mail",
+      "phone": "Telefón",
+      "address": "Adresa",
+      "ceo": "Generálny riaditeľ",
+      "stockTicker": "Burzový symbol",
+      "save": "Uložiť",
+      "saved": "Uložené",
+      "dangerSection": "Nebezpečná zóna",
+      "unlinkHint": "Odpojí túto kartu od vášho účtu. Môžete si ju neskôr znova prevziať, ak ju medzitým nezabral niekto iný.",
+      "unlinkButton": "Odpojiť kartu",
+      "unlinkConfirm": "Naozaj? Toto odpojí kartu od vášho účtu."
+    },
     "contractor": {
       "title": "Moja firma",
       "empty": "Zatiaľ ste si nezaregistrovali firmu.",
@@ -388,7 +418,7 @@
     "verifySubmitLabel": "Overiť",
     "publicCta": "Toto je naša spoločnosť — prevziať kartu",
     "publicBadge": "Overené",
-    "publicBanner": "Prevzali ste túto kartu. Editácia príde v R3c."
+    "publicBanner": "Prevzali ste túto kartu. Upravte ju vo svojom kabinete."
   },
   "charger": {
     "backToNavigator": "Späť na navigátor",

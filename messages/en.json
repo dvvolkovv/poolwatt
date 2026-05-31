@@ -255,6 +255,36 @@
         "rejectedSiblings": "Other contractors (not selected)"
       }
     },
+    "producer": {
+      "listTitle": "My producer cards",
+      "emptyState": "You haven't claimed any producer cards yet.",
+      "emptyStateCta": "Browse the directory",
+      "backToList": "Back to my cards",
+      "viewPublic": "View public page",
+      "justClaimedBanner": "You've just claimed this card. Edits will appear publicly within 60 seconds.",
+      "cardSection": "Card",
+      "displayName": "Display name",
+      "bio": "Short bio",
+      "logoUrl": "Logo URL",
+      "websiteUrl": "Website URL",
+      "twitterUrl": "Twitter URL",
+      "profileSection": "Company profile",
+      "description": "About the company",
+      "founded": "Founded (year)",
+      "employees": "Employees",
+      "website": "Website",
+      "email": "Contact email",
+      "phone": "Phone",
+      "address": "Address",
+      "ceo": "CEO",
+      "stockTicker": "Stock ticker",
+      "save": "Save",
+      "saved": "Saved",
+      "dangerSection": "Danger zone",
+      "unlinkHint": "Unlinks this card from your account. You can re-claim it later if no one else does first.",
+      "unlinkButton": "Unlink claim",
+      "unlinkConfirm": "Are you sure? This unlinks the card from your account."
+    },
     "contractor": {
       "title": "My company",
       "empty": "You haven't registered a company yet.",
@@ -388,7 +418,7 @@
     "verifySubmitLabel": "Verify",
     "publicCta": "This is our company — claim this card",
     "publicBadge": "Verified",
-    "publicBanner": "You've claimed this card. The editing UI is coming in R3c."
+    "publicBanner": "You've claimed this card. Edit it from your cabinet."
   },
   "charger": {
     "backToNavigator": "Back to navigator",

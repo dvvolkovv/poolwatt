@@ -7,12 +7,11 @@ import { verifyClaim } from "./actions";
 type Props = {
   entityType: "PRODUCER";
   entityId: string;
-  handle: string;
   locale: string;
   labels: { code: string; submit: string };
 };
 
-export function VerifyForm({ entityType, entityId, handle, locale, labels }: Props) {
+export function VerifyForm({ entityType, entityId, locale, labels }: Props) {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -24,7 +23,7 @@ export function VerifyForm({ entityType, entityId, handle, locale, labels }: Pro
     startTransition(async () => {
       const result = await verifyClaim({ entityType, entityId, code });
       if (result.ok) {
-        router.push(`/${locale}/p/${handle}?claimed=1`);
+        router.push(`/${locale}/me/producer/${entityId}?claimed=1`);
       } else {
         setError(result.formError ?? "Verification failed.");
       }

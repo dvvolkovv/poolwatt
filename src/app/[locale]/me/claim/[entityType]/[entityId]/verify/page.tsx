@@ -35,7 +35,6 @@ export default async function VerifyClaimPage({ params }: Props) {
       <VerifyForm
         entityType="PRODUCER"
         entityId={producer.id}
-        handle={producer.handle}
         locale={locale}
         labels={{
           code: t("codeLabel"),
