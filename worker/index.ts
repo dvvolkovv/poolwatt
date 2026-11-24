@@ -15,6 +15,7 @@ import cron from "node-cron";
 import { prisma } from "@/lib/prisma";
 import { closeInterval, reconcileWalletBalances } from "@/lib/exchange/interval-close-service";
 import { intervalStartFor } from "@/lib/exchange/zone-service";
+import { startTelemetrySubscriber } from "./mqtt";
 
 function log(...args: unknown[]) {
   console.log(`[worker]`, ...args);
@@ -72,6 +73,9 @@ async function main() {
   cron.schedule("15 3 * * *", () => {
     void runReconciliation();
   });
+
+  // §4 / US-03 — MQTT intake, when a broker is configured.
+  startTelemetrySubscriber();
 
   // Run once at boot so a restart does not leave a stale interval open.
   await runIntervalClose();

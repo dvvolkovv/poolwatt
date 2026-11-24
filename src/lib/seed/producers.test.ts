@@ -5,9 +5,14 @@ import type { ProducerRow } from "@/lib/producers";
 
 const TEST_HANDLES = ["test-seed-a", "test-seed-b", "test-seed-c"];
 
+// Ranks far outside the top 100. These rows have no MOCK_PRODUCERS entry, and
+// readTopProducers throws on a handle it cannot match — with ranks 1..3 these
+// fixtures made snapshot.test.ts fail whenever the two files ran at the same
+// time.
+
 const TEST_ROWS: ProducerRow[] = [
   {
-    id: "p1", rank: 1, handle: "test-seed-a", displayName: "Test A",
+    id: "p1", rank: 9001, handle: "test-seed-a", displayName: "Test A",
     city: "X", country: "DE", primarySource: "SOLAR",
     capacityKwh: 100, inverterKw: 50, stateOfChargePct: 90, availableKwh: 90,
     pricePerKwhUsd: 0.04, delivered24hKwh: 100, deliveredLifetimeKwh: 1000,
@@ -16,7 +21,7 @@ const TEST_ROWS: ProducerRow[] = [
     weatherCondition: "SUNNY", carbonOffsetKgCo2e: 50,
   },
   {
-    id: "p2", rank: 2, handle: "test-seed-b", displayName: "Test B",
+    id: "p2", rank: 9002, handle: "test-seed-b", displayName: "Test B",
     city: "X", country: "DE", primarySource: "WIND",
     capacityKwh: 200, inverterKw: 80, stateOfChargePct: 80, availableKwh: 160,
     pricePerKwhUsd: 0.04, delivered24hKwh: 200, deliveredLifetimeKwh: 2000,
@@ -26,7 +31,7 @@ const TEST_ROWS: ProducerRow[] = [
     equipment: ["X turbines"],
   },
   {
-    id: "p3", rank: 3, handle: "test-seed-c", displayName: "Test C",
+    id: "p3", rank: 9003, handle: "test-seed-c", displayName: "Test C",
     city: "X", country: "DE", primarySource: "SOLAR",
     category: "EQUIPMENT_MANUFACTURER",
     capacityKwh: 50, inverterKw: 20, stateOfChargePct: 90, availableKwh: 45,

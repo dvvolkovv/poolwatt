@@ -212,6 +212,29 @@ and `docs/superpowers/plans/2026-05-25-android-build-pipeline.md`.
 
 ## Known gotchas
 
+- **`npm install` in this shell drops devDependencies.** The shell `claude`
+  runs in exports `NODE_ENV=production`, so plain `npm install <pkg>` prunes
+  vitest, playwright and the rest, and the next test run dies with
+  `Cannot find module 'vitest/config'`. Always
+  `NODE_ENV=development npm install …`, and run a plain
+  `NODE_ENV=development npm install` to repair a tree that was already pruned.
+
+- **MQTT telemetry.** A local mosquitto on `127.0.0.1:1883` carries §4/US-03
+  readings; config in `/etc/mosquitto/conf.d/poolwatt.conf`, switched on for
+  the worker by `MQTT_URL` in `.env.local`. The broker is transport only — the
+  asset identity is the telemetry key inside each message
+  (`src/lib/exchange/mqtt-telemetry.ts`), so anonymous local publishing is
+  safe. Smoke test:
+
+  ```bash
+  mosquitto_pub -h 127.0.0.1 -t "poolwatt/v1/assets/<assetId>/readings" \
+    -m '{"key":"pwt_…","intervalStart":"2026-11-24T14:45:00.000Z","energyKwh":4.125}'
+  tail -5 /home/dv/.pm2/logs/poolwatt-worker-out.log
+  ```
+
+  Exposing it to real inverters needs TLS on 8883 and per-asset broker
+  credentials — the owner's call, not ours.
+
 - **dotenv + `.env.local`.** Standalone Node entrypoints (`bot/`, `worker/`)
   must explicitly load both files; `import "dotenv/config"` only loads
   `.env`. See `bot/config.ts` for the canonical pair-load pattern. Next.js
