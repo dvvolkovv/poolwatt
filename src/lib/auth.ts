@@ -1,18 +1,26 @@
-// Auth.js v5 configuration. V1 ships a single Credentials provider backed by
-// our User.username + User.passwordHash. JWT sessions (no per-request DB
+// Auth.js v5 configuration: Credentials (User.username + User.passwordHash) and
+// Taler ID (OpenID Connect, when configured). JWT sessions (no per-request DB
 // lookup). Server actions read the session via `auth()`; Next route handlers
 // import { GET, POST } from "@/lib/auth"' export.
 //
-// Future-proofing: V2 may add OAuth providers (Google, Telegram). The
-// PrismaAdapter is already a dep but isn't wired here — Credentials doesn't
-// use account-linking. When we add OAuth, add the adapter + providers in
-// this file; existing username/password users keep working unchanged.
+// No PrismaAdapter: it would create users without the mandatory username and
+// store provider tokens. The signIn callback below finds, creates or links the
+// local user itself (src/lib/talerid/resolve-user.ts).
 
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
 import { loginSchema } from "@/lib/validation";
+import {
+  TALERID_PROVIDER_ID,
+  talerIdProvider,
+  toTalerIdClaims,
+  type TalerIdProfile,
+} from "@/lib/talerid/config";
+import { TALERID_REFUSAL_CODE } from "@/lib/talerid/errors";
+import { takeLinkIntent } from "@/lib/talerid/link-intent-cookie";
+import { findTalerIdUser, resolveTalerIdUser } from "@/lib/talerid/resolve-user";
 
 declare module "next-auth" {
   interface Session {
@@ -23,10 +31,12 @@ declare module "next-auth" {
       hasEmail: boolean;
     } & DefaultSession["user"];
   }
+  // Set by Credentials.authorize(). A Taler ID sign-in starts from the provider
+  // profile, which has none of these; the jwt callback reads the local user.
   interface User {
-    username: string;
-    role: "USER" | "ADMIN";
-    hasEmail: boolean;
+    username?: string;
+    role?: "USER" | "ADMIN";
+    hasEmail?: boolean;
   }
 }
 
@@ -42,6 +52,8 @@ declare module "@auth/core/jwt" {
   }
 }
 
+const talerId = talerIdProvider();
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   // We sit behind nginx in production; Auth.js v5 rejects the forwarded host
   // unless told to trust the reverse-proxy chain. Equivalent to setting
@@ -51,6 +63,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },  // 30-day rolling
   pages: {
     signIn: "/login",
+    error: "/login",
   },
   providers: [
     Credentials({
@@ -76,18 +89,48 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
+    ...(talerId ? [talerId] : []),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async signIn({ account, profile }): Promise<boolean | string> {
+      if (account?.provider !== TALERID_PROVIDER_ID) return true;
+
+      // Link only when the person signed in right now is the one who asked to.
+      const intendedUserId = await takeLinkIntent();
+      const currentUserId = intendedUserId ? (await auth())?.user?.id : undefined;
+      const linkToUserId =
+        intendedUserId && intendedUserId === currentUserId ? intendedUserId : undefined;
+
+      const result = await resolveTalerIdUser(
+        toTalerIdClaims(profile as unknown as TalerIdProfile),
+        { linkToUserId },
+      );
+      if (result.ok) return true;
+      // Returning a path makes Auth.js redirect there instead of signing in.
+      return `${linkToUserId ? "/me/settings" : "/login"}?error=${TALERID_REFUSAL_CODE[result.reason]}`;
+    },
+    async jwt({ token, user, account }) {
       // user is only present on initial sign-in; afterwards we rehydrate from
-      // the JWT itself. authorize() always sets these fields, so the non-null
-      // assertion holds for our Credentials provider.
-      if (user) {
-        token.userId = user.id!;
-        token.username = user.username;
-        token.role = user.role;
-        token.hasEmail = user.hasEmail;
+      // the JWT itself.
+      if (!user) return token;
+
+      if (account?.provider === TALERID_PROVIDER_ID) {
+        const local = await findTalerIdUser(account.providerAccountId);
+        if (!local) throw new Error("[talerid] signed in without a linked account");
+        token.sub = local.id;
+        token.name = local.name ?? local.username;
+        token.userId = local.id;
+        token.username = local.username;
+        token.role = local.role;
+        token.hasEmail = local.email != null;
+        return token;
       }
+
+      // authorize() always sets these, so the assertions hold for Credentials.
+      token.userId = user.id!;
+      token.username = user.username!;
+      token.role = user.role!;
+      token.hasEmail = user.hasEmail!;
       return token;
     },
     session({ session, token }) {
