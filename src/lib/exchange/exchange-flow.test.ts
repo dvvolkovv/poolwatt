@@ -19,6 +19,7 @@ import { transferKwh } from "./transfer-service";
 import { num } from "./decimal";
 import { assertWalletTokensBalance } from "./token-registry";
 import { getOrCreateWallet } from "./wallet-service";
+import { intervalStartFor } from "./zone-service";
 
 const PREFIX = "test_xchg_";
 const ZONE_CODE = "TESTZONE";
@@ -454,7 +455,9 @@ describe("the order book — ТЗ §6, US-06, US-07, §16.5", () => {
       type: "LIMIT",
       amountKwh: 10,
       limitPrice: 0.15,
-      intervalStart: new Date("2026-11-21T10:00:00.000Z"),
+      // An interval still ahead: US-06 allows withdrawal only before delivery
+      // starts, so a fixed date would rot the moment it slipped into the past.
+      intervalStart: intervalStartFor(new Date(Date.now() + 24 * 3_600_000), 15),
     });
     expect(order.status).toBe("NEW");
 

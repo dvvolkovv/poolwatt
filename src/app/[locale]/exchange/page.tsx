@@ -8,15 +8,19 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { num, numOrNull } from "@/lib/exchange/decimal";
-import { readOrderBook } from "@/lib/exchange/order-service";
-import { intervalStartFor } from "@/lib/exchange/zone-service";
+import { readIntervalLadder, readOrderBook } from "@/lib/exchange/order-service";
+import { intervalStartFor, upcomingIntervals } from "@/lib/exchange/zone-service";
 import { readWallets } from "@/lib/exchange/wallet-service";
 import { OrderTicket } from "@/components/exchange/order-ticket";
+import { IntervalLadder } from "@/components/exchange/interval-ladder";
 import { CancelOrderButton } from "@/components/exchange/cancel-order-button";
 
 export const dynamic = "force-dynamic";
 
 const OPEN_STATUSES = ["NEW", "PARTIALLY_FILLED"] as const;
+
+/** How many delivery intervals the day-ahead strip offers (§6). */
+const LADDER_LENGTH = 12;
 
 export default async function ExchangePage({
   params,
@@ -36,16 +40,27 @@ export default async function ExchangePage({
   const zone = zones.find((z) => z.code === zoneCode?.toUpperCase()) ?? zones[0];
 
   // Default to the interval that is open for trading right now.
+  const now = new Date();
+  const currentInterval = intervalStartFor(now, zone.intervalMinutes);
   const parsed = interval ? new Date(interval) : null;
   const intervalStart =
     parsed && !Number.isNaN(parsed.getTime())
       ? intervalStartFor(parsed, zone.intervalMinutes)
-      : intervalStartFor(new Date(), zone.intervalMinutes);
+      : currentInterval;
 
   const book = await readOrderBook(zone.id, intervalStart);
 
   const session = await auth();
   const userId = session?.user?.id ?? null;
+
+  // US-06 — the intervals still on offer, starting with the one running now.
+  // A selected interval further out stays on the strip, so a link bookmarked
+  // for tomorrow still shows where it sits.
+  const ladderIntervals = upcomingIntervals(now, zone.intervalMinutes, LADDER_LENGTH);
+  if (!ladderIntervals.some((d) => d.getTime() === intervalStart.getTime())) {
+    ladderIntervals.push(intervalStart);
+  }
+  const ladder = await readIntervalLadder(zone.id, ladderIntervals, userId);
 
   const [wallets, myOrders, recentTrades] = await Promise.all([
     userId ? readWallets(userId) : Promise.resolve([]),
@@ -113,6 +128,22 @@ export default async function ExchangePage({
           <Stat label={t("stats.bestBid")} value={fmtPrice(book.bestBid, zone.currency)} />
           <Stat label={t("stats.bestAsk")} value={fmtPrice(book.bestAsk, zone.currency)} />
         </section>
+
+        <IntervalLadder
+          rows={ladder}
+          zoneCode={zone.code}
+          intervalMinutes={zone.intervalMinutes}
+          selected={intervalStart}
+          currentInterval={currentInterval}
+          locale={locale}
+          labels={{
+            title: t("ladder.title"),
+            now: t("ladder.now"),
+            bid: t("ladder.bid"),
+            ask: t("ladder.ask"),
+            mine: t("ladder.mine"),
+          }}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
           <section>
@@ -189,6 +220,7 @@ export default async function ExchangePage({
                   price: t("ticket.price"),
                   interval: t("ticket.interval"),
                   estimate: t("ticket.estimate"),
+                  reserve: t("ticket.reserve"),
                   balanceKwh: t("ticket.balanceKwh"),
                   availableFiat: t("ticket.availableFiat"),
                   submit: t("ticket.submit"),
@@ -220,6 +252,9 @@ export default async function ExchangePage({
                   <ul className="text-sm divide-y divide-hairline">
                     {myOrders.map((o) => {
                       const open = (OPEN_STATUSES as readonly string[]).includes(o.status);
+                      // US-06 — withdrawal only before the interval starts.
+                      const delivering =
+                        o.intervalStart != null && o.intervalStart.getTime() <= now.getTime();
                       return (
                         <li key={o.id} className="py-2.5 flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -246,8 +281,29 @@ export default async function ExchangePage({
                               )}
                               {o.rejectReason && <> · {o.rejectReason}</>}
                             </div>
+                            <div className="text-[12px] text-muted">
+                              <span className="num">
+                                {o.intervalStart
+                                  ? formatInterval(o.intervalStart, zone.intervalMinutes)
+                                  : t("myOrders.spot")}
+                              </span>
+                              {num(o.reservedFiat) > 0 && (
+                                <span className="num">
+                                  {" "}
+                                  · {t("myOrders.reserved")} {num(o.reservedFiat).toFixed(2)}{" "}
+                                  {zone.currency}
+                                </span>
+                              )}
+                            </div>
+                            {open && delivering && (
+                              <div className="text-[12px] text-muted">
+                                {t("myOrders.delivering")}
+                              </div>
+                            )}
                           </div>
-                          {open && <CancelOrderButton orderId={o.id} label={t("myOrders.cancel")} />}
+                          {open && !delivering && (
+                            <CancelOrderButton orderId={o.id} label={t("myOrders.cancel")} />
+                          )}
                         </li>
                       );
                     })}

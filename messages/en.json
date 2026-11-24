@@ -1159,13 +1159,17 @@
       "filled": "filled",
       "rejected": "Rejected",
       "loginRequired": "Sign in to trade on the exchange.",
-      "login": "Sign in"
+      "login": "Sign in",
+      "reserve": "Funds reserved"
     },
     "myOrders": {
       "title": "My orders",
       "empty": "No orders in this zone",
       "cancel": "Cancel",
-      "filled": "filled"
+      "filled": "filled",
+      "spot": "spot",
+      "reserved": "reserved",
+      "delivering": "Delivery has started — cannot be withdrawn"
     },
     "wallet": {
       "eyebrow": "Wallet",
@@ -1194,6 +1198,13 @@
       "issuedAt": "Issued",
       "live": "Live",
       "offline": "Not live — showing the last loaded balances"
+    },
+    "ladder": {
+      "title": "Intervals ahead",
+      "now": "now",
+      "bid": "Bid",
+      "ask": "Ask",
+      "mine": "Mine"
     }
   },
   "emails": {

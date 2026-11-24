@@ -1159,13 +1159,17 @@
       "filled": "vykonané",
       "rejected": "Zamietnuté",
       "loginRequired": "Na obchodovanie sa prihláste.",
-      "login": "Prihlásiť sa"
+      "login": "Prihlásiť sa",
+      "reserve": "Rezervované prostriedky"
     },
     "myOrders": {
       "title": "Moje príkazy",
       "empty": "V tejto zóne nemáte príkazy",
       "cancel": "Zrušiť",
-      "filled": "vykonané"
+      "filled": "vykonané",
+      "spot": "spot",
+      "reserved": "rezervované",
+      "delivering": "Interval začal — nedá sa stiahnuť"
     },
     "wallet": {
       "eyebrow": "Peňaženka",
@@ -1194,6 +1198,13 @@
       "issuedAt": "Vydaný",
       "live": "V reálnom čase",
       "offline": "Bez spojenia — zobrazené zostatky z načítania"
+    },
+    "ladder": {
+      "title": "Intervaly vpred",
+      "now": "teraz",
+      "bid": "Nákup",
+      "ask": "Predaj",
+      "mine": "Moje"
     }
   },
   "emails": {

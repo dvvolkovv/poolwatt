@@ -657,6 +657,16 @@ async function placeOrderTx(
   }, { timeout: 20_000 });
 }
 
+/**
+ * True once the order's delivery interval is under way. US-06 grants
+ * withdrawal only "до начала интервала": after that the order belongs to the
+ * interval being settled, and `expireOrdersForInterval` — not the trader —
+ * takes it off the book.
+ */
+function deliveryStarted(order: { intervalStart: Date | null }, now = new Date()): boolean {
+  return order.intervalStart != null && order.intervalStart.getTime() <= now.getTime();
+}
+
 /** DELETE /v1/orders/{id} — §14 new / partially_filled → cancelled. */
 export async function cancelOrder(orderId: string, userId: string): Promise<void> {
   let zoneCode: string | null = null;
@@ -670,6 +680,9 @@ export async function cancelOrder(orderId: string, userId: string): Promise<void
     if (order.wallet.ownerUserId !== userId) throw new OrderRejected("Not your order");
     if (order.status !== OrderStatus.NEW && order.status !== OrderStatus.PARTIALLY_FILLED) {
       throw new OrderRejected(`Cannot cancel an order in status ${order.status}`);
+    }
+    if (deliveryStarted(order)) {
+      throw new OrderRejected("Cannot cancel an order after its delivery interval has started");
     }
 
     const reserved = roundMoney(num(order.reservedFiat));
@@ -722,6 +735,66 @@ export async function expireOrdersForInterval(zoneId: string, intervalStart: Dat
     data: { status: OrderStatus.EXPIRED },
   });
   return count;
+}
+
+export interface IntervalLadderRow {
+  intervalStart: Date;
+  bestBid: number | null;
+  bestAsk: number | null;
+  /** The asker's own open volume on this interval, in kWh. */
+  myOpenKwh: number;
+}
+
+/**
+ * One row per interval for the day-ahead strip above the book (§6, §9): what
+ * the market shows for each interval on offer, and how much of it is the
+ * trader's own. Spot orders (`intervalStart = null`) belong to no interval and
+ * are left out — the strip is about picking an interval.
+ *
+ * One query over the whole window, aggregated in memory: a window holds few
+ * open orders, and the remaining volume (`amountKwh − filledKwh`) is not
+ * something `groupBy` can compute anyway.
+ */
+export async function readIntervalLadder(
+  zoneId: string,
+  intervals: Date[],
+  userId: string | null,
+  db: Db = prisma,
+): Promise<IntervalLadderRow[]> {
+  if (intervals.length === 0) return [];
+
+  const rows = await db.order.findMany({
+    where: {
+      zoneId,
+      type: OrderType.LIMIT,
+      intervalStart: { in: intervals },
+      status: { in: [OrderStatus.NEW, OrderStatus.PARTIALLY_FILLED] },
+    },
+    select: {
+      side: true,
+      intervalStart: true,
+      limitPrice: true,
+      amountKwh: true,
+      filledKwh: true,
+      wallet: { select: { ownerUserId: true } },
+    },
+  });
+
+  return intervals.map((intervalStart) => {
+    const key = intervalStart.getTime();
+    const here = rows.filter((r) => r.intervalStart?.getTime() === key);
+    const bids = here.filter((r) => r.side === OrderSide.BUY && r.limitPrice != null);
+    const asks = here.filter((r) => r.side === OrderSide.SELL && r.limitPrice != null);
+    const mine = userId ? here.filter((r) => r.wallet.ownerUserId === userId) : [];
+    return {
+      intervalStart,
+      bestBid: bids.length > 0 ? Math.max(...bids.map((r) => num(r.limitPrice))) : null,
+      bestAsk: asks.length > 0 ? Math.min(...asks.map((r) => num(r.limitPrice))) : null,
+      myOpenKwh: roundKwh(
+        mine.reduce((sum, r) => sum + num(r.amountKwh) - num(r.filledKwh), 0),
+      ),
+    };
+  });
 }
 
 export interface OrderBookView {

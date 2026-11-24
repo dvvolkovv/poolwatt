@@ -33,6 +33,7 @@ export type TicketLabels = {
   price: string;
   interval: string;
   estimate: string;
+  reserve: string;
   balanceKwh: string;
   availableFiat: string;
   submit: string;
@@ -191,7 +192,11 @@ export function OrderTicket(props: Props) {
       </label>
 
       <dl className="text-[12px] space-y-1 border-t border-hairline pt-3">
-        <Row label={TEXT.estimate} value={estimate == null ? "—" : `${estimate.toFixed(2)} ${props.currency}`} />
+        {/* §12 US-06 — a resting buy order holds money; name it that way. */}
+        <Row
+          label={side === "BUY" && type === "LIMIT" ? TEXT.reserve : TEXT.estimate}
+          value={estimate == null ? "—" : `${estimate.toFixed(2)} ${props.currency}`}
+        />
         <Row label={TEXT.balanceKwh} value={`${props.kwhBalance.toFixed(3)} kWh`} />
         <Row label={TEXT.availableFiat} value={`${props.availableFiat.toFixed(2)} ${props.currency}`} />
       </dl>

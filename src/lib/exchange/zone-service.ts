@@ -36,3 +36,14 @@ export function intervalStartFor(at: Date, intervalMinutes: number): Date {
 export function intervalEndFor(at: Date, intervalMinutes: number): Date {
   return new Date(intervalStartFor(at, intervalMinutes).getTime() + intervalMinutes * 60 * 1000);
 }
+
+/**
+ * The intervals on offer from `from` onwards — the day-ahead strip of §6
+ * ("заявки на объём на интервал вперёд"). The first entry is the interval
+ * `from` falls into, so "now" is always on the strip.
+ */
+export function upcomingIntervals(from: Date, intervalMinutes: number, count: number): Date[] {
+  const ms = intervalMinutes * 60 * 1000;
+  const start = intervalStartFor(from, intervalMinutes).getTime();
+  return Array.from({ length: Math.max(0, count) }, (_, i) => new Date(start + i * ms));
+}
