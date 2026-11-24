@@ -47,16 +47,18 @@ export function BookForm({
   const [result, setResult] = useState<BookResult | null>(null);
   const [pending, startTransition] = useTransition();
 
-  if (free.length === 0) {
-    return <p className="text-sm text-muted">{labels.noFreeConnector}</p>;
-  }
-
+  // The confirmation comes first: the booking this driver just made is
+  // exactly why there is no free connector left to offer them.
   if (result?.ok) {
     return (
       <p className="text-sm text-up" data-testid="booking-made">
         {labels.booked} {new Date(result.windowEnd).toISOString().slice(11, 16)}
       </p>
     );
+  }
+
+  if (free.length === 0) {
+    return <p className="text-sm text-muted">{labels.noFreeConnector}</p>;
   }
 
   return (
