@@ -87,8 +87,17 @@ export default async function AssetsPage({
                   · {kindNames[a.kind]}
                 </span>
               </h2>
-              <span className="num text-[12px] text-muted">
-                {a.gridZone.code} · {a.gridZone.intervalMinutes} min
+              <span className="flex items-baseline gap-3">
+                <Link
+                  href={`/${locale}/me/listing/${companyId}/assets/${a.id}`}
+                  prefetch={false}
+                  className="text-[13px] text-accent underline"
+                >
+                  {t("assets.console")}
+                </Link>
+                <span className="num text-[12px] text-muted">
+                  {a.gridZone.code} · {a.gridZone.intervalMinutes} min
+                </span>
               </span>
             </div>
 

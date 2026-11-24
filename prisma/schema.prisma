@@ -1139,6 +1139,12 @@ model EnergyToken {
   goCertificateRef String?
   ownerWalletId    String?
   ownerWallet      Wallet?           @relation(fields: [ownerWalletId], references: [id], onDelete: SetNull)
+  // The trade that moved this batch to its buyer (§13). Set at settlement, so
+  // a producer's revenue can be attributed to the asset that generated it
+  // (§30 "доход в деньгах и средняя цена продажи") and a sold batch carries
+  // its own grounds for §16.11.
+  soldTradeId      String?
+  soldTrade        Trade?            @relation("TradeTokens", fields: [soldTradeId], references: [id], onDelete: SetNull)
   // §16.4 routing outcome, when status = ROUTED or STORED.
   routedTo         String?
   storedInAssetId  String?
@@ -1148,6 +1154,7 @@ model EnergyToken {
   @@index([assetId, intervalStart])
   @@index([zoneId, status, intervalStart])
   @@index([ownerWalletId, status])
+  @@index([soldTradeId])
 }
 
 // §7 Wallet — one per (user, zone): kWh tokens plus a fiat balance.
@@ -1223,6 +1230,7 @@ model Trade {
   executedAt  DateTime @default(now())
 
   receipt Receipt?
+  tokens  EnergyToken[] @relation("TradeTokens")
 
   @@index([zoneId, executedAt])
   @@index([buyOrderId])

@@ -735,7 +735,8 @@
         "shareToStorage": "Do batérie, %",
         "shareToSelf": "Sebe, %",
         "saveRules": "Uložiť pravidlá",
-        "saved": "Uložené"
+        "saved": "Uložené",
+        "console": "Pult stanice →"
       },
       "tokens": {
         "title": "Tokeny",
@@ -795,6 +796,39 @@
         "transferClosed": "čaká na právny posudok",
         "topUpClosed": "čaká na banku"
       }
+    },
+    "station": {
+      "eyebrow": "Pult stanice",
+      "back": "Späť na objekty",
+      "capacity": "Výkon",
+      "live": "V reálnom čase",
+      "offline": "Bez spojenia — čísla z načítania",
+      "stale": "Žiadne meranie viac ako 15 minút — údaje na stránke zaostávajú.",
+      "nowKw": "Výroba teraz",
+      "today": "Za 24 hodín",
+      "week": "Za 7 dní",
+      "month": "Za 30 dní",
+      "year": "Za rok",
+      "efficiency": "Z menovitého",
+      "revenue": "Príjem",
+      "avgPrice": "Priemerná predajná cena",
+      "chart": "Výroba",
+      "chartEmpty": "V tomto období nie sú merania",
+      "range": {
+        "day": "Deň",
+        "week": "Týždeň",
+        "month": "Mesiac"
+      },
+      "tokens": "Tokeny za 30 dní",
+      "minted": "Vydané",
+      "sold": "Predané",
+      "unsold": "Nepredané",
+      "stored": "V batérii",
+      "routed": "Agregátorovi",
+      "equipment": "Zariadenie",
+      "noKeys": "Zatiaľ žiadny kľúč telemetrie",
+      "revoked": "zrušený",
+      "neverUsed": "bez spojenia"
     }
   },
   "admin": {

@@ -282,7 +282,7 @@ async function settleFill(
   const { buyerFee, sellerFee } = splitTradeFees(value, buyerFeePct, sellerFeePct);
 
   // Tokens first: if the seller cannot deliver, nothing else may happen.
-  await transferTokens(db, {
+  const movedTokenIds = await transferTokens(db, {
     fromWalletId: sellerWalletId,
     toWalletId: buyerWalletId,
     amountKwh: fill.amountKwh,
@@ -324,6 +324,13 @@ async function settleFill(
       buyerFee: new Prisma.Decimal(buyerFee),
       sellerFee: new Prisma.Decimal(sellerFee),
     },
+  });
+
+  // The batches carry the trade that moved them, so the producer's revenue
+  // can be traced back to the asset that generated the kWh (§30).
+  await db.energyToken.updateMany({
+    where: { id: { in: movedTokenIds } },
+    data: { soldTradeId: trade.id },
   });
 
   // §46: a trade gets its own receipt, separate from a charging receipt.

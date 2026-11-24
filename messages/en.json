@@ -735,7 +735,8 @@
         "shareToStorage": "To storage, %",
         "shareToSelf": "To self, %",
         "saveRules": "Save rules",
-        "saved": "Saved"
+        "saved": "Saved",
+        "console": "Station console →"
       },
       "tokens": {
         "title": "Tokens",
@@ -795,6 +796,39 @@
         "transferClosed": "awaiting a legal opinion",
         "topUpClosed": "awaiting a bank"
       }
+    },
+    "station": {
+      "eyebrow": "Station console",
+      "back": "Back to assets",
+      "capacity": "Capacity",
+      "live": "Live",
+      "offline": "Offline — figures from the last load",
+      "stale": "No reading for more than 15 minutes — the data on this page is behind.",
+      "nowKw": "Generating now",
+      "today": "Last 24 hours",
+      "week": "Last 7 days",
+      "month": "Last 30 days",
+      "year": "Last year",
+      "efficiency": "Of nameplate",
+      "revenue": "Revenue",
+      "avgPrice": "Average sale price",
+      "chart": "Generation",
+      "chartEmpty": "No readings in this period",
+      "range": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "tokens": "Tokens, last 30 days",
+      "minted": "Issued",
+      "sold": "Sold",
+      "unsold": "Unsold",
+      "stored": "In storage",
+      "routed": "To aggregator",
+      "equipment": "Equipment",
+      "noKeys": "No telemetry key yet",
+      "revoked": "revoked",
+      "neverUsed": "never connected"
     }
   },
   "admin": {
