@@ -212,7 +212,8 @@
       "contractor": "Moja firma",
       "wallet": "Peňaženka",
       "listing": "Listing",
-      "home": "Domov"
+      "home": "Domov",
+      "workOrders": "Príkazy"
     },
     "favorites": {
       "title": "Obľúbené",
@@ -1544,6 +1545,43 @@
       "STOREKEEPER": "Skladník",
       "VIEWER": "Len prezeranie",
       "DISPATCHER": "Dispečer"
+    }
+  },
+  "workOrders": {
+    "eyebrow": "Pracovné príkazy",
+    "title": "Pracovné príkazy",
+    "empty": "Nič otvorené",
+    "where": "Kam",
+    "howToFind": "Ako nájsť",
+    "fault": "Porucha",
+    "parts": "Vziať so sebou",
+    "photos": "Fotografie",
+    "report": "Správa",
+    "reportPlaceholder": "Čo sa urobilo",
+    "assign": "Prideliť",
+    "assignee": "Technik",
+    "route": "Trasa",
+    "type": {
+      "INSTALL": "Montáž",
+      "MAINTENANCE": "Údržba",
+      "REPAIR": "Oprava",
+      "COMPLAINT_CHECK": "Kontrola podľa sťažnosti"
+    },
+    "priority": {
+      "LOW": "Nízka",
+      "NORMAL": "Bežná",
+      "HIGH": "Vysoká",
+      "URGENT": "Urgentná"
+    },
+    "status": {
+      "NEW": "Nový",
+      "ASSIGNED": "Pridelený",
+      "EN_ROUTE": "Na ceste",
+      "IN_PROGRESS": "V práci",
+      "WAITING_PART": "Čaká na diel",
+      "DONE": "Hotovo",
+      "VERIFIED": "Overené",
+      "CANCELLED": "Zrušené"
     }
   }
 }

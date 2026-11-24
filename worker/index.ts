@@ -16,6 +16,10 @@ import { prisma } from "@/lib/prisma";
 import { closeInterval } from "@/lib/exchange/interval-close-service";
 import { dispatchZone, withdrawStaleOffers } from "@/lib/exchange/dispatch-service";
 import { detectLinkLoss, notifyPendingAlerts } from "@/lib/exchange/asset-alerts";
+import {
+  notifyPendingWorkOrders,
+  openWorkOrdersForAlerts,
+} from "@/lib/work/work-order-service";
 import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/spot-service";
@@ -138,6 +142,21 @@ export async function runAlertSweep(now = new Date()): Promise<void> {
   } catch (err) {
     console.error("[worker] alert notification failed:", err);
   }
+
+  // §48 / US-48 — an alarm becomes a work order, and the engineer hears about
+  // it in the same minute.
+  try {
+    const opened = await openWorkOrdersForAlerts();
+    if (opened > 0) log(`work orders: ${opened} opened from alarms`);
+  } catch (err) {
+    console.error("[worker] opening work orders failed:", err);
+  }
+  try {
+    const told = await notifyPendingWorkOrders();
+    if (told > 0) log(`work orders: ${told} notification(s) sent`);
+  } catch (err) {
+    console.error("[worker] work order notification failed:", err);
+  }
 }
 
 /** §15 — the replay log is a log, not a financial record: 30 days is plenty. */
@@ -185,7 +204,7 @@ async function main() {
   await runIntervalClose();
   await runSpotRefresh();
   log(
-    "schedules registered: interval close + spot apply */5 min, alerts every min, spot refresh :10, reconciliation 03:15, idempotency purge 03:40",
+    "schedules registered: interval close + spot apply */5 min, alerts + work orders every min, spot refresh :10, reconciliation 03:15, idempotency purge 03:40",
   );
 }
 

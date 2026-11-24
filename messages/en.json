@@ -212,7 +212,8 @@
       "contractor": "My company",
       "wallet": "Wallet",
       "listing": "Listing",
-      "home": "Home"
+      "home": "Home",
+      "workOrders": "Work orders"
     },
     "favorites": {
       "title": "Favorites",
@@ -1544,6 +1545,43 @@
       "STOREKEEPER": "Storekeeper",
       "VIEWER": "View only",
       "DISPATCHER": "Dispatcher"
+    }
+  },
+  "workOrders": {
+    "eyebrow": "Work orders",
+    "title": "Work orders",
+    "empty": "Nothing open",
+    "where": "Where",
+    "howToFind": "How to find it",
+    "fault": "The fault",
+    "parts": "Bring",
+    "photos": "Photos",
+    "report": "Report",
+    "reportPlaceholder": "What was done",
+    "assign": "Assign",
+    "assignee": "Engineer",
+    "route": "Route",
+    "type": {
+      "INSTALL": "Installation",
+      "MAINTENANCE": "Maintenance",
+      "REPAIR": "Repair",
+      "COMPLAINT_CHECK": "Complaint check"
+    },
+    "priority": {
+      "LOW": "Low",
+      "NORMAL": "Normal",
+      "HIGH": "High",
+      "URGENT": "Urgent"
+    },
+    "status": {
+      "NEW": "New",
+      "ASSIGNED": "Assigned",
+      "EN_ROUTE": "On the way",
+      "IN_PROGRESS": "In progress",
+      "WAITING_PART": "Waiting for a part",
+      "DONE": "Done",
+      "VERIFIED": "Verified",
+      "CANCELLED": "Cancelled"
     }
   }
 }

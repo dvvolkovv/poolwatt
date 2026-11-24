@@ -212,7 +212,8 @@
       "contractor": "Моя компания",
       "wallet": "Кошелёк",
       "listing": "Листинг",
-      "home": "Главная"
+      "home": "Главная",
+      "workOrders": "Наряды"
     },
     "favorites": {
       "title": "Избранное",
@@ -1544,6 +1545,43 @@
       "STOREKEEPER": "Кладовщик",
       "VIEWER": "Только просмотр",
       "DISPATCHER": "Диспетчер"
+    }
+  },
+  "workOrders": {
+    "eyebrow": "Наряды",
+    "title": "Наряды",
+    "empty": "Открытых нарядов нет",
+    "where": "Куда",
+    "howToFind": "Как найти",
+    "fault": "Авария",
+    "parts": "Взять с собой",
+    "photos": "Фотографии",
+    "report": "Отчёт",
+    "reportPlaceholder": "Что сделано",
+    "assign": "Назначить",
+    "assignee": "Инженер",
+    "route": "Маршрут",
+    "type": {
+      "INSTALL": "Монтаж",
+      "MAINTENANCE": "Обслуживание",
+      "REPAIR": "Ремонт",
+      "COMPLAINT_CHECK": "Проверка по жалобе"
+    },
+    "priority": {
+      "LOW": "Низкий",
+      "NORMAL": "Обычный",
+      "HIGH": "Высокий",
+      "URGENT": "Срочный"
+    },
+    "status": {
+      "NEW": "Новый",
+      "ASSIGNED": "Назначен",
+      "EN_ROUTE": "В пути",
+      "IN_PROGRESS": "В работе",
+      "WAITING_PART": "Ожидает запчасть",
+      "DONE": "Выполнен",
+      "VERIFIED": "Проверен",
+      "CANCELLED": "Отменён"
     }
   }
 }

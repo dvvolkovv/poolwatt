@@ -1,0 +1,124 @@
+// One work order — ТЗ §48, US-48: the address, how to find it, the fault,
+// the parts to bring, the customer's photos, and the statuses.
+
+import { setRequestLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { WorkOrderPanel } from "@/components/work/work-order-panel";
+
+export const dynamic = "force-dynamic";
+
+export default async function WorkOrderPage({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}) {
+  const { locale, id } = await params;
+  setRequestLocale(locale);
+
+  const session = await auth();
+  if (!session?.user) {
+    redirect(`/${locale}/login?callbackUrl=/${locale}/me/work-orders/${id}`);
+  }
+
+  const order = await prisma.workOrder.findUnique({
+    where: { id },
+    include: {
+      point: {
+        select: {
+          id: true,
+          name: true,
+          city: true,
+          country: true,
+          addressLine: true,
+          howToFind: true,
+          latitude: true,
+          longitude: true,
+        },
+      },
+      asset: { select: { name: true, address: true } },
+      operator: { select: { id: true, displayName: true, claimedById: true } },
+      company: { select: { legalName: true, ownerUserId: true } },
+      assignee: { select: { id: true, user: { select: { username: true } } } },
+    },
+  });
+  if (!order) notFound();
+
+  const isOwner =
+    order.operator?.claimedById === session.user.id ||
+    order.company?.ownerUserId === session.user.id ||
+    session.user.role === "ADMIN";
+  const isAssignee = order.assignee?.user.username === session.user.username;
+  if (!isOwner && !isAssignee) notFound();
+
+  const t = await getTranslations("workOrders");
+
+  const staff = order.operatorId
+    ? await prisma.employee.findMany({
+        where: { operatorId: order.operatorId, role: { permissions: { has: "workorders.write" } } },
+        include: { user: { select: { username: true } } },
+      })
+    : [];
+
+  return (
+    <div>
+      <Link
+        href={`/${locale}/me/work-orders`}
+        prefetch={false}
+        className="text-[13px] text-muted underline hover:text-foreground"
+      >
+        ← {t("title")}
+      </Link>
+
+      <h1 className="mt-4 text-[28px] font-bold">{order.title}</h1>
+      <p className="mb-6 text-[13px] text-muted">
+        {t(`type.${order.type}`)} · {t(`priority.${order.priority}`)} ·{" "}
+        {t(`status.${order.status}`)}
+      </p>
+
+      <WorkOrderPanel
+        order={{
+          id: order.id,
+          status: order.status,
+          description: order.description,
+          partsNeeded: order.partsNeeded,
+          photos: order.photos,
+          report: order.report,
+          assigneeId: order.assigneeId,
+          where: [order.point?.name ?? order.asset?.name, order.point?.addressLine, order.point?.city, order.point?.country]
+            .filter(Boolean)
+            .join(", "),
+          howToFind: order.point?.howToFind ?? null,
+          latitude: order.point?.latitude ?? null,
+          longitude: order.point?.longitude ?? null,
+        }}
+        staff={staff.map((e) => ({ id: e.id, username: e.user.username }))}
+        canAssign={isOwner}
+        labels={{
+          where: t("where"),
+          howToFind: t("howToFind"),
+          fault: t("fault"),
+          parts: t("parts"),
+          photos: t("photos"),
+          report: t("report"),
+          reportPlaceholder: t("reportPlaceholder"),
+          assign: t("assign"),
+          assignee: t("assignee"),
+          route: t("route"),
+          statusNames: {
+            NEW: t("status.NEW"),
+            ASSIGNED: t("status.ASSIGNED"),
+            EN_ROUTE: t("status.EN_ROUTE"),
+            IN_PROGRESS: t("status.IN_PROGRESS"),
+            WAITING_PART: t("status.WAITING_PART"),
+            DONE: t("status.DONE"),
+            VERIFIED: t("status.VERIFIED"),
+            CANCELLED: t("status.CANCELLED"),
+          },
+        }}
+      />
+    </div>
+  );
+}

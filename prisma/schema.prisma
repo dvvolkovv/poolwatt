@@ -452,11 +452,18 @@ model Employee {
 
 // §48 "Наряды и задачи" / US-48, US-54.
 model WorkOrder {
-  id          String            @id @default(cuid())
-  operatorId  String
-  operator    ChargerOperator   @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  pointId     String?
-  point       AcceptancePoint?  @relation(fields: [pointId], references: [id], onDelete: SetNull)
+  id String @id @default(cuid())
+  // An order belongs to whoever answers for the equipment: a charging
+  // network for a point, a producer company for a generation asset. Exactly
+  // one of the two is set.
+  operatorId String?
+  operator   ChargerOperator? @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  companyId  String?
+  company    Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  pointId    String?
+  point      AcceptancePoint? @relation(fields: [pointId], references: [id], onDelete: SetNull)
+  assetId    String?
+  asset      Asset?           @relation(fields: [assetId], references: [id], onDelete: SetNull)
   type        WorkOrderType
   priority    WorkOrderPriority @default(NORMAL)
   status      WorkOrderStatus   @default(NEW)
@@ -469,8 +476,9 @@ model WorkOrder {
   assigneeId  String?
   assignee    Employee?         @relation("WorkOrderAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
   // What produced it, so the same fault never makes two orders.
-  sourceAlertId  String? @unique
-  sourceTicketId String? @unique
+  sourceAlertId  String?     @unique
+  sourceAlert    AssetAlert? @relation("AlertWorkOrder", fields: [sourceAlertId], references: [id], onDelete: SetNull)
+  sourceTicketId String?     @unique
   notifiedAt  DateTime?
   report      String?           @db.Text
   createdAt   DateTime          @default(now())
@@ -480,6 +488,7 @@ model WorkOrder {
   ticket Ticket? @relation("TicketWorkOrder")
 
   @@index([operatorId, status])
+  @@index([companyId, status])
   @@index([assigneeId, status])
 }
 
@@ -1319,6 +1328,7 @@ model Company {
   applications      ListingApplication[]
   screenings        ScreeningCheck[]
   assets            Asset[]
+  workOrders        WorkOrder[]
   settlementAccount SettlementAccount?
   feePlanId         String?
   feePlan           FeePlan?             @relation(fields: [feePlanId], references: [id], onDelete: SetNull)
@@ -1412,9 +1422,10 @@ model Asset {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  apiKeys  AssetApiKey[]
-  readings MeterReading[]
-  alerts   AssetAlert[]
+  apiKeys    AssetApiKey[]
+  readings   MeterReading[]
+  alerts     AssetAlert[]
+  workOrders WorkOrder[]
   tokens   EnergyToken[]
 
   @@index([companyId, status])
@@ -1457,6 +1468,8 @@ model AssetAlert {
   resolvedAt     DateTime?
   resolvedBy     String?
   resolutionNote String?
+
+  workOrder WorkOrder? @relation("AlertWorkOrder")
 
   @@index([assetId, resolvedAt])
   @@index([resolvedAt, notifiedAt])
