@@ -64,6 +64,7 @@ export default async function PointWizardPage({
       busy: t("mini.busy"),
       unknown: t("mini.unknown"),
       outOfService: t("mini.outOfService"),
+      booked: t("mini.booked"),
       open24: t("mini.open24"),
       route: t("mini.route"),
       details: t("mini.details"),

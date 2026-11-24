@@ -16,6 +16,7 @@ import {
   restCanonicalString,
   verifySignature,
 } from "@/lib/exchange/equipment-signature";
+import { cancelReservationsForConnector } from "@/lib/reservations/reservation-service";
 import { publishOnFirstReport } from "./point-service";
 
 export class AvailabilityError extends Error {}
@@ -148,11 +149,24 @@ export async function reportAvailability(
     // A connector nobody mentioned keeps what it had: silence is not news.
     const row = connectors.find((c) => c.type === (reported.type as EvConnectorType));
     if (!row) continue;
+
+    // §35 — the equipment knows nothing about the place we are holding for a
+    // driver, so its "free" must not give that place away. A car that really
+    // plugged in (BUSY) or a fault (OUT_OF_SERVICE) is news, and we take it.
+    if (row.status === ConnectorStatus.BOOKED && status === ConnectorStatus.FREE) {
+      continue;
+    }
+
     await prisma.pointConnector.update({
       where: { id: row.id },
       data: { status, statusAt: now },
     });
     updated += 1;
+
+    // US-55 — a connector that just broke owes its bookings a refund.
+    if (status === ConnectorStatus.OUT_OF_SERVICE) {
+      await cancelReservationsForConnector(row.id, "the equipment reported it out of service");
+    }
   }
 
   await prisma.pointApiKey.update({ where: { id: key.id }, data: { lastUsedAt: now } });

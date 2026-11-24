@@ -144,6 +144,7 @@
     "availability_BUSY": "busy",
     "availability_OUT_OF_SERVICE": "out of service",
     "availability_UNKNOWN": "unknown",
+    "availability_BOOKED": "booked",
     "fullCard": "Full card"
   },
   "bot": {
@@ -1507,6 +1508,7 @@
       "busy": "All busy",
       "unknown": "Availability unknown",
       "outOfService": "Out of service",
+      "booked": "Booked",
       "open24": "24/7",
       "route": "Route",
       "details": "Details",

@@ -61,6 +61,7 @@ export default async function NavigatorPage({ params, searchParams }: Props) {
     availability_FREE: t("availability_FREE"),
     availability_BUSY: t("availability_BUSY"),
     availability_OUT_OF_SERVICE: t("availability_OUT_OF_SERVICE"),
+    availability_BOOKED: t("availability_BOOKED"),
     availability_UNKNOWN: t("availability_UNKNOWN"),
     fullCard: t("fullCard"),
   };

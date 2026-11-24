@@ -144,6 +144,7 @@
     "availability_BUSY": "занят",
     "availability_OUT_OF_SERVICE": "не работает",
     "availability_UNKNOWN": "неизвестно",
+    "availability_BOOKED": "забронирован",
     "fullCard": "Полная карточка"
   },
   "bot": {
@@ -1507,6 +1508,7 @@
       "busy": "Все заняты",
       "unknown": "Занятость неизвестна",
       "outOfService": "Не работает",
+      "booked": "Забронирован",
       "open24": "24/7",
       "route": "Маршрут",
       "details": "Подробнее",

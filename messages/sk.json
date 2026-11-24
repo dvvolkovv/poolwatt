@@ -144,6 +144,7 @@
     "availability_BUSY": "obsadený",
     "availability_OUT_OF_SERVICE": "mimo prevádzky",
     "availability_UNKNOWN": "neznáme",
+    "availability_BOOKED": "rezervovaný",
     "fullCard": "Celá karta"
   },
   "bot": {
@@ -1507,6 +1508,7 @@
       "busy": "Všetko obsadené",
       "unknown": "Obsadenosť neznáma",
       "outOfService": "Mimo prevádzky",
+      "booked": "Rezervovaný",
       "open24": "24/7",
       "route": "Trasa",
       "details": "Podrobnosti",

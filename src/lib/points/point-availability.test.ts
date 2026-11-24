@@ -21,6 +21,8 @@ let pointId: string;
 async function wipe() {
   await prisma.acceptancePoint.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.chargerOperator.deleteMany({ where: { slug: SLUG } });
+  await prisma.wallet.deleteMany({ where: { zone: { code: `${PREFIX}zone` } } });
+  await prisma.gridZone.deleteMany({ where: { code: `${PREFIX}zone` } });
 }
 
 async function seedPoint(status: "TEST" | "PUBLISHED" | "DRAFT" = "TEST") {
@@ -196,6 +198,90 @@ describe("reportAvailability — what the pin says (§27)", () => {
         path: `/v1/points/${pointId}/availability`,
       }),
     ).rejects.toThrow(/key/i);
+  });
+});
+
+describe("reportAvailability and a booking — §35, US-30", () => {
+  /** A Reservation row by hand: this file is about the equipment, not §34. */
+  async function bookConnector(connectorId: string) {
+    const zone = await prisma.gridZone.upsert({
+      where: { code: `${PREFIX}zone` },
+      update: {},
+      create: { code: `${PREFIX}zone`, country: "SK", name: "Avail zone", currency: "EUR" },
+    });
+    const wallet = await prisma.wallet.upsert({
+      where: { ownerUserId_zoneId: { ownerUserId, zoneId: zone.id } },
+      update: {},
+      create: { ownerUserId, zoneId: zone.id },
+    });
+    await prisma.pointConnector.update({
+      where: { id: connectorId },
+      data: { status: "BOOKED", statusAt: new Date() },
+    });
+    return prisma.reservation.create({
+      data: {
+        userId: ownerUserId,
+        pointId,
+        connectorId,
+        walletId: wallet.id,
+        eta: new Date(Date.now() + 30 * 60 * 1000),
+        windowStart: new Date(Date.now() + 30 * 60 * 1000),
+        windowEnd: new Date(Date.now() + 45 * 60 * 1000),
+        feeFiat: 0,
+        guaranteeFiat: 0,
+        noShowPenaltyFiat: 0,
+        freeCancelMinutes: 30,
+        status: "ACTIVE",
+      },
+    });
+  }
+
+  it("keeps a booked connector booked when the equipment calls it free", async () => {
+    const point = await prisma.acceptancePoint.findUniqueOrThrow({
+      where: { id: pointId },
+      include: { connectors: true },
+    });
+    const ccs = point.connectors.find((c) => c.type === "CCS2")!;
+    await bookConnector(ccs.id);
+    const issued = await issuePointKey(pointId, ownerUserId, "box");
+
+    await reportAvailability(signed(issued, [{ type: "CCS2", status: "FREE" }]));
+
+    // The equipment knows nothing about the place we are holding.
+    const after = await prisma.pointConnector.findUniqueOrThrow({ where: { id: ccs.id } });
+    expect(after.status).toBe("BOOKED");
+  });
+
+  it("gives the booked place away to a car that actually plugged in", async () => {
+    const point = await prisma.acceptancePoint.findUniqueOrThrow({
+      where: { id: pointId },
+      include: { connectors: true },
+    });
+    const ccs = point.connectors.find((c) => c.type === "CCS2")!;
+    await bookConnector(ccs.id);
+    const issued = await issuePointKey(pointId, ownerUserId, "box");
+
+    await reportAvailability(signed(issued, [{ type: "CCS2", status: "BUSY" }]));
+
+    const after = await prisma.pointConnector.findUniqueOrThrow({ where: { id: ccs.id } });
+    expect(after.status).toBe("BUSY");
+  });
+
+  it("cancels the booking when the equipment reports the connector broken (US-55)", async () => {
+    const point = await prisma.acceptancePoint.findUniqueOrThrow({
+      where: { id: pointId },
+      include: { connectors: true },
+    });
+    const ccs = point.connectors.find((c) => c.type === "CCS2")!;
+    const reservation = await bookConnector(ccs.id);
+    const issued = await issuePointKey(pointId, ownerUserId, "box");
+
+    await reportAvailability(signed(issued, [{ type: "CCS2", status: "OUT_OF_SERVICE" }]));
+
+    const stored = await prisma.reservation.findUniqueOrThrow({ where: { id: reservation.id } });
+    expect(stored.status).toBe("CANCELLED");
+    const after = await prisma.pointConnector.findUniqueOrThrow({ where: { id: ccs.id } });
+    expect(after.status).toBe("OUT_OF_SERVICE");
   });
 });
 
