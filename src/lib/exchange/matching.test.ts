@@ -189,6 +189,18 @@ describe("matchOrder — hygiene", () => {
     expect(book[0].remainingKwh).toBe(5);
   });
 
+  it("never trades against a maker with nothing left", () => {
+    // A maker whose remaining quantity went negative (the symptom of an
+    // overfill upstream) must be passed over, not turned into a negative
+    // fill: `isKwhDust` compares the absolute value, so -1 kWh is not dust.
+    const book = [ask("overfilled", 0.2, -1), ask("honest", 0.21, 5)];
+    const r = matchOrder(taker({ amountKwh: 3 }), book, {});
+
+    expect(r.fills).toEqual([{ makerOrderId: "honest", amountKwh: 3, price: 0.21 }]);
+    expect(r.fills.every((f) => f.amountKwh > 0)).toBe(true);
+    expect(r.skipped).toEqual([{ makerOrderId: "overfilled", reason: "dust" }]);
+  });
+
   it("rejects a non-positive taker amount", () => {
     expect(() => matchOrder(taker({ amountKwh: 0 }), [], {})).toThrow(RangeError);
     expect(() => matchOrder(taker({ amountKwh: -1 }), [], {})).toThrow(RangeError);

@@ -205,3 +205,65 @@ describe("transfers under one idempotency key — §15, §24", () => {
     ).toBe(1);
   });
 });
+
+// §6 and §17 — concurrent takers hitting one resting order. CLAUDE.md asks
+// for the concurrent case on anything that moves energy; a book read without
+// a lock lets two takers plan fills against the same kWh, and the maker ends
+// up having sold more than it held.
+describe("concurrent takers against one resting order — §6, §17", () => {
+  it("never fills more than the maker was offering", async () => {
+    const maker = await placeOrder({
+      userId: sellerId,
+      zoneId,
+      side: "SELL",
+      type: "LIMIT",
+      amountKwh: 5,
+      limitPrice: 0.2,
+      intervalStart: null,
+    });
+
+    // Eight buyers want 1 kWh each from a 5 kWh offer, all at once.
+    const buyers = await Promise.all(
+      Array.from({ length: 8 }, async (_, i) => {
+        const user = await prisma.user.upsert({
+          where: { username: `${PREFIX}racer_${i}` },
+          update: {},
+          create: { username: `${PREFIX}racer_${i}`, passwordHash: "x" },
+        });
+        const wallet = await getOrCreateWallet(user.id, zoneId);
+        await prisma.wallet.update({
+          where: { id: wallet.id },
+          data: { fiatBalance: new Prisma.Decimal(100) },
+        });
+        return user.id;
+      }),
+    );
+
+    const results = await Promise.allSettled(
+      buyers.map((userId) =>
+        placeOrder({
+          userId,
+          zoneId,
+          side: "BUY",
+          type: "MARKET",
+          amountKwh: 1,
+          limitPrice: null,
+          intervalStart: null,
+        }),
+      ),
+    );
+
+    // No internal errors: an unfillable market order expires, it does not
+    // blow up.
+    const rejectedByError = results.filter((r) => r.status === "rejected");
+    expect(rejectedByError.map((r) => (r as PromiseRejectedResult).reason?.message)).toEqual([]);
+
+    const makerRow = await prisma.order.findUniqueOrThrow({ where: { id: maker.orderId } });
+    expect(Number(makerRow.filledKwh)).toBeLessThanOrEqual(5);
+
+    const trades = await prisma.trade.findMany({ where: { sellOrderId: maker.orderId } });
+    const soldKwh = trades.reduce((sum, t) => sum + Number(t.amountKwh), 0);
+    expect(soldKwh).toBeLessThanOrEqual(5);
+    expect(trades.every((t) => Number(t.amountKwh) > 0)).toBe(true);
+  });
+});

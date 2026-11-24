@@ -113,7 +113,10 @@ export function matchOrder(
     // limit means every maker after it fails too.
     if (!crossesLimit(taker, makerPrice)) break;
 
-    if (isKwhDust(maker.remainingKwh)) {
+    // `isKwhDust` compares the absolute value, so a maker whose remaining
+    // quantity went negative upstream would otherwise produce a negative
+    // fill. There is nothing to buy from such a maker either way.
+    if (!(maker.remainingKwh > 0) || isKwhDust(maker.remainingKwh)) {
       skipped.push({ makerOrderId: maker.id, reason: "dust" });
       continue;
     }

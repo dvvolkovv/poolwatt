@@ -77,33 +77,75 @@ export class OrderRejected extends Error {
  * interval or against spot orders. This is §16.3 ("вне накопителя торгуется
  * только в своём интервале") expressed as a query.
  */
+interface BookRow {
+  id: string;
+  side: OrderSide;
+  limitPrice: Prisma.Decimal | null;
+  amountKwh: Prisma.Decimal;
+  filledKwh: Prisma.Decimal;
+  createdAt: Date;
+  walletId: string;
+}
+
+/**
+ * The resting book of the opposite side, in price-then-time order (§6).
+ *
+ * `lock` matters more than it looks. Two market orders arriving at the same
+ * moment both read the book, both see the same remaining quantity on a maker,
+ * and both settle against it — so a 5 kWh offer can sell 8 kWh, and the
+ * maker's remaining quantity goes negative. Taking `FOR UPDATE` on the
+ * candidate rows makes the second taker wait and then read the first one's
+ * result, which is the only way "цена — время" means anything under load.
+ *
+ * Every taker locks in the same order (price, then age), so two takers on one
+ * side cannot deadlock; takers on opposite sides lock disjoint rows. Reads
+ * that only quote a price pass `lock: false` and take no locks at all.
+ */
 async function loadBook(
   db: Db,
   zoneId: string,
   side: OrderSide,
   intervalStart: Date | null,
+  options: { lock?: boolean } = {},
 ): Promise<RestingOrder[]> {
   const wantedSide = side === OrderSide.BUY ? OrderSide.SELL : OrderSide.BUY;
-  const rows = await db.order.findMany({
-    where: {
-      zoneId,
-      side: wantedSide,
-      type: OrderType.LIMIT,
-      status: { in: [OrderStatus.NEW, OrderStatus.PARTIALLY_FILLED] },
-      ...(intervalStart
-        ? { OR: [{ intervalStart }, { intervalStart: null }] }
-        : {}),
-    },
-    select: {
-      id: true,
-      side: true,
-      limitPrice: true,
-      amountKwh: true,
-      filledKwh: true,
-      createdAt: true,
-      walletId: true,
-    },
-  });
+  const rows = options.lock
+    ? await db.$queryRaw<BookRow[]>`
+        SELECT id, side, "limitPrice", "amountKwh", "filledKwh", "createdAt", "walletId"
+        FROM "Order"
+        WHERE "zoneId" = ${zoneId}
+          AND side = ${wantedSide}::"OrderSide"
+          AND type = 'LIMIT'::"OrderType"
+          AND status IN ('NEW'::"OrderStatus", 'PARTIALLY_FILLED'::"OrderStatus")
+          AND "limitPrice" IS NOT NULL
+          ${
+            intervalStart
+              ? Prisma.sql`AND ("intervalStart" = ${intervalStart} OR "intervalStart" IS NULL)`
+              : Prisma.empty
+          }
+        ORDER BY "limitPrice" ASC, "createdAt" ASC
+        FOR UPDATE
+      `
+    : await db.order.findMany({
+        where: {
+          zoneId,
+          side: wantedSide,
+          type: OrderType.LIMIT,
+          status: { in: [OrderStatus.NEW, OrderStatus.PARTIALLY_FILLED] },
+          ...(intervalStart
+            ? { OR: [{ intervalStart }, { intervalStart: null }] }
+            : {}),
+        },
+        select: {
+          id: true,
+          side: true,
+          limitPrice: true,
+          amountKwh: true,
+          filledKwh: true,
+          createdAt: true,
+          walletId: true,
+        },
+      });
 
   return rows
     .filter((r) => r.limitPrice != null)
@@ -115,7 +157,9 @@ async function loadBook(
       createdAt: r.createdAt.getTime(),
       walletId: r.walletId,
     }))
-    .filter((r) => !isKwhDust(r.remainingKwh));
+    // Not `isKwhDust`: that compares the absolute value, so an overfilled
+    // maker (negative remainder) would pass straight through it.
+    .filter((r) => r.remainingKwh > 0 && !isKwhDust(r.remainingKwh));
 }
 
 /** Commission rates for the wallet owner, from their company's fee plan (§16.8). */
@@ -469,7 +513,8 @@ async function placeOrderTx(
       }
     }
 
-    const book = await loadBook(tx, zone.id, input.side, intervalStart);
+    // Locked: this is the path that settles money and energy (§6, §17).
+    const book = await loadBook(tx, zone.id, input.side, intervalStart, { lock: true });
     const match = matchOrder(
       {
         id: order.id,
