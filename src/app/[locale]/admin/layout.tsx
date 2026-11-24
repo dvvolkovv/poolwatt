@@ -50,6 +50,13 @@ export default async function AdminLayout({
               >
                 🏢 {tNav("contractor.title")}
               </Link>
+              <Link
+                href={`/${locale}/admin/zones`}
+                prefetch={false}
+                className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
+              >
+                ⚡ {tNav("navZones")}
+              </Link>
             </nav>
           </aside>
           <section className="min-w-0">{children}</section>

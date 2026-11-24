@@ -15,6 +15,7 @@ import cron from "node-cron";
 import { prisma } from "@/lib/prisma";
 import { closeInterval, reconcileWalletBalances } from "@/lib/exchange/interval-close-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
+import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/spot-service";
 import { intervalStartFor } from "@/lib/exchange/zone-service";
 import { startTelemetrySubscriber } from "./mqtt";
 
@@ -60,6 +61,28 @@ export async function runReconciliation(): Promise<void> {
   console.error(`[worker] RECONCILIATION DRIFT on ${drifts.length} wallet(s):`, drifts);
 }
 
+/**
+ * §6, §16.5 — pull the day-ahead curve for every zone on the feed. Silent
+ * while ENTSOE_TOKEN is unset: zones then keep their manual reference.
+ */
+export async function runSpotRefresh(): Promise<void> {
+  const results = await refreshAllZoneSpots();
+  for (const { zone, result } of results) {
+    if (result.status === "refreshed") {
+      log(`spot ${zone}: stored=${result.stored} applied=${result.applied ?? "none"}`);
+    } else if (result.status === "failed") {
+      // Not fatal: the previous reference stands, the corridor keeps working.
+      console.error(`[worker] spot ${zone} failed: ${result.error}`);
+    }
+  }
+}
+
+/** Move each zone onto the reference of the interval it is in. */
+export async function runSpotApply(): Promise<void> {
+  const moved = await applyCurrentSpotToAllZones();
+  if (moved > 0) log(`spot: ${moved} zone(s) moved to the current interval`);
+}
+
 /** §15 — the replay log is a log, not a financial record: 30 days is plenty. */
 export async function runIdempotencyPurge(): Promise<void> {
   const removed = await purgeIdempotencyRecords();
@@ -74,6 +97,13 @@ async function main() {
   // 5 минут после конца интервала".
   cron.schedule("*/5 * * * *", () => {
     void runIntervalClose();
+    void runSpotApply();
+  });
+
+  // §6, §16.5 — the day-ahead curve is published once a day, but a retry an
+  // hour later is what makes a missed publication harmless.
+  cron.schedule("10 * * * *", () => {
+    void runSpotRefresh();
   });
 
   // Daily registry reconciliation (§16.11), at 03:15 local time.
@@ -91,7 +121,10 @@ async function main() {
 
   // Run once at boot so a restart does not leave a stale interval open.
   await runIntervalClose();
-  log("schedules registered: interval close */5 min, reconciliation 03:15, idempotency purge 03:40");
+  await runSpotRefresh();
+  log(
+    "schedules registered: interval close + spot apply */5 min, spot refresh :10, reconciliation 03:15, idempotency purge 03:40",
+  );
 }
 
 main().catch((err) => {

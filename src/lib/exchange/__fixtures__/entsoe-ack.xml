@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- What the platform answers when it has no data for the window asked. -->
+<Acknowledgement_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-1:acknowledgementdocument:7:0">
+  <mRID>a1b2c3</mRID>
+  <createdDateTime>2026-11-23T12:14:55Z</createdDateTime>
+  <Reason>
+    <code>999</code>
+    <text>No matching data found for Data item Day-ahead Prices (12.1.D).</text>
+  </Reason>
+</Acknowledgement_MarketDocument>

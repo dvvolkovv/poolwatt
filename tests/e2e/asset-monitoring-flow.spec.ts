@@ -108,9 +108,10 @@ test("asset is connected, a reading arrives and shows up with its token", async 
   // §15 — "Все POST-запросы с ключом идемпотентности": a properly signed
   // request without one is still refused. (Authentication comes first, so an
   // unsigned request fails on the signature before anyone looks at the key.)
-  const { "idempotency-key": _omitted, ...headersWithoutKey } = signedHeaders("unused");
+  const signedWithoutIdemKey = { ...signedHeaders("unused") };
+  delete (signedWithoutIdemKey as Record<string, string>)["idempotency-key"];
   const unkeyed = await page.request.post(PATH, {
-    headers: headersWithoutKey,
+    headers: signedWithoutIdemKey,
     data: rawBody,
   });
   expect(unkeyed.status()).toBe(400);

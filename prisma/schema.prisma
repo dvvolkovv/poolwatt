@@ -903,7 +903,11 @@ model GridZone {
   country         String // ISO-3166 alpha-2
   name            String
   currency        String    @default("EUR")
-  spotSource      String? // "entsoe:SK", "omie:ES", …
+  // §6, §16.5 — where the spot reference comes from: null or "manual" means
+  // the operator sets it by hand, "entsoe" means the day-ahead feed.
+  spotSource      String?
+  // The bidding zone at the source, e.g. the EIC code 10YSK-SEPS---K.
+  spotAreaCode    String?
   intervalMinutes Int       @default(15) // §18 open question: 15 or 60
   // §16.5 — trade price must stay within ±corridorPct of spotPrice.
   corridorPct     Decimal   @default(20) @db.Decimal(5, 2)
@@ -924,8 +928,27 @@ model GridZone {
   readings  MeterReading[]
 
   cooperatives         Cooperative[]
+  spotPrices           ZoneSpotPrice[]
   roamingAsHomeZone    RoamingAgreement[] @relation("RoamingHomeZone")
   roamingAsVisitedZone RoamingAgreement[] @relation("RoamingVisitedZone")
+}
+
+// §6, §16.5 — the external spot reference per interval, kept as history.
+// The corridor reads the current one; §16.7 (no liquidity on the exchange)
+// settles at the one that applied, so an overwritten number is not enough.
+model ZoneSpotPrice {
+  id            String   @id @default(cuid())
+  zoneId        String
+  zone          GridZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  intervalStart DateTime
+  // EUR per kWh, converted from the source's EUR per MWh.
+  price         Decimal  @db.Decimal(12, 4)
+  currency      String   @default("EUR")
+  source        String
+  fetchedAt     DateTime @default(now())
+
+  @@unique([zoneId, intervalStart, source])
+  @@index([zoneId, intervalStart])
 }
 
 // §13 Company — the legal entity that lists on the platform. Distinct from

@@ -1,5 +1,6 @@
 // Features that stay shut until something outside the code exists: a bank that
-// issues IBANs (ТЗ §19, §21), a lawyer's opinion on transfers (§24.4).
+// issues IBANs (ТЗ §19, §21), a lawyer's opinion on transfers (§24.4), a
+// security token for the external price feed (§6, §16.5).
 
 type Env = Record<string, string | undefined>;
 
@@ -37,5 +38,20 @@ export function transfersOpen(env: Env = process.env): boolean {
 export function assertTransfersOpen(): void {
   if (!transfersOpen()) {
     throw new FeatureClosedError("kWh transfers are not available yet");
+  }
+}
+
+/**
+ * §6, §16.5 — the day-ahead feed needs a security token from the ENTSO-E
+ * Transparency Platform, which only the owner can obtain. Closed means zones
+ * keep the price the operator set by hand; it never means "no corridor".
+ */
+export function spotFeedOpen(env: Env = process.env): boolean {
+  return Boolean(env.ENTSOE_TOKEN?.trim());
+}
+
+export function assertSpotFeedOpen(): void {
+  if (!spotFeedOpen()) {
+    throw new FeatureClosedError("The external spot price feed is not configured yet");
   }
 }

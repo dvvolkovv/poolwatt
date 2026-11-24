@@ -31,6 +31,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       intervalStart: currentInterval.toISOString(),
       spotPrice: numOrNull(zone.spotPrice),
       spotPriceAt: zone.spotPriceAt?.toISOString() ?? null,
+      // §6 — whose price this is: the external feed or the operator's hand.
+      spotSource: zone.spotSource ?? "manual",
       corridor: book.corridor,
       bestBid: book.bestBid,
       bestAsk: book.bestAsk,

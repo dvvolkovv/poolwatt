@@ -866,7 +866,33 @@
       "back": "Späť na žiadosti",
       "noDocuments": "Žiadne priložené dokumenty"
     },
-    "navListings": "Listing"
+    "navListings": "Listing",
+    "navZones": "Zóny a ceny",
+    "zones": {
+      "title": "Zóny a ceny",
+      "intro": "Spotová referencia, od ktorej každá zóna meria svoj koridor ±% (ТЗ §6, §16.5). Zóna na externom zdroji berie cenu na deň dopredu pre interval, v ktorom sa nachádza; manuálna zóna si drží to, čo nastavil operátor.",
+      "feedClosed": "Externý zdroj je vypnutý: ENTSOE_TOKEN nie je nastavený, takže všetky zóny zostávajú na manuálnej cene.",
+      "feedOpen": "Externý zdroj je zapnutý.",
+      "zone": "Zóna",
+      "currency": "Mena",
+      "interval": "Interval, min",
+      "source": "Zdroj ceny",
+      "areaCode": "Obchodná zóna u zdroja",
+      "corridor": "Koridor, ±%",
+      "spotPrice": "Spotová referencia",
+      "spotPriceAt": "Za interval",
+      "manual": "manuálne",
+      "none": "—",
+      "history": "História referencie",
+      "historyFor": "Najnovšie intervaly zóny",
+      "noHistory": "Zatiaľ nič uložené.",
+      "price": "Cena za kWh",
+      "fetchedAt": "Získané",
+      "refresh": "Obnoviť teraz",
+      "refreshing": "Obnovujem…",
+      "refreshed": "Obnovené: uložených intervalov — {stored}.",
+      "refreshFailed": "Zdroj sa nepodarilo prečítať: {error}. Predchádzajúca referencia je nedotknutá."
+    }
   },
   "claim": {
     "title": "Prevziať {name}",

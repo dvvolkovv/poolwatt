@@ -866,7 +866,33 @@
       "back": "Back to applications",
       "noDocuments": "No documents attached"
     },
-    "navListings": "Listings"
+    "navListings": "Listings",
+    "navZones": "Zones and prices",
+    "zones": {
+      "title": "Zones and prices",
+      "intro": "The spot reference every zone measures its ±corridor from (ТЗ §6, §16.5). A zone on the feed takes the day-ahead price of the interval it is in; a manual zone keeps whatever the operator set.",
+      "feedClosed": "The external feed is off: ENTSOE_TOKEN is not set, so every zone stays on its manual price.",
+      "feedOpen": "The external feed is on.",
+      "zone": "Zone",
+      "currency": "Currency",
+      "interval": "Interval, min",
+      "source": "Price source",
+      "areaCode": "Bidding zone at the source",
+      "corridor": "Corridor, ±%",
+      "spotPrice": "Spot reference",
+      "spotPriceAt": "For the interval",
+      "manual": "manual",
+      "none": "—",
+      "history": "Reference history",
+      "historyFor": "Newest intervals of",
+      "noHistory": "Nothing stored yet.",
+      "price": "Price, per kWh",
+      "fetchedAt": "Fetched",
+      "refresh": "Refresh now",
+      "refreshing": "Refreshing…",
+      "refreshed": "Refreshed: {stored} intervals stored.",
+      "refreshFailed": "The source could not be read: {error}. The previous reference is untouched."
+    }
   },
   "claim": {
     "title": "Claim {name}",
