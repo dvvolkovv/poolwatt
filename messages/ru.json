@@ -700,7 +700,7 @@
         "capacity": "Мощность",
         "meter": "Счётчик",
         "keys": "Ключи телеметрии",
-        "keysHelp": "Ключ показывается один раз. Отправляйте показания на POST /api/v1/telemetry/readings с заголовком Authorization: Bearer <ключ>.",
+        "keysHelp": "Ключ показывается один раз. Показания принимаются двумя путями. REST: POST /api/v1/telemetry/readings с заголовком Authorization: Bearer <ключ>. MQTT: публикация в тему poolwatt/v1/assets/{assetId}/readings, в теле JSON с полями key, intervalStart и energyKwh.",
         "noKeys": "Ключей нет.",
         "issueKey": "Выдать ключ",
         "issuing": "Выдаём…",

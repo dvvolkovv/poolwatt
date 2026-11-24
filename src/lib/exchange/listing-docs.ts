@@ -25,8 +25,13 @@ export interface StoredDocument {
   uploadedAt: string;
 }
 
+/**
+ * Where the files live. Relative by default, which `fs` resolves against the
+ * process directory — spelling it with `process.cwd()` makes Turbopack's
+ * tracer give up and pull the whole project into the build's file list.
+ */
 export function docsRoot(): string {
-  return process.env.LISTING_DOCS_DIR || join(process.cwd(), "var", "listing-docs");
+  return process.env.LISTING_DOCS_DIR || "var/listing-docs";
 }
 
 /** The magic numbers of the three types US-01 allows. */

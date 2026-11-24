@@ -112,7 +112,7 @@ export default async function AssetsPage({
                 }))}
                 labels={{
                   keys: t("assets.keys"),
-                  keysHelp: t("assets.keysHelp"),
+                  keysHelp: t("assets.keysHelp", { assetId: a.id }),
                   noKeys: t("assets.noKeys"),
                   issueKey: t("assets.issueKey"),
                   issuing: t("assets.issuing"),
