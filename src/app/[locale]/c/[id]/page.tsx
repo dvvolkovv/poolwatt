@@ -2,6 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getChargerById } from "@/lib/chargers-mock";
+import { loadPointAsStation } from "@/lib/points/point-detail";
 import { auth } from "@/lib/auth";
 import { readFavoriteChargerIds } from "@/lib/favorites";
 import { FavoriteButton } from "@/components/favorite-button";
@@ -23,7 +24,9 @@ export default async function ChargerDetailPage({
   const { locale, id } = await params;
   setRequestLocale(locale);
 
-  const charger = getChargerById(id);
+  // A Poolwatt point first — it is a card somebody is answerable for; the
+  // mock/OSM catalogue is the fallback.
+  const charger = (await loadPointAsStation(id)) ?? getChargerById(id);
   if (!charger) notFound();
 
   const operator = charger.operator

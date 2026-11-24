@@ -14,6 +14,8 @@ type Filters = {
   status: string;
   query: string;
   sort: SortKey;
+  /** US-23 — "свободен сейчас". Only Poolwatt points can answer it. */
+  freeOnly: boolean;
 };
 
 type Props = {
@@ -211,6 +213,21 @@ export function Sidebar({
               <option value="planned">{labels.status_planned ?? "Planned"}</option>
               <option value="temporarily_unavailable">{labels.status_temporarily_unavailable ?? "Temp. Unavailable"}</option>
             </select>
+          </div>
+          <div className="col-span-2">
+            <label className="flex items-center gap-2 text-[12px] text-foreground">
+              <input
+                type="checkbox"
+                id="free-now"
+                checked={filters.freeOnly}
+                onChange={(e) => set({ freeOnly: e.target.checked })}
+              />
+              {labels.freeNow ?? "Free right now"}
+            </label>
+            <p className="mt-1 text-[10px] text-muted">
+              {labels.freeNowHelp ??
+                "Only points that report their occupancy can promise this."}
+            </p>
           </div>
         </div>
       )}

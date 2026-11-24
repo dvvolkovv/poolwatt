@@ -9,10 +9,14 @@ export async function generateMetadata() {
   };
 }
 
-type Props = { params: Promise<{ locale: string }> };
+type Props = {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
-export default async function NavigatorPage({ params }: Props) {
+export default async function NavigatorPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("navigator");
 
@@ -52,7 +56,30 @@ export default async function NavigatorPage({ params }: Props) {
     sourceMock: t("sourceMock"),
     errorLoad: t("errorLoad"),
     retry: t("retry"),
+    freeNow: t("freeNow"),
+    freeNowHelp: t("freeNowHelp"),
+    availability_FREE: t("availability_FREE"),
+    availability_BUSY: t("availability_BUSY"),
+    availability_OUT_OF_SERVICE: t("availability_OUT_OF_SERVICE"),
+    availability_UNKNOWN: t("availability_UNKNOWN"),
+    fullCard: t("fullCard"),
   };
 
-  return <NavigatorClient labels={labels} />;
+  // US-23 — the filters live in the address, so the view a driver found is a
+  // link they can keep and send.
+  const one = (key: string) => (typeof sp[key] === "string" ? (sp[key] as string) : "");
+
+  return (
+    <NavigatorClient
+      labels={labels}
+      initialFilters={{
+        connector: (one("connector") as never) || "",
+        power: (one("power") as never) || "",
+        status: one("status"),
+        query: one("q"),
+        sort: (one("sort") as never) || "default",
+        freeOnly: one("free") === "1",
+      }}
+    />
+  );
 }

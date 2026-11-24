@@ -137,7 +137,14 @@
     "priceUpdated": "Updated",
     "sortLabel": "Sort",
     "sortDefault": "Default",
-    "sortPriceAsc": "Cheapest first"
+    "sortPriceAsc": "Cheapest first",
+    "freeNow": "Free right now",
+    "freeNowHelp": "Only points that report their occupancy can promise this.",
+    "availability_FREE": "free",
+    "availability_BUSY": "busy",
+    "availability_OUT_OF_SERVICE": "out of service",
+    "availability_UNKNOWN": "unknown",
+    "fullCard": "Full card"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot delivers live alerts and lets producers post offers from their phone."

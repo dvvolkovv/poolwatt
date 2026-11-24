@@ -137,7 +137,14 @@
     "priceUpdated": "Aktualizované",
     "sortLabel": "Triedenie",
     "sortDefault": "Predvolené",
-    "sortPriceAsc": "Najlacnejšie prvé"
+    "sortPriceAsc": "Najlacnejšie prvé",
+    "freeNow": "Voľné teraz",
+    "freeNowHelp": "Sľúbiť to vedia len body, ktoré hlásia svoju obsadenosť.",
+    "availability_FREE": "voľný",
+    "availability_BUSY": "obsadený",
+    "availability_OUT_OF_SERVICE": "mimo prevádzky",
+    "availability_UNKNOWN": "neznáme",
+    "fullCard": "Celá karta"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot doručuje živé upozornenia a umožňuje výrobcom zverejňovať ponuky priamo z telefónu."

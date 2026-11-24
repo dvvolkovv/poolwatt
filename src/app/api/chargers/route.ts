@@ -6,6 +6,8 @@ import {
   type BBox,
 } from "@/lib/overpass-chargers";
 import { MOCK_CHARGERS } from "@/lib/chargers-mock";
+import { searchPoints } from "@/lib/points/point-search";
+import { pointToStation } from "@/lib/points/point-to-station";
 import { prisma } from "@/lib/prisma";
 import type { ChargerStation } from "@/lib/chargers";
 
@@ -84,11 +86,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
-  const [result, priceIndex] = await Promise.all([
+  const [result, priceIndex, ours] = await Promise.all([
     fetchChargersInBBox(parsed, {
       mockFallback: () => filterMockByBBox(MOCK_CHARGERS, parsed),
     }),
     fetchOperatorPriceIndex().catch(() => new Map()),
+    // Our own points (§28): moderated cards with live occupancy. A failure
+    // here must not take the map down with it.
+    searchPoints({ bbox: parsed }).catch((err) => {
+      console.error("[chargers] point search failed", err);
+      return [];
+    }),
   ]);
 
   // Inject operator-published price (Step 2) for stations whose `operator`
@@ -100,12 +108,17 @@ export async function GET(req: NextRequest) {
         return match ? { ...s, operatorPrice: match } : s;
       });
 
+  // Ours first: they are the ones a driver can actually be promised a free
+  // connector at.
+  const merged = [...ours.map(pointToStation), ...stations];
+
   const headers: Record<string, string> = {
     "X-Source": result.source,
-    "X-Count": String(stations.length),
+    "X-Count": String(merged.length),
+    "X-Points": String(ours.length),
   };
   if (result.mirror) headers["X-Mirror"] = result.mirror;
   if (result.error) headers["X-Error"] = result.error.slice(0, 200);
 
-  return NextResponse.json(stations, { headers });
+  return NextResponse.json(merged, { headers });
 }

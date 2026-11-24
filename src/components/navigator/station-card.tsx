@@ -4,6 +4,8 @@ import { useLocale } from "next-intl";
 import type { ChargerStation } from "@/lib/chargers";
 import { powerLevelLabel } from "@/lib/chargers";
 import { OPERATOR_INFO } from "@/lib/charger-operators";
+import Link from "next/link";
+import { MapsDeepLink } from "@/components/maps-deep-link";
 import { X, Zap, MapPin, Clock, Star, ExternalLink, Navigation, Phone, Mail, Globe, Smartphone } from "lucide-react";
 
 const CURRENCY_SYMBOL: Record<string, string> = {
@@ -73,7 +75,6 @@ export function StationCard({ station: s, onClose, labels }: Props) {
   const locale = useLocale();
   const badge = STATUS_BADGE[s.status] ?? STATUS_BADGE.operational;
 
-  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`;
 
   return (
     <div className="bg-card border border-hairline rounded-lg overflow-hidden animate-in slide-in-from-right-4 duration-300">
@@ -142,6 +143,21 @@ export function StationCard({ station: s, onClose, labels }: Props) {
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-card-alt text-muted">
                   {c.currentType}
                 </span>
+                {/* §27 — free, busy or out of service, when anybody knows. */}
+                {c.availability && c.availability !== "UNKNOWN" && (
+                  <span
+                    data-testid="connector-availability"
+                    className={`text-[10px] px-1.5 py-0.5 rounded ${
+                      c.availability === "FREE"
+                        ? "bg-up/15 text-up"
+                        : c.availability === "BUSY"
+                          ? "bg-down/15 text-down"
+                          : "bg-card-alt text-muted"
+                    }`}
+                  >
+                    {labels[`availability_${c.availability}`] ?? c.availability.toLowerCase()}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-3 num text-[12px]">
                 <span className="text-foreground font-medium">
@@ -289,15 +305,25 @@ export function StationCard({ station: s, onClose, labels }: Props) {
 
       {/* Actions */}
       <div className="p-4 flex flex-col gap-2">
-        <a
-          href={directionsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        {/* US-23 "маршрут в один тап": the device's own maps, no chooser. */}
+        <MapsDeepLink
+          lat={s.lat}
+          lng={s.lng}
+          name={s.title}
+          label={labels.directions ?? "Start Navigation"}
           className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-[13px] font-semibold uppercase tracking-wider bg-accent text-accent-foreground hover:brightness-110 transition-all"
-        >
-          <Navigation size={16} />
-          {labels.directions ?? "Start Navigation"}
-        </a>
+        />
+        {s.poolwattPointId ? (
+          <Link
+            href={`/${locale}/c/${s.poolwattPointId}`}
+            prefetch={false}
+            data-testid="full-card-link"
+            className="flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-[11px] font-medium text-muted border border-hairline hover:text-foreground hover:bg-card-alt transition-colors"
+          >
+            <ExternalLink size={12} />
+            {labels.fullCard ?? "Full card"}
+          </Link>
+        ) : null}
         <a
           href={`https://openchargemap.org/site/poi/details/${s.id}`}
           target="_blank"

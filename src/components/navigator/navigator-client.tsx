@@ -15,13 +15,21 @@ type Filters = {
   status: string;
   query: string;
   sort: SortKey;
+  freeOnly: boolean;
 };
 
 type SourceTag = "live" | "cache" | "stale" | "mock" | null;
 
 const FETCH_DEBOUNCE_MS = 600;
 
-export function NavigatorClient({ labels }: { labels: Record<string, string> }) {
+export function NavigatorClient({
+  labels,
+  initialFilters,
+}: {
+  labels: Record<string, string>;
+  /** US-23 — the filters arrive in the address, so a filtered view is a link. */
+  initialFilters: Partial<Filters>;
+}) {
   const [stations, setStations] = useState<ChargerStation[]>([]);
   const [loading, setLoading] = useState(false);
   const [source, setSource] = useState<SourceTag>(null);
@@ -34,7 +42,24 @@ export function NavigatorClient({ labels }: { labels: Record<string, string> }) 
     status: "",
     query: "",
     sort: "default",
+    freeOnly: false,
+    ...initialFilters,
   });
+
+  // Keep the address in step with the filters: without this a driver cannot
+  // keep, share or reopen the search they just made.
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (filters.connector) params.set("connector", filters.connector);
+    if (filters.power) params.set("power", filters.power);
+    if (filters.status) params.set("status", filters.status);
+    if (filters.query) params.set("q", filters.query);
+    if (filters.sort !== "default") params.set("sort", filters.sort);
+    if (filters.freeOnly) params.set("free", "1");
+    const next = params.toString();
+    const url = next ? `${window.location.pathname}?${next}` : window.location.pathname;
+    window.history.replaceState(null, "", url);
+  }, [filters]);
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inflight = useRef<AbortController | null>(null);
@@ -113,6 +138,13 @@ export function NavigatorClient({ labels }: { labels: Record<string, string> }) 
     }
     if (filters.status) {
       result = result.filter((s) => s.status === filters.status);
+    }
+    if (filters.freeOnly) {
+      // A connector whose occupancy nobody reported is not free, it is
+      // unknown — and the driver asked for free.
+      result = result.filter((s) =>
+        s.connections.some((c) => c.availability === "FREE"),
+      );
     }
     if (filters.query) {
       const q = filters.query.toLowerCase();

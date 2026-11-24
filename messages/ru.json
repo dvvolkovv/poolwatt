@@ -137,7 +137,14 @@
     "priceUpdated": "Обновлено",
     "sortLabel": "Сортировка",
     "sortDefault": "По умолчанию",
-    "sortPriceAsc": "Сначала дешевле"
+    "sortPriceAsc": "Сначала дешевле",
+    "freeNow": "Свободен сейчас",
+    "freeNowHelp": "Обещать это могут только пункты, которые сообщают свою занятость.",
+    "availability_FREE": "свободен",
+    "availability_BUSY": "занят",
+    "availability_OUT_OF_SERVICE": "не работает",
+    "availability_UNKNOWN": "неизвестно",
+    "fullCard": "Полная карточка"
   },
   "bot": {
     "siblingNote": "Telegram-бот @PoolwattBot шлёт live-оповещения и позволяет производителям публиковать офферы прямо с телефона."

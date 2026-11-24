@@ -21,6 +21,12 @@ export type UsageType =
 
 export type PowerLevel = "ac_slow" | "ac_fast" | "dc_fast" | "dc_ultra";
 
+/**
+ * §27 "свободен, занят, не работает". Only a Poolwatt point reports this;
+ * an OpenStreetMap node has no idea, and says so.
+ */
+export type ConnectorAvailability = "FREE" | "BUSY" | "OUT_OF_SERVICE" | "UNKNOWN";
+
 export type Connection = {
   connectorType: ConnectorType;
   powerKw: number;
@@ -28,6 +34,7 @@ export type Connection = {
   ampereA: number | null;
   currentType: "AC" | "DC";
   quantity: number;
+  availability?: ConnectorAvailability;
 };
 
 export type OperatorInfo = {
@@ -65,6 +72,13 @@ export type ChargerStation = {
   // has a current tariff matching this station's `operator` string. Takes
   // precedence over OCM `costInfo` because it's authoritative + real-time.
   operatorPrice?: { pricePerKwh: string; currency: string; updatedAt: string } | null;
+  /**
+   * Set on a point that lives in our own database (§28): it has an owner, a
+   * moderated card and live occupancy, none of which an OSM node has.
+   */
+  poolwattPointId?: string;
+  priceTokens?: number | null;
+  howToFind?: string | null;
 };
 
 export function classifyPower(kw: number): PowerLevel {
