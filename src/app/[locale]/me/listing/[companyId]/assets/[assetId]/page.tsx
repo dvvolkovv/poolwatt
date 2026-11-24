@@ -11,6 +11,7 @@ import { num } from "@/lib/exchange/decimal";
 import { telemetryChannel } from "@/lib/exchange/realtime";
 import { generationSeries, readStationOverview, type SeriesRange } from "@/lib/exchange/station-service";
 import { readAssetTokens } from "@/lib/exchange/telemetry-service";
+import { AssetAlerts } from "@/components/listing/asset-alerts";
 import { GenerationChart } from "@/components/listing/generation-chart";
 import { StationLive } from "@/components/listing/station-live";
 
@@ -54,7 +55,7 @@ export default async function StationConsole({
     : "day";
 
   const now = new Date();
-  const [overview, series, tokens, anomalies] = await Promise.all([
+  const [overview, series, tokens, anomalies, alerts] = await Promise.all([
     readStationOverview(assetId, now),
     generationSeries(assetId, range, now),
     readAssetTokens({
@@ -67,6 +68,10 @@ export default async function StationConsole({
       orderBy: { intervalStart: "desc" },
       take: 5,
       select: { intervalStart: true, validationStatus: true, validationNote: true },
+    }),
+    prisma.assetAlert.findMany({
+      where: { assetId, resolvedAt: null },
+      orderBy: { occurredAt: "desc" },
     }),
   ]);
 
@@ -167,6 +172,29 @@ export default async function StationConsole({
           <Figure label={t("routed")} value={tokens.routedKwh.toFixed(3)} unit="kWh" />
         </div>
       </section>
+
+      <AssetAlerts
+        alerts={alerts.map((a) => ({
+          id: a.id,
+          kind: a.kind,
+          note: a.note,
+          occurredAt: a.occurredAt.toISOString(),
+          notified: a.notifiedAt != null,
+        }))}
+        labels={{
+          title: t("alerts.title"),
+          none: t("alerts.none"),
+          notified: t("alerts.notified"),
+          pending: t("alerts.pending"),
+          notePlaceholder: t("alerts.notePlaceholder"),
+          clear: t("alerts.clear"),
+          kind: {
+            TELEMETRY_ANOMALY: t("alerts.kind.TELEMETRY_ANOMALY"),
+            LINK_LOST: t("alerts.kind.LINK_LOST"),
+            SUSPENDED: t("alerts.kind.SUSPENDED"),
+          },
+        }}
+      />
 
       <section className="mt-10">
         <h2 className="mb-3 text-[13px] uppercase tracking-[0.14em] text-muted">

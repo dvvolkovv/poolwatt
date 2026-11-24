@@ -55,3 +55,18 @@ export function assertSpotFeedOpen(): void {
     throw new FeatureClosedError("The external spot price feed is not configured yet");
   }
 }
+
+/**
+ * §25, US-29 — push needs APNs and FCM credentials and a mobile build
+ * registered with both stores. Closed means an alarm still reaches people by
+ * mail and on the station console; it never means the alarm is lost.
+ */
+export function pushOpen(env: Env = process.env): boolean {
+  return Boolean(env.APNS_KEY_ID?.trim() && env.FCM_PROJECT_ID?.trim());
+}
+
+export function assertPushOpen(): void {
+  if (!pushOpen()) {
+    throw new FeatureClosedError("Push notifications are not configured yet");
+  }
+}

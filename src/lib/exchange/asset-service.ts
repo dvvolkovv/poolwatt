@@ -1,11 +1,12 @@
 // Generation and storage assets — ТЗ §4, §12 (US-03), §14, §15
 // (POST /v1/assets, POST /v1/assets/{id}/keys).
 
-import { AssetKind, AssetStatus, KybStatus, Prisma } from "@prisma/client";
+import { AssetKind, AssetStatus, KybStatus, Prisma, AssetAlertKind } from "@prisma/client";
 import { createHash, randomBytes } from "node:crypto";
 import { encryptionKeyConfigured, open, seal } from "@/lib/crypto-box";
 import { prisma } from "@/lib/prisma";
 import { type Db, writeAudit } from "./audit";
+import { raiseAlert } from "./asset-alerts";
 import { num } from "./decimal";
 import { probationComplete } from "./minting";
 import { roundKwh } from "./precision";
@@ -231,6 +232,12 @@ export async function suspendAsset(
     entityId: asset.id,
     action: "asset.suspended",
     after: { reason: args.reason },
+  });
+  // §30 / US-29 — a stopped asset is a fault the engineer must hear about.
+  await raiseAlert(db, {
+    assetId: asset.id,
+    kind: AssetAlertKind.SUSPENDED,
+    note: args.reason,
   });
   return asset;
 }

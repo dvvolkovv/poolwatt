@@ -829,7 +829,20 @@
       "equipment": "Equipment",
       "noKeys": "No telemetry key yet",
       "revoked": "revoked",
-      "neverUsed": "never connected"
+      "neverUsed": "never connected",
+      "alerts": {
+        "title": "Alarms",
+        "none": "No open alarms",
+        "notified": "engineer notified",
+        "pending": "notification pending",
+        "notePlaceholder": "What was done",
+        "clear": "Clear",
+        "kind": {
+          "TELEMETRY_ANOMALY": "Telemetry anomaly",
+          "LINK_LOST": "Equipment offline",
+          "SUSPENDED": "Asset suspended"
+        }
+      }
     }
   },
   "admin": {

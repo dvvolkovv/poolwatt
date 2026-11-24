@@ -829,7 +829,20 @@
       "equipment": "Zariadenie",
       "noKeys": "Zatiaľ žiadny kľúč telemetrie",
       "revoked": "zrušený",
-      "neverUsed": "bez spojenia"
+      "neverUsed": "bez spojenia",
+      "alerts": {
+        "title": "Poruchy",
+        "none": "Žiadne otvorené poruchy",
+        "notified": "technik upovedomený",
+        "pending": "upozornenie čaká",
+        "notePlaceholder": "Čo sa urobilo",
+        "clear": "Zrušiť",
+        "kind": {
+          "TELEMETRY_ANOMALY": "Anomália telemetrie",
+          "LINK_LOST": "Zariadenie nekomunikuje",
+          "SUSPENDED": "Objekt zastavený"
+        }
+      }
     }
   },
   "admin": {

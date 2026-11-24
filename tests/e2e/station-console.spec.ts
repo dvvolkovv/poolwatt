@@ -26,6 +26,7 @@ test.describe.configure({ mode: "serial" });
 test.use({ baseURL: process.env.PUBLIC_BASE_URL ?? "https://poolwatt.com" });
 
 async function wipe() {
+  await prisma.assetAlert.deleteMany({ where: { asset: { gridZone: { code: ZONE_CODE } } } });
   await prisma.energyToken.deleteMany({ where: { zone: { code: ZONE_CODE } } });
   await prisma.meterReading.deleteMany({ where: { zone: { code: ZONE_CODE } } });
   await prisma.assetApiKey.deleteMany({ where: { asset: { gridZone: { code: ZONE_CODE } } } });
@@ -147,6 +148,43 @@ test("shows generation, the chart, and moves when a reading lands", async ({ pag
 
   await expect(page.getByTestId("station-today")).toHaveText("11.500", { timeout: 20_000 });
   await expect(page.getByTestId("station-now-kw")).toHaveText("5.500");
+});
+
+test("shows an alarm raised by the equipment, and clears it", async ({ page }) => {
+  // A reading above the nameplate: the validator refuses it and US-29 says
+  // the engineer must hear about it.
+  const bad = new Date(Math.floor(Date.now() / 3_600_000) * 3_600_000 - 5 * 3_600_000);
+  const posted = await page.request.post(
+    `${process.env.PUBLIC_BASE_URL ?? "https://poolwatt.com"}/api/v1/telemetry/readings`,
+    {
+      headers: {
+        authorization: `Bearer ${keyPlaintext}`,
+        "content-type": "application/json",
+        "idempotency-key": `e2e-station-bad-${Date.now()}`,
+      },
+      data: { readings: [{ intervalStart: bad.toISOString(), energyKwh: 9999 }] },
+    },
+  );
+  expect(posted.status()).toBe(202);
+
+  const alert = await prisma.assetAlert.findFirstOrThrow({
+    where: { assetId, resolvedAt: null },
+  });
+  expect(alert.kind).toBe("TELEMETRY_ANOMALY");
+
+  await signInWithPassword(page, USER);
+  await page.goto(`/en/me/listing/${companyId}/assets/${assetId}`);
+
+  const panel = page.getByTestId("asset-alerts");
+  await expect(panel).toContainText("Telemetry anomaly");
+
+  await panel.getByLabel("What was done").fill("inverter firmware updated");
+  await panel.locator('button:has-text("Clear")').click();
+  await expect(panel).toContainText("No open alarms");
+
+  const cleared = await prisma.assetAlert.findUniqueOrThrow({ where: { id: alert.id } });
+  expect(cleared.resolvedAt).not.toBeNull();
+  expect(cleared.resolutionNote).toBe("inverter firmware updated");
 });
 
 test("keeps the console away from someone else's company", async ({ page }) => {

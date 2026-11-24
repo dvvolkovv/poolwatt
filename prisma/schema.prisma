@@ -1070,6 +1070,7 @@ model Asset {
 
   apiKeys  AssetApiKey[]
   readings MeterReading[]
+  alerts   AssetAlert[]
   tokens   EnergyToken[]
 
   @@index([companyId, status])
@@ -1095,6 +1096,32 @@ model AssetApiKey {
   revokedAt  DateTime?
 
   @@index([assetId])
+}
+
+// §30 "Уведомления" / US-29 — an alarm on one asset. Append-only while open:
+// one row per unresolved condition, so a flapping link does not mail the
+// engineer every minute.
+model AssetAlert {
+  id             String          @id @default(cuid())
+  assetId        String
+  asset          Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  kind           AssetAlertKind
+  note           String
+  occurredAt     DateTime        @default(now())
+  // When the engineer was told. Null means the notification still owes.
+  notifiedAt     DateTime?
+  resolvedAt     DateTime?
+  resolvedBy     String?
+  resolutionNote String?
+
+  @@index([assetId, resolvedAt])
+  @@index([resolvedAt, notifiedAt])
+}
+
+enum AssetAlertKind {
+  TELEMETRY_ANOMALY // a reading the validator refused or flagged
+  LINK_LOST // nothing heard from the equipment for three intervals
+  SUSPENDED // the operator stopped the asset
 }
 
 // §5 / §13. One reading per (asset, interval) — this uniqueness is what

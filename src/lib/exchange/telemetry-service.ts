@@ -9,6 +9,7 @@
 
 import { AssetStatus, Prisma, ReadingValidationStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { raiseAlert } from "./asset-alerts";
 import { type Db, writeAudit } from "./audit";
 import { num } from "./decimal";
 import { canMint, splitMint, validateReading } from "./minting";
@@ -191,6 +192,22 @@ export async function ingestReadings(
     if (verdict.status === ReadingValidationStatus.SUSPICIOUS) outcome.suspicious += 1;
     if (verdict.status === ReadingValidationStatus.REJECTED) outcome.rejected += 1;
     if (verdict.status !== ReadingValidationStatus.VALID) anomalySeen = true;
+  }
+
+  // §30 / US-29 — an anomaly is a fault the engineer has to hear about. One
+  // alarm stays open until somebody clears it, however many bad readings
+  // arrive meanwhile.
+  if (anomalySeen) {
+    const worst = outcome.results.find(
+      (r) => r.status === ReadingValidationStatus.REJECTED,
+    ) ?? outcome.results.find((r) => r.status === ReadingValidationStatus.SUSPICIOUS);
+    await raiseAlert(prisma, {
+      assetId: asset.id,
+      kind: "TELEMETRY_ANOMALY",
+      note: worst
+        ? `${worst.status} at ${worst.intervalStart}${worst.note ? `: ${worst.note}` : ""}`
+        : "a reading failed validation",
+    });
   }
 
   // §4 / §14 — the clean-telemetry clock. A single anomaly restarts the

@@ -15,6 +15,7 @@ import cron from "node-cron";
 import { prisma } from "@/lib/prisma";
 import { closeInterval } from "@/lib/exchange/interval-close-service";
 import { dispatchZone, withdrawStaleOffers } from "@/lib/exchange/dispatch-service";
+import { detectLinkLoss, notifyPendingAlerts } from "@/lib/exchange/asset-alerts";
 import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/spot-service";
@@ -117,6 +118,28 @@ export async function runSpotApply(): Promise<void> {
   if (moved > 0) log(`spot: ${moved} zone(s) moved to the current interval`);
 }
 
+/**
+ * §30 / US-29 — "push и email в течение минуты после события".
+ *
+ * Runs every minute: it finds equipment that has gone quiet and tells people
+ * about every alarm that still owes a notification, including ones raised a
+ * moment ago by telemetry ingestion.
+ */
+export async function runAlertSweep(now = new Date()): Promise<void> {
+  try {
+    const raised = await detectLinkLoss(now);
+    if (raised > 0) log(`alerts: ${raised} asset(s) went quiet`);
+  } catch (err) {
+    console.error("[worker] link-loss detection failed:", err);
+  }
+  try {
+    const notified = await notifyPendingAlerts();
+    if (notified > 0) log(`alerts: ${notified} notification(s) sent`);
+  } catch (err) {
+    console.error("[worker] alert notification failed:", err);
+  }
+}
+
 /** §15 — the replay log is a log, not a financial record: 30 days is plenty. */
 export async function runIdempotencyPurge(): Promise<void> {
   const removed = await purgeIdempotencyRecords();
@@ -132,6 +155,11 @@ async function main() {
   cron.schedule("*/5 * * * *", () => {
     void runIntervalClose();
     void runSpotApply();
+  });
+
+  // §30 / US-29 — an alarm has to reach the engineer within a minute.
+  cron.schedule("* * * * *", () => {
+    void runAlertSweep();
   });
 
   // §6, §16.5 — the day-ahead curve is published once a day, but a retry an
@@ -157,7 +185,7 @@ async function main() {
   await runIntervalClose();
   await runSpotRefresh();
   log(
-    "schedules registered: interval close + spot apply */5 min, spot refresh :10, reconciliation 03:15, idempotency purge 03:40",
+    "schedules registered: interval close + spot apply */5 min, alerts every min, spot refresh :10, reconciliation 03:15, idempotency purge 03:40",
   );
 }
 
