@@ -216,6 +216,33 @@ and `docs/superpowers/plans/2026-05-25-android-build-pipeline.md`.
   ubuntu26 chromium build, drop `channel: "chrome"` to switch back
   to bundled chromium.
 
+- **`npx vitest run` hits the live database unless you override it.** The
+  integration tests write and delete rows (`src/lib/snapshot.test.ts`,
+  `src/lib/talerid/resolve-user.test.ts`), and two things conspire to point
+  them at production: the shell `claude` runs in already exports the
+  production `DATABASE_URL`, and `vitest.config.ts` calls `loadEnv(mode, cwd,
+  "")` — with an empty prefix vite copies all of `process.env` *over* the
+  `.env*` values, so a clone without env files does not help. Always pass the
+  throwaway database explicitly (shell env wins, which is exactly what we
+  want here):
+
+  ```bash
+  cd ~/poolwatt
+  DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local | tr -d '"' \
+    | sed 's|/poolwatt?|/poolwatt_test?|')" npx vitest run
+  ```
+
+  `poolwatt_test` lives on the same local cluster, same role. Recreate it
+  with `createdb poolwatt_test`, then `npx prisma migrate deploy` and
+  `npx tsx scripts/seed.ts` under the same override — unseeded, the four
+  `snapshot.test.ts` cases fail. Prisma's own dotenv never overrides an
+  existing variable, so the override works for the CLI too. The two
+  `bot/__tests__/tts-bilingual.test.ts` cases call OpenAI for real and need a
+  working `OPENAI_API_KEY`.
+
+  The Playwright suite is different: it runs against the live `poolwatt-web`
+  and the live database on purpose, and cleans up the rows it creates.
+
 ## Bot response mode
 
 When responding via Telegram, **always send the answer as a voice/audio
