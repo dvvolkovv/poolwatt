@@ -213,7 +213,8 @@
       "wallet": "Wallet",
       "listing": "Listing",
       "home": "Home",
-      "workOrders": "Work orders"
+      "workOrders": "Work orders",
+      "bookings": "Bookings"
     },
     "favorites": {
       "title": "Favorites",
@@ -1616,6 +1617,50 @@
       "IN_PROGRESS": "In progress",
       "RESOLVED": "Resolved",
       "CLOSED": "Closed"
+    }
+  },
+  "booking": {
+    "eyebrow": "Booking",
+    "title": "Book a connector",
+    "mine": "My bookings",
+    "none": "No bookings yet",
+    "connector": "Connector",
+    "when": "I will be there in",
+    "minutes": "min",
+    "book": "Book",
+    "booking": "…",
+    "terms": "Terms",
+    "fee": "Booking fee",
+    "guarantee": "Held as guarantee",
+    "penalty": "No-show penalty",
+    "window": "Waiting window",
+    "freeCancel": "Free cancellation before",
+    "booked": "Booked. Be there before",
+    "noFreeConnector": "No free connector to book right now",
+    "cancel": "Cancel",
+    "status": {
+      "CREATED": "Created",
+      "ACTIVE": "Active",
+      "FULFILLED": "Used",
+      "CANCELLED": "Cancelled",
+      "NO_SHOW": "Missed",
+      "EXPIRED": "Expired"
+    },
+    "policy": {
+      "title": "Booking terms",
+      "help": "A change applies to new bookings; the ones that already exist keep the terms they were made under.",
+      "enabled": "Take bookings at this point",
+      "feeFiat": "Fee",
+      "guaranteeFiat": "Guarantee",
+      "noShowPenaltyFiat": "No-show penalty",
+      "waitMinutes": "Waiting, min",
+      "freeCancelMinutes": "Free cancel, min",
+      "maxAheadHours": "Book ahead, h",
+      "walkUpConnectors": "Keep free for walk-ups",
+      "feeCountsTowards": "Fee counts towards the charge",
+      "coopFree": "Free for cooperative members",
+      "save": "Save terms",
+      "saved": "Saved"
     }
   }
 }

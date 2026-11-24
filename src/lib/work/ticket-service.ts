@@ -14,7 +14,8 @@ import {
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/exchange/audit";
-import { searchPoints, type FoundPoint } from "@/lib/points/point-search";
+import { nearestWorkingPoints, type FoundPoint } from "@/lib/points/point-search";
+import { cancelReservationsForConnector } from "@/lib/reservations/reservation-service";
 import { PARTS_BY_PROBLEM, createWorkOrder } from "./work-order-service";
 
 export class TicketError extends Error {}
@@ -39,8 +40,6 @@ const SLA_MINUTES: Record<TicketProblemType, number> = {
 };
 
 /** How far around the broken point to look for somewhere else to charge. */
-const OFFER_BOX_DEGREES = 0.5;
-const OFFER_LIMIT = 3;
 
 export interface ReportProblemArgs {
   pointId: string;
@@ -134,6 +133,9 @@ export async function reportProblem(
         where: { id: connector.id },
         data: { status: ConnectorStatus.OUT_OF_SERVICE, statusAt: new Date() },
       });
+      // US-55 — a booking on a connector that just broke is cancelled with
+      // the fee back and no penalty.
+      await cancelReservationsForConnector(connector.id, `reported ${args.problemType}`);
     }
   }
 
@@ -148,33 +150,4 @@ export async function reportProblem(
   };
 }
 
-/**
- * US-53 — "сразу увидеть ближайшую рабочую станцию". The same search the
- * navigator uses, from where the driver is standing, with the plug they came
- * with and a connector that is actually free.
- */
-export async function nearestWorkingPoints(
-  pointId: string,
-  connectorType: string | null,
-): Promise<FoundPoint[]> {
-  const point = await prisma.acceptancePoint.findUnique({
-    where: { id: pointId },
-    select: { latitude: true, longitude: true },
-  });
-  // Without coordinates there is no "nearest"; saying nothing beats guessing.
-  if (!point?.latitude || !point.longitude) return [];
-
-  const found = await searchPoints({
-    bbox: {
-      south: point.latitude - OFFER_BOX_DEGREES,
-      north: point.latitude + OFFER_BOX_DEGREES,
-      west: point.longitude - OFFER_BOX_DEGREES,
-      east: point.longitude + OFFER_BOX_DEGREES,
-    },
-    connector: connectorType,
-    freeOnly: true,
-    near: { lat: point.latitude, lng: point.longitude },
-  });
-
-  return found.filter((p) => p.id !== pointId).slice(0, OFFER_LIMIT);
-}
+export { nearestWorkingPoints };

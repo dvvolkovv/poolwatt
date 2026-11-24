@@ -66,6 +66,9 @@ export default async function CabinetLayout({
               <SidebarLink href={`/${locale}/me/contractor`}>
                 🏢 {t("contractor")}
               </SidebarLink>
+              <SidebarLink href={`/${locale}/me/bookings`}>
+                📅 {t("bookings")}
+              </SidebarLink>
               <SidebarLink href={`/${locale}/me/work-orders`}>
                 🛠 {t("workOrders")}
               </SidebarLink>

@@ -213,7 +213,8 @@
       "wallet": "Peňaženka",
       "listing": "Listing",
       "home": "Domov",
-      "workOrders": "Príkazy"
+      "workOrders": "Príkazy",
+      "bookings": "Rezervácie"
     },
     "favorites": {
       "title": "Obľúbené",
@@ -1616,6 +1617,50 @@
       "IN_PROGRESS": "V práci",
       "RESOLVED": "Vyriešený",
       "CLOSED": "Zatvorený"
+    }
+  },
+  "booking": {
+    "eyebrow": "Rezervácia",
+    "title": "Rezervovať konektor",
+    "mine": "Moje rezervácie",
+    "none": "Zatiaľ žiadne rezervácie",
+    "connector": "Konektor",
+    "when": "Budem tam o",
+    "minutes": "min",
+    "book": "Rezervovať",
+    "booking": "…",
+    "terms": "Podmienky",
+    "fee": "Poplatok za rezerváciu",
+    "guarantee": "Záruka v rezerve",
+    "penalty": "Pokuta za nedostavenie",
+    "window": "Okno čakania",
+    "freeCancel": "Bezplatné zrušenie do",
+    "booked": "Rezervované. Príďte do",
+    "noFreeConnector": "Teraz nie je voľný konektor na rezerváciu",
+    "cancel": "Zrušiť",
+    "status": {
+      "CREATED": "Vytvorená",
+      "ACTIVE": "Aktívna",
+      "FULFILLED": "Využitá",
+      "CANCELLED": "Zrušená",
+      "NO_SHOW": "Nedostavenie",
+      "EXPIRED": "Vypršala"
+    },
+    "policy": {
+      "title": "Podmienky rezervácie",
+      "help": "Zmena platí pre nové rezervácie; existujúce žijú podľa podmienok, za ktorých vznikli.",
+      "enabled": "Prijímať rezervácie na tomto bode",
+      "feeFiat": "Poplatok",
+      "guaranteeFiat": "Záruka",
+      "noShowPenaltyFiat": "Pokuta za nedostavenie",
+      "waitMinutes": "Čakanie, min",
+      "freeCancelMinutes": "Bezplatné zrušenie, min",
+      "maxAheadHours": "Rezervácia vopred, h",
+      "walkUpConnectors": "Nechať voľné",
+      "feeCountsTowards": "Poplatok sa započíta do nabíjania",
+      "coopFree": "Zadarmo pre členov družstva",
+      "save": "Uložiť podmienky",
+      "saved": "Uložené"
     }
   }
 }

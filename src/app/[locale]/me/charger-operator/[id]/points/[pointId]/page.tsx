@@ -9,6 +9,8 @@ import { num, numOrNull } from "@/lib/exchange/decimal";
 import { missingRequiredFields } from "@/lib/points/point-service";
 import { PointWizard, type WizardLabels } from "@/components/points/point-wizard";
 import { visiblePointIds } from "@/lib/staff/staff-service";
+import { readPolicy } from "@/lib/reservations/reservation-service";
+import { PolicyForm } from "@/components/reservations/policy-form";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +47,8 @@ export default async function PointWizardPage({
   }
 
   const t = await getTranslations("points");
+  const tPolicy = await getTranslations("booking.policy");
+  const policy = await readPolicy(pointId);
   const [zones, missing] = await Promise.all([
     prisma.gridZone.findMany({
       orderBy: { code: "asc" },
@@ -141,6 +145,40 @@ export default async function PointWizardPage({
           labels={labels}
         />
       </div>
+
+      {isOwner && (
+        <PolicyForm
+          pointId={pointId}
+          initial={{
+            enabled: policy.enabled,
+            walkUpConnectors: policy.walkUpConnectors,
+            feeFiat: policy.feeFiat,
+            guaranteeFiat: policy.guaranteeFiat,
+            noShowPenaltyFiat: policy.noShowPenaltyFiat,
+            waitMinutes: policy.waitMinutes,
+            freeCancelMinutes: policy.freeCancelMinutes,
+            maxAheadHours: policy.maxAheadHours,
+            feeCountsTowards: policy.feeCountsTowards,
+            coopFree: policy.coopFree,
+          }}
+          labels={{
+            title: tPolicy("title"),
+            help: tPolicy("help"),
+            enabled: tPolicy("enabled"),
+            feeFiat: tPolicy("feeFiat"),
+            guaranteeFiat: tPolicy("guaranteeFiat"),
+            noShowPenaltyFiat: tPolicy("noShowPenaltyFiat"),
+            waitMinutes: tPolicy("waitMinutes"),
+            freeCancelMinutes: tPolicy("freeCancelMinutes"),
+            maxAheadHours: tPolicy("maxAheadHours"),
+            walkUpConnectors: tPolicy("walkUpConnectors"),
+            feeCountsTowards: tPolicy("feeCountsTowards"),
+            coopFree: tPolicy("coopFree"),
+            save: tPolicy("save"),
+            saved: tPolicy("saved"),
+          }}
+        />
+      )}
     </div>
   );
 }

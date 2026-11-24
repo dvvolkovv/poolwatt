@@ -9,7 +9,7 @@ export type MiniConnector = {
   type: string;
   powerKw: number;
   quantity: number;
-  status: "FREE" | "BUSY" | "OUT_OF_SERVICE" | "UNKNOWN";
+  status: "FREE" | "BUSY" | "OUT_OF_SERVICE" | "BOOKED" | "UNKNOWN";
 };
 
 export type MiniPoint = {
@@ -37,6 +37,7 @@ export type MiniCardLabels = {
   busy: string;
   unknown: string;
   outOfService: string;
+  booked?: string;
   open24: string;
   route: string;
   details: string;
@@ -161,6 +162,8 @@ function statusLabel(status: MiniConnector["status"], labels: MiniCardLabels): s
       return labels.busy;
     case "OUT_OF_SERVICE":
       return labels.outOfService;
+    case "BOOKED":
+      return labels.booked ?? labels.busy;
     default:
       return labels.unknown;
   }

@@ -20,6 +20,10 @@ import {
   notifyPendingWorkOrders,
   openWorkOrdersForAlerts,
 } from "@/lib/work/work-order-service";
+import {
+  closeExpiredReservations,
+  notifyClosedReservations,
+} from "@/lib/reservations/reservation-service";
 import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/spot-service";
@@ -157,6 +161,20 @@ export async function runAlertSweep(now = new Date()): Promise<void> {
   } catch (err) {
     console.error("[worker] work order notification failed:", err);
   }
+
+  // §35 / US-33 — a booking whose window has closed with nobody there.
+  try {
+    const closed = await closeExpiredReservations(now);
+    if (closed > 0) log(`reservations: ${closed} closed as no-show`);
+  } catch (err) {
+    console.error("[worker] closing reservations failed:", err);
+  }
+  try {
+    const told = await notifyClosedReservations();
+    if (told > 0) log(`reservations: ${told} notification(s) sent`);
+  } catch (err) {
+    console.error("[worker] reservation notification failed:", err);
+  }
 }
 
 /** §15 — the replay log is a log, not a financial record: 30 days is plenty. */
@@ -204,7 +222,7 @@ async function main() {
   await runIntervalClose();
   await runSpotRefresh();
   log(
-    "schedules registered: interval close + spot apply */5 min, alerts + work orders every min, spot refresh :10, reconciliation 03:15, idempotency purge 03:40",
+    "schedules registered: interval close + spot apply */5 min, alerts, work orders + reservations every min, spot refresh :10, reconciliation 03:15, idempotency purge 03:40",
   );
 }
 

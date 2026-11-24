@@ -1,0 +1,85 @@
+// The driver's bookings — ТЗ §32, US-30.
+
+import { setRequestLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { num } from "@/lib/exchange/decimal";
+import { CancelBookingButton } from "@/components/reservations/cancel-booking-button";
+
+export const dynamic = "force-dynamic";
+
+export default async function BookingsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  const session = await auth();
+  if (!session?.user) redirect(`/${locale}/login?callbackUrl=/${locale}/me/bookings`);
+
+  const t = await getTranslations("booking");
+
+  const bookings = await prisma.reservation.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+    take: 30,
+    include: {
+      point: { select: { id: true, name: true, city: true } },
+      connector: { select: { type: true } },
+    },
+  });
+
+  return (
+    <div>
+      <div className="text-[11px] uppercase tracking-[0.18em] text-muted">{t("eyebrow")}</div>
+      <h1 className="mb-6 text-[28px] font-bold">{t("mine")}</h1>
+
+      {bookings.length === 0 ? (
+        <p className="text-sm text-muted">{t("none")}</p>
+      ) : (
+        <ul className="divide-y divide-hairline" data-testid="booking-list">
+          {bookings.map((b) => {
+            const live = b.status === "ACTIVE" || b.status === "CREATED";
+            return (
+              <li key={b.id} className="flex flex-wrap items-baseline justify-between gap-3 py-3">
+                <div>
+                  <Link
+                    href={`/${locale}/c/${b.point.id}`}
+                    prefetch={false}
+                    className="text-sm underline hover:text-accent"
+                  >
+                    {b.point.name}
+                  </Link>
+                  <p className="text-[12px] text-muted">
+                    {b.connector.type} ·{" "}
+                    <span className="num">
+                      {b.windowStart.toISOString().slice(11, 16)}–
+                      {b.windowEnd.toISOString().slice(11, 16)}
+                    </span>{" "}
+                    · {t(`status.${b.status}`)}
+                    {b.penaltyFiat && (
+                      <>
+                        {" "}
+                        · {t("penalty")}{" "}
+                        <span className="num">
+                          {num(b.penaltyFiat).toFixed(2)} {b.currency}
+                        </span>
+                      </>
+                    )}
+                  </p>
+                </div>
+                {live && (
+                  <CancelBookingButton reservationId={b.id} label={t("cancel")} />
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}

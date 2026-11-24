@@ -50,6 +50,7 @@ model User {
   reviewedContractors     Contractor[]             @relation("ContractorReviewer")
   claimTokens             ClaimToken[]
   staffMemberships        Employee[]               @relation("StaffMembership")
+  reservations            Reservation[]            @relation("ReservationDriver")
   reportedTickets         Ticket[]                 @relation("TicketReporter")
 
   // Exchange core (ТЗ §4–§8).
@@ -293,8 +294,10 @@ model AcceptancePoint {
   tariffs    PointTariff[]
   photos     PointPhoto[]
   apiKeys    PointApiKey[]
-  workOrders WorkOrder[]
-  tickets    Ticket[]
+  workOrders   WorkOrder[]
+  tickets      Ticket[]
+  reservations Reservation[]
+  policy       ReservationPolicy?
 
   @@index([operatorId, status])
   @@index([status, latitude, longitude])
@@ -312,7 +315,8 @@ model PointConnector {
   status    ConnectorStatus  @default(UNKNOWN)
   statusAt  DateTime?
 
-  tickets Ticket[]
+  tickets      Ticket[]
+  reservations Reservation[]
 
   @@index([pointId])
   @@index([type, status])
@@ -403,6 +407,8 @@ enum ConnectorStatus {
   FREE
   BUSY
   OUT_OF_SERVICE
+  // §35 US-30 — "разъём помечен в навигаторе как забронированный".
+  BOOKED
   UNKNOWN
 }
 
@@ -564,6 +570,87 @@ enum TicketStatus {
   IN_PROGRESS
   RESOLVED
   CLOSED
+}
+
+
+// §33 "Настройки владельца станции" / US-32. One row per point; a booking
+// copies the numbers it was confirmed under, so a change here never moves a
+// booking that already exists.
+model ReservationPolicy {
+  id      String          @id @default(cuid())
+  pointId String          @unique
+  point   AcceptancePoint @relation(fields: [pointId], references: [id], onDelete: Cascade)
+
+  enabled            Boolean  @default(false)
+  // Which connectors may be booked; empty means all of them.
+  bookableConnectorIds String[]
+  // §33 "Резерв без брони" — always free for whoever just turns up.
+  walkUpConnectors   Int      @default(1)
+  feeFiat            Decimal  @default(0) @db.Decimal(10, 2)
+  feeTokens          Decimal  @default(0) @db.Decimal(10, 3)
+  currency           String   @default("EUR")
+  // §33 "Зачёт платы" — does the booking fee count towards the charge.
+  feeCountsTowards   Boolean  @default(true)
+  guaranteeFiat      Decimal  @default(0) @db.Decimal(10, 2)
+  noShowPenaltyFiat  Decimal  @default(0) @db.Decimal(10, 2)
+  waitMinutes        Int      @default(15)
+  freeCancelMinutes  Int      @default(30)
+  maxAheadHours      Int      @default(24)
+  extendAllowed      Boolean  @default(true)
+  extendFeeFiat      Decimal  @default(0) @db.Decimal(10, 2)
+  coopFree           Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// §35 Reservation. The policy numbers are copied in, not referenced: US-32
+// requires a change to leave existing bookings alone.
+model Reservation {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation("ReservationDriver", fields: [userId], references: [id], onDelete: Cascade)
+  pointId     String
+  point       AcceptancePoint   @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  connectorId String
+  connector   PointConnector    @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+  walletId    String
+  wallet      Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  eta         DateTime
+  windowStart DateTime
+  windowEnd   DateTime
+
+  // The copy of §33 this booking lives by.
+  feeFiat           Decimal @db.Decimal(10, 2)
+  guaranteeFiat     Decimal @db.Decimal(10, 2)
+  noShowPenaltyFiat Decimal @db.Decimal(10, 2)
+  freeCancelMinutes Int
+  currency          String  @default("EUR")
+
+  status      ReservationStatus @default(CREATED)
+  penaltyFiat Decimal?          @db.Decimal(10, 2)
+  refundFiat  Decimal?          @db.Decimal(10, 2)
+  closedAt    DateTime?
+  closeReason String?
+  notifiedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  receipt Receipt?
+
+  @@index([userId, status])
+  @@index([connectorId, status])
+  @@index([status, windowEnd])
+}
+
+enum ReservationStatus {
+  CREATED
+  ACTIVE
+  FULFILLED
+  CANCELLED
+  NO_SHOW
+  EXPIRED
 }
 
 // API tokens that let an operator's external system push tariff updates to
@@ -1562,6 +1649,7 @@ model Wallet {
   tokens            EnergyToken[]
   orders            Order[]
   payments          Payment[]
+  reservations      Reservation[]
   outgoingTransfers TokenTransfer[] @relation("TransferFrom")
   incomingTransfers TokenTransfer[] @relation("TransferTo")
 
@@ -1656,11 +1744,14 @@ model Payment {
 
 // §13 / §46 Receipt — issued for a payment or a trade; lists the burned batches.
 model Receipt {
-  id             String   @id @default(cuid())
-  paymentId      String?  @unique
-  payment        Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  tradeId        String?  @unique
-  trade          Trade?   @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  paymentId      String?      @unique
+  payment        Payment?     @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  tradeId        String?      @unique
+  trade          Trade?       @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  // §35 US-33 — a no-show leaves a receipt like any other charge.
+  reservationId  String?      @unique
+  reservation    Reservation? @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   burnedTokenIds String[]
   totalKwh       Decimal  @default(0) @db.Decimal(18, 3)
   totalFiat      Decimal  @default(0) @db.Decimal(18, 2)

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getChargerById } from "@/lib/chargers-mock";
 import { loadPointAsStation } from "@/lib/points/point-detail";
+import { readPolicy } from "@/lib/reservations/reservation-service";
+import { BookForm } from "@/components/reservations/book-form";
 import { auth } from "@/lib/auth";
 import { readFavoriteChargerIds } from "@/lib/favorites";
 import { FavoriteButton } from "@/components/favorite-button";
@@ -50,6 +52,18 @@ export default async function ChargerDetailPage({
       : null;
 
   const t = await getTranslations("charger");
+  const tBook = await getTranslations("booking");
+
+  // §35 — booking lives on the card of a Poolwatt point; an OpenStreetMap
+  // node has no owner to hold a place with.
+  const policy = charger.poolwattPointId ? await readPolicy(charger.poolwattPointId) : null;
+  const bookable =
+    policy?.enabled && charger.poolwattPointId
+      ? await prisma.pointConnector.findMany({
+          where: { pointId: charger.poolwattPointId },
+          orderBy: { type: "asc" },
+        })
+      : [];
   const tOp = await getTranslations("charger.operatorSection");
   const tReport = await getTranslations("report");
   const session = await auth();
@@ -123,6 +137,42 @@ export default async function ChargerDetailPage({
           </div>
           <p className="mt-2 text-[11px] text-muted">{t("buildRouteHint")}</p>
         </div>
+
+        {policy?.enabled && bookable.length > 0 && (
+          <section className="mb-10 max-w-[420px] rounded-lg border border-hairline p-4">
+            <BookForm
+              connectors={bookable.map((c) => ({
+                id: c.id,
+                label: `${c.type} · ${Number(c.powerKw)} kW`,
+                free: c.status === "FREE" || c.status === "UNKNOWN",
+              }))}
+              policy={{
+                feeFiat: policy.feeFiat,
+                guaranteeFiat: policy.guaranteeFiat,
+                noShowPenaltyFiat: policy.noShowPenaltyFiat,
+                waitMinutes: policy.waitMinutes,
+                freeCancelMinutes: policy.freeCancelMinutes,
+                currency: policy.currency,
+              }}
+              labels={{
+                title: tBook("title"),
+                connector: tBook("connector"),
+                when: tBook("when"),
+                minutes: tBook("minutes"),
+                book: tBook("book"),
+                booking: tBook("booking"),
+                terms: tBook("terms"),
+                fee: tBook("fee"),
+                guarantee: tBook("guarantee"),
+                penalty: tBook("penalty"),
+                window: tBook("window"),
+                freeCancel: tBook("freeCancel"),
+                booked: tBook("booked"),
+                noFreeConnector: tBook("noFreeConnector"),
+              }}
+            />
+          </section>
+        )}
 
         <section className="mb-10">
           <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted mb-4">

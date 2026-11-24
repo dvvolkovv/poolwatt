@@ -125,3 +125,38 @@ function haversineMetres(
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return Math.round(2 * R * Math.asin(Math.sqrt(a)));
 }
+
+/** How far around a broken point we look, and how many we offer. */
+const OFFER_BOX_DEGREES = 0.5;
+const OFFER_LIMIT = 3;
+
+/**
+ * US-53 and US-55 — "сразу увидеть ближайшую рабочую станцию". The same
+ * search the navigator uses, from where the driver was going, with the plug
+ * they came with and a connector that is actually free.
+ */
+export async function nearestWorkingPoints(
+  pointId: string,
+  connectorType: string | null,
+): Promise<FoundPoint[]> {
+  const point = await prisma.acceptancePoint.findUnique({
+    where: { id: pointId },
+    select: { latitude: true, longitude: true },
+  });
+  // Without coordinates there is no "nearest"; saying nothing beats guessing.
+  if (!point?.latitude || !point.longitude) return [];
+
+  const found = await searchPoints({
+    bbox: {
+      south: point.latitude - OFFER_BOX_DEGREES,
+      north: point.latitude + OFFER_BOX_DEGREES,
+      west: point.longitude - OFFER_BOX_DEGREES,
+      east: point.longitude + OFFER_BOX_DEGREES,
+    },
+    connector: connectorType,
+    freeOnly: true,
+    near: { lat: point.latitude, lng: point.longitude },
+  });
+
+  return found.filter((p) => p.id !== pointId).slice(0, OFFER_LIMIT);
+}

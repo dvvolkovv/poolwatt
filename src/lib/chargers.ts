@@ -25,7 +25,12 @@ export type PowerLevel = "ac_slow" | "ac_fast" | "dc_fast" | "dc_ultra";
  * §27 "свободен, занят, не работает". Only a Poolwatt point reports this;
  * an OpenStreetMap node has no idea, and says so.
  */
-export type ConnectorAvailability = "FREE" | "BUSY" | "OUT_OF_SERVICE" | "UNKNOWN";
+export type ConnectorAvailability =
+  | "FREE"
+  | "BUSY"
+  | "OUT_OF_SERVICE"
+  | "BOOKED"
+  | "UNKNOWN";
 
 export type Connection = {
   connectorType: ConnectorType;
