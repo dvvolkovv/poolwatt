@@ -73,6 +73,8 @@ export interface ReconcileOptions {
    * or a test that must not count another test's rows — passes a list.
    */
   assetIds?: string[];
+  /** Same idea for the wallet check, which is otherwise platform-wide. */
+  walletIds?: string[];
   /**
    * Who to tell about drift. Injectable so tests do not send mail, and so a
    * later channel (Telegram, a pager) can be added without touching the
@@ -90,9 +92,11 @@ const differs = (a: number, b: number) => Math.abs(roundKwh(a - b)) > TOLERANCE_
  * since §16.4 — two copies of this arithmetic would be exactly the kind of
  * drift this file exists to catch.
  */
-async function checkWalletBalances(): Promise<CheckOutcome> {
-  const checked = await prisma.wallet.count();
-  const drifts = (await reconcileWalletBalances()).map((d) => ({
+async function checkWalletBalances(walletIds?: string[]): Promise<CheckOutcome> {
+  const checked = await prisma.wallet.count({
+    where: walletIds ? { id: { in: walletIds } } : undefined,
+  });
+  const drifts = (await reconcileWalletBalances(walletIds)).map((d) => ({
     subject: d.walletId,
     expectedKwh: d.registryKwh,
     actualKwh: d.cachedKwh,
@@ -230,7 +234,7 @@ export async function reconcileRegistry(
   });
 
   const checks: CheckOutcome[] = [
-    await checkWalletBalances(),
+    await checkWalletBalances(options.walletIds),
     await checkReadingsMinted(from, to, options.assetIds),
     await checkOrphanBatches(from, to, options.assetIds),
     await checkAssetDailyTotals(from, to, options.assetIds),

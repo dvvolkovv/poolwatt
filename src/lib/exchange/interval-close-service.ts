@@ -107,11 +107,17 @@ export async function closeInterval(
  * §16.11 — daily reconciliation of the token registry against wallet balances.
  * Reports drift instead of fixing it: a mismatch is a bug to investigate, not
  * a number to overwrite.
+ *
+ * `walletIds` narrows the sweep; the nightly run passes nothing and looks at
+ * every wallet.
  */
-export async function reconcileWalletBalances(): Promise<
-  { walletId: string; cachedKwh: number; registryKwh: number; driftKwh: number }[]
-> {
-  const wallets = await prisma.wallet.findMany({ select: { id: true, kwhBalance: true } });
+export async function reconcileWalletBalances(
+  walletIds?: string[],
+): Promise<{ walletId: string; cachedKwh: number; registryKwh: number; driftKwh: number }[]> {
+  const wallets = await prisma.wallet.findMany({
+    where: walletIds ? { id: { in: walletIds } } : undefined,
+    select: { id: true, kwhBalance: true },
+  });
   const drifts: { walletId: string; cachedKwh: number; registryKwh: number; driftKwh: number }[] =
     [];
 

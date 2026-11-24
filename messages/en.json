@@ -991,7 +991,8 @@
       "found": "found",
       "lastRun": "Latest run",
       "externalFeed": "«Данные сети» here means the readings signed by the assets themselves. Comparing against the grid operator's own statement needs a contract and a feed from them — the per-asset daily total is shaped so that feed can be dropped in beside it."
-    }
+    },
+    "navPoints": "Point cards"
   },
   "claim": {
     "title": "Claim {name}",
@@ -1373,6 +1374,144 @@
         "APPROVED": "approved",
         "REJECTED": "rejected"
       }
+    }
+  },
+  "points": {
+    "eyebrow": "Acceptance points",
+    "title": "Points",
+    "new": "New point",
+    "list": "Your points",
+    "empty": "No points yet",
+    "name": "Name",
+    "type": "Type",
+    "create": "Create",
+    "connectors": "connectors",
+    "sentBack": "Sent back",
+    "back": "Back",
+    "next": "Next",
+    "save": "Save",
+    "saved": "Saved",
+    "preview": "Preview in the navigator",
+    "submit": "Submit for review",
+    "submitted": "Waiting for review",
+    "missing": "Still required",
+    "missingNone": "Everything required is filled in",
+    "connectionHelp": "The equipment reports connector occupancy with the point key. The card appears in the navigator after the operator approves it and the equipment reports for the first time.",
+    "step": {
+      "type": "Type",
+      "address": "Address",
+      "equipment": "Equipment",
+      "tariffs": "Tariffs",
+      "payment": "Payment",
+      "connection": "Connection",
+      "publish": "Publish"
+    },
+    "kind": {
+      "CHARGING_STATION": "Charging station",
+      "POWERBANK": "Powerbank",
+      "GENERATION": "Generation",
+      "MIXED": "Mixed"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "REVIEW": "In review",
+      "TEST": "Test connection",
+      "PUBLISHED": "Published",
+      "SUSPENDED": "Suspended"
+    },
+    "source": {
+      "SOLAR": "Solar",
+      "WIND": "Wind",
+      "BIOGAS": "Biogas",
+      "HYDRO": "Hydro",
+      "GRID": "Grid",
+      "MIXED": "Mixed"
+    },
+    "payment": {
+      "TOKEN": "kWh tokens",
+      "POOLWATT_CARD": "Poolwatt card",
+      "WHITE_LABEL_CARD": "White label card",
+      "BANK_CARD": "Bank card",
+      "QR": "QR"
+    },
+    "amenity": {
+      "PARKING": "Parking",
+      "CAFE": "Cafe",
+      "TOILET": "Toilet",
+      "WIFI": "Wi-Fi",
+      "ACCESSIBLE": "Accessible",
+      "COVERED": "Covered"
+    },
+    "visibility": {
+      "PUBLIC": "Public",
+      "COOP_MEMBERS": "Cooperative members",
+      "OWN_CLIENTS": "Own clients"
+    },
+    "field": {
+      "name": "Name",
+      "type": "Type",
+      "country": "Country",
+      "city": "City",
+      "addressLine": "Address",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "gridZone": "Grid zone",
+      "howToFind": "How to find it",
+      "energySource": "Energy source",
+      "storageKwh": "Storage, kWh",
+      "connectors": "Connectors",
+      "connectorType": "Connector type",
+      "powerKw": "Power, kW",
+      "quantity": "Quantity",
+      "addConnector": "add connector",
+      "fromMinute": "From, min",
+      "toMinute": "To, min",
+      "priceFiat": "Price, money",
+      "priceTokens": "Price, tokens",
+      "idleFee": "Idle fee",
+      "coopDiscount": "Coop discount, %",
+      "addTariff": "add tariff",
+      "paymentMethods": "Payment methods",
+      "amenities": "Amenities",
+      "visibility": "Visibility",
+      "open24": "Open 24/7",
+      "holidayNote": "Holidays",
+      "ocppVersion": "OCPP",
+      "meterId": "Meter id",
+      "description": "Description"
+    },
+    "required": {
+      "name": "name",
+      "address": "address",
+      "coordinates": "coordinates on the map",
+      "gridZone": "grid zone",
+      "howToFind": "how to find it",
+      "energySource": "energy source",
+      "connectors": "at least one connector",
+      "storageKwh": "storage capacity",
+      "tariffs": "at least one tariff",
+      "openHours": "opening hours",
+      "paymentMethods": "payment methods"
+    },
+    "mini": {
+      "freeNow": "Free",
+      "busy": "All busy",
+      "unknown": "Availability unknown",
+      "outOfService": "Out of service",
+      "open24": "24/7",
+      "route": "Route",
+      "details": "Details",
+      "noPrice": "Price not published",
+      "connectors": "Connectors",
+      "perKwh": "per kWh"
+    },
+    "adminTitle": "Point cards",
+    "adminEmpty": "Nothing in this queue",
+    "admin": {
+      "approve": "Approve",
+      "reject": "Send back",
+      "note": "A note the owner can act on",
+      "working": "…"
     }
   }
 }

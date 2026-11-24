@@ -9,11 +9,16 @@
 type Props = {
   lat: number;
   lng: number;
-  name: string;
+  name?: string;
   label: string;
+  /** Overrides the pill styling where the button sits inside a card. */
+  className?: string;
 };
 
-export function MapsDeepLink({ lat, lng, name, label }: Props) {
+const PILL =
+  "inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-5 py-3 font-semibold uppercase tracking-[0.18em] text-[13px] glow-accent transition-all hover:brightness-110";
+
+export function MapsDeepLink({ lat, lng, name, label, className }: Props) {
   function onClick(e: React.MouseEvent) {
     e.preventDefault();
     const ua = navigator.userAgent;
@@ -21,9 +26,9 @@ export function MapsDeepLink({ lat, lng, name, label }: Props) {
     const isAndroid = /Android/.test(ua);
     let url: string;
     if (isiOS) {
-      url = `maps://?daddr=${lat},${lng}&q=${encodeURIComponent(name)}`;
+      url = `maps://?daddr=${lat},${lng}${name ? `&q=${encodeURIComponent(name)}` : ""}`;
     } else if (isAndroid) {
-      url = `geo:0,0?q=${lat},${lng}(${encodeURIComponent(name)})`;
+      url = `geo:0,0?q=${lat},${lng}${name ? `(${encodeURIComponent(name)})` : ""}`;
     } else {
       url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
     }
@@ -36,7 +41,8 @@ export function MapsDeepLink({ lat, lng, name, label }: Props) {
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-5 py-3 font-semibold uppercase tracking-[0.18em] text-[13px] glow-accent transition-all hover:brightness-110"
+      className={className ?? PILL}
+      data-testid="route-button"
     >
       <span aria-hidden>🧭</span>
       {label}

@@ -991,7 +991,8 @@
       "found": "nájdené",
       "lastRun": "Posledné spustenie",
       "externalFeed": "«Dáta siete» tu znamenajú merania podpísané samotnými objektmi. Porovnanie s výkazom prevádzkovateľa siete si vyžaduje zmluvu a prístup k ich dátam; denný súčet za objekt je navrhnutý tak, aby sa tento výkaz dal postaviť vedľa."
-    }
+    },
+    "navPoints": "Karty bodov"
   },
   "claim": {
     "title": "Prevziať {name}",
@@ -1373,6 +1374,144 @@
         "APPROVED": "schválená",
         "REJECTED": "zamietnutá"
       }
+    }
+  },
+  "points": {
+    "eyebrow": "Body príjmu",
+    "title": "Body",
+    "new": "Nový bod",
+    "list": "Vaše body",
+    "empty": "Zatiaľ žiadne body",
+    "name": "Názov",
+    "type": "Typ",
+    "create": "Vytvoriť",
+    "connectors": "konektorov",
+    "sentBack": "Vrátené",
+    "back": "Späť",
+    "next": "Ďalej",
+    "save": "Uložiť",
+    "saved": "Uložené",
+    "preview": "Náhľad v navigátore",
+    "submit": "Odoslať na kontrolu",
+    "submitted": "Čaká na kontrolu",
+    "missing": "Ešte treba vyplniť",
+    "missingNone": "Všetky povinné polia sú vyplnené",
+    "connectionHelp": "Zariadenie hlási obsadenosť konektorov kľúčom bodu. Karta sa objaví v navigátore po schválení operátorom a prvom hlásení zo zariadenia.",
+    "step": {
+      "type": "Typ",
+      "address": "Adresa",
+      "equipment": "Zariadenie",
+      "tariffs": "Tarify",
+      "payment": "Platba",
+      "connection": "Pripojenie",
+      "publish": "Publikovanie"
+    },
+    "kind": {
+      "CHARGING_STATION": "Nabíjacia stanica",
+      "POWERBANK": "Powerbanka",
+      "GENERATION": "Výrobný objekt",
+      "MIXED": "Zmiešaný"
+    },
+    "status": {
+      "DRAFT": "Koncept",
+      "REVIEW": "Na kontrole",
+      "TEST": "Testovacie pripojenie",
+      "PUBLISHED": "Publikovaný",
+      "SUSPENDED": "Pozastavený"
+    },
+    "source": {
+      "SOLAR": "Slnko",
+      "WIND": "Vietor",
+      "BIOGAS": "Bioplyn",
+      "HYDRO": "Voda",
+      "GRID": "Sieť",
+      "MIXED": "Zmiešaný"
+    },
+    "payment": {
+      "TOKEN": "Tokeny kWh",
+      "POOLWATT_CARD": "Karta Poolwatt",
+      "WHITE_LABEL_CARD": "White label karta",
+      "BANK_CARD": "Banková karta",
+      "QR": "QR"
+    },
+    "amenity": {
+      "PARKING": "Parkovanie",
+      "CAFE": "Kaviareň",
+      "TOILET": "Toaleta",
+      "WIFI": "Wi-Fi",
+      "ACCESSIBLE": "Bezbariérové",
+      "COVERED": "Zastrešené"
+    },
+    "visibility": {
+      "PUBLIC": "Verejný",
+      "COOP_MEMBERS": "Členovia družstva",
+      "OWN_CLIENTS": "Vlastní klienti"
+    },
+    "field": {
+      "name": "Názov",
+      "type": "Typ",
+      "country": "Krajina",
+      "city": "Mesto",
+      "addressLine": "Adresa",
+      "latitude": "Zemepisná šírka",
+      "longitude": "Zemepisná dĺžka",
+      "gridZone": "Zóna siete",
+      "howToFind": "Ako nájsť",
+      "energySource": "Zdroj energie",
+      "storageKwh": "Kapacita, kWh",
+      "connectors": "Konektory",
+      "connectorType": "Typ konektora",
+      "powerKw": "Výkon, kW",
+      "quantity": "Počet",
+      "addConnector": "pridať konektor",
+      "fromMinute": "Od, min",
+      "toMinute": "Do, min",
+      "priceFiat": "Cena, peniaze",
+      "priceTokens": "Cena, tokeny",
+      "idleFee": "Poplatok za státie",
+      "coopDiscount": "Zľava pre družstvo, %",
+      "addTariff": "pridať tarifu",
+      "paymentMethods": "Spôsoby platby",
+      "amenities": "Vybavenie",
+      "visibility": "Viditeľnosť",
+      "open24": "Otvorené 24/7",
+      "holidayNote": "Sviatky",
+      "ocppVersion": "OCPP",
+      "meterId": "ID merača",
+      "description": "Popis"
+    },
+    "required": {
+      "name": "názov",
+      "address": "adresa",
+      "coordinates": "súradnice na mape",
+      "gridZone": "zóna siete",
+      "howToFind": "ako nájsť",
+      "energySource": "zdroj energie",
+      "connectors": "aspoň jeden konektor",
+      "storageKwh": "kapacita batérie",
+      "tariffs": "aspoň jedna tarifa",
+      "openHours": "otváracie hodiny",
+      "paymentMethods": "spôsoby platby"
+    },
+    "mini": {
+      "freeNow": "Voľné",
+      "busy": "Všetko obsadené",
+      "unknown": "Obsadenosť neznáma",
+      "outOfService": "Mimo prevádzky",
+      "open24": "24/7",
+      "route": "Trasa",
+      "details": "Podrobnosti",
+      "noPrice": "Cena nie je zverejnená",
+      "connectors": "Konektory",
+      "perKwh": "za kWh"
+    },
+    "adminTitle": "Karty bodov",
+    "adminEmpty": "V tomto rade nič nie je",
+    "admin": {
+      "approve": "Schváliť",
+      "reject": "Vrátiť",
+      "note": "Poznámka, s ktorou vie majiteľ pracovať",
+      "working": "…"
     }
   }
 }

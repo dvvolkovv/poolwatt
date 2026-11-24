@@ -143,15 +143,17 @@ afterEachCleanup();
 function afterEachCleanup() {
   beforeEach(async () => {
     if (!zoneId) return;
-    await prisma.trade.deleteMany({ where: { zoneId } });
-    await prisma.order.deleteMany({ where: { zoneId } });
-    await prisma.energyToken.deleteMany({ where: { zoneId } });
-    await prisma.meterReading.deleteMany({ where: { zoneId } });
-    await prisma.asset.deleteMany({ where: { gridZoneId: zoneId } });
-    // Drop the wallet rather than zeroing it: a wallet whose cached balance
-    // disagrees with the batches it holds is exactly what §16.11 reports as
-    // drift, and the suite runs files side by side.
-    await prisma.wallet.deleteMany({ where: { zoneId } });
+    // One transaction, so no other test file ever sees a wallet whose cached
+    // balance disagrees with the batches it holds — that is exactly the drift
+    // §16.11 reports, and the suite runs files side by side.
+    await prisma.$transaction([
+      prisma.trade.deleteMany({ where: { zoneId } }),
+      prisma.order.deleteMany({ where: { zoneId } }),
+      prisma.energyToken.deleteMany({ where: { zoneId } }),
+      prisma.meterReading.deleteMany({ where: { zoneId } }),
+      prisma.asset.deleteMany({ where: { gridZoneId: zoneId } }),
+      prisma.wallet.deleteMany({ where: { zoneId } }),
+    ]);
   });
 }
 

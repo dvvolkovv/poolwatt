@@ -32,6 +32,7 @@ export default async function ChargerOperatorCabinetPage({ params, searchParams 
   });
 
   const t = await getTranslations("cabinet.chargerOperator");
+  const tPoints = await getTranslations("points");
 
   return (
     <div className="max-w-3xl space-y-10">
@@ -40,6 +41,14 @@ export default async function ChargerOperatorCabinetPage({ params, searchParams 
         <h1 className="text-[28px] font-bold mt-2 mb-2">{op.displayName}</h1>
         <p className="text-sm text-muted">
           <Link href={`/${locale}/navigator`} className="hover:underline">{t("viewOnMap")} →</Link>
+          {" · "}
+          <Link
+            href={`/${locale}/me/charger-operator/${op.id}/points`}
+            prefetch={false}
+            className="hover:underline"
+          >
+            {tPoints("title")} →
+          </Link>
         </p>
         {claimed === "1" && (
           <div className="mt-4 p-3 rounded-xl bg-up/10 border border-up/30 text-sm">

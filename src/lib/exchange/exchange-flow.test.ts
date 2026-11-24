@@ -685,7 +685,10 @@ describe("interval close — ТЗ §16.4, US-09", () => {
   });
 
   it("leaves no drift between wallet balances and the token registry (§16.11)", async () => {
-    const drifts = await reconcileWalletBalances();
-    expect(drifts.filter((d) => d.walletId)).toEqual([]);
+    // Only this file's wallets: the sweep is platform-wide by default, and
+    // the suite runs files side by side against one database.
+    const mine = await prisma.wallet.findMany({ where: { zoneId }, select: { id: true } });
+    const drifts = await reconcileWalletBalances(mine.map((w) => w.id));
+    expect(drifts).toEqual([]);
   });
 });

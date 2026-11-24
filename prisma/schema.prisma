@@ -207,11 +207,193 @@ model ChargerOperator {
   claimedAt   DateTime?
 
   apiKeys ChargerOperatorApiKey[]
+  points  AcceptancePoint[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([claimedById])
+}
+
+
+// ---------------------------------------------------------------------------
+// §28 "Карточка пункта" / §29 lifecycle / §31 (AcceptancePoint, Connector,
+// Tariff). A point of acceptance is somebody's: it has an owner, tariffs, a
+// connection and live occupancy. OpenStreetMap stations stay what they are —
+// other people's pins on the map, with none of that.
+// ---------------------------------------------------------------------------
+
+model AcceptancePoint {
+  id         String          @id @default(cuid())
+  operatorId String
+  operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  type       PointType
+  name       String
+  status     PointStatus     @default(DRAFT)
+
+  // §28 "Адрес и карта"
+  country     String? // ISO-3166 alpha-2
+  city        String?
+  addressLine String?
+  latitude    Float?
+  longitude   Float?
+  gridZoneId  String?
+  gridZone    GridZone? @relation(fields: [gridZoneId], references: [id])
+  howToFind   String?   @db.Text
+
+  // §28 "Источник энергии"
+  energySource     PointEnergySource?
+  goCertificateRef String?
+
+  // §28 "Оборудование" — connectors are rows; this is what belongs to the point.
+  storageKwh Decimal? @db.Decimal(12, 3)
+
+  // §28 "Режим работы". `openHours` is a per-weekday schedule kept as JSON:
+  // seven rows of {from,to} or null for a closed day.
+  open24       Boolean   @default(false)
+  openHours    Json?
+  holidayNote  String?
+  closedFrom   DateTime?
+  closedUntil  DateTime?
+
+  // §28 "Способы оплаты" and "Удобства" — small closed vocabularies, kept as
+  // string arrays rather than join tables: nothing ever queries one alone.
+  paymentMethods String[]
+  amenities      String[]
+
+  // §28 "Подключение"
+  ocppVersion String? // "1.6" | "2.0.1"
+  meterId     String?
+
+  // §28 "Видимость" and "Бренд"
+  visibility  PointVisibility @default(PUBLIC)
+  logoUrl     String?
+  pinColor    String?
+  description String?         @db.Text
+
+  // §29 moderation trail, the same shape the listing review uses.
+  submittedAt  DateTime?
+  reviewedAt   DateTime?
+  reviewedById String?
+  reviewNote   String?
+  publishedAt  DateTime?
+  // When the equipment last told us how busy it is (§29.7).
+  lastSeenAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  connectors PointConnector[]
+  tariffs    PointTariff[]
+  photos     PointPhoto[]
+  apiKeys    PointApiKey[]
+
+  @@index([operatorId, status])
+  @@index([status, latitude, longitude])
+}
+
+model PointConnector {
+  id        String           @id @default(cuid())
+  pointId   String
+  point     AcceptancePoint  @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  type      EvConnectorType
+  powerKw   Decimal          @db.Decimal(8, 2)
+  currentAc Boolean          @default(true)
+  quantity  Int              @default(1)
+  // §27 "свободен, занят, не работает" — UNKNOWN until the equipment reports.
+  status    ConnectorStatus  @default(UNKNOWN)
+  statusAt  DateTime?
+
+  @@index([pointId])
+  @@index([type, status])
+}
+
+// §28 "Тарифы". One row per time-of-day window; a point with a flat price has
+// one row covering the whole day.
+model PointTariff {
+  id            String          @id @default(cuid())
+  pointId       String
+  point         AcceptancePoint @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  label         String?
+  fromMinute    Int             @default(0) // minutes from midnight, inclusive
+  toMinute      Int             @default(1440) // exclusive
+  priceFiat     Decimal?        @db.Decimal(10, 4)
+  currency      String          @default("EUR")
+  priceTokens   Decimal?        @db.Decimal(10, 4) // kWh tokens per kWh
+  idleFeePerMin Decimal?        @db.Decimal(10, 4)
+  coopDiscount  Int             @default(0) // percent off for cooperative members
+
+  @@index([pointId])
+}
+
+// §28 — up to ten photos, stored outside /public like the listing documents.
+model PointPhoto {
+  id          String          @id @default(cuid())
+  pointId     String
+  point       AcceptancePoint @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  storageKey  String          @unique
+  contentType String
+  sizeBytes   Int
+  position    Int             @default(0)
+  uploadedAt  DateTime        @default(now())
+
+  @@index([pointId, position])
+}
+
+// The equipment credential of one point — the same shape as AssetApiKey:
+// plaintext shown once, only a hash stored, HMAC secret sealed (§15).
+model PointApiKey {
+  id               String          @id @default(cuid())
+  pointId          String
+  point            AcceptancePoint @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  label            String?
+  tokenHash        String          @unique
+  prefix           String
+  signingSecretEnc String?
+  signingSecretIv  String?
+  createdAt        DateTime        @default(now())
+  lastUsedAt       DateTime?
+  revokedAt        DateTime?
+
+  @@index([pointId])
+}
+
+enum PointType {
+  CHARGING_STATION
+  POWERBANK
+  GENERATION
+  MIXED
+}
+
+// §29.3 — the same five states an asset goes through, for the same reason.
+enum PointStatus {
+  DRAFT
+  REVIEW
+  TEST
+  PUBLISHED
+  SUSPENDED
+}
+
+enum PointEnergySource {
+  SOLAR
+  WIND
+  BIOGAS
+  HYDRO
+  GRID
+  MIXED
+}
+
+enum PointVisibility {
+  PUBLIC
+  COOP_MEMBERS
+  OWN_CLIENTS
+}
+
+enum ConnectorStatus {
+  FREE
+  BUSY
+  OUT_OF_SERVICE
+  UNKNOWN
 }
 
 // API tokens that let an operator's external system push tariff updates to
@@ -928,6 +1110,7 @@ model GridZone {
   readings  MeterReading[]
 
   cooperatives         Cooperative[]
+  acceptancePoints     AcceptancePoint[]
   spotPrices           ZoneSpotPrice[]
   roamingAsHomeZone    RoamingAgreement[] @relation("RoamingHomeZone")
   roamingAsVisitedZone RoamingAgreement[] @relation("RoamingVisitedZone")
