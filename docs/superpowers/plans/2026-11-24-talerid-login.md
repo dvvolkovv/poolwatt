@@ -806,7 +806,7 @@ async jwt({ token, user, account }) {
 ```ts file=src/app/actions/talerid.ts
 "use server";
 
-import { redirect, unstable_rethrow } from "next/navigation";
+import { redirect } from "next/navigation";
 import { auth, signIn } from "@/lib/auth";
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from "@/lib/locales";
 import { safeRedirectPath } from "@/lib/safe-redirect";
@@ -820,13 +820,11 @@ function localeFrom(formData: FormData): string {
 
 /** Sends the visitor to Taler ID; on failure back to `errorPath` with a message. */
 async function goToTalerId(redirectTo: string, errorPath: string): Promise<never> {
-  try {
-    await signIn(TALERID_PROVIDER_ID, { redirectTo });
-  } catch (err) {
-    unstable_rethrow(err); // the redirect to Taler ID itself
-    console.error("[talerid] could not start sign-in:", err);
-  }
-  redirect(`${errorPath}?error=Configuration`);
+  // Auth.js logs its own failures (say, Taler ID is down) and answers with the
+  // error page's URL, which has no locale and knows nothing about settings.
+  const url: string = await signIn(TALERID_PROVIDER_ID, { redirectTo, redirect: false });
+  const failed = new URL(url, "http://localhost").searchParams.has("error");
+  redirect(failed ? `${errorPath}?error=Configuration` : url);
 }
 
 export async function signInWithTalerId(formData: FormData): Promise<void> {
