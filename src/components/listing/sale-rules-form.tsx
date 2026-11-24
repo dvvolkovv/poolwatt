@@ -1,7 +1,7 @@
 "use client";
 
 // §30 "Правила продажи" — the split the dispatcher applies to every validated
-// interval. US-28 asks for exactly this, minus the storage reserve.
+// interval, and the charge a storage asset holds back for an outage (US-28).
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ export type SaleRulesLabels = {
   shareToMarket: string;
   shareToStorage: string;
   shareToSelf: string;
+  reserveSoc: string;
   saveRules: string;
   saving: string;
   saved: string;
@@ -22,6 +23,7 @@ export type SaleRulesLabels = {
 export function SaleRulesForm({
   assetId,
   initial,
+  canStore,
   labels,
 }: {
   assetId: string;
@@ -30,7 +32,10 @@ export function SaleRulesForm({
     shareToMarketPct: number;
     shareToStoragePct: number;
     shareToSelfPct: number;
+    reserveSocPct: number;
   };
+  /** The reserve only means something for an asset that can store (§30). */
+  canStore: boolean;
   labels: SaleRulesLabels;
 }) {
   const router = useRouter();
@@ -38,6 +43,7 @@ export function SaleRulesForm({
   const [storage, setStorage] = useState(initial.shareToStoragePct);
   const [self, setSelf] = useState(initial.shareToSelfPct);
   const [price, setPrice] = useState(initial.minSalePrice?.toString() ?? "");
+  const [reserve, setReserve] = useState(initial.reserveSocPct);
   const [state, setState] = useState<"idle" | "saved">("idle");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -53,6 +59,7 @@ export function SaleRulesForm({
       shareToMarketPct: market,
       shareToStoragePct: storage,
       shareToSelfPct: self,
+      ...(canStore ? { reserveSocPct: reserve } : {}),
     });
     if (!result.ok) {
       setError(result.formError ?? "Save failed.");
@@ -72,6 +79,14 @@ export function SaleRulesForm({
         <Num label={labels.shareToMarket} value={String(market)} onChange={(v) => setMarket(Number(v) || 0)} width="5rem" />
         <Num label={labels.shareToStorage} value={String(storage)} onChange={(v) => setStorage(Number(v) || 0)} width="5rem" />
         <Num label={labels.shareToSelf} value={String(self)} onChange={(v) => setSelf(Number(v) || 0)} width="5rem" />
+        {canStore && (
+          <Num
+            label={labels.reserveSoc}
+            value={String(reserve)}
+            onChange={(v) => setReserve(Number(v) || 0)}
+            width="5rem"
+          />
+        )}
         <button
           type="button"
           onClick={onSave}

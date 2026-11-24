@@ -68,6 +68,12 @@ export interface ReconcileOptions {
   since?: Date;
   scope?: string;
   /**
+   * Limit the asset-level checks to these assets. The nightly run passes
+   * nothing and looks at everything; an operator reconciling one producer —
+   * or a test that must not count another test's rows — passes a list.
+   */
+  assetIds?: string[];
+  /**
    * Who to tell about drift. Injectable so tests do not send mail, and so a
    * later channel (Telegram, a pager) can be added without touching the
    * checks.
@@ -96,11 +102,16 @@ async function checkWalletBalances(): Promise<CheckOutcome> {
 }
 
 /** 2. One valid reading, one batch, same size (§16.2). */
-async function checkReadingsMinted(from: Date, to: Date): Promise<CheckOutcome> {
+async function checkReadingsMinted(
+  from: Date,
+  to: Date,
+  assetIds?: string[],
+): Promise<CheckOutcome> {
   const readings = await prisma.meterReading.findMany({
     where: {
       validationStatus: ReadingValidationStatus.VALID,
       intervalStart: { gte: from, lt: to },
+      ...(assetIds ? { assetId: { in: assetIds } } : {}),
     },
     select: {
       id: true,
@@ -136,9 +147,16 @@ async function checkReadingsMinted(from: Date, to: Date): Promise<CheckOutcome> 
 }
 
 /** 3. A batch from no reading and no split — kWh out of nowhere (§5). */
-async function checkOrphanBatches(from: Date, to: Date): Promise<CheckOutcome> {
+async function checkOrphanBatches(
+  from: Date,
+  to: Date,
+  assetIds?: string[],
+): Promise<CheckOutcome> {
   const batches = await prisma.energyToken.findMany({
-    where: { mintedAt: { gte: from, lt: to } },
+    where: {
+      mintedAt: { gte: from, lt: to },
+      ...(assetIds ? { assetId: { in: assetIds } } : {}),
+    },
     select: { id: true, readingId: true, parentId: true, amountKwh: true, assetId: true },
   });
 
@@ -160,11 +178,16 @@ async function checkOrphanBatches(from: Date, to: Date): Promise<CheckOutcome> {
  * This is the line an operator compares with the grid operator's statement,
  * so it is computed as a total rather than inferred from check 2.
  */
-async function checkAssetDailyTotals(from: Date, to: Date): Promise<CheckOutcome> {
+async function checkAssetDailyTotals(
+  from: Date,
+  to: Date,
+  assetIds?: string[],
+): Promise<CheckOutcome> {
   const readings = await prisma.meterReading.findMany({
     where: {
       validationStatus: ReadingValidationStatus.VALID,
       intervalStart: { gte: from, lt: to },
+      ...(assetIds ? { assetId: { in: assetIds } } : {}),
     },
     select: {
       assetId: true,
@@ -208,9 +231,9 @@ export async function reconcileRegistry(
 
   const checks: CheckOutcome[] = [
     await checkWalletBalances(),
-    await checkReadingsMinted(from, to),
-    await checkOrphanBatches(from, to),
-    await checkAssetDailyTotals(from, to),
+    await checkReadingsMinted(from, to, options.assetIds),
+    await checkOrphanBatches(from, to, options.assetIds),
+    await checkAssetDailyTotals(from, to, options.assetIds),
   ];
 
   const driftCount = checks.reduce((sum, c) => sum + c.drifts.length, 0);

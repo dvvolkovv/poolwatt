@@ -44,6 +44,7 @@ const rulesSchema = z.object({
   minSalePrice: z.number().min(0).max(100).optional().nullable(),
   shareToMarketPct: z.number().int().min(0).max(100),
   shareToStoragePct: z.number().int().min(0).max(100),
+  reserveSocPct: z.number().int().min(0).max(100).optional(),
   shareToSelfPct: z.number().int().min(0).max(100),
 });
 
@@ -177,6 +178,9 @@ export async function saveSaleRules(
       minSalePrice: parsed.data.minSalePrice ?? null,
       shareToMarketPct: parsed.data.shareToMarketPct,
       shareToStoragePct: parsed.data.shareToStoragePct,
+      ...(parsed.data.reserveSocPct != null
+        ? { reserveSocPct: parsed.data.reserveSocPct }
+        : {}),
       shareToSelfPct: parsed.data.shareToSelfPct,
       actorUserId: guard.userId,
     });

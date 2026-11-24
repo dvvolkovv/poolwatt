@@ -14,6 +14,7 @@ loadDotenv({ path: ".env.local", override: true });
 import cron from "node-cron";
 import { prisma } from "@/lib/prisma";
 import { closeInterval } from "@/lib/exchange/interval-close-service";
+import { dispatchZone, withdrawStaleOffers } from "@/lib/exchange/dispatch-service";
 import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/spot-service";
@@ -25,21 +26,43 @@ function log(...args: unknown[]) {
 }
 
 /**
- * Close every interval that has ended but not yet been settled.
+ * Settle the intervals that have ended — ТЗ §16.4, §30, US-28.
  *
- * The worker closes the interval *before* the current one: the current one is
- * still open for trading. Each zone has its own interval length (§18), so the
- * boundary is computed per zone.
+ * Three steps per zone, in this order:
+ *
+ * 1. Offer the market share of the interval that just ended (§30 sale rules).
+ *    Energy is minted from readings that only arrive after the interval is
+ *    over, so this is the first moment it can be sold at all.
+ * 2. Take down the offers made one interval earlier that nobody took.
+ * 3. Close that earlier interval: whatever is now free is routed to storage
+ *    or the aggregator (§16.4).
+ *
+ * So an offer gets exactly one interval to find a buyer, and §16.4 catches
+ * what it does not — the dispatcher delays routing by one interval, it never
+ * cancels it. Each zone has its own interval length (§18).
  */
 export async function runIntervalClose(now = new Date()): Promise<void> {
   const zones = await prisma.gridZone.findMany();
   for (const zone of zones) {
+    const step = zone.intervalMinutes * 60 * 1000;
     const currentStart = intervalStartFor(now, zone.intervalMinutes);
-    const closedStart = new Date(
-      currentStart.getTime() - zone.intervalMinutes * 60 * 1000,
-    );
+    const endedStart = new Date(currentStart.getTime() - step);
+    const earlierStart = new Date(endedStart.getTime() - step);
+
     try {
-      const result = await closeInterval(zone.id, closedStart);
+      const dispatched = await dispatchZone(zone.id, endedStart);
+      if (dispatched.offeredKwh > 0) {
+        log(
+          `${zone.code} ${dispatched.intervalStart}: offered=${dispatched.offeredKwh} kWh from ${dispatched.offers.length} asset(s)`,
+        );
+      }
+    } catch (err) {
+      console.error(`[worker] dispatch failed for ${zone.code}:`, err);
+    }
+
+    try {
+      await withdrawStaleOffers(zone.id, earlierStart);
+      const result = await closeInterval(zone.id, earlierStart);
       if (result.allocations > 0 || result.expiredOrders > 0) {
         log(
           `${zone.code} ${result.intervalStart}: expired=${result.expiredOrders} unsold=${result.unsoldKwh} stored=${result.storedKwh} routed=${result.routedKwh}`,

@@ -134,6 +134,9 @@ const run = (over: Record<string, unknown> = {}) =>
     now: NOW,
     since: WINDOW_START,
     scope: `${PREFIX}daily`,
+    // Only this file's assets: the checks count rows, and the suite runs
+    // files side by side against the same database.
+    assetIds: [assetId],
     // Injected, so a test never sends mail through the live Resend key.
     notify: async (outcome) => {
       notified.push({ driftCount: outcome.driftCount, runId: outcome.runId });

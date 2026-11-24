@@ -1058,6 +1058,9 @@ model Asset {
 
   // §30 "Правила продажи" — the dispatcher splits each validated interval.
   minSalePrice      Decimal? @db.Decimal(12, 4)
+  // §30 "резерв на случай отключения (минимальный уровень заряда)": the share
+  // of a storage asset's capacity that is never offered to the market.
+  reserveSocPct     Int      @default(0)
   shareToMarketPct  Int      @default(100)
   shareToStoragePct Int      @default(0)
   shareToSelfPct    Int      @default(0)

@@ -148,7 +148,9 @@ export default async function AssetsPage({
                   shareToMarketPct: a.shareToMarketPct,
                   shareToStoragePct: a.shareToStoragePct,
                   shareToSelfPct: a.shareToSelfPct,
+                  reserveSocPct: a.reserveSocPct,
                 }}
+                canStore={a.kind === "STORAGE" || a.kind === "MIXED"}
                 labels={{
                   rules: t("assets.rules"),
                   rulesHelp: t("assets.rulesHelp"),
@@ -156,6 +158,7 @@ export default async function AssetsPage({
                   shareToMarket: t("assets.shareToMarket"),
                   shareToStorage: t("assets.shareToStorage"),
                   shareToSelf: t("assets.shareToSelf"),
+                  reserveSoc: t("assets.reserveSoc"),
                   saveRules: t("assets.saveRules"),
                   saving: t("form.saving"),
                   saved: t("assets.saved"),

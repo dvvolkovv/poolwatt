@@ -243,6 +243,8 @@ export async function updateSaleRules(
     shareToMarketPct?: number;
     shareToStoragePct?: number;
     shareToSelfPct?: number;
+    /** §30 "резерв на случай отключения" — storage only. */
+    reserveSocPct?: number;
     actorUserId: string;
   },
   db: Db = prisma,
@@ -266,6 +268,7 @@ export async function updateSaleRules(
       ...(args.shareToMarketPct != null ? { shareToMarketPct: args.shareToMarketPct } : {}),
       ...(args.shareToStoragePct != null ? { shareToStoragePct: args.shareToStoragePct } : {}),
       ...(args.shareToSelfPct != null ? { shareToSelfPct: args.shareToSelfPct } : {}),
+      ...(args.reserveSocPct != null ? { reserveSocPct: args.reserveSocPct } : {}),
     },
   });
 
@@ -280,12 +283,14 @@ export async function updateSaleRules(
       shareToMarketPct: before.shareToMarketPct,
       shareToStoragePct: before.shareToStoragePct,
       shareToSelfPct: before.shareToSelfPct,
+      reserveSocPct: before.reserveSocPct,
     },
     after: {
       minSalePrice: asset.minSalePrice ? num(asset.minSalePrice) : null,
       shareToMarketPct: asset.shareToMarketPct,
       shareToStoragePct: asset.shareToStoragePct,
       shareToSelfPct: asset.shareToSelfPct,
+      reserveSocPct: asset.reserveSocPct,
     },
   });
   return asset;

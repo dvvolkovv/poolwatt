@@ -736,7 +736,8 @@
         "shareToSelf": "To self, %",
         "saveRules": "Save rules",
         "saved": "Saved",
-        "console": "Station console →"
+        "console": "Station console →",
+        "reserveSoc": "Reserve, %"
       },
       "tokens": {
         "title": "Tokens",
