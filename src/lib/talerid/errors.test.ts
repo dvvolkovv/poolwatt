@@ -10,7 +10,11 @@ describe("talerIdErrorKey", () => {
 
   it("maps provider errors to 'cancelled'", () => {
     expect(talerIdErrorKey("OAuthCallbackError")).toBe("cancelled");
-    expect(talerIdErrorKey("AccessDenied")).toBe("cancelled");
+  });
+
+  // Auth.js reports an exception in our signIn callback as AccessDenied.
+  it("does not call our own failure a cancellation", () => {
+    expect(talerIdErrorKey("AccessDenied")).toBe("failed");
   });
 
   it("maps everything else to the generic message", () => {
@@ -26,6 +30,6 @@ describe("talerIdErrorKey", () => {
   });
 
   it("uses the first of repeated parameters", () => {
-    expect(talerIdErrorKey(["AccessDenied", "x"])).toBe("cancelled");
+    expect(talerIdErrorKey(["OAuthCallbackError", "x"])).toBe("cancelled");
   });
 });

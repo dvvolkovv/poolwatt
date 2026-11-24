@@ -97,11 +97,11 @@ settings when the visitor already has a session:
 
 | Code | Meaning shown |
 |---|---|
-| `OAuthCallbackError`, `AccessDenied` | Cancelled or refused |
+| `OAuthCallbackError` | Cancelled or refused at Taler ID |
 | `TalerIdEmailTaken` | Email already used here, link from settings |
 | `TalerIdTaken` | This Taler ID belongs to another Poolwatt account |
 | `TalerIdAlreadyLinked` | Your account already has another Taler ID |
-| anything else (`Configuration`: lost cookies, state mismatch, Taler ID down) | Could not finish, try again in the same browser |
+| anything else (`Configuration`: lost cookies, state mismatch, Taler ID down; `AccessDenied`: our callback threw) | Could not finish, try again in the same browser |
 
 Unknown codes never reach the page as text.
 

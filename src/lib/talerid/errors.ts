@@ -12,7 +12,6 @@ export type TalerIdErrorKey = "cancelled" | "emailTaken" | "taken" | "alreadyLin
 
 const KEYS = new Map<string, TalerIdErrorKey>([
   ["OAuthCallbackError", "cancelled"],
-  ["AccessDenied", "cancelled"],
   [TALERID_REFUSAL_CODE.email_taken, "emailTaken"],
   [TALERID_REFUSAL_CODE.talerid_taken, "taken"],
   [TALERID_REFUSAL_CODE.already_linked, "alreadyLinked"],
