@@ -1,6 +1,9 @@
 "use client";
 
 // US-02: approve or reject a listing application; a rejection needs a comment.
+//
+// The sanctions verdict is not typed here — it is a ScreeningCheck row written
+// by ScreeningForm above, and approval is blocked until it exists (§4).
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -13,13 +16,11 @@ type Props = {
     approve: string;
     reject: string;
     comment: string;
-    screening: string;
   };
 };
 
 export function DecisionForm({ applicationId, labels }: Props) {
   const [comment, setComment] = useState("");
-  const [screeningNote, setScreeningNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -33,7 +34,6 @@ export function DecisionForm({ applicationId, labels }: Props) {
         applicationId,
         approve,
         comment: comment.trim() || null,
-        screeningNote: screeningNote.trim() || null,
       });
       if (r.ok) {
         setDone(
@@ -53,17 +53,6 @@ export function DecisionForm({ applicationId, labels }: Props) {
   return (
     <section className="border border-hairline rounded p-4 space-y-3">
       <h2 className="text-[13px] uppercase tracking-[0.14em] text-muted">{labels.title}</h2>
-
-      <label className="block">
-        <span className="text-[12px] text-muted">{labels.screening}</span>
-        <textarea
-          name="screeningNote"
-          value={screeningNote}
-          onChange={(e) => setScreeningNote(e.target.value)}
-          rows={2}
-          className="mt-1 w-full border border-hairline rounded px-2 py-1.5 bg-transparent text-sm"
-        />
-      </label>
 
       <label className="block">
         <span className="text-[12px] text-muted">{labels.comment}</span>

@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { ListingError, decideApplication } from "@/lib/exchange/listing-service";
+import { ScreeningError, recordScreening } from "@/lib/exchange/screening";
 import { sendListingDecisionToOwner } from "@/lib/resend-listing";
 
 export type DecisionResult =
@@ -61,5 +62,44 @@ export async function decideListing(input: unknown): Promise<DecisionResult> {
   } catch (err) {
     if (err instanceof ListingError) return { ok: false, formError: err.message };
     return { ok: false, formError: err instanceof Error ? err.message : "Decision failed." };
+  }
+}
+
+
+export type ScreeningResultOut = { ok: true } | { ok: false; formError: string };
+
+const screeningSchema = z.object({
+  companyId: z.string().min(1),
+  kind: z.enum(["KYB", "SANCTIONS", "ADVERSE_MEDIA"]),
+  result: z.enum(["CLEAR", "HIT", "INCONCLUSIVE"]),
+  evidence: z.string().max(2000),
+});
+
+/** US-02 — the operator's own KYB / sanctions verdict goes on file. */
+export async function recordScreeningCheck(input: unknown): Promise<ScreeningResultOut> {
+  const session = await auth();
+  if (!session?.user) return { ok: false, formError: "Not authenticated." };
+  if (session.user.role !== "ADMIN") return { ok: false, formError: "Operator role required." };
+
+  const parsed = screeningSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, formError: parsed.error.issues[0]?.message ?? "Invalid check." };
+  }
+
+  try {
+    await recordScreening({
+      companyId: parsed.data.companyId,
+      kind: parsed.data.kind,
+      result: parsed.data.result,
+      // Written by hand until a provider is contracted (see screening.ts).
+      provider: "manual",
+      evidence: parsed.data.evidence,
+      checkedById: session.user.id,
+    });
+    revalidatePath("/[locale]/admin/listings/[id]", "page");
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof ScreeningError) return { ok: false, formError: err.message };
+    return { ok: false, formError: err instanceof Error ? err.message : "Save failed." };
   }
 }

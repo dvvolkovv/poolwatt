@@ -7,6 +7,8 @@ import { publishableIban } from "@/lib/exchange/gates";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
 import { DecisionForm } from "@/components/exchange/decision-form";
+import { ScreeningForm } from "@/components/admin/screening-form";
+import { latestScreenings, screeningBlocksApproval } from "@/lib/exchange/screening";
 
 type Doc = { name?: string; url?: string; bytes?: number; mime?: string };
 
@@ -35,6 +37,12 @@ export default async function AdminListingDetailPage({
     },
   });
   if (!application) notFound();
+
+  // US-02 — "результат KYB и санкционного скрининга" next to the decision.
+  const [screenings, blockedReason] = await Promise.all([
+    latestScreenings(application.companyId),
+    screeningBlocksApproval(application.companyId),
+  ]);
 
   const documents: Doc[] = Array.isArray(application.documents)
     ? (application.documents as Doc[])
@@ -120,6 +128,44 @@ export default async function AdminListingDetailPage({
         )}
       </section>
 
+      <ScreeningForm
+        companyId={application.companyId}
+        latest={Object.entries(screenings).map(([kind, row]) => ({
+          kind,
+          result: row!.result,
+          provider: row!.provider,
+          checkedAt: row!.checkedAt.toISOString().slice(0, 16).replace("T", " "),
+          evidence: row!.evidence,
+        }))}
+        blockedReason={blockedReason}
+        labels={{
+          title: t("screening.title"),
+          help: t("screening.help"),
+          kind: t("screening.kind"),
+          result: t("screening.result"),
+          evidence: t("screening.evidence"),
+          evidencePlaceholder: t("screening.evidencePlaceholder"),
+          save: t("screening.save"),
+          saving: t("screening.saving"),
+          latest: t("screening.latest"),
+          none: t("screening.none"),
+          blocked: t("screening.blocked"),
+          ready: t("screening.ready"),
+          provider: t("screening.provider"),
+          checkedAt: t("screening.checkedAt"),
+          kindNames: {
+            KYB: t("screening.kindNames.KYB"),
+            SANCTIONS: t("screening.kindNames.SANCTIONS"),
+            ADVERSE_MEDIA: t("screening.kindNames.ADVERSE_MEDIA"),
+          },
+          resultNames: {
+            CLEAR: t("screening.resultNames.CLEAR"),
+            HIT: t("screening.resultNames.HIT"),
+            INCONCLUSIVE: t("screening.resultNames.INCONCLUSIVE"),
+          },
+        }}
+      />
+
       {application.status === "SUBMITTED" ? (
         <DecisionForm
           applicationId={application.id}
@@ -128,7 +174,6 @@ export default async function AdminListingDetailPage({
             approve: t("approve"),
             reject: t("reject"),
             comment: t("comment"),
-            screening: t("screening"),
           }}
         />
       ) : (

@@ -85,7 +85,18 @@ test("producer lists a company, operator approves it", async ({ page }) => {
   await signInWithPassword(page, OPERATOR);
   await page.goto(`/en/admin/listings/${application.id}`);
   await expect(page.locator('a:has-text("licence.pdf")')).toBeVisible();
-  await page.fill('textarea[name="screeningNote"]', "E2E: no sanctions hit");
+
+  // §4 — approval is blocked until a KYB and a sanctions verdict are on file.
+  await expect(page.locator("text=Cannot approve:")).toBeVisible();
+  for (const kind of ["KYB", "Sanctions"]) {
+    await page.selectOption('select[name="kind"]', { label: kind });
+    await page.selectOption('select[name="result"]', { label: "clear" });
+    await page.fill('input[name="evidence"]', `E2E ${kind}: checked, no match`);
+    await page.click('button:has-text("Record")');
+    await expect(page.locator(`text=E2E ${kind}: checked, no match`)).toBeVisible();
+  }
+  await expect(page.locator("text=Screening passed")).toBeVisible();
+
   await page.click('button:has-text("Approve")');
 
   await expect

@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { createAsset } from "./asset-service";
 import { closeInterval, reconcileWalletBalances } from "./interval-close-service";
 import { createCompany, decideApplication, submitApplication } from "./listing-service";
+import { recordScreening } from "./screening";
 import { cancelOrder, placeOrder, readOrderBook } from "./order-service";
 import { chargeSession, quoteCharge } from "./payment-service";
 import { ingestReadings, readAssetTokens } from "./telemetry-service";
@@ -161,10 +162,27 @@ describe("listing — ТЗ §4, US-01, US-02, US-13", () => {
     expect(draft.status).toBe("DRAFT");
   });
 
+  it("will not approve a company that has not been screened (§4)", async () => {
+    const pending = await prisma.listingApplication.findFirstOrThrow({
+      where: { companyId, status: "SUBMITTED" },
+    });
+    await expect(
+      decideApplication({ applicationId: pending.id, reviewerId: operatorUserId, approve: true }),
+    ).rejects.toThrow(/KYB/);
+  });
+
   it("approves the application, opens an IBAN and starts asset probation", async () => {
     const pending = await prisma.listingApplication.findFirstOrThrow({
       where: { companyId, status: "SUBMITTED" },
     });
+    // §4 — the operator's KYB and sanctions verdicts go on file first.
+    for (const kind of ["KYB", "SANCTIONS"] as const) {
+      await recordScreening({
+        companyId, kind, result: "CLEAR", provider: "manual",
+        evidence: "ORSR extract; EU consolidated list — no match",
+        checkedById: operatorUserId,
+      });
+    }
     const result = await decideApplication({
       applicationId: pending.id,
       reviewerId: operatorUserId,

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { createAsset } from "./asset-service";
 import { FeatureClosedError } from "./gates";
 import { createCompany, decideApplication, submitApplication } from "./listing-service";
+import { recordScreening } from "./screening";
 import { openCompanyAccount, openUserAccount } from "./settlement-service";
 import { ingestReadings } from "./telemetry-service";
 import { cancelTransfer, confirmTransfer, transferKwh } from "./transfer-service";
@@ -138,6 +139,13 @@ describe("settlement accounts", () => {
       actorUserId: user.owner,
       documents: [{ name: "l.pdf", url: "https://example.test/l.pdf", bytes: 10, mime: "application/pdf" }],
     });
+    // §4 — screening is what gates an approval; a shut IBAN gate is not.
+    for (const kind of ["KYB", "SANCTIONS"] as const) {
+      await recordScreening({
+        companyId: company.id, kind, result: "CLEAR", provider: "manual",
+        evidence: "registry extract; sanctions list — no match", checkedById: user.owner,
+      });
+    }
     const result = await decideApplication({
       applicationId: application.id, reviewerId: user.owner, approve: true,
     });

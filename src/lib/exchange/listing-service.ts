@@ -23,6 +23,7 @@ import {
   readDocument,
   storeDocument,
 } from "./listing-docs";
+import { screeningBlocksApproval } from "./screening";
 import { openCompanyAccount } from "./settlement-service";
 
 export interface ListingDocument {
@@ -294,6 +295,13 @@ export async function decideApplication(input: DecisionInput) {
     }
     if (!input.approve && !input.comment?.trim()) {
       throw new ListingError("A rejection requires a comment");
+    }
+    // §4 / US-02 — approval needs a KYB and a sanctions verdict on file. A
+    // rejection does not: the operator may turn an application down for the
+    // documents alone.
+    if (input.approve) {
+      const blocked = await screeningBlocksApproval(application.companyId, tx);
+      if (blocked) throw new ListingError(`Cannot approve: ${blocked}`);
     }
 
     const now = new Date();

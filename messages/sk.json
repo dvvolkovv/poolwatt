@@ -829,7 +829,32 @@
       "approve": "Schváliť",
       "reject": "Zamietnuť",
       "comment": "Komentár (povinný pri zamietnutí)",
-      "screening": "Poznámka k sankčnej kontrole",
+      "screening": {
+        "title": "KYB a sankčný skríning",
+        "help": "Poskytovateľ KYB ešte nie je zmluvne dohodnutý, záznam preto robí operátor: nájdite firmu v národnom registri, vyhľadajte ju a jej vlastníkov v konsolidovaných sankčných zoznamoch a zapíšte, čo ste kontrolovali a čo ste našli. Bez záznamu o KYB a sankčnom skríningu nemožno žiadosť schváliť (ТЗ §4).",
+        "kind": "Kontrola",
+        "result": "Výsledok",
+        "evidence": "Čo bolo kontrolované",
+        "evidencePlaceholder": "napr. výpis ORSR 12345/B; konsolidovaný sankčný zoznam EÚ — bez zhody",
+        "save": "Zapísať",
+        "saving": "Zapisujeme…",
+        "latest": "Posledné výsledky",
+        "none": "Zatiaľ žiadne kontroly.",
+        "blocked": "Nemožno schváliť:",
+        "ready": "Skríning prebehol, žiadosť možno schváliť.",
+        "provider": "zdroj",
+        "checkedAt": "kontrolované",
+        "kindNames": {
+          "KYB": "KYB",
+          "SANCTIONS": "Sankcie",
+          "ADVERSE_MEDIA": "Negatívne médiá"
+        },
+        "resultNames": {
+          "CLEAR": "čisté",
+          "HIT": "zhoda",
+          "INCONCLUSIVE": "nepodarilo sa overiť"
+        }
+      },
       "decided": "Rozhodnuté",
       "reviewer": "Posúdil",
       "assets": "Objekty",

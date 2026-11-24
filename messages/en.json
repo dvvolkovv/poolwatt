@@ -829,7 +829,32 @@
       "approve": "Approve",
       "reject": "Reject",
       "comment": "Comment (required to reject)",
-      "screening": "Sanctions screening note",
+      "screening": {
+        "title": "KYB and sanctions screening",
+        "help": "No KYB provider is contracted yet, so the operator makes the record: look the company up in its national register, search it and its owners in the consolidated sanctions lists, then write down what you checked and what you found. An application cannot be approved without a KYB and a sanctions verdict on file (ТЗ §4).",
+        "kind": "Check",
+        "result": "Result",
+        "evidence": "What was checked",
+        "evidencePlaceholder": "e.g. ORSR extract 12345/B; EU consolidated sanctions list — no match",
+        "save": "Record",
+        "saving": "Recording…",
+        "latest": "Latest results",
+        "none": "No checks yet.",
+        "blocked": "Cannot approve:",
+        "ready": "Screening passed, the application can be approved.",
+        "provider": "source",
+        "checkedAt": "checked",
+        "kindNames": {
+          "KYB": "KYB",
+          "SANCTIONS": "Sanctions",
+          "ADVERSE_MEDIA": "Adverse media"
+        },
+        "resultNames": {
+          "CLEAR": "clear",
+          "HIT": "hit",
+          "INCONCLUSIVE": "inconclusive"
+        }
+      },
       "decided": "Decided",
       "reviewer": "Reviewer",
       "assets": "Assets",

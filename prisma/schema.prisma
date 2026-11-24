@@ -53,6 +53,7 @@ model User {
   // Exchange core (ТЗ §4–§8).
   ownedCompanies    Company[]            @relation("CompanyOwner")
   reviewedListings  ListingApplication[] @relation("ListingReviewer")
+  screeningChecks   ScreeningCheck[]     @relation("ScreeningChecker")
   wallets           Wallet[]
   settlementAccount SettlementAccount?   @relation("UserSettlementAccount")
   coopMemberships   CoopMember[]         @relation("CoopMembership")
@@ -793,6 +794,20 @@ enum KybStatus {
   REJECTED
 }
 
+// §4 "Проверка KYB, санкционный скрининг". What a single check looked at.
+enum ScreeningKind {
+  KYB // the company exists, its registration and licences are real
+  SANCTIONS // consolidated sanctions and PEP lists
+  ADVERSE_MEDIA
+}
+
+// §4 — the verdict the operator must have on record before approving.
+enum ScreeningResult {
+  CLEAR
+  HIT
+  INCONCLUSIVE
+}
+
 // §14: draft → submitted → approved / rejected.
 enum ListingApplicationStatus {
   DRAFT
@@ -935,6 +950,7 @@ model Company {
   updatedAt     DateTime    @updatedAt
 
   applications      ListingApplication[]
+  screenings        ScreeningCheck[]
   assets            Asset[]
   settlementAccount SettlementAccount?
   feePlanId         String?
@@ -963,6 +979,32 @@ model ListingApplication {
 
   @@index([status, submittedAt])
   @@index([companyId])
+}
+
+// §4 / US-02 — one KYB or sanctions check on a company.
+//
+// Who ran the check matters as much as the verdict: an operator typing in what
+// the national register and the EU consolidated list said is a different
+// record from an automated provider's answer, and a regulator will ask which
+// it was. `provider` says so, `evidence` keeps the references, and the row is
+// immutable once written — a re-check is a new row.
+model ScreeningCheck {
+  id          String          @id @default(cuid())
+  companyId   String
+  company     Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  kind        ScreeningKind
+  result      ScreeningResult
+  /// "manual" while no provider is contracted; otherwise the provider's name.
+  provider    String
+  /// Registry extract numbers, list names, search URLs — what was looked at.
+  evidence    String?         @db.Text
+  /// Matches the check turned up, as the provider reported them.
+  matches     Json            @default("[]")
+  checkedById String?
+  checkedBy   User?           @relation("ScreeningChecker", fields: [checkedById], references: [id], onDelete: SetNull)
+  checkedAt   DateTime        @default(now())
+
+  @@index([companyId, kind, checkedAt])
 }
 
 // §13 Asset — a generation object or a storage unit (powerbank).
