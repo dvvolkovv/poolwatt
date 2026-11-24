@@ -91,6 +91,7 @@ the wire; processes serve straight from this directory via PM2.
 rsync -az --delete \
   --exclude='node_modules' --exclude='.next' \
   --exclude='.env' --exclude='.env.local' --exclude='.env.local.bak' \
+  --exclude='var' --exclude='inbox' \
   -e "ssh -i ~/.ssh/id_ed25519" \
   ~/poolwatt/ dv@77.221.159.163:/home/dv/poolwatt/
 
@@ -249,6 +250,13 @@ and `docs/superpowers/plans/2026-05-25-android-build-pipeline.md`.
 - **Phase 1 reads no DB.** `src/lib/snapshot.ts` returns mock data from
   `src/lib/producers.ts`. Don't add Prisma calls until Phase 2 lands — the
   shape is intentional so the landing demo runs without infra.
+
+- **rsync --delete also eats `var/` and `inbox/`.** `var/listing-docs/` holds
+  the KYB documents producers uploaded (ТЗ §4, US-01) and `inbox/` holds the
+  TZ and the progress tracker. Both are gitignored and exist only on the
+  server, so a sync from a laptop without `--exclude='var' --exclude='inbox'`
+  destroys them — and the documents are not recoverable from git. The recipe
+  in the deploy section has both excludes.
 
 - **rsync --delete eats `.env.local`.** The laptop checkout has no
   `.env.local` (gitignored, secrets live only on the server). Without
