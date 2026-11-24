@@ -238,3 +238,17 @@ When writing design specs, send the full text as a message in the conversation
 See [README.md](README.md#roadmap). Currently in Phase 1 (scaffold + landing
 + bot stub). Phase 2 adds real Prisma migrations, the grid worker, and
 Auth.js wiring.
+
+## Telegram file uploads → `inbox/`
+
+Documents sent to `@poolwattbot` are saved by the `message:document` handler
+in `bot/index.ts` to `~/poolwatt/inbox/` (gitignored). The bot **does not**
+run Claude on upload — a multi-file send arrives as several separate Telegram
+messages, and auto-prompting per file would trip `runner.isActive` and drop
+everything after the first. The user uploads, then says what to do in a text
+message; look in `inbox/` at that point.
+
+Before this handler existed, uploads were silently discarded: grammy had no
+`message:document` route, so Telegram delivered the file and nothing consumed
+it. If a user ever says "посмотри файл, который я отправил" and `inbox/` is
+empty, check that this handler is still registered.

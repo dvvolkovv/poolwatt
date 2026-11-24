@@ -3,6 +3,7 @@ import { setDefaultResultOrder } from "node:dns";
 // api.telegram.org makes outbound requests hang for ~10s. Force IPv4 first.
 setDefaultResultOrder("ipv4first");
 
+import { basename, join, relative } from "node:path";
 import { Bot, InputFile, type Context } from "grammy";
 import OpenAI from "openai";
 import { loadConfig } from "./config";
@@ -14,6 +15,7 @@ import { StatusUpdater, truncate } from "./telegramView";
 import { renderToolStatus } from "./statusRender";
 import { downloadTelegramVoice, transcribeBuffer } from "./voice";
 import { synthesizeVoice, translateToSlovak } from "./tts";
+import { formatDocumentAck, saveTelegramDocument } from "./documents";
 
 const config = loadConfig();
 const bot = new Bot(config.telegramBotToken);
@@ -93,6 +95,41 @@ bot.on("message:voice", async (ctx) => {
   }
   await ctx.reply(`🎤 услышал: ${prompt}`);
   await processPrompt(ctx, userId, prompt, { speakReply: true });
+});
+
+// Documents (ТЗ, specs, attachments) are saved to ./inbox/ and NOT fed to
+// Claude immediately: Telegram delivers a multi-file upload as several
+// separate messages, so auto-running a prompt per file would trip
+// `runner.isActive` and drop every file after the first. The user sends the
+// files, then says what to do with them in a normal text message.
+bot.on("message:document", async (ctx) => {
+  const userId = ctx.from?.id ?? 0;
+  if (!isAllowed(userId, config.allowedUserIds)) {
+    await ctx.reply("Файлы принимаю только от whitelisted пользователей.");
+    return;
+  }
+
+  const doc = ctx.message.document;
+  try {
+    const saved = await saveTelegramDocument({
+      fileId: doc.file_id,
+      fileName: doc.file_name,
+      botToken: config.telegramBotToken,
+      inboxDir: join(config.claudeCwd, "inbox"),
+    });
+    const savedName = basename(saved.path);
+    await ctx.reply(
+      formatDocumentAck({
+        sentName: doc.file_name ?? savedName,
+        savedName,
+        relPath: relative(config.claudeCwd, saved.path),
+        bytes: saved.bytes,
+      }),
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    await ctx.reply(`Не смог сохранить файл: ${msg.slice(0, 300)}`);
+  }
 });
 
 interface PromptOptions {

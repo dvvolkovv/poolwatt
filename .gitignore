@@ -46,3 +46,6 @@ yarn-error.log*
 
 # Ad-hoc TTS report outputs (scripts/status-report-audio*.ts)
 /status-report*.mp3
+
+# Telegram document uploads land here (ТЗ, specs, attachments) — not committed.
+inbox/
