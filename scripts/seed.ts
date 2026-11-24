@@ -15,6 +15,7 @@ import {
   seedFeePlans,
   seedGridZones,
 } from "@/lib/seed/grid-zones";
+import { ROAMING_AGREEMENT_SEED, seedRoamingAgreements } from "@/lib/seed/roaming";
 
 async function main() {
   console.log(`[seed] producers: starting (${MOCK_PRODUCERS.length} rows in source)`);
@@ -41,6 +42,10 @@ async function main() {
   console.log(`[seed] fee plans: starting (${FEE_PLAN_SEED.length} rows in source)`);
   const fp = await seedFeePlans(prisma, FEE_PLAN_SEED);
   console.log(`[seed] fee plans: created=${fp.created}, skipped=${fp.skipped}`);
+
+  console.log(`[seed] roaming agreements: starting (${ROAMING_AGREEMENT_SEED.length} rows in source)`);
+  const ra = await seedRoamingAgreements(prisma, ROAMING_AGREEMENT_SEED);
+  console.log(`[seed] roaming agreements: created=${ra.created}, skipped=${ra.skipped}`);
 
   console.log(`[seed] done`);
 }

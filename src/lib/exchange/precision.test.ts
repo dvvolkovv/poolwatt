@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   KWH_STEP,
+  ceilKwh,
   ceilMoney,
   floorKwh,
   isKwhDust,
@@ -80,5 +81,21 @@ describe("kwhEquals / isKwhDust", () => {
   it("flags residue below the grid as dust", () => {
     expect(isKwhDust(0.0004)).toBe(true);
     expect(isKwhDust(0.001)).toBe(false);
+  });
+});
+
+describe("ceilKwh", () => {
+  it("rounds a kWh amount up to the token grid", () => {
+    expect(ceilKwh(1.3333)).toBe(1.334);
+    expect(ceilKwh(0.0001)).toBe(0.001);
+  });
+
+  it("leaves an amount already on the grid alone", () => {
+    expect(ceilKwh(1.234)).toBe(1.234);
+    expect(ceilKwh(0)).toBe(0);
+  });
+
+  it("rounds a negative amount towards zero, never past it", () => {
+    expect(ceilKwh(-1.3333)).toBe(-1.333);
   });
 });

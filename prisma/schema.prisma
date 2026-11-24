@@ -55,6 +55,7 @@ model User {
   reviewedListings  ListingApplication[] @relation("ListingReviewer")
   wallets           Wallet[]
   settlementAccount SettlementAccount?   @relation("UserSettlementAccount")
+  coopMemberships   CoopMember[]         @relation("CoopMembership")
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -905,6 +906,10 @@ model GridZone {
   payments  Payment[]
   transfers TokenTransfer[]
   readings  MeterReading[]
+
+  cooperatives         Cooperative[]
+  roamingAsHomeZone    RoamingAgreement[] @relation("RoamingHomeZone")
+  roamingAsVisitedZone RoamingAgreement[] @relation("RoamingVisitedZone")
 }
 
 // §13 Company — the legal entity that lists on the platform. Distinct from
@@ -933,6 +938,7 @@ model Company {
   settlementAccount SettlementAccount?
   feePlanId         String?
   feePlan           FeePlan?             @relation(fields: [feePlanId], references: [id], onDelete: SetNull)
+  cooperative       Cooperative?
 
   @@unique([country, regNumber])
   @@index([type, kybStatus])
@@ -1281,4 +1287,152 @@ model AuditLog {
 
   @@index([entity, entityId, at])
   @@index([at])
+}
+
+// ---------------------------------------------------------------------------
+// Cooperatives and roaming — ТЗ §7, §8 "Роуминг", §16.10, §24, US-10/11/21.
+// ---------------------------------------------------------------------------
+
+// §24.1 — only a KYC-verified member may use or sell received kWh, so
+// membership carries its own status instead of relying on the Company KYB.
+enum CoopMemberStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum CoopVoteStatus {
+  OPEN
+  CLOSED
+}
+
+// §2 "Кооператив — владелец накопителей (пауэрбанков)". The legal entity is a
+// Company of type COOPERATIVE; this model adds the membership, income and
+// governance layer on top of it.
+model Cooperative {
+  id        String   @id @default(cuid())
+  companyId String   @unique
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  zoneId    String
+  zone      GridZone @relation(fields: [zoneId], references: [id])
+  name      String
+  // Shares are issued, not derived: a member's stake does not change when
+  // another member joins.
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members CoopMember[]
+  payouts CoopPayout[]
+  votes   CoopVote[]
+
+  @@index([zoneId])
+}
+
+// US-10 — "количество паёв, доход за период, история выплат".
+model CoopMember {
+  id            String           @id @default(cuid())
+  coopId        String
+  coop          Cooperative      @relation(fields: [coopId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User             @relation("CoopMembership", fields: [userId], references: [id], onDelete: Cascade)
+  shares        Int              @default(0)
+  status        CoopMemberStatus @default(PENDING)
+  kycVerifiedAt DateTime?
+  joinedAt      DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  allocations CoopPayoutAllocation[]
+  ballots     CoopBallot[]
+
+  @@unique([coopId, userId])
+  @@index([coopId, status])
+}
+
+// §16.10 — one income period, split pro rata by shares. The split is stored
+// rather than recomputed so a later share change cannot rewrite history.
+model CoopPayout {
+  id           String      @id @default(cuid())
+  coopId       String
+  coop         Cooperative @relation(fields: [coopId], references: [id], onDelete: Cascade)
+  periodStart  DateTime
+  periodEnd    DateTime
+  incomeAmount Decimal     @db.Decimal(18, 2)
+  currency     String      @default("EUR")
+  totalShares  Int
+  note         String?
+  createdAt    DateTime    @default(now())
+
+  allocations CoopPayoutAllocation[]
+
+  @@unique([coopId, periodStart, periodEnd])
+  @@index([coopId, periodStart])
+}
+
+model CoopPayoutAllocation {
+  id       String     @id @default(cuid())
+  payoutId String
+  payout   CoopPayout @relation(fields: [payoutId], references: [id], onDelete: Cascade)
+  memberId String
+  member   CoopMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  shares   Int
+  amount   Decimal    @db.Decimal(18, 2)
+  paidAt   DateTime?
+
+  @@unique([payoutId, memberId])
+  @@index([memberId])
+}
+
+// US-21 — "один член, один голос; результаты видны после закрытия голосования".
+model CoopVote {
+  id        String         @id @default(cuid())
+  coopId    String
+  coop      Cooperative    @relation(fields: [coopId], references: [id], onDelete: Cascade)
+  question  String
+  options   String[]
+  status    CoopVoteStatus @default(OPEN)
+  opensAt   DateTime       @default(now())
+  closesAt  DateTime
+  closedAt  DateTime?
+  // Filled on close; null means a tie or no ballots.
+  winner    String?
+  createdAt DateTime       @default(now())
+
+  ballots CoopBallot[]
+
+  @@index([coopId, status])
+}
+
+// The unique constraint is the "one member, one vote" rule in the schema:
+// changing a vote updates the row, it never adds one.
+model CoopBallot {
+  id        String     @id @default(cuid())
+  voteId    String
+  vote      CoopVote   @relation(fields: [voteId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    CoopMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  option    String
+  castAt    DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([voteId, memberId])
+}
+
+// §8 "Роуминг" — the clearing corridor between two zones. Directional: the
+// partner's fee for spending SK-bought kWh in LT need not match the reverse.
+model RoamingAgreement {
+  id            String   @id @default(cuid())
+  homeZoneId    String
+  homeZone      GridZone @relation("RoamingHomeZone", fields: [homeZoneId], references: [id], onDelete: Cascade)
+  visitedZoneId String
+  visitedZone   GridZone @relation("RoamingVisitedZone", fields: [visitedZoneId], references: [id], onDelete: Cascade)
+  partnerName   String
+  feePct        Decimal  @default(0) @db.Decimal(5, 2)
+  enabled       Boolean  @default(true)
+  // §24.2 — AML limit per user per day, null = no cap configured.
+  dailyLimitKwh Decimal? @db.Decimal(18, 3)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([homeZoneId, visitedZoneId])
+  @@index([visitedZoneId])
 }

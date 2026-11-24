@@ -54,6 +54,16 @@ export function floorKwh(value: number): number {
   return Math.floor(roundTo(value * factor, 6)) / factor;
 }
 
+/**
+ * Round a kWh quantity *up* to the token grid. Used wherever handing out a
+ * rounded-down amount would mean giving away energy nobody paid for — a
+ * roaming conversion debit, a clearing fee.
+ */
+export function ceilKwh(value: number): number {
+  const factor = 10 ** KWH_SCALE;
+  return Math.ceil(roundTo(value * factor, 6)) / factor;
+}
+
 /** Round a fiat amount *up*: authorization holds must never under-cover. */
 export function ceilMoney(value: number): number {
   const factor = 10 ** MONEY_SCALE;
