@@ -1520,5 +1520,30 @@
       "note": "A note the owner can act on",
       "working": "…"
     }
+  },
+  "staff": {
+    "eyebrow": "Staff",
+    "title": "Staff and roles",
+    "help": "A role says what somebody may do; the scope says where. Tick no points and the role covers the whole network.",
+    "invite": "Add somebody",
+    "username": "Username",
+    "role": "Role",
+    "scope": "Points",
+    "wholeNetwork": "No points ticked = the whole network",
+    "add": "Add",
+    "save": "Save",
+    "remove": "Remove",
+    "empty": "Nobody on the staff yet",
+    "permissions": "May",
+    "roleName": {
+      "ADMIN": "Administrator",
+      "ENGINEER": "Engineer",
+      "SUPPORT": "Support",
+      "MARKETER": "Marketer",
+      "ACCOUNTANT": "Accountant",
+      "STOREKEEPER": "Storekeeper",
+      "VIEWER": "View only",
+      "DISPATCHER": "Dispatcher"
+    }
   }
 }

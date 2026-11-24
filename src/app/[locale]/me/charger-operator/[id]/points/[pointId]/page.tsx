@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { num, numOrNull } from "@/lib/exchange/decimal";
 import { missingRequiredFields } from "@/lib/points/point-service";
 import { PointWizard, type WizardLabels } from "@/components/points/point-wizard";
+import { visiblePointIds } from "@/lib/staff/staff-service";
 
 export const dynamic = "force-dynamic";
 
@@ -35,8 +36,12 @@ export default async function PointWizardPage({
     },
   });
   if (!point || point.operatorId !== id) notFound();
-  if (point.operator.claimedById !== session.user.id && session.user.role !== "ADMIN") {
-    notFound();
+  const isOwner =
+    point.operator.claimedById === session.user.id || session.user.role === "ADMIN";
+  if (!isOwner) {
+    // US-47 — a point outside the employee's scope simply is not there.
+    const scope = await visiblePointIds(id, session.user.id);
+    if (scope !== null && !scope.includes(pointId)) notFound();
   }
 
   const t = await getTranslations("points");

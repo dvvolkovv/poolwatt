@@ -7,6 +7,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NewPointForm } from "@/components/points/new-point-form";
+import { visiblePointIds } from "@/lib/staff/staff-service";
 
 export const dynamic = "force-dynamic";
 
@@ -28,12 +29,18 @@ export default async function PointsPage({
     select: { id: true, displayName: true, claimedById: true },
   });
   if (!operator) notFound();
-  if (operator.claimedById !== session.user.id && session.user.role !== "ADMIN") notFound();
+
+  // US-47 — an employee sees only the points they were given; the owner and
+  // the platform operator see everything.
+  const isOwner =
+    operator.claimedById === session.user.id || session.user.role === "ADMIN";
+  const scope = isOwner ? null : await visiblePointIds(id, session.user.id);
+  if (!isOwner && Array.isArray(scope) && scope.length === 0) notFound();
 
   const t = await getTranslations("points");
 
   const points = await prisma.acceptancePoint.findMany({
-    where: { operatorId: id },
+    where: { operatorId: id, ...(scope ? { id: { in: scope } } : {}) },
     orderBy: { createdAt: "desc" },
     include: { _count: { select: { connectors: true } } },
   });
@@ -53,6 +60,7 @@ export default async function PointsPage({
       </div>
       <h1 className="mb-6 text-[28px] font-bold">{t("title")}</h1>
 
+      {isOwner && (
       <section className="mb-10">
         <h2 className="mb-3 text-[13px] uppercase tracking-[0.14em] text-muted">{t("new")}</h2>
         <NewPointForm
@@ -71,6 +79,7 @@ export default async function PointsPage({
           }}
         />
       </section>
+      )}
 
       <section>
         <h2 className="mb-3 text-[13px] uppercase tracking-[0.14em] text-muted">{t("list")}</h2>

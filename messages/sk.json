@@ -1520,5 +1520,30 @@
       "note": "Poznámka, s ktorou vie majiteľ pracovať",
       "working": "…"
     }
+  },
+  "staff": {
+    "eyebrow": "Zamestnanci",
+    "title": "Zamestnanci a roly",
+    "help": "Rola hovorí, čo človek smie; rozsah hovorí kde. Bez označených bodov platí rola pre celú sieť.",
+    "invite": "Pridať človeka",
+    "username": "Používateľské meno",
+    "role": "Rola",
+    "scope": "Body",
+    "wholeNetwork": "Žiadny bod neoznačený — celá sieť",
+    "add": "Pridať",
+    "save": "Uložiť",
+    "remove": "Odobrať",
+    "empty": "Zatiaľ žiadni zamestnanci",
+    "permissions": "Smie",
+    "roleName": {
+      "ADMIN": "Administrátor",
+      "ENGINEER": "Technik",
+      "SUPPORT": "Podpora",
+      "MARKETER": "Marketér",
+      "ACCOUNTANT": "Účtovník",
+      "STOREKEEPER": "Skladník",
+      "VIEWER": "Len prezeranie",
+      "DISPATCHER": "Dispečer"
+    }
   }
 }
