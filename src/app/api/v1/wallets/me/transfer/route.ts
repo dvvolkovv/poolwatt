@@ -2,7 +2,15 @@
 // GET returns the remaining AML allowance for the transfer screen.
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { domainError, ok, parseBody, sessionUser, unauthorized } from "@/lib/exchange/api";
+import {
+  domainError,
+  idempotencyKey,
+  idempotent,
+  ok,
+  parseBody,
+  sessionUser,
+  unauthorized,
+} from "@/lib/exchange/api";
 import { transfersOpen } from "@/lib/exchange/gates";
 import { transferAllowance, transferKwh } from "@/lib/exchange/transfer-service";
 import { requireZone } from "@/lib/exchange/zone-service";
@@ -22,17 +30,27 @@ export async function POST(req: NextRequest) {
   const parsed = await parseBody(req, bodySchema);
   if ("response" in parsed) return parsed.response;
 
+  const key = idempotencyKey(req);
   try {
-    const zone = await requireZone(parsed.data.zoneId);
-    const transfer = await transferKwh({
-      fromUserId: user.id,
-      toUsername: parsed.data.toUsername,
-      zoneId: zone.id,
-      amountKwh: parsed.data.amountKwh,
-      note: parsed.data.note ?? null,
-      requireConfirmation: parsed.data.requireConfirmation,
+    return await idempotent({
+      endpoint: "POST /v1/wallets/me/transfer",
+      key,
+      userKey: user.id,
+      body: parsed.data,
+      run: async () => {
+        const zone = await requireZone(parsed.data.zoneId);
+        const transfer = await transferKwh({
+          fromUserId: user.id,
+          toUsername: parsed.data.toUsername,
+          zoneId: zone.id,
+          amountKwh: parsed.data.amountKwh,
+          note: parsed.data.note ?? null,
+          requireConfirmation: parsed.data.requireConfirmation,
+          idempotencyKey: key,
+        });
+        return { status: 201, data: { transfer } };
+      },
     });
-    return ok({ transfer }, 201);
   } catch (err) {
     return domainError(err);
   }

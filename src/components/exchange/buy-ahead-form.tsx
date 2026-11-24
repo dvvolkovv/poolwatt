@@ -3,9 +3,10 @@
 // US-07 "покупка кВт·ч впрок" — one click at the market price, or a limit
 // price to wait for a better one.
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { submitBuyAhead, type OrderActionResult } from "@/app/[locale]/exchange/actions";
+import { newRequestKey } from "@/lib/request-key";
 
 type Props = {
   zones: { id: string; code: string; currency: string }[];
@@ -20,6 +21,8 @@ export function BuyAheadForm({ zones, defaultZoneId, labels }: Props) {
   const [result, setResult] = useState<OrderActionResult | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  // §15 — one key per purchase intent, so a double click buys once.
+  const requestKey = useRef(newRequestKey());
 
   const amountNum = Number(amount.replace(",", "."));
   const limitNum = limitPrice.trim() === "" ? null : Number(limitPrice.replace(",", "."));
@@ -31,9 +34,15 @@ export function BuyAheadForm({ zones, defaultZoneId, labels }: Props) {
         e.preventDefault();
         setResult(null);
         startTransition(async () => {
-          const r = await submitBuyAhead({ zoneId, amountKwh: amountNum, limitPrice: limitNum });
+          const r = await submitBuyAhead({
+            zoneId,
+            amountKwh: amountNum,
+            limitPrice: limitNum,
+            idempotencyKey: requestKey.current,
+          });
           setResult(r);
           if (r.ok) {
+            requestKey.current = newRequestKey();
             setAmount("");
             router.refresh();
           }

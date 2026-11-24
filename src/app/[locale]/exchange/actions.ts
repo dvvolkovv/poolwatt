@@ -30,6 +30,8 @@ const placeSchema = z.object({
   amountKwh: z.number().positive().max(10_000_000),
   limitPrice: z.number().positive().max(99.9999).nullable(),
   intervalStart: z.string().nullable(),
+  // §15 — the browser mints one key per intent; a double click replays it.
+  idempotencyKey: z.string().min(8).max(190),
 });
 
 export async function submitOrder(input: unknown): Promise<OrderActionResult> {
@@ -59,6 +61,7 @@ export async function submitOrder(input: unknown): Promise<OrderActionResult> {
       amountKwh: parsed.data.amountKwh,
       limitPrice: parsed.data.limitPrice,
       intervalStart,
+      idempotencyKey: parsed.data.idempotencyKey,
     });
     revalidatePath("/[locale]/exchange", "page");
     return {
@@ -92,6 +95,7 @@ const buyAheadSchema = z.object({
   zoneId: z.string().min(1),
   amountKwh: z.number().positive().max(1_000_000),
   limitPrice: z.number().positive().max(99.9999).nullable(),
+  idempotencyKey: z.string().min(8).max(190),
 });
 
 /** US-07 — "покупка кВт·ч впрок" from the wallet screen. */
@@ -110,6 +114,7 @@ export async function submitBuyAhead(input: unknown): Promise<OrderActionResult>
       zoneId: parsed.data.zoneId,
       amountKwh: parsed.data.amountKwh,
       limitPrice: parsed.data.limitPrice,
+      idempotencyKey: parsed.data.idempotencyKey,
     });
     revalidatePath("/[locale]/me/wallet", "page");
     return {

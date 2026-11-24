@@ -32,6 +32,31 @@ export interface TransferInput {
   note?: string | null;
   /** When true the recipient must confirm before the tokens move (§24). */
   requireConfirmation?: boolean;
+  /** §15 — a replayed POST must not move the energy twice. */
+  idempotencyKey?: string | null;
+}
+
+export interface TransferResult {
+  transferId: string;
+  status: TokenTransferStatus;
+  amountKwh: number;
+  /** True when the key had already been used and nothing new happened. */
+  idempotentReplay?: boolean;
+}
+
+/** The shape a replayed key answers with — read, never re-executed. */
+async function replayTransfer(key: string): Promise<TransferResult | null> {
+  const existing = await prisma.tokenTransfer.findUnique({
+    where: { idempotencyKey: key },
+    select: { id: true, status: true, amountKwh: true },
+  });
+  if (!existing) return null;
+  return {
+    transferId: existing.id,
+    status: existing.status,
+    amountKwh: num(existing.amountKwh),
+    idempotentReplay: true,
+  };
 }
 
 async function assertShareCooperative(
@@ -59,8 +84,12 @@ async function transferredSince(walletId: string, since: Date): Promise<number> 
   return roundKwh(rows.reduce((sum, r) => sum + num(r.amountKwh), 0));
 }
 
-export async function transferKwh(input: TransferInput) {
+export async function transferKwh(input: TransferInput): Promise<TransferResult> {
   assertTransfersOpen();
+  if (input.idempotencyKey) {
+    const replay = await replayTransfer(input.idempotencyKey);
+    if (replay) return replay;
+  }
   const amount = roundKwh(input.amountKwh);
   if (!(amount > 0)) throw new TransferError("Transfer amount must be positive");
 
@@ -103,24 +132,53 @@ export async function transferKwh(input: TransferInput) {
     );
   }
 
+  try {
+    return await runTransfer(input, { amount, fromWalletId: fromWallet.id, toWalletId: toWallet.id, recipientName: recipient.username, now });
+  } catch (err) {
+    // Two concurrent requests with one key: the loser of the unique index
+    // answers with what the winner did, so the caller sees one transfer.
+    if (
+      input.idempotencyKey &&
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      const replay = await replayTransfer(input.idempotencyKey);
+      if (replay) return replay;
+    }
+    throw err;
+  }
+}
+
+async function runTransfer(
+  input: TransferInput,
+  ctx: {
+    amount: number;
+    fromWalletId: string;
+    toWalletId: string;
+    recipientName: string;
+    now: Date;
+  },
+): Promise<TransferResult> {
+  const { amount, fromWalletId, toWalletId, now } = ctx;
   return prisma.$transaction(async (tx) => {
     const pending = Boolean(input.requireConfirmation);
     const transfer = await tx.tokenTransfer.create({
       data: {
         zoneId: input.zoneId,
-        fromWalletId: fromWallet.id,
-        toWalletId: toWallet.id,
+        fromWalletId,
+        toWalletId,
         amountKwh: new Prisma.Decimal(amount),
         note: input.note?.trim() || null,
         status: pending ? TokenTransferStatus.CREATED : TokenTransferStatus.CONFIRMED,
         confirmedAt: pending ? null : now,
+        idempotencyKey: input.idempotencyKey ?? null,
       },
     });
 
     if (!pending) {
       await transferTokens(tx, {
-        fromWalletId: fromWallet.id,
-        toWalletId: toWallet.id,
+        fromWalletId,
+        toWalletId,
         amountKwh: amount,
       });
     }
@@ -130,7 +188,7 @@ export async function transferKwh(input: TransferInput) {
       entity: "TokenTransfer",
       entityId: transfer.id,
       action: pending ? "transfer.created" : "transfer.confirmed",
-      after: { to: recipient.username, amountKwh: amount, zoneId: input.zoneId },
+      after: { to: ctx.recipientName, amountKwh: amount, zoneId: input.zoneId },
     });
 
     return { transferId: transfer.id, status: transfer.status, amountKwh: amount };

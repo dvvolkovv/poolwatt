@@ -336,26 +336,53 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
     throw new OrderRejected("Limit price must be positive");
   }
 
+  try {
+    return await placeOrderTx(input, amountKwh, limitPrice);
+  } catch (err) {
+    // Two concurrent requests with one key: the one that lost the unique
+    // index answers with the order the winner created (§15).
+    if (
+      input.idempotencyKey &&
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      const replay = await replayOrder(input.idempotencyKey);
+      if (replay) return replay;
+    }
+    throw err;
+  }
+}
+
+/** §15 — what a repeated key answers with: the first order, untouched. */
+async function replayOrder(key: string, db: Db = prisma): Promise<PlaceOrderResult | null> {
+  const existing = await db.order.findUnique({
+    where: { idempotencyKey: key },
+    include: { buyTrades: { select: { id: true } }, sellTrades: { select: { id: true } } },
+  });
+  if (!existing) return null;
+  return {
+    orderId: existing.id,
+    status: existing.status,
+    filledKwh: num(existing.filledKwh),
+    remainingKwh: roundKwh(num(existing.amountKwh) - num(existing.filledKwh)),
+    avgPrice: numOrNull(existing.avgPrice),
+    notional: roundMoney(num(existing.filledKwh) * num(existing.avgPrice ?? 0)),
+    fee: 0,
+    tradeIds: [...existing.buyTrades, ...existing.sellTrades].map((t) => t.id),
+    rejectReason: existing.rejectReason,
+    idempotentReplay: true,
+  } satisfies PlaceOrderResult;
+}
+
+async function placeOrderTx(
+  input: PlaceOrderInput,
+  amountKwh: number,
+  limitPrice: number | null,
+): Promise<PlaceOrderResult> {
   return prisma.$transaction(async (tx) => {
     if (input.idempotencyKey) {
-      const existing = await tx.order.findUnique({
-        where: { idempotencyKey: input.idempotencyKey },
-        include: { buyTrades: { select: { id: true } }, sellTrades: { select: { id: true } } },
-      });
-      if (existing) {
-        return {
-          orderId: existing.id,
-          status: existing.status,
-          filledKwh: num(existing.filledKwh),
-          remainingKwh: roundKwh(num(existing.amountKwh) - num(existing.filledKwh)),
-          avgPrice: numOrNull(existing.avgPrice),
-          notional: roundMoney(num(existing.filledKwh) * num(existing.avgPrice ?? 0)),
-          fee: 0,
-          tradeIds: [...existing.buyTrades, ...existing.sellTrades].map((t) => t.id),
-          rejectReason: existing.rejectReason,
-          idempotentReplay: true,
-        } satisfies PlaceOrderResult;
-      }
+      const replay = await replayOrder(input.idempotencyKey, tx);
+      if (replay) return replay;
     }
 
     const zone = await tx.gridZone.findUniqueOrThrow({ where: { id: input.zoneId } });

@@ -14,6 +14,7 @@ loadDotenv({ path: ".env.local", override: true });
 import cron from "node-cron";
 import { prisma } from "@/lib/prisma";
 import { closeInterval, reconcileWalletBalances } from "@/lib/exchange/interval-close-service";
+import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { intervalStartFor } from "@/lib/exchange/zone-service";
 import { startTelemetrySubscriber } from "./mqtt";
 
@@ -59,6 +60,12 @@ export async function runReconciliation(): Promise<void> {
   console.error(`[worker] RECONCILIATION DRIFT on ${drifts.length} wallet(s):`, drifts);
 }
 
+/** §15 — the replay log is a log, not a financial record: 30 days is plenty. */
+export async function runIdempotencyPurge(): Promise<void> {
+  const removed = await purgeIdempotencyRecords();
+  if (removed > 0) log(`idempotency: purged ${removed} expired record(s)`);
+}
+
 async function main() {
   log(`starting. cwd=${process.cwd()}`);
 
@@ -74,12 +81,17 @@ async function main() {
     void runReconciliation();
   });
 
+  // Daily purge of the idempotency replay log (§15), at 03:40.
+  cron.schedule("40 3 * * *", () => {
+    void runIdempotencyPurge();
+  });
+
   // §4 / US-03 — MQTT intake, when a broker is configured.
   startTelemetrySubscriber();
 
   // Run once at boot so a restart does not leave a stale interval open.
   await runIntervalClose();
-  log("schedules registered: interval close */5 min, reconciliation 03:15");
+  log("schedules registered: interval close */5 min, reconciliation 03:15, idempotency purge 03:40");
 }
 
 main().catch((err) => {

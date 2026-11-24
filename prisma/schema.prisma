@@ -1293,6 +1293,8 @@ model TokenTransfer {
   amountKwh    Decimal             @db.Decimal(18, 3)
   note         String?
   status       TokenTransferStatus @default(CONFIRMED)
+  // §15, same second line of defence as Order and Payment carry.
+  idempotencyKey String?           @unique
   createdAt    DateTime            @default(now())
   confirmedAt  DateTime?
   cancelledAt  DateTime?
@@ -1478,4 +1480,24 @@ model RoamingAgreement {
 
   @@unique([homeZoneId, visitedZoneId])
   @@index([visitedZoneId])
+}
+
+// §15 — "Все POST-запросы с ключом идемпотентности". One row per
+// (endpoint, caller, key): the stored response is replayed verbatim, so a
+// retried payment or order cannot become a second one. `status = 0` marks a
+// request still in flight; see src/lib/exchange/idempotency.ts.
+model IdempotencyRecord {
+  id          String   @id @default(cuid())
+  endpoint    String
+  key         String
+  // The caller: user id for session endpoints, api key id for equipment.
+  userKey     String
+  requestHash String
+  status      Int      @default(0)
+  response    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  @@unique([endpoint, userKey, key])
+  @@index([createdAt])
 }

@@ -4,7 +4,7 @@ import { z } from "zod";
 import {
   domainError,
   idempotencyKey,
-  ok,
+  idempotent,
   parseBody,
   sessionUser,
   unauthorized,
@@ -26,16 +26,25 @@ export async function POST(req: NextRequest) {
   const parsed = await parseBody(req, bodySchema);
   if ("response" in parsed) return parsed.response;
 
+  const key = idempotencyKey(req);
   try {
-    const zone = await requireZone(parsed.data.zoneId);
-    const order = await buyAhead({
-      userId: user.id,
-      zoneId: zone.id,
-      amountKwh: parsed.data.amountKwh,
-      limitPrice: parsed.data.limitPrice ?? null,
-      idempotencyKey: idempotencyKey(req),
+    return await idempotent({
+      endpoint: "POST /v1/wallets/me/buy",
+      key,
+      userKey: user.id,
+      body: parsed.data,
+      run: async () => {
+        const zone = await requireZone(parsed.data.zoneId);
+        const order = await buyAhead({
+          userId: user.id,
+          zoneId: zone.id,
+          amountKwh: parsed.data.amountKwh,
+          limitPrice: parsed.data.limitPrice ?? null,
+          idempotencyKey: key,
+        });
+        return { status: order.rejectReason ? 200 : 201, data: { order } };
+      },
     });
-    return ok({ order }, order.rejectReason ? 200 : 201);
   } catch (err) {
     return domainError(err);
   }

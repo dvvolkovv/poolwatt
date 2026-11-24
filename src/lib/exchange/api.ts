@@ -10,6 +10,11 @@ import type { NextRequest } from "next/server";
 import { ZodError, type ZodType } from "zod";
 import { auth } from "@/lib/auth";
 import { FeatureClosedError } from "./gates";
+import {
+  IdempotencyConflictError,
+  IdempotencyKeyRequiredError,
+  runIdempotent,
+} from "./idempotency";
 
 export function ok(data: Record<string, unknown>, status = 200) {
   return NextResponse.json({ ok: true, ...data }, { status });
@@ -57,6 +62,34 @@ export function bearerToken(req: NextRequest): string | null {
 export function idempotencyKey(req: NextRequest): string | null {
   const key = req.headers.get("idempotency-key");
   return key && key.trim().length > 0 ? key.trim().slice(0, 190) : null;
+}
+
+/**
+ * §15 — run a money- or energy-moving POST under its idempotency key and
+ * reply with the stored response when the client asks again.
+ *
+ * `run` returns the payload rather than a `NextResponse` because the payload
+ * is what gets stored for the replay. Domain errors are left to the caller's
+ * own `catch`: a failure is not an outcome worth remembering, and the client
+ * may retry it with the same key.
+ */
+export async function idempotent<T extends Record<string, unknown>>(args: {
+  endpoint: string;
+  key: string | null;
+  userKey: string;
+  body: unknown;
+  run: () => Promise<{ status: number; data: T }>;
+}): Promise<NextResponse> {
+  try {
+    const result = await runIdempotent(args);
+    const response = ok(result.data, result.status);
+    if (result.replayed) response.headers.set("Idempotency-Replayed", "true");
+    return response;
+  } catch (err) {
+    if (err instanceof IdempotencyKeyRequiredError) return fail(err.message, 400);
+    if (err instanceof IdempotencyConflictError) return fail(err.message, 409);
+    throw err;
+  }
 }
 
 export type Parsed<T> = { data: T } | { response: NextResponse };

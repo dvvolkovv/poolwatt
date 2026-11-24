@@ -7,24 +7,25 @@
 
 ## Часть 1. Ключ идемпотентности на всех POST (§15)
 
-- [ ] Миграция: таблица `IdempotencyRecord`, колонка
+- [x] Миграция: таблица `IdempotencyRecord`, колонка
       `TokenTransfer.idempotencyKey @unique`.
-- [ ] `src/lib/exchange/idempotency.ts`: `canonicalHash(body)`,
+- [x] `src/lib/exchange/idempotency.ts`: `canonicalHash(body)`,
       `beginRequest`, `completeRequest`, `withIdempotency`.
-- [ ] Тесты `idempotency.test.ts`: нет заголовка → 400; повтор с тем же
+- [x] Тесты `idempotency.test.ts`: нет заголовка → 400; повтор с тем же
       телом → сохранённый ответ и `Idempotency-Replayed`; тот же ключ с
       другим телом → 409; одновременные запросы → один проходит, второй
       409; брошенная заглушка старше 60 с перехватывается; ошибка не
       кешируется.
-- [ ] Обернуть маршруты: `orders`, `payments/charge`, `wallets/me/buy`,
-      `wallets/me/transfer`, `telemetry/readings`, `accounts`,
-      `coop/[id]/votes`.
-- [ ] `transferKwh` принимает и проверяет `idempotencyKey`, тест на
+- [x] Обернуть маршруты: `orders`, `payments/charge`, `wallets/me/buy`,
+      `wallets/me/transfer`, `telemetry/readings`, `accounts` (у голосования
+      POST-маршрута нет, один голос на члена защищён индексом).
+- [x] `transferKwh` принимает и проверяет `idempotencyKey`, тест на
       одновременный повтор перевода.
-- [ ] `src/lib/api-client.ts`: `postJson` с ключом на попытку формы;
-      перевести на него формы кошелька и терминала.
-- [ ] Суточная чистка записей старше 30 суток в воркере.
-- [ ] Прогон всей сюиты и e2e, коммит.
+- [x] Ключ на попытку формы: `newRequestKey()` в `src/lib/request-key.ts`,
+      проброшен через серверные действия терминала и кошелька (REST
+      наши страницы не используют).
+- [x] Суточная чистка записей старше 30 суток в воркере.
+- [x] Прогон всей сюиты и e2e, коммит.
 
 ## Часть 2. Подпись HMAC для оборудования (§15)
 

@@ -39,7 +39,7 @@ model IdempotencyRecord {
   response    Json
   createdAt   DateTime @default(now())
 
-  @@unique([endpoint, key])
+  @@unique([endpoint, userKey, key])
   @@index([createdAt])
 }
 ```
@@ -49,14 +49,15 @@ model IdempotencyRecord {
 1. Нет заголовка — `400 Idempotency-Key header is required`. §15 требует
    ключ на всех POST, и все вызывающие стороны наши.
 2. Есть запись с тем же `requestHash` — отдать сохранённый ответ как есть,
-   с заголовком `Idempotency-Replayed: true`.
+   с заголовком `Idempotency-Replayed: true`. Ключ действует в границах
+   вызывающей стороны (`userKey`): чужой ключ не должен мешать работать.
 3. Есть запись с другим `requestHash` — `409 Idempotency-Key was already
    used with a different body`.
 4. Нет записи — выполнить, затем записать ответ. Запись идёт отдельной
    транзакцией после успеха: ответы об ошибках не кешируются, повтор после
    сбоя должен иметь право попробовать снова.
 5. Два одновременных запроса с одним ключом: второй падает на уникальном
-   индексе `(endpoint, key)` при вставке «в работе» и получает
+   индексе `(endpoint, userKey, key)` при вставке «в работе» и получает
    `409 A request with this Idempotency-Key is in flight`. Первым шагом
    вставляется заглушка со `status = 0`, по завершении она обновляется
    настоящим ответом; заглушка старше 60 секунд считается брошенной и
@@ -73,13 +74,16 @@ model IdempotencyRecord {
 ### Где применяется
 
 `POST /v1/orders`, `/v1/payments/charge`, `/v1/wallets/me/buy`,
-`/v1/wallets/me/transfer`, `/v1/telemetry/readings`, `/v1/accounts`,
-`/v1/coop/{id}/votes`. Запросы-расчёты (`/v1/payments/quote`,
-`/v1/roaming/quote`) ничего не меняют и остаются без ключа.
+`/v1/wallets/me/transfer`, `/v1/telemetry/readings`, `/v1/accounts`.
+Запросы-расчёты (`/v1/payments/quote`, `/v1/roaming/quote`) ничего не
+меняют и остаются без ключа. Голосование кооператива POST-маршрута не
+имеет, а один голос на члена и так защищён уникальным индексом.
 
-Клиентская сторона: хелпер `postJson(url, body)` в `src/lib/api-client.ts`
-подставляет `crypto.randomUUID()` и переиспользует его при повторной
-отправке той же формы, иначе повтор по кнопке «ещё раз» снова пройдёт.
+Клиентская сторона: собственные страницы ходят не в REST, а в серверные
+действия, поэтому ключ рождается в браузере (`newRequestKey()` в
+`src/lib/request-key.ts`), живёт в `useRef` на время одного намерения и
+обновляется после успеха. Двойной щелчок по кнопке покупки отдаёт тот же
+ключ и получает тот же ордер.
 
 ## 2. Подпись HMAC для оборудования
 

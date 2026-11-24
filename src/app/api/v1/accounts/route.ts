@@ -2,7 +2,16 @@
 // GET  /v1/accounts — the caller's accounts.
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { domainError, forbidden, ok, parseBody, sessionUser, unauthorized } from "@/lib/exchange/api";
+import {
+  domainError,
+  forbidden,
+  idempotencyKey,
+  idempotent,
+  ok,
+  parseBody,
+  sessionUser,
+  unauthorized,
+} from "@/lib/exchange/api";
 import { num } from "@/lib/exchange/decimal";
 import { publishableIban } from "@/lib/exchange/gates";
 import { openCompanyAccount, openUserAccount } from "@/lib/exchange/settlement-service";
@@ -22,21 +31,34 @@ export async function POST(req: NextRequest) {
   if ("response" in parsed) return parsed.response;
   const currency = (parsed.data.currency ?? "EUR").toUpperCase();
 
-  try {
-    if (parsed.data.companyId) {
-      const company = await prisma.company.findUnique({ where: { id: parsed.data.companyId } });
-      if (!company) return domainError(new Error("Company not found"));
-      if (company.ownerUserId !== user.id && user.role !== "ADMIN") return forbidden();
-      // US-13 — the IBAN only opens once KYB has actually passed.
-      if (company.kybStatus !== "APPROVED") {
-        return domainError(new Error("KYB must be approved before an account can be opened"));
-      }
-      const account = await openCompanyAccount(prisma, company.id, currency);
-      return ok({ account: { id: account.id, iban: account.iban, currency: account.currency } }, 201);
+  // Ownership and KYB are checked before the idempotency claim: a forbidden
+  // request must not consume the caller's key.
+  if (parsed.data.companyId) {
+    const company = await prisma.company.findUnique({ where: { id: parsed.data.companyId } });
+    if (!company) return domainError(new Error("Company not found"));
+    if (company.ownerUserId !== user.id && user.role !== "ADMIN") return forbidden();
+    // US-13 — the IBAN only opens once KYB has actually passed.
+    if (company.kybStatus !== "APPROVED") {
+      return domainError(new Error("KYB must be approved before an account can be opened"));
     }
+  }
 
-    const account = await openUserAccount(prisma, user.id, currency);
-    return ok({ account: { id: account.id, iban: account.iban, currency: account.currency } }, 201);
+  try {
+    return await idempotent({
+      endpoint: "POST /v1/accounts",
+      key: idempotencyKey(req),
+      userKey: user.id,
+      body: { ...parsed.data, currency },
+      run: async () => {
+        const account = parsed.data.companyId
+          ? await openCompanyAccount(prisma, parsed.data.companyId, currency)
+          : await openUserAccount(prisma, user.id, currency);
+        return {
+          status: 201,
+          data: { account: { id: account.id, iban: account.iban, currency: account.currency } },
+        };
+      },
+    });
   } catch (err) {
     return domainError(err);
   }

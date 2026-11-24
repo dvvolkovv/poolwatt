@@ -4,9 +4,10 @@
 // price, and the reserve the order will hold. The all-in cost is previewed
 // before submission, per §54.
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { submitOrder, type OrderActionResult } from "@/app/[locale]/exchange/actions";
+import { newRequestKey } from "@/lib/request-key";
 
 type Props = {
   zoneId: string;
@@ -52,6 +53,8 @@ export function OrderTicket(props: Props) {
   const [result, setResult] = useState<OrderActionResult | null>(null);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  // §15 — one key per order intent, so a double click places one order.
+  const requestKey = useRef(newRequestKey());
 
   // Slovak and Russian keyboards produce a comma for the decimal separator.
   const amountNum = Number(amount.replace(",", "."));
@@ -86,9 +89,12 @@ export function OrderTicket(props: Props) {
         amountKwh: amountNum,
         limitPrice: type === "LIMIT" ? priceNum : null,
         intervalStart: pinInterval ? props.intervalStart : null,
+        idempotencyKey: requestKey.current,
       });
       setResult(r);
       if (r.ok) {
+        // The intent is done; the next order is a new one (§15).
+        requestKey.current = newRequestKey();
         setAmount("");
         router.refresh();
       }

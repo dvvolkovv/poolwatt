@@ -83,13 +83,32 @@ test("asset is connected, a reading arrives and shows up with its token", async 
 
   // Equipment posts one interval with its Bearer key.
   const intervalStart = new Date(Math.floor(Date.now() / 900_000) * 900_000 - 900_000);
-  const response = await page.request.post("/api/v1/telemetry/readings", {
+  const batch = { readings: [{ intervalStart: intervalStart.toISOString(), energyKwh: 3.25 }] };
+
+  // §15 — "Все POST-запросы с ключом идемпотентности": without one, no.
+  const unkeyed = await page.request.post("/api/v1/telemetry/readings", {
     headers: { authorization: `Bearer ${key}` },
-    data: { readings: [{ intervalStart: intervalStart.toISOString(), energyKwh: 3.25 }] },
+    data: batch,
+  });
+  expect(unkeyed.status()).toBe(400);
+
+  const idemKey = `e2e-${Date.now()}`;
+  const response = await page.request.post("/api/v1/telemetry/readings", {
+    headers: { authorization: `Bearer ${key}`, "idempotency-key": idemKey },
+    data: batch,
   });
   expect(response.status()).toBe(202);
   const body = await response.json();
   expect(body.outcome.mintedKwh).toBe(3.25);
+
+  // The same key again replays the stored answer rather than minting twice.
+  const replay = await page.request.post("/api/v1/telemetry/readings", {
+    headers: { authorization: `Bearer ${key}`, "idempotency-key": idemKey },
+    data: batch,
+  });
+  expect(replay.status()).toBe(202);
+  expect(replay.headers()["idempotency-replayed"]).toBe("true");
+  expect((await replay.json()).outcome.mintedKwh).toBe(3.25);
 
   // US-03 — "первые показания видны в кабинете".
   await page.reload();

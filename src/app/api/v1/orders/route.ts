@@ -5,6 +5,7 @@ import { z } from "zod";
 import {
   domainError,
   idempotencyKey,
+  idempotent,
   ok,
   parseBody,
   sessionUser,
@@ -44,21 +45,30 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const key = idempotencyKey(req);
   try {
-    const zone = await requireZone(parsed.data.zoneId);
-    const result = await placeOrder({
-      userId: user.id,
-      zoneId: zone.id,
-      side: parsed.data.side,
-      type: parsed.data.type,
-      amountKwh: parsed.data.amountKwh,
-      limitPrice: parsed.data.limitPrice ?? null,
-      intervalStart,
-      idempotencyKey: idempotencyKey(req),
+    return await idempotent({
+      endpoint: "POST /v1/orders",
+      key,
+      userKey: user.id,
+      body: parsed.data,
+      run: async () => {
+        const zone = await requireZone(parsed.data.zoneId);
+        const result = await placeOrder({
+          userId: user.id,
+          zoneId: zone.id,
+          side: parsed.data.side,
+          type: parsed.data.type,
+          amountKwh: parsed.data.amountKwh,
+          limitPrice: parsed.data.limitPrice ?? null,
+          intervalStart,
+          idempotencyKey: key,
+        });
+        // A rejected order is a recorded business outcome, not a transport
+        // error: it has an id and a reason the client can show (§14 statuses).
+        return { status: result.rejectReason ? 200 : 201, data: { order: result } };
+      },
     });
-    // A rejected order is a recorded business outcome, not a transport error:
-    // it has an id and a reason the client can show (§14 statuses).
-    return ok({ order: result }, result.rejectReason ? 200 : 201);
   } catch (err) {
     return domainError(err);
   }

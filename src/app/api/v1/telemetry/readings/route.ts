@@ -6,7 +6,14 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { authenticateAssetKey } from "@/lib/exchange/asset-service";
-import { bearerToken, domainError, fail, ok, parseBody } from "@/lib/exchange/api";
+import {
+  bearerToken,
+  domainError,
+  fail,
+  idempotencyKey,
+  idempotent,
+  parseBody,
+} from "@/lib/exchange/api";
 import { MAX_READINGS_PER_BATCH, ingestReadings } from "@/lib/exchange/telemetry-service";
 
 const bodySchema = z.object({
@@ -34,12 +41,21 @@ export async function POST(req: NextRequest) {
   if ("response" in parsed) return parsed.response;
 
   try {
-    const outcome = await ingestReadings({
-      assetId: key.assetId,
-      readings: parsed.data.readings,
-      source: parsed.data.source ?? "rest",
+    return await idempotent({
+      endpoint: "POST /v1/telemetry/readings",
+      key: idempotencyKey(req),
+      // Equipment, not a person: the key identifies the caller (§15).
+      userKey: key.id,
+      body: parsed.data,
+      run: async () => {
+        const outcome = await ingestReadings({
+          assetId: key.assetId,
+          readings: parsed.data.readings,
+          source: parsed.data.source ?? "rest",
+        });
+        return { status: 202, data: { assetId: key.assetId, outcome } };
+      },
     });
-    return ok({ assetId: key.assetId, outcome }, 202);
   } catch (err) {
     return domainError(err);
   }

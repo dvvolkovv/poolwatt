@@ -4,7 +4,7 @@ import { z } from "zod";
 import {
   domainError,
   idempotencyKey,
-  ok,
+  idempotent,
   parseBody,
   sessionUser,
   unauthorized,
@@ -26,18 +26,27 @@ export async function POST(req: NextRequest) {
   const parsed = await parseBody(req, bodySchema);
   if ("response" in parsed) return parsed.response;
 
+  const key = idempotencyKey(req);
   try {
-    const zone = await requireZone(parsed.data.zoneId);
-    const payment = await chargeSession({
-      userId: user.id,
-      zoneId: zone.id,
-      requestedKwh: parsed.data.requestedKwh,
-      chargePointId: parsed.data.chargePointId ?? null,
-      cardId: parsed.data.cardId ?? null,
-      idempotencyKey: idempotencyKey(req),
+    return await idempotent({
+      endpoint: "POST /v1/payments/charge",
+      key,
+      userKey: user.id,
+      body: parsed.data,
+      run: async () => {
+        const zone = await requireZone(parsed.data.zoneId);
+        const payment = await chargeSession({
+          userId: user.id,
+          zoneId: zone.id,
+          requestedKwh: parsed.data.requestedKwh,
+          chargePointId: parsed.data.chargePointId ?? null,
+          cardId: parsed.data.cardId ?? null,
+          idempotencyKey: key,
+        });
+        // A declined payment is a recorded outcome with a receipt-less row.
+        return { status: payment.status === "FAILED" ? 402 : 201, data: { payment } };
+      },
     });
-    // A declined payment is a recorded outcome with a receipt-less Payment row.
-    return ok({ payment }, payment.status === "FAILED" ? 402 : 201);
   } catch (err) {
     return domainError(err);
   }
