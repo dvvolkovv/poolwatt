@@ -57,6 +57,7 @@ export function DecisionForm({ applicationId, labels }: Props) {
       <label className="block">
         <span className="text-[12px] text-muted">{labels.screening}</span>
         <textarea
+          name="screeningNote"
           value={screeningNote}
           onChange={(e) => setScreeningNote(e.target.value)}
           rows={2}
@@ -67,6 +68,7 @@ export function DecisionForm({ applicationId, labels }: Props) {
       <label className="block">
         <span className="text-[12px] text-muted">{labels.comment}</span>
         <textarea
+          name="comment"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={3}
