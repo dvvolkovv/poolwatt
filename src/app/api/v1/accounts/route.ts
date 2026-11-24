@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { domainError, forbidden, ok, parseBody, sessionUser, unauthorized } from "@/lib/exchange/api";
 import { num } from "@/lib/exchange/decimal";
+import { publishableIban } from "@/lib/exchange/gates";
 import { openCompanyAccount, openUserAccount } from "@/lib/exchange/settlement-service";
 import { prisma } from "@/lib/prisma";
 
@@ -53,7 +54,7 @@ export async function GET() {
   return ok({
     accounts: accounts.map((a) => ({
       id: a.id,
-      iban: a.iban,
+      iban: publishableIban(a.iban),
       currency: a.currency,
       balance: num(a.balance),
       status: a.status,

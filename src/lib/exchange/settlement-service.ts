@@ -2,18 +2,20 @@
 //
 // The platform's EMI licence (Lithuania) holds one segregated client-funds
 // account; each listed participant and each KYC'd user gets a virtual IBAN
-// pointing into it. Issuing the IBAN is therefore a bookkeeping act here, not
-// a bank API call — the provider integration replaces `generateIban` without
-// touching anything else.
+// pointing into it. The EMI assigns the IBAN. Until that integration exists,
+// `generateIban` stands in for it as a sandbox that never runs in production
+// (see gates.ts).
 
 import { Prisma, SettlementAccountStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { type Db, writeAudit } from "./audit";
 import { num } from "./decimal";
+import { FeatureClosedError, assertIbansOpen, publishableIban } from "./gates";
+import { hasVerifiedKyc } from "./membership";
 import { roundMoney } from "./precision";
 
 const IBAN_COUNTRY = "LT";
-/** Placeholder EMI bank code; replaced by the provider's real code. */
+/** Sandbox bank code: not ours, not any bank's we know of. */
 const IBAN_BANK_CODE = "21000";
 
 /** ISO 13616 / ISO 7064 mod-97-10 check digits. */
@@ -56,6 +58,7 @@ export function generateIban(serial: number): string {
 }
 
 async function nextIban(db: Db): Promise<string> {
+  assertIbansOpen();
   // Serial = row count + a random tail, retried on collision. Good enough
   // while the IBAN space is local; the provider assigns them for real later.
   for (let attempt = 0; attempt < 5; attempt++) {
@@ -70,6 +73,7 @@ async function nextIban(db: Db): Promise<string> {
 
 /** US-13 — open the account for an approved company. Idempotent. */
 export async function openCompanyAccount(db: Db, companyId: string, currency = "EUR") {
+  assertIbansOpen();
   const existing = await db.settlementAccount.findUnique({ where: { companyId } });
   if (existing) return existing;
 
@@ -88,6 +92,10 @@ export async function openCompanyAccount(db: Db, companyId: string, currency = "
 
 /** §21 — open the personal account of a KYC'd user. Idempotent. */
 export async function openUserAccount(db: Db, userId: string, currency = "EUR") {
+  assertIbansOpen();
+  if (!(await hasVerifiedKyc(db, userId))) {
+    throw new FeatureClosedError("A personal account needs verified KYC (ТЗ §21)");
+  }
   const existing = await db.settlementAccount.findUnique({ where: { userId } });
   if (existing) return existing;
 
@@ -149,7 +157,7 @@ export async function readStatement(
   accountId: string,
   opts: { from?: Date; to?: Date; limit?: number } = {},
   db: Db = prisma,
-): Promise<{ iban: string; currency: string; balance: number; lines: StatementLine[] }> {
+): Promise<{ iban: string | null; currency: string; balance: number; lines: StatementLine[] }> {
   const account = await db.settlementAccount.findUniqueOrThrow({
     where: { id: accountId },
     include: {
@@ -166,7 +174,7 @@ export async function readStatement(
   });
 
   return {
-    iban: account.iban,
+    iban: publishableIban(account.iban),
     currency: account.currency,
     balance: num(account.balance),
     lines: account.entries.map((e) => ({

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
+import { publishableIban } from "@/lib/exchange/gates";
 import { roundPrice } from "@/lib/exchange/precision";
 import { readWallets } from "@/lib/exchange/wallet-service";
 import { BuyAheadForm } from "@/components/exchange/buy-ahead-form";
@@ -60,6 +61,8 @@ export default async function WalletPage({
   const boughtKwh = buys.reduce((sum, b) => sum + num(b.amountKwh), 0);
   const boughtValue = buys.reduce((sum, b) => sum + num(b.amountKwh) * num(b.price), 0);
   const avgPrice = boughtKwh > 0 ? roundPrice(boughtValue / boughtKwh) : null;
+
+  const iban = publishableIban(account?.iban);
 
   const defaultZone = wallets[0]
     ? zones.find((z) => z.id === wallets[0].zoneId) ?? zones[0]
@@ -122,11 +125,11 @@ export default async function WalletPage({
           <h2 className="text-[13px] uppercase tracking-[0.14em] text-muted mb-3">
             {t("account")}
           </h2>
-          {account ? (
+          {account && iban ? (
             <dl className="text-sm space-y-1">
               <div className="flex justify-between">
                 <dt className="text-muted">IBAN</dt>
-                <dd className="num">{account.iban}</dd>
+                <dd className="num">{iban}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted">{t("fiatBalance")}</dt>

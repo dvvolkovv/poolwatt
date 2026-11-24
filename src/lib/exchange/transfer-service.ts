@@ -2,13 +2,17 @@
 //
 // Legally these are not payments: they are a redistribution of energy shares
 // inside an energy community (§24 "Юридическая модель переводов"). Technically
-// that means the tokens move but no money does, both sides must be in the same
-// zone, and every transfer is AML-monitored against daily and monthly caps.
+// that means the tokens move but no money does, both sides must be KYC-verified
+// members of one cooperative in the same zone, and every transfer is
+// AML-monitored against daily and monthly caps. Shut until the lawyer's opinion
+// required by §24.4 (gates.ts).
 
 import { Prisma, TokenTransferStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { writeAudit } from "./audit";
+import { type Db, writeAudit } from "./audit";
 import { num } from "./decimal";
+import { assertTransfersOpen } from "./gates";
+import { shareCooperative } from "./membership";
 import { isKwhDust, roundKwh } from "./precision";
 import { transferTokens } from "./token-registry";
 import { getOrCreateWallet } from "./wallet-service";
@@ -30,6 +34,19 @@ export interface TransferInput {
   requireConfirmation?: boolean;
 }
 
+async function assertShareCooperative(
+  db: Db,
+  zoneId: string,
+  fromUserId: string,
+  toUserId: string,
+): Promise<void> {
+  if (!(await shareCooperative(db, zoneId, fromUserId, toUserId))) {
+    throw new TransferError(
+      "Both sides must be KYC-verified members of one cooperative in this zone (ТЗ §24)",
+    );
+  }
+}
+
 async function transferredSince(walletId: string, since: Date): Promise<number> {
   const rows = await prisma.tokenTransfer.findMany({
     where: {
@@ -43,6 +60,7 @@ async function transferredSince(walletId: string, since: Date): Promise<number> 
 }
 
 export async function transferKwh(input: TransferInput) {
+  assertTransfersOpen();
   const amount = roundKwh(input.amountKwh);
   if (!(amount > 0)) throw new TransferError("Transfer amount must be positive");
 
@@ -54,6 +72,7 @@ export async function transferKwh(input: TransferInput) {
   if (recipient.id === input.fromUserId) {
     throw new TransferError("Cannot transfer kWh to yourself");
   }
+  await assertShareCooperative(prisma, input.zoneId, input.fromUserId, recipient.id);
 
   const fromWallet = await getOrCreateWallet(input.fromUserId, input.zoneId);
   // §24 — both sides stay inside one zone; crossing zones is a roaming
@@ -120,10 +139,14 @@ export async function transferKwh(input: TransferInput) {
 
 /** §24 — the recipient accepts a transfer that was sent in request mode. */
 export async function confirmTransfer(transferId: string, byUserId: string) {
+  assertTransfersOpen();
   return prisma.$transaction(async (tx) => {
     const transfer = await tx.tokenTransfer.findUniqueOrThrow({
       where: { id: transferId },
-      include: { toWallet: { select: { ownerUserId: true } } },
+      include: {
+        fromWallet: { select: { ownerUserId: true } },
+        toWallet: { select: { ownerUserId: true } },
+      },
     });
     if (transfer.status !== TokenTransferStatus.CREATED) {
       throw new TransferError(`Transfer is already ${transfer.status}`);
@@ -131,6 +154,13 @@ export async function confirmTransfer(transferId: string, byUserId: string) {
     if (transfer.toWallet.ownerUserId !== byUserId) {
       throw new TransferError("Only the recipient can confirm this transfer");
     }
+    // Membership may have ended since the transfer was sent.
+    await assertShareCooperative(
+      tx,
+      transfer.zoneId,
+      transfer.fromWallet.ownerUserId,
+      transfer.toWallet.ownerUserId,
+    );
 
     await transferTokens(tx, {
       fromWalletId: transfer.fromWalletId,

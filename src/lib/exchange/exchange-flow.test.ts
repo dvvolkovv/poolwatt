@@ -5,7 +5,7 @@
 // and routing (§16.4), asserting the invariants that money and energy depend
 // on. Unit tests cover the arithmetic; this covers the wiring.
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createAsset } from "./asset-service";
@@ -52,6 +52,10 @@ async function fundWallet(userId: string, amount: number) {
 }
 
 beforeAll(async () => {
+  // Shut in production until a bank and a lawyer say otherwise (gates.ts).
+  vi.stubEnv("IBAN_PROVIDER", "sandbox");
+  vi.stubEnv("KWH_TRANSFERS_ENABLED", "true");
+
   // Clean any leftovers from a previous run, children first.
   const zone = await prisma.gridZone.findUnique({ where: { code: ZONE_CODE } });
   if (zone) {
@@ -92,6 +96,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  vi.unstubAllEnvs();
   if (!zoneId) return;
   await prisma.receipt.deleteMany({ where: { OR: [{ payment: { zoneId } }, { trade: { zoneId } }] } });
   await prisma.trade.deleteMany({ where: { zoneId } });
@@ -519,6 +524,18 @@ describe("charging payment — ТЗ §8, US-08, §16.6", () => {
 });
 
 describe("member transfers — ТЗ §24, US-19", () => {
+  // §24.1 — transfers only run between KYC-verified members of one cooperative.
+  beforeAll(async () => {
+    const coop = await prisma.cooperative.create({
+      data: { companyId, zoneId, name: `${PREFIX}coop` },
+    });
+    for (const userId of [producerUserId, friendUserId, buyerUserId]) {
+      await prisma.coopMember.create({
+        data: { coopId: coop.id, userId, status: "ACTIVE", kycVerifiedAt: new Date() },
+      });
+    }
+  });
+
   it("moves kWh between members of the same zone without moving money", async () => {
     await fundWallet(producerUserId, 50);
     const friendWallet = await getOrCreateWallet(friendUserId, zoneId);

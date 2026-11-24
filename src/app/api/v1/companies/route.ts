@@ -2,6 +2,7 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { domainError, ok, parseBody, sessionUser, unauthorized } from "@/lib/exchange/api";
+import { publishableIban } from "@/lib/exchange/gates";
 import { createCompany } from "@/lib/exchange/listing-service";
 import { prisma } from "@/lib/prisma";
 
@@ -64,7 +65,10 @@ export async function GET() {
       type: c.type,
       kybStatus: c.kybStatus,
       assets: c._count.assets,
-      account: c.settlementAccount,
+      account: c.settlementAccount && {
+        ...c.settlementAccount,
+        iban: publishableIban(c.settlementAccount.iban),
+      },
     })),
   });
 }

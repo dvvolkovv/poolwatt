@@ -3,6 +3,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { publishableIban } from "@/lib/exchange/gates";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
 import { DecisionForm } from "@/components/exchange/decision-form";
@@ -68,7 +69,7 @@ export default async function AdminListingDetailPage({
         <Field label={t("reviewer")} value={application.reviewer?.username ?? "—"} />
         <Field
           label={t("account")}
-          value={application.company.settlementAccount?.iban ?? "—"}
+          value={publishableIban(application.company.settlementAccount?.iban) ?? "—"}
         />
       </dl>
 

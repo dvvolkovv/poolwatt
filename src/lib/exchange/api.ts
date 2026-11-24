@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ZodError, type ZodType } from "zod";
 import { auth } from "@/lib/auth";
+import { FeatureClosedError } from "./gates";
 
 export function ok(data: Record<string, unknown>, status = 200) {
   return NextResponse.json({ ok: true, ...data }, { status });
@@ -80,6 +81,7 @@ export async function parseBody<T>(req: NextRequest, schema: ZodType<T>): Promis
 
 /** Map a domain error onto an HTTP response without leaking internals. */
 export function domainError(err: unknown): NextResponse {
+  if (err instanceof FeatureClosedError) return fail(err.message, 503);
   const message = err instanceof Error ? err.message : String(err);
   const notFoundish = /not found|no .* named|Unknown grid zone/i.test(message);
   return fail(message.slice(0, 400), notFoundish ? 404 : 400);

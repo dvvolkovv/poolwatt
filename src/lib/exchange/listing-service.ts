@@ -15,6 +15,7 @@ import {
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { type Db, writeAudit } from "./audit";
+import { ibansOpen } from "./gates";
 import { openCompanyAccount } from "./settlement-service";
 
 export interface ListingDocument {
@@ -172,9 +173,11 @@ export async function decideApplication(input: DecisionInput) {
     let accountId: string | null = null;
     let promotedAssets = 0;
     if (input.approve) {
-      // US-13 — the IBAN opens on approval, before any payout can be due.
-      const account = await openCompanyAccount(tx, application.companyId);
-      accountId = account.id;
+      // US-13 — the IBAN opens on approval, before any payout can be due. No
+      // bank to issue it must not hold up the decision itself.
+      if (ibansOpen()) {
+        accountId = (await openCompanyAccount(tx, application.companyId)).id;
+      }
 
       // §14 — approved paperwork lets assets start their telemetry probation.
       const { count } = await tx.asset.updateMany({

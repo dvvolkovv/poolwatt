@@ -3,6 +3,7 @@ import { ok, sessionUser, unauthorized } from "@/lib/exchange/api";
 import { readWallets } from "@/lib/exchange/wallet-service";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
+import { publishableIban } from "@/lib/exchange/gates";
 import { roundPrice } from "@/lib/exchange/precision";
 
 export async function GET() {
@@ -28,6 +29,8 @@ export async function GET() {
     wallets,
     averagePurchasePrice: boughtKwh > 0 ? roundPrice(boughtValue / boughtKwh) : null,
     lifetimeBoughtKwh: Math.round(boughtKwh * 1000) / 1000,
-    account: account ? { ...account, balance: num(account.balance) } : null,
+    account: account
+      ? { ...account, iban: publishableIban(account.iban), balance: num(account.balance) }
+      : null,
   });
 }

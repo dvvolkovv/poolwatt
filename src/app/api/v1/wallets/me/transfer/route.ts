@@ -3,6 +3,7 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { domainError, ok, parseBody, sessionUser, unauthorized } from "@/lib/exchange/api";
+import { transfersOpen } from "@/lib/exchange/gates";
 import { transferAllowance, transferKwh } from "@/lib/exchange/transfer-service";
 import { requireZone } from "@/lib/exchange/zone-service";
 
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const zone = await requireZone(zoneParam);
-    return ok({ allowance: await transferAllowance(user.id, zone.id) });
+    return ok({ open: transfersOpen(), allowance: await transferAllowance(user.id, zone.id) });
   } catch (err) {
     return domainError(err);
   }
