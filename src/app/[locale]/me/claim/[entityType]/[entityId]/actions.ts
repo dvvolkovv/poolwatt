@@ -11,6 +11,7 @@ export type SubmitClaimInput = {
   entityType: ClaimEntityType;
   entityId: string;
   email: string;
+  locale: string;
 };
 
 export type SubmitClaimResult = {
@@ -77,7 +78,7 @@ export async function submitClaim(input: SubmitClaimInput): Promise<SubmitClaimR
   });
 
   try {
-    await sendClaimVerificationEmail(input.email, token, entity.displayName);
+    await sendClaimVerificationEmail(input.email, token, entity.displayName, input.locale);
   } catch (err) {
     console.error("[claim] verification-email send failed:", err);
     return { ok: false, formError: "Could not send the email. Please try again later." };

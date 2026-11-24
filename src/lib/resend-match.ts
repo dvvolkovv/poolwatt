@@ -1,4 +1,5 @@
 import { sendEmail } from "@/lib/email";
+import { emailLink, emailText, escapeHtml } from "@/lib/email-i18n";
 import { prisma } from "@/lib/prisma";
 
 const BASE = process.env.NEXTAUTH_URL ?? "https://poolwatt.com";
@@ -13,20 +14,22 @@ export type InterestExpressedPayload = {
 export async function sendInterestExpressedToOwner(p: InterestExpressedPayload): Promise<void> {
   const owner = await prisma.user.findUnique({
     where: { id: p.ownerUserId },
-    select: { email: true, emailVerified: true, username: true },
+    select: { email: true, emailVerified: true, username: true, preferredLocale: true },
   });
   if (!owner?.email || !owner.emailVerified) return;
 
-  const url = `${BASE}/en/me/build-requests/${p.buildRequestId}`;
-  const shortId = p.buildRequestId.slice(0, 8);
+  const t = await emailText(owner.preferredLocale);
+  const url = `${BASE}/${t.locale}/me/build-requests/${p.buildRequestId}`;
+  const vars = { id: p.buildRequestId.slice(0, 8), company: p.contractorName };
+
   await sendEmail({
     to: owner.email,
-    subject: `[Poolwatt] ${p.contractorName} is interested in your build request #${shortId}`,
-    html: `
-      <p>Hi ${owner.username},</p>
-      <p><b>${p.contractorName}</b> has expressed interest in your build request <b>#${shortId}</b>.</p>
-      <p><a href="${url}">Review and accept</a></p>
-    `,
+    subject: `[Poolwatt] ${t.text("notify.interest.subject", vars)}`,
+    html: t.layout(
+      t.html("notify.hi", { name: owner.username }),
+      t.html("notify.interest.contractor", vars),
+      ...emailLink(url, t.html("notify.interest.cta")),
+    ),
   });
 }
 
@@ -46,7 +49,7 @@ export async function sendClaimAcceptedToContractor(p: ClaimAcceptedPayload): Pr
           members: {
             where: { role: "OWNER" },
             take: 1,
-            include: { user: { select: { email: true, emailVerified: true, username: true } } },
+            include: { user: { select: { email: true, emailVerified: true, username: true, preferredLocale: true } } },
           },
         },
       },
@@ -66,26 +69,25 @@ export async function sendClaimAcceptedToContractor(p: ClaimAcceptedPayload): Pr
   const owner = claim.contractor.members[0]?.user;
   if (!owner?.email || !owner.emailVerified) return;
 
-  const shortId = p.buildRequestId.slice(0, 8);
-  const url = `${BASE}/en/me/contractor/${p.contractorId}/requests`;
+  const t = await emailText(owner.preferredLocale);
+  const vars = { id: p.buildRequestId.slice(0, 8) };
+  const url = `${BASE}/${t.locale}/me/contractor/${p.contractorId}/requests`;
   const hw = claim.buildRequest.user;
+  const address = [claim.buildRequest.addressLine, claim.buildRequest.city, claim.buildRequest.country].join(", ");
+  const contact = (key: string, value: string | null) =>
+    `${t.html(`notify.accepted.${key}`)}: <b>${escapeHtml(value ?? "—")}</b>`;
 
   await sendEmail({
     to: owner.email,
-    subject: `[Poolwatt] Your interest in request #${shortId} was accepted — contact details inside`,
-    html: `
-      <p>Hi ${owner.username},</p>
-      <p>The homeowner accepted your interest in build request <b>#${shortId}</b>.</p>
-      <h3>Contact details</h3>
-      <ul>
-        <li>Name: <b>${hw.name ?? "—"}</b></li>
-        <li>Email: ${hw.email ?? "—"}</li>
-        <li>Phone: ${hw.phone ?? "—"}</li>
-        <li>Address: ${claim.buildRequest.addressLine}, ${claim.buildRequest.city}, ${claim.buildRequest.country}</li>
-      </ul>
-      <p>Project: ${claim.buildRequest.source}, ${claim.buildRequest.peakKw.toString()} kW peak.</p>
-      <p><a href="${url}">Open your dashboard</a></p>
-    `,
+    subject: `[Poolwatt] ${t.text("notify.accepted.subject", vars)}`,
+    html: t.layout(
+      t.html("notify.hi", { name: owner.username }),
+      t.html("notify.accepted.body", vars),
+      `<b>${t.html("notify.accepted.contacts")}</b>`,
+      [contact("name", hw.name), contact("email", hw.email), contact("phone", hw.phone), contact("address", address)].join("<br>\n"),
+      t.html("notify.accepted.project", { source: claim.buildRequest.source, kw: claim.buildRequest.peakKw.toString() }),
+      ...emailLink(url, t.html("notify.accepted.cta")),
+    ),
   });
 }
 
@@ -104,7 +106,7 @@ export async function sendClaimRejectedToContractor(p: ClaimRejectedPayload): Pr
           members: {
             where: { role: "OWNER" },
             take: 1,
-            include: { user: { select: { email: true, emailVerified: true, username: true } } },
+            include: { user: { select: { email: true, emailVerified: true, username: true, preferredLocale: true } } },
           },
         },
       },
@@ -114,14 +116,16 @@ export async function sendClaimRejectedToContractor(p: ClaimRejectedPayload): Pr
   const owner = claim.contractor.members[0]?.user;
   if (!owner?.email || !owner.emailVerified) return;
 
-  const shortId = p.buildRequestId.slice(0, 8);
+  const t = await emailText(owner.preferredLocale);
+  const vars = { id: p.buildRequestId.slice(0, 8) };
+
   await sendEmail({
     to: owner.email,
-    subject: `[Poolwatt] Homeowner chose another contractor for request #${shortId}`,
-    html: `
-      <p>Hi ${owner.username},</p>
-      <p>The homeowner chose another contractor for build request <b>#${shortId}</b>.</p>
-      <p>You'll see new matching requests as they come in.</p>
-    `,
+    subject: `[Poolwatt] ${t.text("notify.rejected.subject", vars)}`,
+    html: t.layout(
+      t.html("notify.hi", { name: owner.username }),
+      t.html("notify.rejected.body", vars),
+      t.html("notify.rejected.more"),
+    ),
   });
 }

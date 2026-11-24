@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export default async function CabinetLayout({
   children,
@@ -19,6 +20,21 @@ export default async function CabinetLayout({
   }
 
   const t = await getTranslations("cabinet.sidebar");
+  const tEmail = await getTranslations("cabinet.addEmailBanner");
+
+  // Only for accounts with a password: without one there is nothing to recover.
+  const account = await prisma.user.findFirst({
+    where: { id: session.user.id, email: null, passwordHash: { not: null } },
+    select: {
+      emailVerificationTokens: {
+        where: { expiresAt: { gt: new Date() } },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { email: true },
+      },
+    },
+  });
+  const pendingEmail = account?.emailVerificationTokens[0]?.email;
 
   return (
     <main className="bg-bg min-h-[calc(100vh-4rem)]">
@@ -49,7 +65,27 @@ export default async function CabinetLayout({
               </SidebarLink>
             </nav>
           </aside>
-          <section className="min-w-0">{children}</section>
+          <section className="min-w-0">
+            {account && (
+              <div className="mb-8 rounded-lg border border-accent/40 bg-card px-4 py-3">
+                <div className="text-[14px] font-semibold">
+                  {tEmail(pendingEmail ? "pendingTitle" : "title")}
+                </div>
+                <p className="mt-1 text-[13px] text-muted">
+                  {tEmail(pendingEmail ? "pendingBody" : "body")}{" "}
+                  {pendingEmail && <b className="text-foreground">{pendingEmail}</b>}
+                </p>
+                <Link
+                  href={`/${locale}/me/settings`}
+                  prefetch={false}
+                  className="mt-2 inline-block text-[13px] text-accent hover:underline"
+                >
+                  {tEmail(pendingEmail ? "pendingCta" : "cta")}
+                </Link>
+              </div>
+            )}
+            {children}
+          </section>
         </div>
       </div>
     </main>

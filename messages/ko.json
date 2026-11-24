@@ -144,7 +144,7 @@
   "auth": {
     "register": {
       "title": "Create account",
-      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "subtitle": "Pick a nickname, enter your email and set a password.",
       "usernameLabel": "Nickname",
       "usernamePlaceholder": "e.g. solar_jane",
       "passwordLabel": "Password",
@@ -153,7 +153,7 @@
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
     },
     "login": {
       "title": "Welcome back",
@@ -298,6 +298,25 @@
       "title": "Link expired or used",
       "body": "Reset links work once and last one hour.",
       "cta": "Request a new link"
+    }
+  },
+  "emails": {
+    "greeting": "안녕하세요.",
+    "ignore": "본인이 요청하지 않았다면 이 이메일을 무시하세요.",
+    "verify": {
+      "subject": "Poolwatt 이메일 주소를 확인해 주세요",
+      "body": "이 이메일이 Poolwatt 계정에 추가되었습니다. 본인이 맞다면 아래 링크로 확인해 주세요. 링크는 1시간 동안 유효합니다:",
+      "cta": "이메일 확인"
+    },
+    "reset": {
+      "subject": "Poolwatt 비밀번호 재설정",
+      "body": "이 이메일을 사용하는 Poolwatt 계정의 비밀번호 재설정이 요청되었습니다. 아래 링크에서 새 비밀번호를 설정하세요. 링크는 1시간 동안 유효합니다:",
+      "cta": "새 비밀번호 설정"
+    },
+    "claim": {
+      "subject": "Poolwatt: {name} 인증 코드",
+      "body": "이 이메일로 Poolwatt의 {name} 프로필 소유권이 요청되었습니다. 인증 코드:",
+      "expires": "코드는 30분 동안 유효합니다."
     }
   }
 }

@@ -22,7 +22,7 @@ export function ClaimForm({ entityType, entityId, locale, website, labels }: Pro
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const result = await submitClaim({ entityType, entityId, email });
+      const result = await submitClaim({ entityType, entityId, email, locale });
       if (result.ok) {
         router.push(`/${locale}/me/claim/${entityType}/${entityId}/verify`);
       } else {

@@ -1,10 +1,11 @@
 "use server";
 
-import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { toLocale } from "@/lib/email-i18n";
+import { issueEmailVerification, verificationLimitReached } from "@/lib/email-verification";
 import {
   changePasswordSchema,
   setPasswordSchema,
@@ -15,10 +16,6 @@ import {
 import { TALERID_PROVIDER_ID } from "@/lib/talerid/config";
 
 export type FieldError = { fieldErrors?: Record<string, string>; formError?: string; ok?: boolean };
-
-function tokenHex() {
-  return randomBytes(32).toString("hex");
-}
 
 // ─── Email ────────────────────────────────────────────────────────────────
 
@@ -43,24 +40,17 @@ export async function addOrChangeEmailAction(
     return { fieldErrors: { email: "Этот email уже используется" } };
   }
 
-  // Issue a verification token. We don't actually set user.email yet — it
-  // lands once the token is consumed at /verify-email. This avoids a race
-  // where someone "claims" another user's email + locks them out.
-  const token = tokenHex();
-  await prisma.emailVerificationToken.create({
-    data: {
-      token,
-      userId: session.user.id,
-      email: parsed.data.email,
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000),  // 1 h
-    },
-  });
+  if (await verificationLimitReached(parsed.data.email)) {
+    return { formError: "На этот email уже отправлено несколько писем. Попробуйте через час." };
+  }
 
-  try {
-    const { sendVerificationEmail } = await import("@/lib/resend");
-    await sendVerificationEmail(parsed.data.email, token);
-  } catch (err) {
-    console.error("[settings] verification-email send failed:", err);
+  const locale = toLocale(String(formData.get("locale") ?? ""));
+  // "en" is the column default, so treat it as "not chosen yet".
+  await prisma.user.updateMany({
+    where: { id: session.user.id, preferredLocale: "en" },
+    data: { preferredLocale: locale },
+  });
+  if (!(await issueEmailVerification(session.user.id, parsed.data.email, locale))) {
     return { formError: "Не удалось отправить письмо. Попробуйте позже." };
   }
 

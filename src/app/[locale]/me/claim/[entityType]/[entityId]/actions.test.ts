@@ -58,7 +58,7 @@ beforeEach(() => {
 describe("submitClaim", () => {
   it("creates a ClaimToken and sends email when email domain matches website", async () => {
     const result = await submitClaim({
-      entityType: "PRODUCER", entityId: testProducerId, email: "ceo@testco.example",
+      entityType: "PRODUCER", entityId: testProducerId, email: "ceo@testco.example", locale: "en",
     });
     expect(result.ok).toBe(true);
 
@@ -76,6 +76,7 @@ describe("submitClaim", () => {
       "ceo@testco.example",
       tokens[0].token,
       "Test Co",
+      "en",
     );
 
     await prisma.claimToken.deleteMany({ where: { id: tokens[0].id } });
@@ -83,7 +84,7 @@ describe("submitClaim", () => {
 
   it("rejects email that doesn't match website domain", async () => {
     const result = await submitClaim({
-      entityType: "PRODUCER", entityId: testProducerId, email: "attacker@evil.com",
+      entityType: "PRODUCER", entityId: testProducerId, email: "attacker@evil.com", locale: "en",
     });
     expect(result.ok).toBe(false);
     expect(result.fieldErrors?.email).toBeDefined();
@@ -96,7 +97,7 @@ describe("submitClaim", () => {
   it("rejects when not logged in", async () => {
     mockUserId = null;
     const result = await submitClaim({
-      entityType: "PRODUCER", entityId: testProducerId, email: "ceo@testco.example",
+      entityType: "PRODUCER", entityId: testProducerId, email: "ceo@testco.example", locale: "en",
     });
     expect(result.ok).toBe(false);
     expect(result.formError).toBeDefined();
@@ -110,7 +111,7 @@ describe("submitClaim", () => {
     });
 
     const result = await submitClaim({
-      entityType: "PRODUCER", entityId: testProducerId, email: "ceo@testco.example",
+      entityType: "PRODUCER", entityId: testProducerId, email: "ceo@testco.example", locale: "en",
     });
     expect(result.ok).toBe(false);
     expect(result.formError).toBeDefined();

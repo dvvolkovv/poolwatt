@@ -144,7 +144,7 @@
   "auth": {
     "register": {
       "title": "Create account",
-      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "subtitle": "Pick a nickname, enter your email and set a password.",
       "usernameLabel": "Nickname",
       "usernamePlaceholder": "e.g. solar_jane",
       "passwordLabel": "Password",
@@ -153,7 +153,7 @@
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
     },
     "login": {
       "title": "Welcome back",
@@ -298,6 +298,25 @@
       "title": "Link expired or used",
       "body": "Reset links work once and last one hour.",
       "cta": "Request a new link"
+    }
+  },
+  "emails": {
+    "greeting": "Salam,",
+    "ignore": "Eger bu siz däl bolsaňyz, bu haty äsgermezlik ediň.",
+    "verify": {
+      "subject": "Poolwatt üçin e-poçtaňyzy tassyklaň",
+      "body": "Bu e-poçta Poolwatt hasabyna goşuldy. Eger bu siz bolsaňyz, aşakdaky baglanyşyk arkaly tassyklaň. Baglanyşyk 1 sagat hereket edýär:",
+      "cta": "E-poçtany tassykla"
+    },
+    "reset": {
+      "subject": "Poolwatt parolyny dikeltmek",
+      "body": "Bu e-poçtaly Poolwatt hasaby üçin paroly dikeltmek soraldy. Täze parol goýmak üçin aşakdaky baglanyşygy ulanyň. Baglanyşyk 1 sagat hereket edýär:",
+      "cta": "Täze parol goý"
+    },
+    "claim": {
+      "subject": "Poolwatt: {name} üçin tassyklama kody",
+      "body": "Bu e-poçta arkaly Poolwatt-daky {name} profiliniň eýeçiligi soraldy. Tassyklama kody:",
+      "expires": "Kod 30 minut hereket edýär."
     }
   }
 }

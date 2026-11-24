@@ -47,6 +47,10 @@ function htmlToText(html: string): string {
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/(p|li|h\d)>/gi, "\n\n")
     .replace(/<[^>]+>/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
     .replace(/^[ \t]+|[ \t]+$/gm, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();

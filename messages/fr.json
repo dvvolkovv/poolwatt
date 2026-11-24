@@ -144,7 +144,7 @@
   "auth": {
     "register": {
       "title": "Create account",
-      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "subtitle": "Pick a nickname, enter your email and set a password.",
       "usernameLabel": "Nickname",
       "usernamePlaceholder": "e.g. solar_jane",
       "passwordLabel": "Password",
@@ -153,7 +153,7 @@
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
     },
     "login": {
       "title": "Welcome back",
@@ -298,6 +298,25 @@
       "title": "Link expired or used",
       "body": "Reset links work once and last one hour.",
       "cta": "Request a new link"
+    }
+  },
+  "emails": {
+    "greeting": "Bonjour,",
+    "ignore": "Si ce n'est pas vous, ignorez simplement cet e-mail.",
+    "verify": {
+      "subject": "Confirmez votre e-mail pour Poolwatt",
+      "body": "Cette adresse e-mail a été ajoutée à un compte Poolwatt. Si c'est bien vous, confirmez-la avec le lien ci-dessous. Le lien est valable 1 heure :",
+      "cta": "Confirmer l'e-mail"
+    },
+    "reset": {
+      "subject": "Réinitialisation de votre mot de passe Poolwatt",
+      "body": "Une réinitialisation du mot de passe a été demandée pour le compte Poolwatt associé à cette adresse. Utilisez le lien ci-dessous pour en définir un nouveau. Le lien est valable 1 heure :",
+      "cta": "Définir un nouveau mot de passe"
+    },
+    "claim": {
+      "subject": "Poolwatt : code de vérification pour {name}",
+      "body": "Une demande de revendication du profil {name} sur Poolwatt a été faite avec cette adresse. Votre code de vérification :",
+      "expires": "Le code est valable 30 minutes."
     }
   }
 }

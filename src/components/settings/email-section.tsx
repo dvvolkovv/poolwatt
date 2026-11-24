@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useLocale } from "next-intl";
 import { addOrChangeEmailAction, type FieldError } from "@/app/[locale]/me/settings/actions";
 
 const init: FieldError = {};
@@ -23,6 +24,7 @@ export function EmailSection({
     successPending: string;
   };
 }) {
+  const locale = useLocale();
   const [state, action, pending] = useActionState(addOrChangeEmailAction, init);
 
   return (
@@ -45,6 +47,7 @@ export function EmailSection({
       )}
 
       <form action={action} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-start max-w-md">
+        <input type="hidden" name="locale" value={locale} />
         <div className="flex-1">
           <input
             type="email"

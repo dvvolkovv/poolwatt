@@ -28,6 +28,7 @@ export function ForgotPasswordForm({
 
   return (
     <form action={action} className="w-full max-w-sm space-y-6">
+      <input type="hidden" name="locale" value={locale} />
       <div>
         <h1 className="text-[28px] font-bold tracking-[-0.02em]">{labels.title}</h1>
         <p className="mt-2 text-sm text-muted">{labels.subtitle}</p>

@@ -144,7 +144,7 @@
   "auth": {
     "register": {
       "title": "Create account",
-      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "subtitle": "Pick a nickname, enter your email and set a password.",
       "usernameLabel": "Nickname",
       "usernamePlaceholder": "e.g. solar_jane",
       "passwordLabel": "Password",
@@ -153,7 +153,7 @@
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
     },
     "login": {
       "title": "Welcome back",
@@ -298,6 +298,25 @@
       "title": "Link expired or used",
       "body": "Reset links work once and last one hour.",
       "cta": "Request a new link"
+    }
+  },
+  "emails": {
+    "greeting": "Салом,",
+    "ignore": "Агар ин шумо набошед, ин номаро нодида гиред.",
+    "verify": {
+      "subject": "Почтаи электронии худро барои Poolwatt тасдиқ кунед",
+      "body": "Ин почтаи электронӣ ба ҳисоби Poolwatt илова шуд. Агар ин шумо бошед, онро тавассути пайванди зерин тасдиқ кунед. Пайванд 1 соат эътибор дорад:",
+      "cta": "Тасдиқи почта"
+    },
+    "reset": {
+      "subject": "Барқарорсозии рамзи Poolwatt",
+      "body": "Барои ҳисоби Poolwatt бо ин почтаи электронӣ барқарорсозии рамз дархост шуд. Барои гузоштани рамзи нав пайванди зеринро истифода баред. Пайванд 1 соат эътибор дорад:",
+      "cta": "Рамзи нав гузоштан"
+    },
+    "claim": {
+      "subject": "Poolwatt: рамзи тасдиқ барои {name}",
+      "body": "Тавассути ин почта тасдиқи соҳибияти профили {name} дар Poolwatt дархост шуд. Рамзи тасдиқ:",
+      "expires": "Рамз 30 дақиқа эътибор дорад."
     }
   }
 }

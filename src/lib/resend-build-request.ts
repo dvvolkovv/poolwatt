@@ -1,4 +1,5 @@
 import { sendEmail } from "@/lib/email";
+import { emailLink, emailText } from "@/lib/email-i18n";
 import { prisma } from "@/lib/prisma";
 import type { BuildRequestStatus } from "@prisma/client";
 
@@ -40,22 +41,23 @@ export async function sendBuildRequestStatusChangedToOwner(
 ): Promise<void> {
   const owner = await prisma.user.findUnique({
     where: { id: ownerId },
-    select: { email: true, emailVerified: true, username: true },
+    select: { email: true, emailVerified: true, username: true, preferredLocale: true },
   });
   if (!owner?.email || !owner.emailVerified) {
     return;  // silent skip — owner has no verified email
   }
 
-  const url = `${BASE}/me/build-requests/${requestId}`;
-  const shortId = requestId.slice(0, 8);
+  const t = await emailText(owner.preferredLocale);
+  const url = `${BASE}/${t.locale}/me/build-requests/${requestId}`;
+  const vars = { id: requestId.slice(0, 8), status: t.text(`notify.buildStatusName.${newStatus}`) };
 
   await sendEmail({
     to: owner.email,
-    subject: `[Poolwatt] Your build request #${shortId} is now ${newStatus}`,
-    html: `
-      <p>Hi ${owner.username},</p>
-      <p>Your build request <b>#${shortId}</b> changed status to <b>${newStatus}</b>.</p>
-      <p><a href="${url}">View your request</a></p>
-    `,
+    subject: `[Poolwatt] ${t.text("notify.buildStatus.subject", vars)}`,
+    html: t.layout(
+      t.html("notify.hi", { name: owner.username }),
+      t.html("notify.buildStatus.body", vars),
+      ...emailLink(url, t.html("notify.buildStatus.cta")),
+    ),
   });
 }

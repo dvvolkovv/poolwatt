@@ -145,16 +145,18 @@
   "auth": {
     "register": {
       "title": "Create account",
-      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "subtitle": "Pick a nickname, enter your email and set a password.",
       "usernameLabel": "Nickname",
       "usernamePlaceholder": "e.g. solar_jane",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
       "passwordLabel": "Password",
       "passwordPlaceholder": "min 8 chars, letters + digits",
       "submit": "Create account",
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
     },
     "login": {
       "title": "Welcome back",
@@ -190,7 +192,10 @@
       "title": "Add an email for password recovery",
       "body": "Without an email we can't help you recover a forgotten password.",
       "cta": "Add email",
-      "dismiss": "Later"
+      "dismiss": "Later",
+      "pendingTitle": "Confirm your email",
+      "pendingBody": "We sent a confirmation link to this address. If it isn't there, check the spam folder:",
+      "pendingCta": "Send again"
     },
     "sidebar": {
       "favorites": "Favorites",
@@ -938,6 +943,72 @@
       "receiptKwh": "kWh",
       "receiptTotal": "Total",
       "issuedAt": "Issued"
+    }
+  },
+  "emails": {
+    "greeting": "Hello,",
+    "ignore": "If this wasn't you, just ignore this email.",
+    "verify": {
+      "subject": "Confirm your email for Poolwatt",
+      "body": "This email was added to a Poolwatt account. If it was you, confirm it with the link below. The link is valid for 1 hour:",
+      "cta": "Confirm email"
+    },
+    "reset": {
+      "subject": "Reset your Poolwatt password",
+      "body": "A password reset was requested for the Poolwatt account with this email. Use the link below to set a new password. The link is valid for 1 hour:",
+      "cta": "Set a new password"
+    },
+    "claim": {
+      "subject": "Poolwatt: verification code for {name}",
+      "body": "Someone requested to claim the {name} profile on Poolwatt with this email. Your verification code:",
+      "expires": "The code is valid for 30 minutes."
+    },
+    "notify": {
+      "hi": "Hi {name},",
+      "buildStatus": {
+        "subject": "Your build request #{id}: {status}",
+        "body": "Your build request #{id} changed status to: {status}.",
+        "cta": "View your request"
+      },
+      "buildStatusName": {
+        "OPEN": "open",
+        "MATCHED": "matched",
+        "FULFILLED": "fulfilled",
+        "CANCELLED": "cancelled"
+      },
+      "contractorStatus": {
+        "subject": "Your contractor registration #{id}: {status}",
+        "body": "Your contractor registration #{id} changed status to: {status}.",
+        "cta": "View your registration"
+      },
+      "contractorStatusName": {
+        "PENDING": "pending review",
+        "APPROVED": "approved",
+        "REJECTED": "rejected",
+        "SUSPENDED": "suspended"
+      },
+      "interest": {
+        "subject": "{company} is interested in your build request #{id}",
+        "contractor": "{company} has expressed interest in your build request #{id}.",
+        "producer": "{company} (a verified producer) has expressed interest in your build request #{id}.",
+        "cta": "Review and accept"
+      },
+      "accepted": {
+        "subject": "Your interest in request #{id} was accepted: contact details inside",
+        "body": "The homeowner accepted your interest in build request #{id}.",
+        "contacts": "Contact details",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "project": "Project: {source}, {kw} kW peak.",
+        "cta": "Open your dashboard"
+      },
+      "rejected": {
+        "subject": "The homeowner chose another contractor for request #{id}",
+        "body": "The homeowner chose another contractor for build request #{id}.",
+        "more": "You'll see new matching requests as they come in."
+      }
     }
   }
 }

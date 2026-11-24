@@ -144,7 +144,7 @@
   "auth": {
     "register": {
       "title": "Create account",
-      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "subtitle": "Pick a nickname, enter your email and set a password.",
       "usernameLabel": "Nickname",
       "usernamePlaceholder": "e.g. solar_jane",
       "passwordLabel": "Password",
@@ -153,7 +153,7 @@
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
     },
     "login": {
       "title": "Welcome back",
@@ -298,6 +298,25 @@
       "title": "Link expired or used",
       "body": "Reset links work once and last one hour.",
       "cta": "Request a new link"
+    }
+  },
+  "emails": {
+    "greeting": "Merhaba,",
+    "ignore": "Bu siz değilseniz bu e-postayı dikkate almayın.",
+    "verify": {
+      "subject": "Poolwatt için e-postanızı doğrulayın",
+      "body": "Bu e-posta bir Poolwatt hesabına eklendi. Bunu siz yaptıysanız aşağıdaki bağlantıyla doğrulayın. Bağlantı 1 saat geçerlidir:",
+      "cta": "E-postayı doğrula"
+    },
+    "reset": {
+      "subject": "Poolwatt şifrenizi sıfırlayın",
+      "body": "Bu e-postaya ait Poolwatt hesabı için şifre sıfırlama istendi. Yeni şifre belirlemek için aşağıdaki bağlantıyı kullanın. Bağlantı 1 saat geçerlidir:",
+      "cta": "Yeni şifre belirle"
+    },
+    "claim": {
+      "subject": "Poolwatt: {name} için doğrulama kodu",
+      "body": "Bu e-posta ile Poolwatt'taki {name} profilinin sahipliği talep edildi. Doğrulama kodunuz:",
+      "expires": "Kod 30 dakika geçerlidir."
     }
   }
 }

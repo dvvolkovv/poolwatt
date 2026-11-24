@@ -144,7 +144,7 @@
   "auth": {
     "register": {
       "title": "Create account",
-      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "subtitle": "Pick a nickname, enter your email and set a password.",
       "usernameLabel": "Nickname",
       "usernamePlaceholder": "e.g. solar_jane",
       "passwordLabel": "Password",
@@ -153,7 +153,7 @@
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
     },
     "login": {
       "title": "Welcome back",
@@ -298,6 +298,25 @@
       "title": "Link expired or used",
       "body": "Reset links work once and last one hour.",
       "cta": "Request a new link"
+    }
+  },
+  "emails": {
+    "greeting": "مرحبًا،",
+    "ignore": "إذا لم تكن أنت من قام بذلك، فتجاهل هذه الرسالة.",
+    "verify": {
+      "subject": "أكّد بريدك الإلكتروني في Poolwatt",
+      "body": "تمت إضافة هذا البريد الإلكتروني إلى حساب في Poolwatt. إذا كنت أنت من قام بذلك، فأكّده عبر الرابط أدناه. الرابط صالح لمدة ساعة واحدة:",
+      "cta": "تأكيد البريد الإلكتروني"
+    },
+    "reset": {
+      "subject": "إعادة تعيين كلمة مرور Poolwatt",
+      "body": "طُلبت إعادة تعيين كلمة المرور لحساب Poolwatt المرتبط بهذا البريد الإلكتروني. استخدم الرابط أدناه لتعيين كلمة مرور جديدة. الرابط صالح لمدة ساعة واحدة:",
+      "cta": "تعيين كلمة مرور جديدة"
+    },
+    "claim": {
+      "subject": "Poolwatt: رمز التحقق لـ {name}",
+      "body": "طُلبت المطالبة بالملف التعريفي {name} على Poolwatt باستخدام هذا البريد الإلكتروني. رمز التحقق:",
+      "expires": "الرمز صالح لمدة 30 دقيقة."
     }
   }
 }

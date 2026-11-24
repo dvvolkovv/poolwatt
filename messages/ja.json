@@ -144,7 +144,7 @@
   "auth": {
     "register": {
       "title": "Create account",
-      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "subtitle": "Pick a nickname, enter your email and set a password.",
       "usernameLabel": "Nickname",
       "usernamePlaceholder": "e.g. solar_jane",
       "passwordLabel": "Password",
@@ -153,7 +153,7 @@
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
     },
     "login": {
       "title": "Welcome back",
@@ -298,6 +298,25 @@
       "title": "Link expired or used",
       "body": "Reset links work once and last one hour.",
       "cta": "Request a new link"
+    }
+  },
+  "emails": {
+    "greeting": "こんにちは。",
+    "ignore": "お心当たりがない場合は、このメールを無視してください。",
+    "verify": {
+      "subject": "Poolwatt：メールアドレスの確認",
+      "body": "このメールアドレスが Poolwatt アカウントに追加されました。ご本人の場合は、以下のリンクから確認してください。リンクの有効期限は1時間です：",
+      "cta": "メールアドレスを確認"
+    },
+    "reset": {
+      "subject": "Poolwatt：パスワードの再設定",
+      "body": "このメールアドレスの Poolwatt アカウントでパスワード再設定がリクエストされました。以下のリンクから新しいパスワードを設定してください。リンクの有効期限は1時間です：",
+      "cta": "新しいパスワードを設定"
+    },
+    "claim": {
+      "subject": "Poolwatt：{name} の確認コード",
+      "body": "このメールアドレスで Poolwatt の {name} プロフィールの所有権申請がありました。確認コード：",
+      "expires": "コードの有効期限は30分です。"
     }
   }
 }

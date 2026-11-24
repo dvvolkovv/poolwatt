@@ -145,16 +145,18 @@
   "auth": {
     "register": {
       "title": "Vytvoriť účet",
-      "subtitle": "Vyberte si prezývku a heslo — to je všetko, čo potrebujete.",
+      "subtitle": "Vyberte si prezývku, zadajte e-mail a nastavte heslo.",
       "usernameLabel": "Prezývka",
       "usernamePlaceholder": "napr. solar_jane",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "you@example.com",
       "passwordLabel": "Heslo",
       "passwordPlaceholder": "min. 8 znakov, písmená + číslice",
       "submit": "Vytvoriť účet",
       "submitting": "Vytvára sa…",
       "haveAccount": "Máte už účet?",
       "signIn": "Prihlásiť sa",
-      "emailNote": "Email môžete pridať neskôr v kabinete na obnovenie hesla. Bez emailu zabudnuté heslo nemožno obnoviť."
+      "emailNote": "Na túto adresu pošleme potvrdzovací odkaz. E-mail je potrebný na obnovenie hesla."
     },
     "login": {
       "title": "Vitajte späť",
@@ -190,7 +192,10 @@
       "title": "Pridajte email pre obnovenie hesla",
       "body": "Bez emailu vám nedokážeme pomôcť obnoviť zabudnuté heslo.",
       "cta": "Pridať email",
-      "dismiss": "Neskôr"
+      "dismiss": "Neskôr",
+      "pendingTitle": "Potvrďte svoj e-mail",
+      "pendingBody": "Na túto adresu sme poslali potvrdzovací odkaz. Ak e-mail nevidíte, skontrolujte spam:",
+      "pendingCta": "Poslať znova"
     },
     "sidebar": {
       "favorites": "Obľúbené",
@@ -938,6 +943,72 @@
       "receiptKwh": "kWh",
       "receiptTotal": "Celkom",
       "issuedAt": "Vydaný"
+    }
+  },
+  "emails": {
+    "greeting": "Dobrý deň,",
+    "ignore": "Ak ste to neboli vy, tento e-mail jednoducho ignorujte.",
+    "verify": {
+      "subject": "Potvrďte svoj e-mail pre Poolwatt",
+      "body": "Tento e-mail bol pridaný k účtu v Poolwatt. Ak ste to boli vy, potvrďte ho cez odkaz nižšie. Odkaz platí 1 hodinu:",
+      "cta": "Potvrdiť e-mail"
+    },
+    "reset": {
+      "subject": "Obnovenie hesla Poolwatt",
+      "body": "Pre účet Poolwatt s týmto e-mailom bolo vyžiadané obnovenie hesla. Nové heslo nastavíte cez odkaz nižšie. Odkaz platí 1 hodinu:",
+      "cta": "Nastaviť nové heslo"
+    },
+    "claim": {
+      "subject": "Poolwatt: overovací kód pre {name}",
+      "body": "Pomocou tohto e-mailu bolo vyžiadané prevzatie profilu {name} v Poolwatt. Váš overovací kód:",
+      "expires": "Kód platí 30 minút."
+    },
+    "notify": {
+      "hi": "Dobrý deň, {name},",
+      "buildStatus": {
+        "subject": "Vaša žiadosť o výstavbu #{id}: {status}",
+        "body": "Stav vašej žiadosti o výstavbu #{id} sa zmenil: {status}.",
+        "cta": "Zobraziť žiadosť"
+      },
+      "buildStatusName": {
+        "OPEN": "otvorená",
+        "MATCHED": "zhotoviteľ nájdený",
+        "FULFILLED": "splnená",
+        "CANCELLED": "zrušená"
+      },
+      "contractorStatus": {
+        "subject": "Vaša registrácia zhotoviteľa #{id}: {status}",
+        "body": "Stav vašej registrácie zhotoviteľa #{id} sa zmenil: {status}.",
+        "cta": "Zobraziť registráciu"
+      },
+      "contractorStatusName": {
+        "PENDING": "čaká na kontrolu",
+        "APPROVED": "schválená",
+        "REJECTED": "zamietnutá",
+        "SUSPENDED": "pozastavená"
+      },
+      "interest": {
+        "subject": "{company} má záujem o vašu žiadosť #{id}",
+        "contractor": "Spoločnosť {company} prejavila záujem o vašu žiadosť o výstavbu #{id}.",
+        "producer": "Spoločnosť {company} (overený výrobca) prejavila záujem o vašu žiadosť o výstavbu #{id}.",
+        "cta": "Pozrieť a prijať"
+      },
+      "accepted": {
+        "subject": "Váš záujem o žiadosť #{id} bol prijatý: kontakty vo vnútri",
+        "body": "Majiteľ domu prijal váš záujem o žiadosť #{id}.",
+        "contacts": "Kontaktné údaje",
+        "name": "Meno",
+        "email": "E-mail",
+        "phone": "Telefón",
+        "address": "Adresa",
+        "project": "Projekt: {source}, špičkový výkon {kw} kW.",
+        "cta": "Otvoriť kabinet"
+      },
+      "rejected": {
+        "subject": "Pri žiadosti #{id} bol vybraný iný zhotoviteľ",
+        "body": "Majiteľ domu vybral pri žiadosti #{id} iného zhotoviteľa.",
+        "more": "Nové vhodné žiadosti sa zobrazia vo vašom kabinete."
+      }
     }
   }
 }

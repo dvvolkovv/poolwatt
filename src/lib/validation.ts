@@ -29,6 +29,7 @@ export const emailSchema = z.string().email("Неверный формат email
 // Zod schemas for forms — each one is a SAFE input parser.
 export const registerSchema = z.object({
   username: usernameSchema,
+  email: emailSchema,
   password: passwordSchema,
 });
 

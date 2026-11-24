@@ -144,7 +144,7 @@
   "auth": {
     "register": {
       "title": "Create account",
-      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "subtitle": "Pick a nickname, enter your email and set a password.",
       "usernameLabel": "Nickname",
       "usernamePlaceholder": "e.g. solar_jane",
       "passwordLabel": "Password",
@@ -153,7 +153,7 @@
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
     },
     "login": {
       "title": "Welcome back",
@@ -298,6 +298,25 @@
       "title": "Link expired or used",
       "body": "Reset links work once and last one hour.",
       "cta": "Request a new link"
+    }
+  },
+  "emails": {
+    "greeting": "Assalomu alaykum,",
+    "ignore": "Agar bu siz boʻlmasangiz, ushbu xatga eʼtibor bermang.",
+    "verify": {
+      "subject": "Poolwatt uchun emailingizni tasdiqlang",
+      "body": "Ushbu email Poolwatt hisobiga qoʻshildi. Agar bu siz boʻlsangiz, quyidagi havola orqali tasdiqlang. Havola 1 soat amal qiladi:",
+      "cta": "Emailni tasdiqlash"
+    },
+    "reset": {
+      "subject": "Poolwatt parolini tiklash",
+      "body": "Ushbu emailga ega Poolwatt hisobi uchun parolni tiklash soʻraldi. Yangi parol oʻrnatish uchun quyidagi havoladan foydalaning. Havola 1 soat amal qiladi:",
+      "cta": "Yangi parol oʻrnatish"
+    },
+    "claim": {
+      "subject": "Poolwatt: {name} uchun tasdiqlash kodi",
+      "body": "Ushbu email orqali Poolwattdagi {name} profiliga egalik huquqi soʻraldi. Tasdiqlash kodi:",
+      "expires": "Kod 30 daqiqa amal qiladi."
     }
   }
 }

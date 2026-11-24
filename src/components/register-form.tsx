@@ -18,6 +18,8 @@ export function RegisterForm({
     subtitle: string;
     usernameLabel: string;
     usernamePlaceholder: string;
+    emailLabel: string;
+    emailPlaceholder: string;
     passwordLabel: string;
     passwordPlaceholder: string;
     submit: string;
@@ -57,6 +59,25 @@ export function RegisterForm({
           />
           {state.fieldErrors?.username && (
             <p className="mt-1 text-xs text-down">{state.fieldErrors.username}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-[11px] uppercase tracking-[0.18em] text-muted mb-2">
+            {labels.emailLabel}
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            maxLength={254}
+            placeholder={labels.emailPlaceholder}
+            className="w-full bg-card border border-hairline rounded-md px-3 py-2 text-foreground text-[15px] focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+          {state.fieldErrors?.email && (
+            <p className="mt-1 text-xs text-down">{state.fieldErrors.email}</p>
           )}
         </div>
 

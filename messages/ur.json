@@ -144,7 +144,7 @@
   "auth": {
     "register": {
       "title": "Create account",
-      "subtitle": "Pick a nickname and a password — that's all you need to start.",
+      "subtitle": "Pick a nickname, enter your email and set a password.",
       "usernameLabel": "Nickname",
       "usernamePlaceholder": "e.g. solar_jane",
       "passwordLabel": "Password",
@@ -153,7 +153,7 @@
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "You can add an email later in your cabinet for password recovery. Without an email, a forgotten password cannot be reset."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
     },
     "login": {
       "title": "Welcome back",
@@ -298,6 +298,25 @@
       "title": "Link expired or used",
       "body": "Reset links work once and last one hour.",
       "cta": "Request a new link"
+    }
+  },
+  "emails": {
+    "greeting": "السلام علیکم،",
+    "ignore": "اگر یہ آپ نے نہیں کیا تو اس ای میل کو نظر انداز کر دیں۔",
+    "verify": {
+      "subject": "Poolwatt کے لیے اپنی ای میل کی تصدیق کریں",
+      "body": "یہ ای میل ایک Poolwatt اکاؤنٹ میں شامل کی گئی ہے۔ اگر یہ آپ نے کیا ہے تو نیچے دیے گئے لنک سے تصدیق کریں۔ لنک 1 گھنٹے تک کارآمد ہے:",
+      "cta": "ای میل کی تصدیق کریں"
+    },
+    "reset": {
+      "subject": "اپنا Poolwatt پاس ورڈ دوبارہ سیٹ کریں",
+      "body": "اس ای میل والے Poolwatt اکاؤنٹ کے لیے پاس ورڈ دوبارہ سیٹ کرنے کی درخواست کی گئی ہے۔ نیا پاس ورڈ سیٹ کرنے کے لیے نیچے دیا گیا لنک استعمال کریں۔ لنک 1 گھنٹے تک کارآمد ہے:",
+      "cta": "نیا پاس ورڈ سیٹ کریں"
+    },
+    "claim": {
+      "subject": "Poolwatt: {name} کے لیے تصدیقی کوڈ",
+      "body": "اس ای میل کے ذریعے Poolwatt پر {name} پروفائل کی ملکیت کی درخواست کی گئی ہے۔ آپ کا تصدیقی کوڈ:",
+      "expires": "کوڈ 30 منٹ تک کارآمد ہے۔"
     }
   }
 }

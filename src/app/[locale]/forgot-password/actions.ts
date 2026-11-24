@@ -15,6 +15,7 @@ export async function forgotPasswordAction(
 ): Promise<ForgotState> {
   const raw = String(formData.get("identifier") ?? "").trim().toLowerCase();
   if (!raw) return { formError: "Введите ник или email" };
+  const locale = String(formData.get("locale") ?? "");
 
   // Allow either nickname or email as the identifier — we look both up.
   const user = await prisma.user.findFirst({
@@ -33,6 +34,13 @@ export async function forgotPasswordAction(
     return { status: "no-email" };
   }
 
+  const recent = await prisma.passwordResetToken.count({
+    where: { userId: user.id, createdAt: { gt: new Date(Date.now() - 60 * 60 * 1000) } },
+  });
+  if (recent >= 3) {
+    return { formError: "Письмо уже отправлено несколько раз. Проверьте почту или попробуйте через час." };
+  }
+
   const token = randomBytes(32).toString("hex");
   await prisma.passwordResetToken.create({
     data: {
@@ -43,7 +51,7 @@ export async function forgotPasswordAction(
   });
 
   try {
-    await sendPasswordResetEmail(user.email, token);
+    await sendPasswordResetEmail(user.email, token, locale);
   } catch (err) {
     console.error("[forgot-password] send failed:", err);
     return { formError: "Не удалось отправить письмо. Попробуйте позже." };

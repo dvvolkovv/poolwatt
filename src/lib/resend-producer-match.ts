@@ -1,4 +1,5 @@
 import { sendEmail } from "@/lib/email";
+import { emailLink, emailText, escapeHtml } from "@/lib/email-i18n";
 import { prisma } from "@/lib/prisma";
 
 const BASE = process.env.NEXTAUTH_URL ?? "https://poolwatt.com";
@@ -13,20 +14,22 @@ export type ProducerInterestExpressedPayload = {
 export async function sendProducerInterestExpressedToOwner(p: ProducerInterestExpressedPayload): Promise<void> {
   const owner = await prisma.user.findUnique({
     where: { id: p.ownerUserId },
-    select: { email: true, emailVerified: true, username: true },
+    select: { email: true, emailVerified: true, username: true, preferredLocale: true },
   });
   if (!owner?.email || !owner.emailVerified) return;
 
-  const url = `${BASE}/en/me/build-requests/${p.buildRequestId}`;
-  const shortId = p.buildRequestId.slice(0, 8);
+  const t = await emailText(owner.preferredLocale);
+  const url = `${BASE}/${t.locale}/me/build-requests/${p.buildRequestId}`;
+  const vars = { id: p.buildRequestId.slice(0, 8), company: p.producerName };
+
   await sendEmail({
     to: owner.email,
-    subject: `[Poolwatt] ${p.producerName} is interested in your build request #${shortId}`,
-    html: `
-      <p>Hi ${owner.username},</p>
-      <p><b>${p.producerName}</b> (a verified producer) has expressed interest in your build request <b>#${shortId}</b>.</p>
-      <p><a href="${url}">Review and accept</a></p>
-    `,
+    subject: `[Poolwatt] ${t.text("notify.interest.subject", vars)}`,
+    html: t.layout(
+      t.html("notify.hi", { name: owner.username }),
+      t.html("notify.interest.producer", vars),
+      ...emailLink(url, t.html("notify.interest.cta")),
+    ),
   });
 }
 
@@ -43,7 +46,7 @@ export async function sendProducerClaimAcceptedToProducer(p: ProducerClaimAccept
       producer: {
         select: {
           displayName: true,
-          claimedBy: { select: { email: true, emailVerified: true, username: true } },
+          claimedBy: { select: { email: true, emailVerified: true, username: true, preferredLocale: true } },
         },
       },
       buildRequest: {
@@ -62,25 +65,24 @@ export async function sendProducerClaimAcceptedToProducer(p: ProducerClaimAccept
   const owner = claim.producer.claimedBy;
   if (!owner?.email || !owner.emailVerified) return;
 
-  const shortId = p.buildRequestId.slice(0, 8);
-  const url = `${BASE}/en/me/producer/${p.producerId}/requests`;
+  const t = await emailText(owner.preferredLocale);
+  const vars = { id: p.buildRequestId.slice(0, 8) };
+  const url = `${BASE}/${t.locale}/me/producer/${p.producerId}/requests`;
   const hw = claim.buildRequest.user;
+  const address = [claim.buildRequest.addressLine, claim.buildRequest.city, claim.buildRequest.country].join(", ");
+  const contact = (key: string, value: string | null) =>
+    `${t.html(`notify.accepted.${key}`)}: <b>${escapeHtml(value ?? "—")}</b>`;
 
   await sendEmail({
     to: owner.email,
-    subject: `[Poolwatt] Your interest in request #${shortId} was accepted — contact details inside`,
-    html: `
-      <p>Hi ${owner.username},</p>
-      <p>The homeowner accepted your interest in build request <b>#${shortId}</b>.</p>
-      <h3>Contact details</h3>
-      <ul>
-        <li>Name: <b>${hw.name ?? "—"}</b></li>
-        <li>Email: ${hw.email ?? "—"}</li>
-        <li>Phone: ${hw.phone ?? "—"}</li>
-        <li>Address: ${claim.buildRequest.addressLine}, ${claim.buildRequest.city}, ${claim.buildRequest.country}</li>
-      </ul>
-      <p>Project: ${claim.buildRequest.source}, ${claim.buildRequest.peakKw.toString()} kW peak.</p>
-      <p><a href="${url}">Open your dashboard</a></p>
-    `,
+    subject: `[Poolwatt] ${t.text("notify.accepted.subject", vars)}`,
+    html: t.layout(
+      t.html("notify.hi", { name: owner.username }),
+      t.html("notify.accepted.body", vars),
+      `<b>${t.html("notify.accepted.contacts")}</b>`,
+      [contact("name", hw.name), contact("email", hw.email), contact("phone", hw.phone), contact("address", address)].join("<br>\n"),
+      t.html("notify.accepted.project", { source: claim.buildRequest.source, kw: claim.buildRequest.peakKw.toString() }),
+      ...emailLink(url, t.html("notify.accepted.cta")),
+    ),
   });
 }

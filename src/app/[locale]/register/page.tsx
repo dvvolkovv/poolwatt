@@ -25,6 +25,8 @@ export default async function RegisterPage({
           subtitle: t("subtitle"),
           usernameLabel: t("usernameLabel"),
           usernamePlaceholder: t("usernamePlaceholder"),
+          emailLabel: t("emailLabel"),
+          emailPlaceholder: t("emailPlaceholder"),
           passwordLabel: t("passwordLabel"),
           passwordPlaceholder: t("passwordPlaceholder"),
           submit: t("submit"),
