@@ -49,6 +49,12 @@ model User {
   contractorMemberships   ContractorMember[]       @relation("ContractorMembership")
   reviewedContractors     Contractor[]             @relation("ContractorReviewer")
   claimTokens             ClaimToken[]
+
+  // Exchange core (ТЗ §4–§8).
+  ownedCompanies    Company[]            @relation("CompanyOwner")
+  reviewedListings  ListingApplication[] @relation("ListingReviewer")
+  wallets           Wallet[]
+  settlementAccount SettlementAccount?   @relation("UserSettlementAccount")
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -157,16 +163,16 @@ enum ClaimEntityType {
 // on successful verification. expiresAt is 30 minutes from creation by
 // convention (enforced by the application layer, not by the DB).
 model ClaimToken {
-  id          String           @id @default(cuid())
-  token       String           @unique
-  entityType  ClaimEntityType
-  entityId    String
-  email       String
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expiresAt   DateTime
-  consumedAt  DateTime?
-  createdAt   DateTime         @default(now())
+  id         String          @id @default(cuid())
+  token      String          @unique
+  entityType ClaimEntityType
+  entityId   String
+  email      String
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime        @default(now())
 
   @@index([entityType, entityId])
   @@index([userId])
@@ -176,15 +182,15 @@ model ClaimToken {
 // Aliases hold the variations of operator/network/brand tags from OSM data
 // so a single ChargerOperator row matches all stations of that network.
 model ChargerOperator {
-  id            String   @id @default(cuid())
-  slug          String   @unique
-  displayName   String
-  aliases       String[] @default([])
-  description   String?  @db.Text
-  websiteUrl    String?
-  logoUrl       String?
-  email         String?
-  phone         String?
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  displayName String
+  aliases     String[] @default([])
+  description String?  @db.Text
+  websiteUrl  String?
+  logoUrl     String?
+  email       String?
+  phone       String?
 
   // Operator-level default tariff. Travelers see this on every station whose
   // OCM `operator` string matches one of `aliases`. Step 4 will add an API
@@ -193,14 +199,14 @@ model ChargerOperator {
   priceCurrency  String?   @db.VarChar(8)
   priceUpdatedAt DateTime?
 
-  claimedById   String?
-  claimedBy     User?    @relation("ChargerOperatorClaims", fields: [claimedById], references: [id])
-  claimedAt     DateTime?
+  claimedById String?
+  claimedBy   User?     @relation("ChargerOperatorClaims", fields: [claimedById], references: [id])
+  claimedAt   DateTime?
 
-  apiKeys       ChargerOperatorApiKey[]
+  apiKeys ChargerOperatorApiKey[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([claimedById])
 }
@@ -209,14 +215,14 @@ model ChargerOperator {
 // POST /api/v1/charger-operators/{id}/price. The plaintext token is shown
 // to the user exactly once at creation; we only persist a SHA-256 hash.
 model ChargerOperatorApiKey {
-  id           String   @id @default(cuid())
-  operatorId   String
-  operator     ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  label        String   // user-supplied, e.g. "Production gateway"
-  tokenHash    String   @unique // SHA-256 of the plaintext token
-  lastUsedAt   DateTime?
-  revokedAt    DateTime?
-  createdAt    DateTime @default(now())
+  id         String          @id @default(cuid())
+  operatorId String
+  operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  label      String // user-supplied, e.g. "Production gateway"
+  tokenHash  String          @unique // SHA-256 of the plaintext token
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime        @default(now())
 
   @@index([operatorId])
   @@index([tokenHash])
@@ -254,9 +260,9 @@ model Producer {
   owner                 User?            @relation("ProducerOwner", fields: [ownerId], references: [id])
   addedByAdminId        String?
   addedBy               User?            @relation("AdminProducerAdditions", fields: [addedByAdminId], references: [id])
-  claimedById   String?
-  claimedBy     User?            @relation("ProducerClaims", fields: [claimedById], references: [id])
-  claimedAt     DateTime?
+  claimedById           String?
+  claimedBy             User?            @relation("ProducerClaims", fields: [claimedById], references: [id])
+  claimedAt             DateTime?
   approvedFromRequestId String?          @unique
   approvedFromRequest   ProducerRequest? @relation("ProducerRequestApproved", fields: [approvedFromRequestId], references: [id])
 
@@ -578,8 +584,8 @@ model BuildRequest {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  claims             BuildRequestClaim[]
-  producerClaims     ProducerBuildRequestClaim[] @relation("ProducerClaimsOnBR")
+  claims         BuildRequestClaim[]
+  producerClaims ProducerBuildRequestClaim[] @relation("ProducerClaimsOnBR")
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
@@ -759,4 +765,520 @@ model ProducerBuildRequestClaim {
   @@unique([buildRequestId, producerId])
   @@index([buildRequestId, status])
   @@index([producerId, status])
+}
+
+// ============================================================================
+// EXCHANGE CORE — listing, telemetry, token registry, order book, wallet,
+// payments. Implements ТЗ §4–§8 and the analyst spec §13–§16, §19, §24.
+//
+// Numeric precision is fixed by ТЗ §16.1:
+//   kWh    Decimal(18, 3) — 1 token = 1 kWh, stored to 0.001
+//   price  Decimal(12, 4) — money per kWh
+//   money  Decimal(18, 2) — fiat amounts
+// Domain logic rounds to these scales via src/lib/exchange/precision.ts.
+// ============================================================================
+
+enum CompanyType {
+  PRODUCER
+  WHOLESALE
+  COOPERATIVE
+  OPERATOR
+}
+
+enum KybStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// §14: draft → submitted → approved / rejected.
+enum ListingApplicationStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum AssetKind {
+  SOLAR
+  WIND
+  BIOGAS
+  HYDRO
+  STORAGE
+  MIXED
+}
+
+// §14: test → active after a clean telemetry period + operator approval.
+enum AssetStatus {
+  DRAFT
+  REVIEW
+  TEST
+  ACTIVE
+  SUSPENDED
+}
+
+// §14: received → valid / suspicious / rejected.
+enum ReadingValidationStatus {
+  RECEIVED
+  VALID
+  SUSPICIOUS
+  REJECTED
+}
+
+// §14 token lifecycle. ROUTED = handed to the aggregator at interval close.
+enum EnergyTokenStatus {
+  AVAILABLE
+  RESERVED
+  STORED
+  SOLD
+  BURNED
+  ROUTED
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
+}
+
+enum OrderStatus {
+  NEW
+  PARTIALLY_FILLED
+  FILLED
+  CANCELLED
+  EXPIRED
+  REJECTED
+}
+
+// §14: initiated → authorized → captured, with failed / refunded exits.
+enum PaymentStatus {
+  INITIATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+enum SettlementAccountStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+// §24: a transfer can require the recipient to confirm, so it has its own
+// lifecycle separate from Trade.
+enum TokenTransferStatus {
+  CREATED
+  CONFIRMED
+  CANCELLED
+}
+
+// A trading zone — country or grid zone. Carries the market parameters the
+// matching engine needs: tick interval, currency, spot reference and the
+// price corridor of §16.5.
+model GridZone {
+  id              String    @id @default(cuid())
+  code            String    @unique // "SK", "LT", "UA-CENTRAL"
+  country         String // ISO-3166 alpha-2
+  name            String
+  currency        String    @default("EUR")
+  spotSource      String? // "entsoe:SK", "omie:ES", …
+  intervalMinutes Int       @default(15) // §18 open question: 15 or 60
+  // §16.5 — trade price must stay within ±corridorPct of spotPrice.
+  corridorPct     Decimal   @default(20) @db.Decimal(5, 2)
+  spotPrice       Decimal?  @db.Decimal(12, 4)
+  spotPriceAt     DateTime?
+  // §16.4 — where unsold tokens go when an interval closes.
+  aggregatorName  String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  assets    Asset[]
+  tokens    EnergyToken[]
+  wallets   Wallet[]
+  orders    Order[]
+  trades    Trade[]
+  payments  Payment[]
+  transfers TokenTransfer[]
+  readings  MeterReading[]
+}
+
+// §13 Company — the legal entity that lists on the platform. Distinct from
+// Contractor (a build-services vendor) and Producer (a public catalogue card).
+model Company {
+  id            String      @id @default(cuid())
+  legalName     String
+  country       String // ISO-3166 alpha-2
+  regNumber     String
+  vatNumber     String?
+  type          CompanyType
+  kybStatus     KybStatus   @default(PENDING)
+  // Sanctions screening result, filled by the operator during review.
+  screeningNote String?     @db.Text
+  website       String?
+  contactName   String?
+  contactEmail  String?
+  contactPhone  String?
+  ownerUserId   String?
+  owner         User?       @relation("CompanyOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  applications      ListingApplication[]
+  assets            Asset[]
+  settlementAccount SettlementAccount?
+  feePlanId         String?
+  feePlan           FeePlan?             @relation(fields: [feePlanId], references: [id], onDelete: SetNull)
+
+  @@unique([country, regNumber])
+  @@index([type, kybStatus])
+}
+
+// §13 / US-01, US-02. Documents are stored as a JSON array of
+// { name, url, bytes, mime } — upload target is out of scope for this slice.
+model ListingApplication {
+  id              String                   @id @default(cuid())
+  companyId       String
+  company         Company                  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  status          ListingApplicationStatus @default(DRAFT)
+  documents       Json                     @default("[]")
+  reviewerId      String?
+  reviewer        User?                    @relation("ListingReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  decisionComment String?                  @db.Text
+  submittedAt     DateTime?
+  decidedAt       DateTime?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  @@index([status, submittedAt])
+  @@index([companyId])
+}
+
+// §13 Asset — a generation object or a storage unit (powerbank).
+model Asset {
+  id               String      @id @default(cuid())
+  companyId        String
+  company          Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  kind             AssetKind
+  name             String
+  capacityKw       Decimal     @db.Decimal(12, 3)
+  storageKwh       Decimal?    @db.Decimal(12, 3) // capacity, STORAGE/MIXED only
+  storedKwh        Decimal     @default(0) @db.Decimal(18, 3) // current charge
+  address          String?
+  latitude         Float?
+  longitude        Float?
+  gridZoneId       String
+  gridZone         GridZone    @relation(fields: [gridZoneId], references: [id])
+  meterId          String?     @unique
+  status           AssetStatus @default(DRAFT)
+  goCertificateRef String? // guarantee of origin registry reference
+
+  // §4: token minting stays off until documents pass AND telemetry has run
+  // clean for the probation window. telemetryCleanSince is reset by any
+  // SUSPICIOUS/REJECTED reading.
+  telemetryCleanSince DateTime?
+  activatedAt         DateTime?
+  suspendedReason     String?
+
+  // §30 "Правила продажи" — the dispatcher splits each validated interval.
+  minSalePrice      Decimal? @db.Decimal(12, 4)
+  shareToMarketPct  Int      @default(100)
+  shareToStoragePct Int      @default(0)
+  shareToSelfPct    Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  apiKeys  AssetApiKey[]
+  readings MeterReading[]
+  tokens   EnergyToken[]
+
+  @@index([companyId, status])
+  @@index([gridZoneId, status])
+}
+
+// Telemetry credential for one asset. Mirrors ChargerOperatorApiKey: the
+// plaintext is shown once, only the SHA-256 is stored.
+model AssetApiKey {
+  id         String    @id @default(cuid())
+  assetId    String
+  asset      Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  label      String?
+  tokenHash  String    @unique
+  prefix     String // first chars of the plaintext, for display
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  @@index([assetId])
+}
+
+// §5 / §13. One reading per (asset, interval) — this uniqueness is what
+// guarantees §16.2 "one MeterReading → exactly one mint".
+model MeterReading {
+  id               String                  @id @default(cuid())
+  assetId          String
+  asset            Asset                   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  zoneId           String
+  zone             GridZone                @relation(fields: [zoneId], references: [id])
+  intervalStart    DateTime
+  intervalEnd      DateTime
+  energyKwh        Decimal                 @db.Decimal(18, 3)
+  source           String // "rest" | "mqtt" | "manual"
+  validationStatus ReadingValidationStatus @default(RECEIVED)
+  validationNote   String?
+  receivedAt       DateTime                @default(now())
+  mintedAt         DateTime?
+
+  token EnergyToken?
+
+  @@unique([assetId, intervalStart])
+  @@index([assetId, intervalStart])
+  @@index([validationStatus])
+}
+
+// §5 / §13 Token — a batch of kWh. A batch splits when a trade consumes part
+// of it, so amountKwh is always the live, unconsumed size of the batch.
+model EnergyToken {
+  id               String            @id @default(cuid())
+  assetId          String
+  asset            Asset             @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  zoneId           String
+  zone             GridZone          @relation(fields: [zoneId], references: [id])
+  // Set on the batch minted directly from a reading; null on split children
+  // and on batches created by storage round-trips.
+  readingId        String?           @unique
+  reading          MeterReading?     @relation(fields: [readingId], references: [id], onDelete: SetNull)
+  parentId         String?
+  parent           EnergyToken?      @relation("TokenSplit", fields: [parentId], references: [id], onDelete: SetNull)
+  children         EnergyToken[]     @relation("TokenSplit")
+  intervalStart    DateTime
+  amountKwh        Decimal           @db.Decimal(18, 3)
+  status           EnergyTokenStatus @default(AVAILABLE)
+  goCertificateRef String?
+  ownerWalletId    String?
+  ownerWallet      Wallet?           @relation(fields: [ownerWalletId], references: [id], onDelete: SetNull)
+  // §16.4 routing outcome, when status = ROUTED or STORED.
+  routedTo         String?
+  storedInAssetId  String?
+  mintedAt         DateTime          @default(now())
+  burnedAt         DateTime?
+
+  @@index([assetId, intervalStart])
+  @@index([zoneId, status, intervalStart])
+  @@index([ownerWalletId, status])
+}
+
+// §7 Wallet — one per (user, zone): kWh tokens plus a fiat balance.
+model Wallet {
+  id           String   @id @default(cuid())
+  ownerUserId  String
+  owner        User     @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  zoneId       String
+  zone         GridZone @relation(fields: [zoneId], references: [id])
+  kwhBalance   Decimal  @default(0) @db.Decimal(18, 3)
+  fiatBalance  Decimal  @default(0) @db.Decimal(18, 2)
+  // Funds held against open BUY orders (§12 US-06 "резерв средств").
+  reservedFiat Decimal  @default(0) @db.Decimal(18, 2)
+  currency     String   @default("EUR")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tokens            EnergyToken[]
+  orders            Order[]
+  payments          Payment[]
+  outgoingTransfers TokenTransfer[] @relation("TransferFrom")
+  incomingTransfers TokenTransfer[] @relation("TransferTo")
+
+  @@unique([ownerUserId, zoneId])
+  @@index([zoneId])
+}
+
+// §6 / §13 Order. MARKET orders never rest in the book; only LIMIT orders do.
+model Order {
+  id             String      @id @default(cuid())
+  walletId       String
+  wallet         Wallet      @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  zoneId         String
+  zone           GridZone    @relation(fields: [zoneId], references: [id])
+  side           OrderSide
+  type           OrderType
+  intervalStart  DateTime? // null = any interval (spot / retail buy)
+  amountKwh      Decimal     @db.Decimal(18, 3)
+  filledKwh      Decimal     @default(0) @db.Decimal(18, 3)
+  limitPrice     Decimal?    @db.Decimal(12, 4)
+  avgPrice       Decimal?    @db.Decimal(12, 4)
+  status         OrderStatus @default(NEW)
+  reservedFiat   Decimal     @default(0) @db.Decimal(18, 2)
+  rejectReason   String?
+  // §15: every POST carries an idempotency key.
+  idempotencyKey String?     @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  cancelledAt    DateTime?
+
+  buyTrades  Trade[]  @relation("BuyOrder")
+  sellTrades Trade[]  @relation("SellOrder")
+  payment    Payment? @relation("PaymentOrder")
+
+  // The resting-book query: open orders of one side, in a zone and interval.
+  @@index([zoneId, intervalStart, side, status, limitPrice, createdAt])
+  @@index([walletId, status])
+}
+
+// §13 Trade — one fill. Fees are charged to both sides per §16.8.
+model Trade {
+  id          String   @id @default(cuid())
+  zoneId      String
+  zone        GridZone @relation(fields: [zoneId], references: [id])
+  buyOrderId  String
+  buyOrder    Order    @relation("BuyOrder", fields: [buyOrderId], references: [id], onDelete: Cascade)
+  sellOrderId String
+  sellOrder   Order    @relation("SellOrder", fields: [sellOrderId], references: [id], onDelete: Cascade)
+  amountKwh   Decimal  @db.Decimal(18, 3)
+  price       Decimal  @db.Decimal(12, 4)
+  buyerFee    Decimal  @default(0) @db.Decimal(18, 2)
+  sellerFee   Decimal  @default(0) @db.Decimal(18, 2)
+  executedAt  DateTime @default(now())
+
+  receipt Receipt?
+
+  @@index([zoneId, executedAt])
+  @@index([buyOrderId])
+  @@index([sellOrderId])
+}
+
+// §8 Payment — the charge waterfall: balance first, shortfall bought at market.
+model Payment {
+  id             String        @id @default(cuid())
+  walletId       String
+  wallet         Wallet        @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  zoneId         String
+  zone           GridZone      @relation(fields: [zoneId], references: [id])
+  chargePointId  String?
+  requestedKwh   Decimal       @db.Decimal(18, 3)
+  kwhFromBalance Decimal       @default(0) @db.Decimal(18, 3)
+  kwhBought      Decimal       @default(0) @db.Decimal(18, 3)
+  // Authorized with the §16.6 buffer; captured at the real execution price.
+  authorizedFiat Decimal       @default(0) @db.Decimal(18, 2)
+  amountFiat     Decimal       @default(0) @db.Decimal(18, 2)
+  status         PaymentStatus @default(INITIATED)
+  failureReason  String?
+  cardId         String?
+  marketOrderId  String?       @unique
+  marketOrder    Order?        @relation("PaymentOrder", fields: [marketOrderId], references: [id], onDelete: SetNull)
+  idempotencyKey String?       @unique
+  createdAt      DateTime      @default(now())
+  authorizedAt   DateTime?
+  capturedAt     DateTime?
+
+  receipt Receipt?
+
+  @@index([walletId, createdAt])
+  @@index([status])
+}
+
+// §13 / §46 Receipt — issued for a payment or a trade; lists the burned batches.
+model Receipt {
+  id             String   @id @default(cuid())
+  paymentId      String?  @unique
+  payment        Payment? @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  tradeId        String?  @unique
+  trade          Trade?   @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  burnedTokenIds String[]
+  totalKwh       Decimal  @default(0) @db.Decimal(18, 3)
+  totalFiat      Decimal  @default(0) @db.Decimal(18, 2)
+  currency       String   @default("EUR")
+  // §46 "Состав чека" — per-line detail kept verbatim for accounting export.
+  breakdown      Json     @default("{}")
+  issuedAt       DateTime @default(now())
+
+  @@index([issuedAt])
+}
+
+// §19 US-13 — personal IBAN opened after listing approval. Named
+// SettlementAccount because `Account` is taken by the Auth.js adapter.
+model SettlementAccount {
+  id        String                  @id @default(cuid())
+  companyId String?                 @unique
+  company   Company?                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId    String?                 @unique
+  user      User?                   @relation("UserSettlementAccount", fields: [userId], references: [id], onDelete: Cascade)
+  iban      String                  @unique
+  bic       String?
+  currency  String                  @default("EUR")
+  balance   Decimal                 @default(0) @db.Decimal(18, 2)
+  status    SettlementAccountStatus @default(ACTIVE)
+  openedAt  DateTime                @default(now())
+
+  entries SettlementEntry[]
+}
+
+// Statement line for GET /v1/accounts/{id}/statement.
+model SettlementEntry {
+  id          String            @id @default(cuid())
+  accountId   String
+  account     SettlementAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  amount      Decimal           @db.Decimal(18, 2) // signed
+  currency    String            @default("EUR")
+  description String
+  reference   String? // trade / payment / payout id
+  bookedAt    DateTime          @default(now())
+
+  @@index([accountId, bookedAt])
+}
+
+// §24 — kWh handoff between members inside one zone.
+model TokenTransfer {
+  id           String              @id @default(cuid())
+  zoneId       String
+  zone         GridZone            @relation(fields: [zoneId], references: [id])
+  fromWalletId String
+  fromWallet   Wallet              @relation("TransferFrom", fields: [fromWalletId], references: [id], onDelete: Cascade)
+  toWalletId   String
+  toWallet     Wallet              @relation("TransferTo", fields: [toWalletId], references: [id], onDelete: Cascade)
+  amountKwh    Decimal             @db.Decimal(18, 3)
+  note         String?
+  status       TokenTransferStatus @default(CONFIRMED)
+  createdAt    DateTime            @default(now())
+  confirmedAt  DateTime?
+  cancelledAt  DateTime?
+
+  @@index([fromWalletId, createdAt])
+  @@index([toWalletId, createdAt])
+}
+
+// §16.8 / §53 — platform commission, configured per participant type.
+model FeePlan {
+  id              String       @id @default(cuid())
+  name            String       @unique
+  participantType CompanyType?
+  tradeFeePct     Decimal      @default(1) @db.Decimal(5, 2)
+  chargeFeePct    Decimal      @default(2) @db.Decimal(5, 2)
+  isDefault       Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  companies Company[]
+}
+
+// §16.11 — generic audit trail for every balance and status change.
+// AdminAuditLog stays as-is for the moderation cabinet; this one is written
+// by the exchange services and keyed by entity rather than by actor.
+model AuditLog {
+  id       String   @id @default(cuid())
+  actor    String // user id, "system", or "asset:<id>"
+  entity   String // "Order", "Wallet", "EnergyToken", …
+  entityId String
+  action   String
+  before   Json?
+  after    Json?
+  at       DateTime @default(now())
+
+  @@index([entity, entityId, at])
+  @@index([at])
 }

@@ -30,7 +30,7 @@ export default async function EditBuildRequestPage({
       select: { name: true, phone: true },
     }),
     getTranslations("cabinet.buildRequest"),
-    getBuildRequestFormLabels(locale),
+    getBuildRequestFormLabels(),
   ]);
 
   return (
@@ -40,8 +40,8 @@ export default async function EditBuildRequestPage({
       <BuildRequestForm
         mode={{ kind: "edit", id }}
         locale={locale}
-        hasPhone={user.phone != null}
-        hasName={user.name != null}
+        userName={user.name}
+        userPhone={user.phone}
         initial={{
           source: r.source,
           peakKw: r.peakKw.toNumber(),

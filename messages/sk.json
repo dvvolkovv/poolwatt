@@ -20,7 +20,8 @@
     "themeSystem": "Systém",
     "cabinet": "Kabinet",
     "cancel": "Zrušiť",
-    "save": "Uložiť"
+    "save": "Uložiť",
+    "exchange": "Burza"
   },
   "home": {
     "heroEyebrow": "Naživo · Poolwatt sieť · obnovené každých 60 s",
@@ -181,7 +182,8 @@
       "settings": "Nastavenia",
       "signOut": "Odhlásiť sa",
       "buildRequests": "Žiadosti o výstavbu",
-      "contractor": "Moja firma"
+      "contractor": "Moja firma",
+      "wallet": "Peňaženka"
     },
     "favorites": {
       "title": "Obľúbené",
@@ -206,16 +208,39 @@
         }
       },
       "field": {
-        "source": { "label": "Zdroj", "SOLAR": "Solárna", "WIND": "Veterná", "HYBRID": "Solárna + veterná" },
-        "peakKw": { "label": "Špičkový výkon (kW)" },
-        "wantPowerbank": { "label": "Pridať powerbank" },
-        "powerbankKwh": { "label": "Kapacita powerbanku (kWh)" },
-        "wantEvCharger": { "label": "Pridať EV nabíjačku" },
-        "evChargerPorts": { "label": "Počet nabíjacích portov" },
-        "evPublicForSale": { "label": "Ponúkať nabíjanie okoloidúcim vodičom" },
-        "country": { "label": "Krajina" },
-        "city": { "label": "Mesto" },
-        "addressLine": { "label": "Adresa" },
+        "source": {
+          "label": "Zdroj",
+          "SOLAR": "Solárna",
+          "WIND": "Veterná",
+          "HYBRID": "Solárna + veterná"
+        },
+        "peakKw": {
+          "label": "Špičkový výkon (kW)"
+        },
+        "wantPowerbank": {
+          "label": "Pridať powerbank"
+        },
+        "powerbankKwh": {
+          "label": "Kapacita powerbanku (kWh)"
+        },
+        "wantEvCharger": {
+          "label": "Pridať EV nabíjačku"
+        },
+        "evChargerPorts": {
+          "label": "Počet nabíjacích portov"
+        },
+        "evPublicForSale": {
+          "label": "Ponúkať nabíjanie okoloidúcim vodičom"
+        },
+        "country": {
+          "label": "Krajina"
+        },
+        "city": {
+          "label": "Mesto"
+        },
+        "addressLine": {
+          "label": "Adresa"
+        },
         "siteType": {
           "label": "Typ objektu",
           "PRIVATE_HOUSE": "Rodinný dom",
@@ -223,17 +248,26 @@
           "LAND_PLOT": "Pozemok",
           "COMMERCIAL": "Komerčné"
         },
-        "availableAreaM2": { "label": "Dostupná plocha (m²)" },
+        "availableAreaM2": {
+          "label": "Dostupná plocha (m²)"
+        },
         "roofOrientation": {
           "label": "Orientácia strechy",
-          "S": "Juh", "SE": "Juhovýchod", "SW": "Juhozápad",
-          "E": "Východ", "W": "Západ", "UNKNOWN": "Neviem"
+          "S": "Juh",
+          "SE": "Juhovýchod",
+          "SW": "Juhozápad",
+          "E": "Východ",
+          "W": "Západ",
+          "UNKNOWN": "Neviem"
         },
         "budget": {
           "label": "Rozpočet",
-          "UNDER_5K": "do €5k", "FROM_5K_TO_15K": "€5–15k",
-          "FROM_15K_TO_30K": "€15–30k", "FROM_30K_TO_60K": "€30–60k",
-          "OVER_60K": "€60k+", "AWAITING_QUOTE": "Čakám na ponuku"
+          "UNDER_5K": "do €5k",
+          "FROM_5K_TO_15K": "€5–15k",
+          "FROM_15K_TO_30K": "€15–30k",
+          "FROM_30K_TO_60K": "€30–60k",
+          "OVER_60K": "€60k+",
+          "AWAITING_QUOTE": "Čakám na ponuku"
         },
         "timeline": {
           "label": "Termín",
@@ -241,14 +275,32 @@
           "WITHIN_YEAR": "Do roka",
           "EXPLORING": "Zatiaľ sa rozhliadam"
         },
-        "notes": { "label": "Poznámka (nepovinné)" }
+        "notes": {
+          "label": "Poznámka (nepovinné)"
+        },
+        "name": {
+          "label": "Vaše meno",
+          "placeholder": "napr. Alexander Volkov"
+        },
+        "phone": {
+          "label": "Telefón",
+          "placeholder": "+421 900 000 000"
+        }
       },
+      "contactHint": "Zdieľame iba s dodávateľom, ktorého prijmete — s nikým iným.",
       "status": {
-        "OPEN": "Otvorená", "MATCHED": "Prevzatá", "FULFILLED": "Dokončená", "CANCELLED": "Zrušená"
+        "OPEN": "Otvorená",
+        "MATCHED": "Prevzatá",
+        "FULFILLED": "Dokončená",
+        "CANCELLED": "Zrušená"
       },
       "action": {
-        "submit": "Odoslať", "save": "Uložiť", "cancel": "Zrušiť žiadosť",
-        "edit": "Upraviť", "back": "Späť na zoznam", "newRequest": "Nová žiadosť",
+        "submit": "Odoslať",
+        "save": "Uložiť",
+        "cancel": "Zrušiť žiadosť",
+        "edit": "Upraviť",
+        "back": "Späť na zoznam",
+        "newRequest": "Nová žiadosť",
         "goToSettings": "Prejsť do nastavení →"
       },
       "error": {
@@ -400,33 +452,87 @@
         }
       },
       "field": {
-        "entityType": { "label": "Typ subjektu", "LEGAL_ENTITY": "Právnická osoba (s.r.o. / a.s.)", "SOLE_TRADER": "Živnostník (OSVČ)", "INDIVIDUAL": "Individuálny špecialista" },
-        "displayName": { "label": "Názov firmy" },
-        "legalName": { "label": "Plný právny názov" },
-        "registrationNumber": { "label": "IČO / registračné číslo" },
-        "country": { "label": "Krajina sídla" },
-        "city": { "label": "Mesto" },
-        "foundedYear": { "label": "Rok založenia" },
-        "workCategories": { "label": "Čo robíte", "DESIGN": "Projektovanie / inžiniering", "MANUFACTURE": "Výroba zariadení", "SUPPLY": "Dodávka zariadení", "INSTALLATION": "Inštalácia / stavebné práce", "COMMISSIONING": "Uvedenie do prevádzky", "MAINTENANCE": "Servis / O&M" },
-        "renewableTypes": { "label": "Typy zdrojov", "SOLAR": "Solárne", "WIND": "Veterné", "HYDRO": "Vodné", "BIOMASS": "Biomasa / bioplyn", "GEOTHERMAL": "Geotermálne", "HYBRID": "Hybridné" },
-        "countriesServed": { "label": "Krajiny pôsobenia (ISO-2 kódy)" },
-        "bio": { "label": "O firme (100–2000 znakov)" },
-        "websiteUrl": { "label": "URL webu" },
-        "logoUrl": { "label": "URL loga" },
-        "contactEmail": { "label": "Kontaktný email" },
-        "contactPhone": { "label": "Kontaktný telefón (E.164)" },
-        "providesEvCharging": { "label": "Táto firma prevádzkuje EV nabíjacie stanice" },
+        "entityType": {
+          "label": "Typ subjektu",
+          "LEGAL_ENTITY": "Právnická osoba (s.r.o. / a.s.)",
+          "SOLE_TRADER": "Živnostník (OSVČ)",
+          "INDIVIDUAL": "Individuálny špecialista"
+        },
+        "displayName": {
+          "label": "Názov firmy"
+        },
+        "legalName": {
+          "label": "Plný právny názov"
+        },
+        "registrationNumber": {
+          "label": "IČO / registračné číslo"
+        },
+        "country": {
+          "label": "Krajina sídla"
+        },
+        "city": {
+          "label": "Mesto"
+        },
+        "foundedYear": {
+          "label": "Rok založenia"
+        },
+        "workCategories": {
+          "label": "Čo robíte",
+          "DESIGN": "Projektovanie / inžiniering",
+          "MANUFACTURE": "Výroba zariadení",
+          "SUPPLY": "Dodávka zariadení",
+          "INSTALLATION": "Inštalácia / stavebné práce",
+          "COMMISSIONING": "Uvedenie do prevádzky",
+          "MAINTENANCE": "Servis / O&M"
+        },
+        "renewableTypes": {
+          "label": "Typy zdrojov",
+          "SOLAR": "Solárne",
+          "WIND": "Veterné",
+          "HYDRO": "Vodné",
+          "BIOMASS": "Biomasa / bioplyn",
+          "GEOTHERMAL": "Geotermálne",
+          "HYBRID": "Hybridné"
+        },
+        "countriesServed": {
+          "label": "Krajiny pôsobenia (ISO-2 kódy)"
+        },
+        "bio": {
+          "label": "O firme (100–2000 znakov)"
+        },
+        "websiteUrl": {
+          "label": "URL webu"
+        },
+        "logoUrl": {
+          "label": "URL loga"
+        },
+        "contactEmail": {
+          "label": "Kontaktný email"
+        },
+        "contactPhone": {
+          "label": "Kontaktný telefón (E.164)"
+        },
+        "providesEvCharging": {
+          "label": "Táto firma prevádzkuje EV nabíjacie stanice"
+        },
         "evPowerSource": {
           "label": "Zdroj elektriny",
           "GRID": "Sieť (bežná elektrina)",
           "MIXED": "Zmiešané (sieť + vlastné OZE / certifikovaná zelená)",
           "RENEWABLE_ONLY": "Iba zelená (100% vlastné solárne / veterné / off-grid)"
         },
-        "evStationCount": { "label": "Počet prevádzkovaných nabíjacích staníc" },
+        "evStationCount": {
+          "label": "Počet prevádzkovaných nabíjacích staníc"
+        },
         "evConnectorTypes": {
           "label": "Typy konektorov",
-          "CCS2": "CCS2", "CHAdeMO": "CHAdeMO", "TYPE2": "Type 2",
-          "TYPE1": "Type 1", "TESLA": "Tesla", "GB_T": "GB/T", "SCHUKO": "Schuko"
+          "CCS2": "CCS2",
+          "CHAdeMO": "CHAdeMO",
+          "TYPE2": "Type 2",
+          "TYPE1": "Type 1",
+          "TESLA": "Tesla",
+          "GB_T": "GB/T",
+          "SCHUKO": "Schuko"
         },
         "evPowerLevels": {
           "label": "Úrovne výkonu",
@@ -442,14 +548,19 @@
           "PRIVATE": "Súkromný (vlastný fleet / zamestnanci)",
           "PAY_AT_LOCATION": "Platba na mieste (hotovosť / karta)"
         },
-        "evMaxPowerKw": { "label": "Max. výkon na bod (kW)" },
+        "evMaxPowerKw": {
+          "label": "Max. výkon na bod (kW)"
+        },
         "evDescription": {
           "label": "Popis vašej EV nabíjacej infraštruktúry",
           "placeholder": "napr. 12 staníc pozdĺž koridoru Bratislava–Viedeň, napájané 240 kW strešnými PV + záloha zo siete, 24/7 verejné s aktiváciou cez mobilnú aplikáciu"
         }
       },
       "status": {
-        "PENDING": "Čaká na schválenie", "APPROVED": "Schválené", "REJECTED": "Zamietnuté", "SUSPENDED": "Pozastavené"
+        "PENDING": "Čaká na schválenie",
+        "APPROVED": "Schválené",
+        "REJECTED": "Zamietnuté",
+        "SUSPENDED": "Pozastavené"
       },
       "action": {
         "submit": "Odoslať žiadosť",
@@ -468,10 +579,18 @@
   "admin": {
     "buildRequest": {
       "title": "Žiadosti o výstavbu",
-      "filter": { "status": "Stav", "country": "Krajina", "all": "Všetko" },
+      "filter": {
+        "status": "Stav",
+        "country": "Krajina",
+        "all": "Všetko"
+      },
       "table": {
-        "id": "ID", "createdAt": "Vytvorené", "owner": "Vlastník",
-        "source": "Zdroj", "country": "Krajina", "status": "Stav"
+        "id": "ID",
+        "createdAt": "Vytvorené",
+        "owner": "Vlastník",
+        "source": "Zdroj",
+        "country": "Krajina",
+        "status": "Stav"
       },
       "action": {
         "setStatus": "Zmeniť stav",
@@ -484,10 +603,51 @@
     },
     "contractor": {
       "title": "Dodávatelia",
-      "filter": { "status": "Stav", "country": "Krajina", "entityType": "Typ", "all": "Všetko" },
-      "table": { "createdAt": "Vytvorené", "owner": "Vlastník", "displayName": "Názov", "entityType": "Typ", "country": "Krajina", "status": "Stav" },
-      "action": { "setStatus": "Zmeniť stav", "adminNote": "Interná poznámka (povinné)", "submit": "Použiť", "approve": "Schváliť", "reject": "Zamietnuť" }
-    }
+      "filter": {
+        "status": "Stav",
+        "country": "Krajina",
+        "entityType": "Typ",
+        "all": "Všetko"
+      },
+      "table": {
+        "createdAt": "Vytvorené",
+        "owner": "Vlastník",
+        "displayName": "Názov",
+        "entityType": "Typ",
+        "country": "Krajina",
+        "status": "Stav"
+      },
+      "action": {
+        "setStatus": "Zmeniť stav",
+        "adminNote": "Interná poznámka (povinné)",
+        "submit": "Použiť",
+        "approve": "Schváliť",
+        "reject": "Zamietnuť"
+      }
+    },
+    "listings": {
+      "title": "Žiadosti o listing",
+      "empty": "Žiadne žiadosti",
+      "company": "Firma",
+      "country": "Krajina",
+      "type": "Typ",
+      "status": "Stav",
+      "submitted": "Odoslaná",
+      "documents": "Dokumenty",
+      "kyb": "KYB",
+      "review": "Rozhodnutie",
+      "approve": "Schváliť",
+      "reject": "Zamietnuť",
+      "comment": "Komentár (povinný pri zamietnutí)",
+      "screening": "Poznámka k sankčnej kontrole",
+      "decided": "Rozhodnuté",
+      "reviewer": "Posúdil",
+      "assets": "Objekty",
+      "account": "IBAN otvorený",
+      "back": "Späť na žiadosti",
+      "noDocuments": "Žiadne priložené dokumenty"
+    },
+    "navListings": "Listing"
   },
   "claim": {
     "title": "Prevziať {name}",
@@ -671,6 +831,81 @@
         "subtitle": "Partneri po celej Európe pripravení projektovať, inštalovať a uvádzať do prevádzky vaše solárne, veterné alebo hybridné riešenie.",
         "viewAll": "Všetci dodávatelia →"
       }
+    }
+  },
+  "exchange": {
+    "eyebrow": "Burza",
+    "title": "Obchodný terminál",
+    "stats": {
+      "interval": "Interval dodávky",
+      "spot": "Spotová referencia",
+      "corridor": "Cenový koridor",
+      "bestBid": "Najlepší nákup",
+      "bestAsk": "Najlepší predaj"
+    },
+    "book": {
+      "title": "Kniha príkazov",
+      "bids": "Nákup",
+      "asks": "Predaj",
+      "empty": "Pre tento interval nie sú príkazy"
+    },
+    "trades": {
+      "title": "Posledné obchody",
+      "empty": "Zatiaľ žiadne obchody",
+      "time": "Čas",
+      "amount": "kWh",
+      "price": "Cena"
+    },
+    "ticket": {
+      "title": "Nový príkaz",
+      "buy": "Kúpiť",
+      "sell": "Predať",
+      "market": "Trhový",
+      "limit": "Limitný",
+      "amount": "Množstvo, kWh",
+      "price": "Limitná cena",
+      "interval": "Interval dodávky",
+      "estimate": "Odhadovaná hodnota",
+      "balanceKwh": "Zostatok kWh",
+      "availableFiat": "Dostupné",
+      "submit": "Zadať príkaz",
+      "corridorHint": "Cenový koridor",
+      "filled": "vykonané",
+      "rejected": "Zamietnuté",
+      "loginRequired": "Na obchodovanie sa prihláste.",
+      "login": "Prihlásiť sa"
+    },
+    "myOrders": {
+      "title": "Moje príkazy",
+      "empty": "V tejto zóne nemáte príkazy",
+      "cancel": "Zrušiť",
+      "filled": "vykonané"
+    },
+    "wallet": {
+      "eyebrow": "Peňaženka",
+      "title": "kWh a peniaze",
+      "kwhBalance": "Zostatok kWh",
+      "fiatBalance": "Peniaze",
+      "reserved": "Rezervované",
+      "available": "Dostupné",
+      "avgPrice": "Priemerná kúpna cena",
+      "lifetimeBought": "Kúpené celkovo",
+      "account": "Zúčtovací účet",
+      "noAccount": "Účet zatiaľ nie je",
+      "openAccount": "Otvoriť účet",
+      "buyAhead": "Kúpiť kWh dopredu",
+      "buyAheadHelp": "Štandardne za trhovú cenu; limit nastavte, ak chcete čakať na lepšiu.",
+      "amount": "Množstvo, kWh",
+      "limitPrice": "Limitná cena (nepovinné)",
+      "buy": "Kúpiť",
+      "history": "História",
+      "historyEmpty": "Zatiaľ nič",
+      "noWallet": "Peňaženka zatiaľ neexistuje — kúpte kWh alebo prijmite prevod a otvorí sa.",
+      "zone": "Zóna",
+      "receipts": "Doklady",
+      "receiptKwh": "kWh",
+      "receiptTotal": "Celkom",
+      "issuedAt": "Vydaný"
     }
   }
 }

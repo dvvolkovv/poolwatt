@@ -20,7 +20,8 @@
     "themeSystem": "System",
     "cabinet": "Cabinet",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "exchange": "Exchange"
   },
   "home": {
     "heroEyebrow": "Live · Poolwatt Grid · refreshed every 60 s",
@@ -181,7 +182,8 @@
       "settings": "Settings",
       "signOut": "Sign out",
       "buildRequests": "Build requests",
-      "contractor": "My company"
+      "contractor": "My company",
+      "wallet": "Wallet"
     },
     "favorites": {
       "title": "Favorites",
@@ -206,16 +208,39 @@
         }
       },
       "field": {
-        "source": { "label": "Source", "SOLAR": "Solar", "WIND": "Wind", "HYBRID": "Solar + Wind" },
-        "peakKw": { "label": "Peak power (kW)" },
-        "wantPowerbank": { "label": "Include a powerbank" },
-        "powerbankKwh": { "label": "Powerbank capacity (kWh)" },
-        "wantEvCharger": { "label": "Include an EV charger" },
-        "evChargerPorts": { "label": "Number of charging ports" },
-        "evPublicForSale": { "label": "Offer EV charging to passing drivers" },
-        "country": { "label": "Country" },
-        "city": { "label": "City" },
-        "addressLine": { "label": "Address" },
+        "source": {
+          "label": "Source",
+          "SOLAR": "Solar",
+          "WIND": "Wind",
+          "HYBRID": "Solar + Wind"
+        },
+        "peakKw": {
+          "label": "Peak power (kW)"
+        },
+        "wantPowerbank": {
+          "label": "Include a powerbank"
+        },
+        "powerbankKwh": {
+          "label": "Powerbank capacity (kWh)"
+        },
+        "wantEvCharger": {
+          "label": "Include an EV charger"
+        },
+        "evChargerPorts": {
+          "label": "Number of charging ports"
+        },
+        "evPublicForSale": {
+          "label": "Offer EV charging to passing drivers"
+        },
+        "country": {
+          "label": "Country"
+        },
+        "city": {
+          "label": "City"
+        },
+        "addressLine": {
+          "label": "Address"
+        },
         "siteType": {
           "label": "Site type",
           "PRIVATE_HOUSE": "Private house",
@@ -223,17 +248,26 @@
           "LAND_PLOT": "Land plot",
           "COMMERCIAL": "Commercial"
         },
-        "availableAreaM2": { "label": "Available area (m²)" },
+        "availableAreaM2": {
+          "label": "Available area (m²)"
+        },
         "roofOrientation": {
           "label": "Roof orientation",
-          "S": "South", "SE": "South-east", "SW": "South-west",
-          "E": "East", "W": "West", "UNKNOWN": "I don't know"
+          "S": "South",
+          "SE": "South-east",
+          "SW": "South-west",
+          "E": "East",
+          "W": "West",
+          "UNKNOWN": "I don't know"
         },
         "budget": {
           "label": "Budget",
-          "UNDER_5K": "Up to €5k", "FROM_5K_TO_15K": "€5–15k",
-          "FROM_15K_TO_30K": "€15–30k", "FROM_30K_TO_60K": "€30–60k",
-          "OVER_60K": "€60k+", "AWAITING_QUOTE": "Awaiting quote"
+          "UNDER_5K": "Up to €5k",
+          "FROM_5K_TO_15K": "€5–15k",
+          "FROM_15K_TO_30K": "€15–30k",
+          "FROM_30K_TO_60K": "€30–60k",
+          "OVER_60K": "€60k+",
+          "AWAITING_QUOTE": "Awaiting quote"
         },
         "timeline": {
           "label": "Timeline",
@@ -241,14 +275,32 @@
           "WITHIN_YEAR": "Within a year",
           "EXPLORING": "Just exploring"
         },
-        "notes": { "label": "Notes (optional)" }
+        "notes": {
+          "label": "Notes (optional)"
+        },
+        "name": {
+          "label": "Your name",
+          "placeholder": "e.g. Alexander Volkov"
+        },
+        "phone": {
+          "label": "Phone",
+          "placeholder": "+421 900 000 000"
+        }
       },
+      "contactHint": "We share this with the contractor you accept — nobody else.",
       "status": {
-        "OPEN": "Open", "MATCHED": "Matched", "FULFILLED": "Fulfilled", "CANCELLED": "Cancelled"
+        "OPEN": "Open",
+        "MATCHED": "Matched",
+        "FULFILLED": "Fulfilled",
+        "CANCELLED": "Cancelled"
       },
       "action": {
-        "submit": "Submit", "save": "Save", "cancel": "Cancel request",
-        "edit": "Edit", "back": "Back to list", "newRequest": "New request",
+        "submit": "Submit",
+        "save": "Save",
+        "cancel": "Cancel request",
+        "edit": "Edit",
+        "back": "Back to list",
+        "newRequest": "New request",
         "goToSettings": "Go to settings →"
       },
       "error": {
@@ -400,33 +452,87 @@
         }
       },
       "field": {
-        "entityType": { "label": "Entity type", "LEGAL_ENTITY": "Legal entity (Ltd / s.r.o. / a.s.)", "SOLE_TRADER": "Sole trader (ИП / OSVČ / ФОП)", "INDIVIDUAL": "Individual specialist" },
-        "displayName": { "label": "Display name" },
-        "legalName": { "label": "Full legal name" },
-        "registrationNumber": { "label": "Registration number (IČO / EDRPOU / etc.)" },
-        "country": { "label": "Headquarters country" },
-        "city": { "label": "City" },
-        "foundedYear": { "label": "Year founded" },
-        "workCategories": { "label": "What you do", "DESIGN": "Design / engineering", "MANUFACTURE": "Equipment manufacturing", "SUPPLY": "Equipment supply", "INSTALLATION": "Installation / construction", "COMMISSIONING": "Commissioning", "MAINTENANCE": "Maintenance / O&M" },
-        "renewableTypes": { "label": "Renewable types", "SOLAR": "Solar", "WIND": "Wind", "HYDRO": "Hydro", "BIOMASS": "Biomass / biogas", "GEOTHERMAL": "Geothermal", "HYBRID": "Hybrid" },
-        "countriesServed": { "label": "Countries served (ISO-2 codes, comma-separated)" },
-        "bio": { "label": "About your company (100–2000 chars)" },
-        "websiteUrl": { "label": "Website URL" },
-        "logoUrl": { "label": "Logo URL" },
-        "contactEmail": { "label": "Contact email" },
-        "contactPhone": { "label": "Contact phone (E.164)" },
-        "providesEvCharging": { "label": "This company operates EV charging stations" },
+        "entityType": {
+          "label": "Entity type",
+          "LEGAL_ENTITY": "Legal entity (Ltd / s.r.o. / a.s.)",
+          "SOLE_TRADER": "Sole trader (ИП / OSVČ / ФОП)",
+          "INDIVIDUAL": "Individual specialist"
+        },
+        "displayName": {
+          "label": "Display name"
+        },
+        "legalName": {
+          "label": "Full legal name"
+        },
+        "registrationNumber": {
+          "label": "Registration number (IČO / EDRPOU / etc.)"
+        },
+        "country": {
+          "label": "Headquarters country"
+        },
+        "city": {
+          "label": "City"
+        },
+        "foundedYear": {
+          "label": "Year founded"
+        },
+        "workCategories": {
+          "label": "What you do",
+          "DESIGN": "Design / engineering",
+          "MANUFACTURE": "Equipment manufacturing",
+          "SUPPLY": "Equipment supply",
+          "INSTALLATION": "Installation / construction",
+          "COMMISSIONING": "Commissioning",
+          "MAINTENANCE": "Maintenance / O&M"
+        },
+        "renewableTypes": {
+          "label": "Renewable types",
+          "SOLAR": "Solar",
+          "WIND": "Wind",
+          "HYDRO": "Hydro",
+          "BIOMASS": "Biomass / biogas",
+          "GEOTHERMAL": "Geothermal",
+          "HYBRID": "Hybrid"
+        },
+        "countriesServed": {
+          "label": "Countries served (ISO-2 codes, comma-separated)"
+        },
+        "bio": {
+          "label": "About your company (100–2000 chars)"
+        },
+        "websiteUrl": {
+          "label": "Website URL"
+        },
+        "logoUrl": {
+          "label": "Logo URL"
+        },
+        "contactEmail": {
+          "label": "Contact email"
+        },
+        "contactPhone": {
+          "label": "Contact phone (E.164)"
+        },
+        "providesEvCharging": {
+          "label": "This company operates EV charging stations"
+        },
         "evPowerSource": {
           "label": "Power source",
           "GRID": "Grid (regular utility power)",
           "MIXED": "Mixed (grid + own renewable / certified green)",
           "RENEWABLE_ONLY": "Renewable only (100% own solar / wind / off-grid)"
         },
-        "evStationCount": { "label": "Number of charging stations operated" },
+        "evStationCount": {
+          "label": "Number of charging stations operated"
+        },
         "evConnectorTypes": {
           "label": "Connector types",
-          "CCS2": "CCS2", "CHAdeMO": "CHAdeMO", "TYPE2": "Type 2",
-          "TYPE1": "Type 1", "TESLA": "Tesla", "GB_T": "GB/T", "SCHUKO": "Schuko"
+          "CCS2": "CCS2",
+          "CHAdeMO": "CHAdeMO",
+          "TYPE2": "Type 2",
+          "TYPE1": "Type 1",
+          "TESLA": "Tesla",
+          "GB_T": "GB/T",
+          "SCHUKO": "Schuko"
         },
         "evPowerLevels": {
           "label": "Power levels",
@@ -442,14 +548,19 @@
           "PRIVATE": "Private (own fleet / employees only)",
           "PAY_AT_LOCATION": "Pay at location (cash / card)"
         },
-        "evMaxPowerKw": { "label": "Max power per point (kW)" },
+        "evMaxPowerKw": {
+          "label": "Max power per point (kW)"
+        },
         "evDescription": {
           "label": "Description of your EV charging infrastructure",
           "placeholder": "e.g. 12 stations along the Bratislava–Vienna corridor, powered by 240 kW rooftop PV + grid backup, 24/7 public with mobile app activation"
         }
       },
       "status": {
-        "PENDING": "Pending review", "APPROVED": "Approved", "REJECTED": "Rejected", "SUSPENDED": "Suspended"
+        "PENDING": "Pending review",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected",
+        "SUSPENDED": "Suspended"
       },
       "action": {
         "submit": "Submit registration",
@@ -468,10 +579,18 @@
   "admin": {
     "buildRequest": {
       "title": "Build requests",
-      "filter": { "status": "Status", "country": "Country", "all": "All" },
+      "filter": {
+        "status": "Status",
+        "country": "Country",
+        "all": "All"
+      },
       "table": {
-        "id": "ID", "createdAt": "Created", "owner": "Owner",
-        "source": "Source", "country": "Country", "status": "Status"
+        "id": "ID",
+        "createdAt": "Created",
+        "owner": "Owner",
+        "source": "Source",
+        "country": "Country",
+        "status": "Status"
       },
       "action": {
         "setStatus": "Change status",
@@ -484,10 +603,51 @@
     },
     "contractor": {
       "title": "Contractors",
-      "filter": { "status": "Status", "country": "Country", "entityType": "Entity type", "all": "All" },
-      "table": { "createdAt": "Created", "owner": "Owner", "displayName": "Name", "entityType": "Type", "country": "Country", "status": "Status" },
-      "action": { "setStatus": "Change status", "adminNote": "Internal note (required)", "submit": "Apply", "approve": "Approve", "reject": "Reject" }
-    }
+      "filter": {
+        "status": "Status",
+        "country": "Country",
+        "entityType": "Entity type",
+        "all": "All"
+      },
+      "table": {
+        "createdAt": "Created",
+        "owner": "Owner",
+        "displayName": "Name",
+        "entityType": "Type",
+        "country": "Country",
+        "status": "Status"
+      },
+      "action": {
+        "setStatus": "Change status",
+        "adminNote": "Internal note (required)",
+        "submit": "Apply",
+        "approve": "Approve",
+        "reject": "Reject"
+      }
+    },
+    "listings": {
+      "title": "Listing applications",
+      "empty": "No applications",
+      "company": "Company",
+      "country": "Country",
+      "type": "Type",
+      "status": "Status",
+      "submitted": "Submitted",
+      "documents": "Documents",
+      "kyb": "KYB",
+      "review": "Review",
+      "approve": "Approve",
+      "reject": "Reject",
+      "comment": "Comment (required to reject)",
+      "screening": "Sanctions screening note",
+      "decided": "Decided",
+      "reviewer": "Reviewer",
+      "assets": "Assets",
+      "account": "IBAN opened",
+      "back": "Back to applications",
+      "noDocuments": "No documents attached"
+    },
+    "navListings": "Listings"
   },
   "claim": {
     "title": "Claim {name}",
@@ -671,6 +831,81 @@
         "subtitle": "Partners across Europe ready to design, install and commission your solar, wind, or hybrid setup.",
         "viewAll": "View all contractors →"
       }
+    }
+  },
+  "exchange": {
+    "eyebrow": "Exchange",
+    "title": "Trading terminal",
+    "stats": {
+      "interval": "Delivery interval",
+      "spot": "Spot reference",
+      "corridor": "Price corridor",
+      "bestBid": "Best bid",
+      "bestAsk": "Best ask"
+    },
+    "book": {
+      "title": "Order book",
+      "bids": "Bids",
+      "asks": "Asks",
+      "empty": "No orders at this interval"
+    },
+    "trades": {
+      "title": "Recent trades",
+      "empty": "No trades yet",
+      "time": "Time",
+      "amount": "kWh",
+      "price": "Price"
+    },
+    "ticket": {
+      "title": "New order",
+      "buy": "Buy",
+      "sell": "Sell",
+      "market": "Market",
+      "limit": "Limit",
+      "amount": "Amount, kWh",
+      "price": "Limit price",
+      "interval": "Delivery interval",
+      "estimate": "Estimated value",
+      "balanceKwh": "kWh balance",
+      "availableFiat": "Available",
+      "submit": "Place order",
+      "corridorHint": "Price corridor",
+      "filled": "filled",
+      "rejected": "Rejected",
+      "loginRequired": "Sign in to trade on the exchange.",
+      "login": "Sign in"
+    },
+    "myOrders": {
+      "title": "My orders",
+      "empty": "No orders in this zone",
+      "cancel": "Cancel",
+      "filled": "filled"
+    },
+    "wallet": {
+      "eyebrow": "Wallet",
+      "title": "kWh and money",
+      "kwhBalance": "kWh balance",
+      "fiatBalance": "Money",
+      "reserved": "Reserved",
+      "available": "Available",
+      "avgPrice": "Average purchase price",
+      "lifetimeBought": "Bought in total",
+      "account": "Settlement account",
+      "noAccount": "No account yet",
+      "openAccount": "Open account",
+      "buyAhead": "Buy kWh ahead",
+      "buyAheadHelp": "Market price by default; set a limit to wait for a better one.",
+      "amount": "Amount, kWh",
+      "limitPrice": "Limit price (optional)",
+      "buy": "Buy",
+      "history": "History",
+      "historyEmpty": "Nothing yet",
+      "noWallet": "No wallet yet — buy kWh or receive a transfer to open one.",
+      "zone": "Zone",
+      "receipts": "Receipts",
+      "receiptKwh": "kWh",
+      "receiptTotal": "Total",
+      "issuedAt": "Issued"
     }
   }
 }

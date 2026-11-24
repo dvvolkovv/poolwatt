@@ -23,7 +23,7 @@ export default async function NewBuildRequestPage({
       select: { name: true, phone: true },
     }),
     getTranslations("cabinet.buildRequest"),
-    getBuildRequestFormLabels(locale),
+    getBuildRequestFormLabels(),
   ]);
 
   return (
@@ -33,8 +33,8 @@ export default async function NewBuildRequestPage({
       <BuildRequestForm
         mode={{ kind: "create" }}
         locale={locale}
-        hasPhone={user.phone != null}
-        hasName={user.name != null}
+        userName={user.name}
+        userPhone={user.phone}
         labels={labels}
       />
     </div>

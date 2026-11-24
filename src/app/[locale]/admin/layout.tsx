@@ -37,6 +37,13 @@ export default async function AdminLayout({
                 🔧 {tNav("buildRequest.title")}
               </Link>
               <Link
+                href={`/${locale}/admin/listings`}
+                prefetch={false}
+                className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
+              >
+                📄 {tNav("navListings")}
+              </Link>
+              <Link
                 href={`/${locale}/admin/contractors`}
                 prefetch={false}
                 className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"

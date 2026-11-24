@@ -20,7 +20,8 @@
     "themeSystem": "Системная",
     "cabinet": "Кабинет",
     "cancel": "Отмена",
-    "save": "Сохранить"
+    "save": "Сохранить",
+    "exchange": "Биржа"
   },
   "home": {
     "heroEyebrow": "Live · Poolwatt Grid · обновление каждые 60 с",
@@ -181,7 +182,8 @@
       "settings": "Настройки",
       "signOut": "Выйти",
       "buildRequests": "Заявки на строительство",
-      "contractor": "Моя компания"
+      "contractor": "Моя компания",
+      "wallet": "Кошелёк"
     },
     "favorites": {
       "title": "Избранное",
@@ -206,16 +208,39 @@
         }
       },
       "field": {
-        "source": { "label": "Источник", "SOLAR": "Солнечная", "WIND": "Ветровая", "HYBRID": "Солнце + ветер" },
-        "peakKw": { "label": "Пиковая мощность (кВт)" },
-        "wantPowerbank": { "label": "Добавить пауэрбанк" },
-        "powerbankKwh": { "label": "Ёмкость пауэрбанка (кВт·ч)" },
-        "wantEvCharger": { "label": "Добавить EV-зарядку" },
-        "evChargerPorts": { "label": "Количество портов" },
-        "evPublicForSale": { "label": "Предлагать зарядку проезжающим водителям" },
-        "country": { "label": "Страна" },
-        "city": { "label": "Город" },
-        "addressLine": { "label": "Адрес" },
+        "source": {
+          "label": "Источник",
+          "SOLAR": "Солнечная",
+          "WIND": "Ветровая",
+          "HYBRID": "Солнце + ветер"
+        },
+        "peakKw": {
+          "label": "Пиковая мощность (кВт)"
+        },
+        "wantPowerbank": {
+          "label": "Добавить пауэрбанк"
+        },
+        "powerbankKwh": {
+          "label": "Ёмкость пауэрбанка (кВт·ч)"
+        },
+        "wantEvCharger": {
+          "label": "Добавить EV-зарядку"
+        },
+        "evChargerPorts": {
+          "label": "Количество портов"
+        },
+        "evPublicForSale": {
+          "label": "Предлагать зарядку проезжающим водителям"
+        },
+        "country": {
+          "label": "Страна"
+        },
+        "city": {
+          "label": "Город"
+        },
+        "addressLine": {
+          "label": "Адрес"
+        },
         "siteType": {
           "label": "Тип объекта",
           "PRIVATE_HOUSE": "Частный дом",
@@ -223,17 +248,26 @@
           "LAND_PLOT": "Земельный участок",
           "COMMERCIAL": "Коммерческое"
         },
-        "availableAreaM2": { "label": "Доступная площадь (м²)" },
+        "availableAreaM2": {
+          "label": "Доступная площадь (м²)"
+        },
         "roofOrientation": {
           "label": "Ориентация крыши",
-          "S": "Юг", "SE": "Юго-восток", "SW": "Юго-запад",
-          "E": "Восток", "W": "Запад", "UNKNOWN": "Не знаю"
+          "S": "Юг",
+          "SE": "Юго-восток",
+          "SW": "Юго-запад",
+          "E": "Восток",
+          "W": "Запад",
+          "UNKNOWN": "Не знаю"
         },
         "budget": {
           "label": "Бюджет",
-          "UNDER_5K": "до €5k", "FROM_5K_TO_15K": "€5–15k",
-          "FROM_15K_TO_30K": "€15–30k", "FROM_30K_TO_60K": "€30–60k",
-          "OVER_60K": "€60k+", "AWAITING_QUOTE": "Жду оценки"
+          "UNDER_5K": "до €5k",
+          "FROM_5K_TO_15K": "€5–15k",
+          "FROM_15K_TO_30K": "€15–30k",
+          "FROM_30K_TO_60K": "€30–60k",
+          "OVER_60K": "€60k+",
+          "AWAITING_QUOTE": "Жду оценки"
         },
         "timeline": {
           "label": "Сроки",
@@ -241,14 +275,32 @@
           "WITHIN_YEAR": "В течение года",
           "EXPLORING": "Просто изучаю"
         },
-        "notes": { "label": "Комментарий (необязательно)" }
+        "notes": {
+          "label": "Комментарий (необязательно)"
+        },
+        "name": {
+          "label": "Ваше имя",
+          "placeholder": "напр. Александр Волков"
+        },
+        "phone": {
+          "label": "Телефон",
+          "placeholder": "+421 900 000 000"
+        }
       },
+      "contactHint": "Передаём только тому подрядчику, которого вы примете, — больше никому.",
       "status": {
-        "OPEN": "Открыта", "MATCHED": "В работе", "FULFILLED": "Выполнена", "CANCELLED": "Отменена"
+        "OPEN": "Открыта",
+        "MATCHED": "В работе",
+        "FULFILLED": "Выполнена",
+        "CANCELLED": "Отменена"
       },
       "action": {
-        "submit": "Отправить", "save": "Сохранить", "cancel": "Отменить заявку",
-        "edit": "Редактировать", "back": "К списку", "newRequest": "Новая заявка",
+        "submit": "Отправить",
+        "save": "Сохранить",
+        "cancel": "Отменить заявку",
+        "edit": "Редактировать",
+        "back": "К списку",
+        "newRequest": "Новая заявка",
         "goToSettings": "Перейти в настройки →"
       },
       "error": {
@@ -400,33 +452,87 @@
         }
       },
       "field": {
-        "entityType": { "label": "Тип", "LEGAL_ENTITY": "Юр.лицо (ООО / s.r.o. / a.s.)", "SOLE_TRADER": "ИП / OSVČ / ФОП", "INDIVIDUAL": "Физлицо-специалист" },
-        "displayName": { "label": "Название компании" },
-        "legalName": { "label": "Полное юридическое название" },
-        "registrationNumber": { "label": "Регистрационный номер (IČO / EDRPOU / др.)" },
-        "country": { "label": "Страна регистрации" },
-        "city": { "label": "Город" },
-        "foundedYear": { "label": "Год основания" },
-        "workCategories": { "label": "Чем занимаетесь", "DESIGN": "Проектирование", "MANUFACTURE": "Производство оборудования", "SUPPLY": "Поставка оборудования", "INSTALLATION": "Монтаж / стройработы", "COMMISSIONING": "Пусконаладка", "MAINTENANCE": "Сервис / O&M" },
-        "renewableTypes": { "label": "Типы источников", "SOLAR": "Солнце", "WIND": "Ветер", "HYDRO": "Гидро", "BIOMASS": "Биомасса / биогаз", "GEOTHERMAL": "Геотермал", "HYBRID": "Гибрид" },
-        "countriesServed": { "label": "Страны работы (ISO-2 коды, через запятую)" },
-        "bio": { "label": "О компании (100–2000 знаков)" },
-        "websiteUrl": { "label": "URL сайта" },
-        "logoUrl": { "label": "URL логотипа" },
-        "contactEmail": { "label": "Email для связи" },
-        "contactPhone": { "label": "Телефон (E.164)" },
-        "providesEvCharging": { "label": "Эта компания управляет EV-зарядными станциями" },
+        "entityType": {
+          "label": "Тип",
+          "LEGAL_ENTITY": "Юр.лицо (ООО / s.r.o. / a.s.)",
+          "SOLE_TRADER": "ИП / OSVČ / ФОП",
+          "INDIVIDUAL": "Физлицо-специалист"
+        },
+        "displayName": {
+          "label": "Название компании"
+        },
+        "legalName": {
+          "label": "Полное юридическое название"
+        },
+        "registrationNumber": {
+          "label": "Регистрационный номер (IČO / EDRPOU / др.)"
+        },
+        "country": {
+          "label": "Страна регистрации"
+        },
+        "city": {
+          "label": "Город"
+        },
+        "foundedYear": {
+          "label": "Год основания"
+        },
+        "workCategories": {
+          "label": "Чем занимаетесь",
+          "DESIGN": "Проектирование",
+          "MANUFACTURE": "Производство оборудования",
+          "SUPPLY": "Поставка оборудования",
+          "INSTALLATION": "Монтаж / стройработы",
+          "COMMISSIONING": "Пусконаладка",
+          "MAINTENANCE": "Сервис / O&M"
+        },
+        "renewableTypes": {
+          "label": "Типы источников",
+          "SOLAR": "Солнце",
+          "WIND": "Ветер",
+          "HYDRO": "Гидро",
+          "BIOMASS": "Биомасса / биогаз",
+          "GEOTHERMAL": "Геотермал",
+          "HYBRID": "Гибрид"
+        },
+        "countriesServed": {
+          "label": "Страны работы (ISO-2 коды, через запятую)"
+        },
+        "bio": {
+          "label": "О компании (100–2000 знаков)"
+        },
+        "websiteUrl": {
+          "label": "URL сайта"
+        },
+        "logoUrl": {
+          "label": "URL логотипа"
+        },
+        "contactEmail": {
+          "label": "Email для связи"
+        },
+        "contactPhone": {
+          "label": "Телефон (E.164)"
+        },
+        "providesEvCharging": {
+          "label": "Эта компания управляет EV-зарядными станциями"
+        },
         "evPowerSource": {
           "label": "Источник электроэнергии",
           "GRID": "Сеть (обычное электричество)",
           "MIXED": "Смешанная (сеть + своя зелёная / зелёный сертификат)",
           "RENEWABLE_ONLY": "Только зелёная (100% свои солнечные / ветровые / off-grid)"
         },
-        "evStationCount": { "label": "Количество зарядных станций" },
+        "evStationCount": {
+          "label": "Количество зарядных станций"
+        },
         "evConnectorTypes": {
           "label": "Типы коннекторов",
-          "CCS2": "CCS2", "CHAdeMO": "CHAdeMO", "TYPE2": "Type 2",
-          "TYPE1": "Type 1", "TESLA": "Tesla", "GB_T": "GB/T", "SCHUKO": "Schuko"
+          "CCS2": "CCS2",
+          "CHAdeMO": "CHAdeMO",
+          "TYPE2": "Type 2",
+          "TYPE1": "Type 1",
+          "TESLA": "Tesla",
+          "GB_T": "GB/T",
+          "SCHUKO": "Schuko"
         },
         "evPowerLevels": {
           "label": "Уровни мощности",
@@ -442,14 +548,19 @@
           "PRIVATE": "Приватный (только сотрудники / свой парк)",
           "PAY_AT_LOCATION": "Оплата на месте (наличные / карта)"
         },
-        "evMaxPowerKw": { "label": "Макс. мощность на точку (кВт)" },
+        "evMaxPowerKw": {
+          "label": "Макс. мощность на точку (кВт)"
+        },
         "evDescription": {
           "label": "Описание EV-зарядной инфраструктуры",
           "placeholder": "например: 12 станций вдоль трассы Братислава–Вена, питание от 240 кВт солнечных панелей на крыше + резерв из сети, 24/7 публичные с активацией через мобильное приложение"
         }
       },
       "status": {
-        "PENDING": "На модерации", "APPROVED": "Одобрена", "REJECTED": "Отклонена", "SUSPENDED": "Заморожена"
+        "PENDING": "На модерации",
+        "APPROVED": "Одобрена",
+        "REJECTED": "Отклонена",
+        "SUSPENDED": "Заморожена"
       },
       "action": {
         "submit": "Отправить заявку",
@@ -468,10 +579,18 @@
   "admin": {
     "buildRequest": {
       "title": "Заявки на строительство",
-      "filter": { "status": "Статус", "country": "Страна", "all": "Все" },
+      "filter": {
+        "status": "Статус",
+        "country": "Страна",
+        "all": "Все"
+      },
       "table": {
-        "id": "ID", "createdAt": "Создана", "owner": "Владелец",
-        "source": "Источник", "country": "Страна", "status": "Статус"
+        "id": "ID",
+        "createdAt": "Создана",
+        "owner": "Владелец",
+        "source": "Источник",
+        "country": "Страна",
+        "status": "Статус"
       },
       "action": {
         "setStatus": "Изменить статус",
@@ -484,10 +603,51 @@
     },
     "contractor": {
       "title": "Подрядчики",
-      "filter": { "status": "Статус", "country": "Страна", "entityType": "Тип", "all": "Все" },
-      "table": { "createdAt": "Создана", "owner": "Владелец", "displayName": "Название", "entityType": "Тип", "country": "Страна", "status": "Статус" },
-      "action": { "setStatus": "Изменить статус", "adminNote": "Внутренний комментарий (обязательно)", "submit": "Применить", "approve": "Одобрить", "reject": "Отклонить" }
-    }
+      "filter": {
+        "status": "Статус",
+        "country": "Страна",
+        "entityType": "Тип",
+        "all": "Все"
+      },
+      "table": {
+        "createdAt": "Создана",
+        "owner": "Владелец",
+        "displayName": "Название",
+        "entityType": "Тип",
+        "country": "Страна",
+        "status": "Статус"
+      },
+      "action": {
+        "setStatus": "Изменить статус",
+        "adminNote": "Внутренний комментарий (обязательно)",
+        "submit": "Применить",
+        "approve": "Одобрить",
+        "reject": "Отклонить"
+      }
+    },
+    "listings": {
+      "title": "Заявки на листинг",
+      "empty": "Заявок нет",
+      "company": "Компания",
+      "country": "Страна",
+      "type": "Тип",
+      "status": "Статус",
+      "submitted": "Отправлена",
+      "documents": "Документы",
+      "kyb": "KYB",
+      "review": "Решение",
+      "approve": "Одобрить",
+      "reject": "Отклонить",
+      "comment": "Комментарий (обязателен при отказе)",
+      "screening": "Заметка по санкционному скринингу",
+      "decided": "Решение принято",
+      "reviewer": "Проверил",
+      "assets": "Объекты",
+      "account": "IBAN открыт",
+      "back": "К списку заявок",
+      "noDocuments": "Документы не приложены"
+    },
+    "navListings": "Листинг"
   },
   "claim": {
     "title": "Заявить права на {name}",
@@ -671,6 +831,81 @@
         "subtitle": "Партнёры по всей Европе готовы спроектировать, смонтировать и запустить вашу солнечную, ветровую или гибридную станцию.",
         "viewAll": "Все подрядчики →"
       }
+    }
+  },
+  "exchange": {
+    "eyebrow": "Биржа",
+    "title": "Торговый терминал",
+    "stats": {
+      "interval": "Интервал поставки",
+      "spot": "Спотовый ориентир",
+      "corridor": "Ценовой коридор",
+      "bestBid": "Лучший спрос",
+      "bestAsk": "Лучшее предложение"
+    },
+    "book": {
+      "title": "Книга заявок",
+      "bids": "Спрос",
+      "asks": "Предложение",
+      "empty": "Заявок на этот интервал нет"
+    },
+    "trades": {
+      "title": "Последние сделки",
+      "empty": "Сделок пока нет",
+      "time": "Время",
+      "amount": "кВт·ч",
+      "price": "Цена"
+    },
+    "ticket": {
+      "title": "Новая заявка",
+      "buy": "Купить",
+      "sell": "Продать",
+      "market": "Рыночная",
+      "limit": "Лимитная",
+      "amount": "Объём, кВт·ч",
+      "price": "Лимитная цена",
+      "interval": "Интервал поставки",
+      "estimate": "Оценочная сумма",
+      "balanceKwh": "Баланс кВт·ч",
+      "availableFiat": "Доступно",
+      "submit": "Выставить заявку",
+      "corridorHint": "Ценовой коридор",
+      "filled": "исполнено",
+      "rejected": "Отклонена",
+      "loginRequired": "Войдите, чтобы торговать на бирже.",
+      "login": "Войти"
+    },
+    "myOrders": {
+      "title": "Мои заявки",
+      "empty": "В этой зоне заявок нет",
+      "cancel": "Отменить",
+      "filled": "исполнено"
+    },
+    "wallet": {
+      "eyebrow": "Кошелёк",
+      "title": "кВт·ч и деньги",
+      "kwhBalance": "Баланс кВт·ч",
+      "fiatBalance": "Деньги",
+      "reserved": "В резерве",
+      "available": "Доступно",
+      "avgPrice": "Средняя цена покупки",
+      "lifetimeBought": "Куплено всего",
+      "account": "Расчётный счёт",
+      "noAccount": "Счёта пока нет",
+      "openAccount": "Открыть счёт",
+      "buyAhead": "Купить кВт·ч впрок",
+      "buyAheadHelp": "По умолчанию по рыночной цене; укажите лимит, чтобы дождаться лучшей.",
+      "amount": "Объём, кВт·ч",
+      "limitPrice": "Лимитная цена (необязательно)",
+      "buy": "Купить",
+      "history": "История",
+      "historyEmpty": "Пока ничего нет",
+      "noWallet": "Кошелька ещё нет — купите кВт·ч или получите перевод, и он откроется.",
+      "zone": "Зона",
+      "receipts": "Чеки",
+      "receiptKwh": "кВт·ч",
+      "receiptTotal": "Итого",
+      "issuedAt": "Выдан"
     }
   }
 }

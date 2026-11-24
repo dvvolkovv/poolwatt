@@ -9,6 +9,12 @@ import { PRODUCER_PROFILES } from "@/lib/producer-profiles";
 import { seedProducers } from "@/lib/seed/producers";
 import { seedProducerProfiles } from "@/lib/seed/producer-profiles";
 import { seedChargerOperators, CHARGER_OPERATOR_SEED } from "@/lib/seed/charger-operators";
+import {
+  FEE_PLAN_SEED,
+  GRID_ZONE_SEED,
+  seedFeePlans,
+  seedGridZones,
+} from "@/lib/seed/grid-zones";
 
 async function main() {
   console.log(`[seed] producers: starting (${MOCK_PRODUCERS.length} rows in source)`);
@@ -27,6 +33,14 @@ async function main() {
   console.log(`[seed] charger operators: starting (${CHARGER_OPERATOR_SEED.length} rows in source)`);
   const co = await seedChargerOperators(prisma, CHARGER_OPERATOR_SEED);
   console.log(`[seed] charger operators: created=${co.created}, skipped=${co.skipped}`);
+
+  console.log(`[seed] grid zones: starting (${GRID_ZONE_SEED.length} rows in source)`);
+  const gz = await seedGridZones(prisma, GRID_ZONE_SEED);
+  console.log(`[seed] grid zones: created=${gz.created}, skipped=${gz.skipped}`);
+
+  console.log(`[seed] fee plans: starting (${FEE_PLAN_SEED.length} rows in source)`);
+  const fp = await seedFeePlans(prisma, FEE_PLAN_SEED);
+  console.log(`[seed] fee plans: created=${fp.created}, skipped=${fp.skipped}`);
 
   console.log(`[seed] done`);
 }

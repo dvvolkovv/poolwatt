@@ -31,6 +31,12 @@ export const buildRequestSchema = z
     budget: budgetEnum,
     timeline: timelineEnum,
     notes: z.string().max(1000).optional(),
+
+    // Owner contact. Optional in the schema because /me/build-requests/[id]/edit
+    // doesn't re-collect them — the action gates submission on the user record
+    // already having both. New requests must supply them (action-level check).
+    name: z.string().trim().min(1).max(80).optional(),
+    phone: z.string().trim().min(3).max(30).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.wantPowerbank && data.powerbankKwh == null) {

@@ -71,7 +71,7 @@ export async function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href={`/${locale}/request`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
+                <Link href={`/${locale}/me/build-requests/new`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
                   {t("request")}
                 </Link>
               </li>

@@ -38,13 +38,16 @@ export async function Navbar() {
           <Link href={`/${locale}/offers`} prefetch={false} className="hover:text-foreground transition-colors">
             {t("offers")}
           </Link>
+          <Link href={`/${locale}/exchange`} prefetch={false} className="hover:text-foreground transition-colors">
+            {t("exchange")}
+          </Link>
           <Link href={`/${locale}/navigator`} className="hover:text-foreground transition-colors">
             {t("navigator")}
           </Link>
           <Link href={`/${locale}/watchlist`} prefetch={false} className="hover:text-foreground transition-colors">
             {t("watchlist")}
           </Link>
-          <Link href={`/${locale}/request`} prefetch={false} className="hover:text-foreground transition-colors">
+          <Link href={`/${locale}/me/build-requests/new`} prefetch={false} className="hover:text-foreground transition-colors">
             {t("request")}
           </Link>
         </nav>

@@ -27,6 +27,33 @@ export async function createBuildRequest(input: BuildRequestInput): Promise<Acti
   }
 
   const d = parsed.data;
+
+  // Use the contact fields from the form (preferred) or fall back to the
+  // user's existing profile. Either source is fine — the request only
+  // proceeds if we end up with both name and phone.
+  const existing = await prisma.user.findUniqueOrThrow({
+    where: { id: session.user.id },
+    select: { name: true, phone: true },
+  });
+  const finalName = d.name ?? existing.name;
+  const finalPhone = d.phone ?? existing.phone;
+  const fieldErrors: Record<string, string> = {};
+  if (!finalName) fieldErrors.name = "Name is required";
+  if (!finalPhone) fieldErrors.phone = "Phone is required";
+  if (Object.keys(fieldErrors).length) return { ok: false, fieldErrors };
+
+  // Sync any new contact details back to the user profile so the next
+  // request prefills, and the contractor email helpers have what they need.
+  if (d.name !== undefined || d.phone !== undefined) {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        ...(d.name !== undefined && { name: d.name }),
+        ...(d.phone !== undefined && { phone: d.phone }),
+      },
+    });
+  }
+
   const created = await prisma.buildRequest.create({
     data: {
       userId: session.user.id,
@@ -92,6 +119,18 @@ export async function updateBuildRequest(
   }
 
   const d = parsed.data;
+
+  // Keep the user's name/phone in sync if the edit form changed them.
+  if (d.name !== undefined || d.phone !== undefined) {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        ...(d.name !== undefined && { name: d.name }),
+        ...(d.phone !== undefined && { phone: d.phone }),
+      },
+    });
+  }
+
   await prisma.buildRequest.update({
     where: { id },
     // keep in sync with createBuildRequest's data block

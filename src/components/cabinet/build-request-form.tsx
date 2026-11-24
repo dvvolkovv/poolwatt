@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import type { BuildRequestInput } from "@/lib/build-request-schema";
 import type { BuildRequestFormLabels } from "@/lib/build-request-form-labels";
 import { createBuildRequest, updateBuildRequest } from "@/app/[locale]/me/build-requests/actions";
@@ -13,12 +12,12 @@ type Props = {
   mode: Mode;
   locale: string;
   initial?: Partial<BuildRequestInput>;
-  hasPhone: boolean;
-  hasName: boolean;
+  userName: string | null;
+  userPhone: string | null;
   labels: BuildRequestFormLabels;
 };
 
-export function BuildRequestForm({ mode, locale, initial, hasPhone, hasName, labels }: Props) {
+export function BuildRequestForm({ mode, locale, initial, userName, userPhone, labels }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -27,8 +26,6 @@ export function BuildRequestForm({ mode, locale, initial, hasPhone, hasName, lab
   const [source, setSource] = useState<"SOLAR" | "WIND" | "HYBRID">(initial?.source ?? "SOLAR");
   const [wantPowerbank, setWantPowerbank] = useState(initial?.wantPowerbank ?? false);
   const [wantEvCharger, setWantEvCharger] = useState(initial?.wantEvCharger ?? false);
-
-  const canSubmit = hasPhone && hasName;
 
   async function onSubmit(formData: FormData) {
     setErrors({});
@@ -55,6 +52,8 @@ export function BuildRequestForm({ mode, locale, initial, hasPhone, hasName, lab
       budget: formData.get("budget") as BuildRequestInput["budget"],
       timeline: formData.get("timeline") as BuildRequestInput["timeline"],
       notes: String(formData.get("notes") ?? "") || undefined,
+      name: String(formData.get("name") ?? "").trim() || undefined,
+      phone: String(formData.get("phone") ?? "").trim() || undefined,
     };
 
     startTransition(async () => {
@@ -74,24 +73,6 @@ export function BuildRequestForm({ mode, locale, initial, hasPhone, hasName, lab
 
   return (
     <form action={onSubmit} className="space-y-8 max-w-2xl">
-      {!canSubmit && (
-        <div className="bg-yellow-50 text-yellow-900 p-3 rounded text-sm">
-          <p>
-            {!hasName && !hasPhone
-              ? labels.error.contactRequired
-              : !hasName
-              ? labels.error.nameRequired
-              : labels.error.phoneRequired}
-          </p>
-          <Link
-            href={labels.settingsHref}
-            className="inline-block mt-2 underline font-medium"
-          >
-            {labels.settingsLinkText}
-          </Link>
-        </div>
-      )}
-
       <fieldset className="space-y-4">
         <legend className="text-lg font-semibold">{labels.section.what}</legend>
 
@@ -197,12 +178,43 @@ export function BuildRequestForm({ mode, locale, initial, hasPhone, hasName, lab
         <textarea name="notes" defaultValue={initial?.notes ?? ""} maxLength={1000} rows={4} placeholder={labels.field.notes.label} className="border border-hairline rounded px-3 py-2 w-full" />
       </fieldset>
 
+      <fieldset className="space-y-4">
+        <legend className="text-lg font-semibold">{labels.section.contact}</legend>
+        <p className="text-xs text-muted">{labels.contactHint}</p>
+        <div>
+          <label className="block text-sm mb-1">{labels.field.name.label}</label>
+          <input
+            name="name"
+            type="text"
+            required
+            defaultValue={userName ?? ""}
+            placeholder={labels.field.name.placeholder}
+            maxLength={80}
+            className="border border-hairline rounded px-3 py-2 w-full"
+          />
+          {errors.name && <p className="text-red-600 text-xs mt-1">{errors.name}</p>}
+        </div>
+        <div>
+          <label className="block text-sm mb-1">{labels.field.phone.label}</label>
+          <input
+            name="phone"
+            type="tel"
+            required
+            defaultValue={userPhone ?? ""}
+            placeholder={labels.field.phone.placeholder}
+            maxLength={30}
+            className="border border-hairline rounded px-3 py-2 w-full"
+          />
+          {errors.phone && <p className="text-red-600 text-xs mt-1">{errors.phone}</p>}
+        </div>
+      </fieldset>
+
       {formError && <p className="text-red-600 text-sm">{formError}</p>}
 
       <div className="sticky bottom-0 bg-bg pt-4 border-t border-hairline">
         <button
           type="submit"
-          disabled={pending || !canSubmit}
+          disabled={pending}
           className="px-6 py-2 bg-foreground text-bg rounded disabled:opacity-50"
         >
           {mode.kind === "create" ? labels.action.submit : labels.action.save}

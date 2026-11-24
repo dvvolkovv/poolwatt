@@ -16,7 +16,7 @@ async function ensureUser(username: string) {
   return prisma.user.upsert({
     where: { username },
     update: {},
-    create: { username, passwordHash: "x" },
+    create: { username, passwordHash: "x", name: "Test User", phone: "+421900000000" },
   });
 }
 
