@@ -51,6 +51,7 @@ export default async function ChargerDetailPage({
 
   const t = await getTranslations("charger");
   const tOp = await getTranslations("charger.operatorSection");
+  const tReport = await getTranslations("report");
   const session = await auth();
   const isFavorite = session?.user
     ? (await readFavoriteChargerIds(session.user.id)).has(charger.id)
@@ -101,12 +102,25 @@ export default async function ChargerDetailPage({
         </header>
 
         <div className="mb-10">
-          <MapsDeepLink
-            lat={charger.lat}
-            lng={charger.lng}
-            name={charger.title}
-            label={t("buildRoute")}
-          />
+          <div className="flex flex-wrap items-center gap-3">
+            <MapsDeepLink
+              lat={charger.lat}
+              lng={charger.lng}
+              name={charger.title}
+              label={t("buildRoute")}
+            />
+            {/* §51 — the button is on the card, where the driver already is. */}
+            {charger.poolwattPointId && (
+              <Link
+                href={`/${locale}/c/${charger.poolwattPointId}/report`}
+                prefetch={false}
+                data-testid="report-problem"
+                className="rounded-full border border-hairline px-5 py-3 text-[13px] font-semibold uppercase tracking-[0.18em] text-muted hover:text-foreground"
+              >
+                {tReport("title")}
+              </Link>
+            )}
+          </div>
           <p className="mt-2 text-[11px] text-muted">{t("buildRouteHint")}</p>
         </div>
 

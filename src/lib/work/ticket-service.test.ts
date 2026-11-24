@@ -1,0 +1,284 @@
+// US-52, US-53 and US-54 — ТЗ §51 "Сообщение о поломке от клиента".
+//
+// The criteria: the station is filled in for the customer and the type comes
+// from a list (US-52), the nearest working station is offered straight after
+// (US-53), and a technical report produces a work order (US-54).
+
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { TicketError, nearestWorkingPoints, reportProblem } from "./ticket-service";
+
+const PREFIX = "test_ticket_";
+const SLUG = `${PREFIX}net`;
+
+let operatorId: string;
+let reporterId: string;
+let brokenPointId: string;
+let brokenConnectorId: string;
+let nearbyFreeId: string;
+let nearbyBusyId: string;
+let farFreeId: string;
+
+const LAT = 48.15;
+const LNG = 17.11;
+
+async function wipe() {
+  await prisma.ticket.deleteMany({ where: { operator: { slug: SLUG } } });
+  await prisma.workOrder.deleteMany({ where: { operator: { slug: SLUG } } });
+  await prisma.acceptancePoint.deleteMany({ where: { operator: { slug: SLUG } } });
+  await prisma.chargerOperator.deleteMany({ where: { slug: SLUG } });
+}
+
+async function seedPoint(args: {
+  name: string;
+  lat: number;
+  lng: number;
+  connector: string;
+  status: string;
+}) {
+  return prisma.acceptancePoint.create({
+    data: {
+      operatorId,
+      type: "CHARGING_STATION",
+      name: args.name,
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      country: "SK",
+      city: "Bratislava",
+      addressLine: "Hlavná 1",
+      latitude: args.lat,
+      longitude: args.lng,
+      howToFind: "by the lift",
+      energySource: "SOLAR",
+      open24: true,
+      paymentMethods: ["TOKEN"],
+      connectors: {
+        create: [
+          {
+            type: args.connector as never,
+            powerKw: new Prisma.Decimal(50),
+            currentAc: false,
+            quantity: 1,
+            status: args.status as never,
+          },
+        ],
+      },
+      tariffs: { create: [{ fromMinute: 0, toMinute: 1440, priceFiat: 0.4, currency: "EUR" }] },
+    },
+    include: { connectors: true },
+  });
+}
+
+beforeAll(async () => {
+  await wipe();
+  reporterId = (
+    await prisma.user.upsert({
+      where: { username: `${PREFIX}driver` },
+      update: {},
+      create: { username: `${PREFIX}driver`, passwordHash: "x" },
+    })
+  ).id;
+  const owner = await prisma.user.upsert({
+    where: { username: `${PREFIX}owner` },
+    update: {},
+    create: { username: `${PREFIX}owner`, passwordHash: "x" },
+  });
+
+  operatorId = (
+    await prisma.chargerOperator.create({
+      data: {
+        slug: SLUG,
+        displayName: "Ticket test network",
+        claimedById: owner.id,
+        claimedAt: new Date(),
+      },
+    })
+  ).id;
+});
+
+beforeEach(async () => {
+  await prisma.ticket.deleteMany({ where: { operatorId } });
+  await prisma.workOrder.deleteMany({ where: { operatorId } });
+  await prisma.acceptancePoint.deleteMany({ where: { operatorId } });
+
+  const broken = await seedPoint({
+    name: "Broken point",
+    lat: LAT,
+    lng: LNG,
+    connector: "CCS2",
+    status: "FREE",
+  });
+  brokenPointId = broken.id;
+  brokenConnectorId = broken.connectors[0].id;
+
+  nearbyFreeId = (
+    await seedPoint({ name: "Nearby free", lat: LAT + 0.003, lng: LNG, connector: "CCS2", status: "FREE" })
+  ).id;
+  nearbyBusyId = (
+    await seedPoint({ name: "Nearby busy", lat: LAT + 0.004, lng: LNG, connector: "CCS2", status: "BUSY" })
+  ).id;
+  farFreeId = (
+    await seedPoint({ name: "Far free", lat: LAT + 0.2, lng: LNG, connector: "CCS2", status: "FREE" })
+  ).id;
+  await seedPoint({ name: "Wrong plug", lat: LAT + 0.002, lng: LNG, connector: "TYPE2", status: "FREE" });
+});
+
+afterAll(async () => {
+  await wipe();
+  await prisma.user.deleteMany({ where: { username: { startsWith: PREFIX } } });
+});
+
+describe("reportProblem — thirty seconds' worth of form (US-52)", () => {
+  it("takes a report with nothing but the point and the type", async () => {
+    const result = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "BLOCKED",
+    });
+
+    expect(result.ticket.pointId).toBe(brokenPointId);
+    expect(result.ticket.problemType).toBe("BLOCKED");
+    expect(result.ticket.status).toBe("OPEN");
+    expect(result.ticket.respondBy).not.toBeNull();
+  });
+
+  it("puts a technical report straight into work, because it already is", async () => {
+    const result = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "DAMAGED_CABLE",
+    });
+
+    expect(result.ticket.status).toBe("IN_PROGRESS");
+    expect(result.ticket.workOrderId).not.toBeNull();
+  });
+
+  it("takes a comment and photos when the customer bothers", async () => {
+    const result = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "OTHER",
+      comment: "Smells of burning",
+      photos: ["pic-1", "pic-2"],
+    });
+
+    expect(result.ticket.comment).toBe("Smells of burning");
+    expect(result.ticket.photos).toEqual(["pic-1", "pic-2"]);
+  });
+
+  it("refuses a report about a point that is not there", async () => {
+    await expect(
+      reportProblem({ pointId: "no-such-point", reporterId, problemType: "NO_START" }),
+    ).rejects.toThrow(TicketError);
+  });
+});
+
+describe("reportProblem — a technical fault makes a work order (US-54)", () => {
+  it("opens a work order with the fault, the photos and the equipment", async () => {
+    const result = await reportProblem({
+      pointId: brokenPointId,
+      connectorId: brokenConnectorId,
+      reporterId,
+      problemType: "DAMAGED_CABLE",
+      comment: "Insulation is cut",
+      photos: ["pic-1"],
+    });
+
+    expect(result.workOrder).not.toBeNull();
+    const order = await prisma.workOrder.findUniqueOrThrow({
+      where: { id: result.workOrder!.id },
+    });
+    expect(order.pointId).toBe(brokenPointId);
+    expect(order.type).toBe("REPAIR");
+    expect(order.description).toContain("Insulation is cut");
+    expect(order.photos).toEqual(["pic-1"]);
+    expect(order.partsNeeded).toContain("charging cable");
+    expect(order.sourceTicketId).toBe(result.ticket.id);
+  });
+
+  it("takes the reported connector out of service, so the map stops promising it", async () => {
+    await reportProblem({
+      pointId: brokenPointId,
+      connectorId: brokenConnectorId,
+      reporterId,
+      problemType: "NO_START",
+    });
+
+    const connector = await prisma.pointConnector.findUniqueOrThrow({
+      where: { id: brokenConnectorId },
+    });
+    expect(connector.status).toBe("OUT_OF_SERVICE");
+  });
+
+  it("does not make a work order out of a blocked bay or a price complaint", async () => {
+    const blocked = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "BLOCKED",
+    });
+    const price = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "WRONG_PRICE",
+    });
+
+    expect(blocked.workOrder).toBeNull();
+    expect(price.workOrder).toBeNull();
+    // And nothing was taken out of service over somebody parking badly.
+    const connector = await prisma.pointConnector.findUniqueOrThrow({
+      where: { id: brokenConnectorId },
+    });
+    expect(connector.status).toBe("FREE");
+  });
+
+  it("gives a technical fault a tighter deadline than a complaint", async () => {
+    const technical = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "DAMAGED_CABLE",
+    });
+    const complaint = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "WRONG_PRICE",
+    });
+
+    expect(technical.ticket.respondBy!.getTime()).toBeLessThan(
+      complaint.ticket.respondBy!.getTime(),
+    );
+    expect(technical.ticket.priority).toBe("URGENT");
+  });
+});
+
+describe("nearestWorkingPoints — the offer right after (US-53)", () => {
+  it("offers the nearest free points with the same plug, nearest first", async () => {
+    const offered = await nearestWorkingPoints(brokenPointId, "CCS2");
+
+    expect(offered.map((p) => p.id)).toEqual([nearbyFreeId, farFreeId]);
+    expect(offered[0].distanceM).toBeLessThan(offered[1].distanceM!);
+  });
+
+  it("leaves out the busy one and the wrong plug", async () => {
+    const offered = await nearestWorkingPoints(brokenPointId, "CCS2");
+    expect(offered.map((p) => p.id)).not.toContain(nearbyBusyId);
+    expect(offered.map((p) => p.name)).not.toContain("Wrong plug");
+  });
+
+  it("never offers the broken point itself", async () => {
+    const offered = await nearestWorkingPoints(brokenPointId, "CCS2");
+    expect(offered.map((p) => p.id)).not.toContain(brokenPointId);
+  });
+
+  it("offers at most three", async () => {
+    const offered = await nearestWorkingPoints(brokenPointId, "CCS2");
+    expect(offered.length).toBeLessThanOrEqual(3);
+  });
+
+  it("says nothing rather than guessing when the point has no coordinates", async () => {
+    const nowhere = await prisma.acceptancePoint.create({
+      data: { operatorId, type: "CHARGING_STATION", name: "Nowhere", status: "PUBLISHED" },
+    });
+    expect(await nearestWorkingPoints(nowhere.id, "CCS2")).toEqual([]);
+  });
+});

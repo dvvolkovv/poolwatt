@@ -1583,5 +1583,39 @@
       "VERIFIED": "Verified",
       "CANCELLED": "Cancelled"
     }
+  },
+  "report": {
+    "title": "Report a problem",
+    "connector": "Connector",
+    "anyConnector": "Not sure / any",
+    "comment": "Anything to add (optional)",
+    "send": "Send",
+    "sending": "…",
+    "sent": "Sent. Support has it.",
+    "opened": "An engineer has been given a work order.",
+    "alternatives": "Nearest working stations",
+    "noAlternatives": "Nothing free nearby right now",
+    "type": {
+      "NO_START": "Charging does not start",
+      "INTERRUPTED": "Charging stopped",
+      "DAMAGED_CABLE": "Cable or connector damaged",
+      "SCREEN_DEAD": "Screen is dead",
+      "BLOCKED": "Blocked by another car",
+      "WRONG_PRICE": "Wrong price or charge",
+      "OTHER": "Something else"
+    }
+  },
+  "tickets": {
+    "eyebrow": "Support",
+    "title": "Tickets",
+    "empty": "Nothing open",
+    "respondBy": "answer by",
+    "workOrder": "Work order",
+    "status": {
+      "OPEN": "Open",
+      "IN_PROGRESS": "In progress",
+      "RESOLVED": "Resolved",
+      "CLOSED": "Closed"
+    }
   }
 }

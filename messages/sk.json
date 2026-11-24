@@ -1583,5 +1583,39 @@
       "VERIFIED": "Overené",
       "CANCELLED": "Zrušené"
     }
+  },
+  "report": {
+    "title": "Nahlásiť problém",
+    "connector": "Konektor",
+    "anyConnector": "Neviem / ktorýkoľvek",
+    "comment": "Čo dodať (nepovinné)",
+    "send": "Odoslať",
+    "sending": "…",
+    "sent": "Odoslané. Podpora to má.",
+    "opened": "Technikovi bol vytvorený príkaz.",
+    "alternatives": "Najbližšie funkčné stanice",
+    "noAlternatives": "V okolí teraz nič voľné",
+    "type": {
+      "NO_START": "Nabíjanie sa nezačne",
+      "INTERRUPTED": "Nabíjanie sa prerušilo",
+      "DAMAGED_CABLE": "Poškodený kábel alebo konektor",
+      "SCREEN_DEAD": "Displej nefunguje",
+      "BLOCKED": "Obsadené cudzím autom",
+      "WRONG_PRICE": "Nesprávna cena alebo strhnutie",
+      "OTHER": "Iné"
+    }
+  },
+  "tickets": {
+    "eyebrow": "Podpora",
+    "title": "Tikety",
+    "empty": "Nič otvorené",
+    "respondBy": "odpovedať do",
+    "workOrder": "Príkaz",
+    "status": {
+      "OPEN": "Otvorený",
+      "IN_PROGRESS": "V práci",
+      "RESOLVED": "Vyriešený",
+      "CLOSED": "Zatvorený"
+    }
   }
 }
