@@ -43,6 +43,23 @@ Every run:
 9. Finish with a report: what is done and how it was checked, what is next, what
    you need from the owner. Audio reports are not committed (`*.mp3` is ignored).
 
+## How to report to the owner
+
+The owner asked for this explicitly (2026-11-24): keep going through the queue
+one task at a time, and **report after every finished task**, not only at the
+end of the run.
+
+- Plain words, no tables, no jargon, no code in the report. Tell it like you
+  would tell a person over the phone: what you just finished, and what is left
+  to do next.
+- Short. A few sentences per finished task is enough.
+- Always say what remains in the queue after this task, and what you need from
+  the owner if anything.
+- Russian text plus the two audio files (RU + SK), as the bot-response rules
+  below require.
+- Then move on to the next task without waiting for an answer, unless the task
+  is blocked on the owner.
+
 Other Claude sessions deploy from this directory too. Before `git add -A`, look
 at `git status` and leave alone what you did not change.
 
