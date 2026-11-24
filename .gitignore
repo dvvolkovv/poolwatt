@@ -49,3 +49,6 @@ yarn-error.log*
 
 # Telegram document uploads land here (ТЗ, specs, attachments) — not committed.
 inbox/
+
+# Local file storage for listing documents (KYB) — not committed.
+/var/

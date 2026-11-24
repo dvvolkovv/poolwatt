@@ -16,6 +16,12 @@ import {
 import { prisma } from "@/lib/prisma";
 import { type Db, writeAudit } from "./audit";
 import { ibansOpen } from "./gates";
+import {
+  MAX_DOCUMENT_BYTES,
+  type StoredDocument,
+  deleteDocument,
+  storeDocument,
+} from "./listing-docs";
 import { openCompanyAccount } from "./settlement-service";
 
 export interface ListingDocument {
@@ -23,11 +29,14 @@ export interface ListingDocument {
   url: string;
   bytes: number;
   mime: string;
+  /** Set on files uploaded through the cabinet; absent on API-supplied links. */
+  docId?: string;
 }
 
-/** US-01: PDF/JPG up to 20 MB. */
-export const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
+export { MAX_DOCUMENT_BYTES };
 export const ALLOWED_DOCUMENT_MIME = ["application/pdf", "image/jpeg", "image/png"];
+/** Enough for a registration certificate, licences and per-asset grid papers. */
+export const MAX_DOCUMENTS = 30;
 
 export class ListingError extends Error {}
 
@@ -58,7 +67,10 @@ export interface CreateCompanyInput {
   ownerUserId: string;
 }
 
-/** POST /v1/companies. */
+/**
+ * POST /v1/companies. §14 — the company is born with a DRAFT application, so
+ * the cabinet has somewhere to put documents before anything is submitted.
+ */
 export async function createCompany(input: CreateCompanyInput, db: Db = prisma) {
   const company = await db.company.create({
     data: {
@@ -72,6 +84,7 @@ export async function createCompany(input: CreateCompanyInput, db: Db = prisma) 
       contactEmail: input.contactEmail?.trim() || null,
       contactPhone: input.contactPhone?.trim() || null,
       ownerUserId: input.ownerUserId,
+      applications: { create: { status: ListingApplicationStatus.DRAFT } },
     },
   });
   await writeAudit(db, {
@@ -84,23 +97,114 @@ export async function createCompany(input: CreateCompanyInput, db: Db = prisma) 
   return company;
 }
 
-/** POST /v1/listing-applications — §14 draft → submitted. */
+/** The open application of a company: the DRAFT it is filling, created on demand. */
+export async function draftApplicationFor(companyId: string, db: Db = prisma) {
+  const open = await db.listingApplication.findFirst({
+    where: { companyId, status: ListingApplicationStatus.DRAFT },
+    orderBy: { createdAt: "desc" },
+  });
+  if (open) return open;
+  return db.listingApplication.create({
+    data: { companyId, status: ListingApplicationStatus.DRAFT },
+  });
+}
+
+function documentsOf(application: { documents: unknown }): ListingDocument[] {
+  return Array.isArray(application.documents) ? (application.documents as ListingDocument[]) : [];
+}
+
+async function draftOrThrow(applicationId: string, db: Db) {
+  const application = await db.listingApplication.findUniqueOrThrow({
+    where: { id: applicationId },
+  });
+  if (application.status !== ListingApplicationStatus.DRAFT) {
+    throw new ListingError(
+      `Documents can only be changed while the application is a draft, this one is ${application.status}`,
+    );
+  }
+  return application;
+}
+
+/** US-01 — one uploaded file joins the draft. */
+export async function addDocument(
+  args: { applicationId: string; filename: string; bytes: Buffer; actorUserId: string },
+  db: Db = prisma,
+): Promise<{ application: { documents: ListingDocument[] }; document: StoredDocument }> {
+  const application = await draftOrThrow(args.applicationId, db);
+  const existing = documentsOf(application);
+  if (existing.length >= MAX_DOCUMENTS) {
+    throw new ListingError(`An application takes at most ${MAX_DOCUMENTS} documents`);
+  }
+
+  const document = await storeDocument({
+    applicationId: application.id,
+    filename: args.filename,
+    bytes: args.bytes,
+  });
+
+  const documents = [...existing, document];
+  const updated = await db.listingApplication.update({
+    where: { id: application.id },
+    data: { documents: documents as unknown as Prisma.InputJsonValue },
+  });
+  await writeAudit(db, {
+    actor: args.actorUserId,
+    entity: "ListingApplication",
+    entityId: application.id,
+    action: "listing.document.added",
+    after: { name: document.name, bytes: document.bytes, mime: document.mime },
+  });
+  return { application: { ...updated, documents }, document };
+}
+
+/** US-01 — the producer takes a file back out of the draft. */
+export async function removeDocument(
+  args: { applicationId: string; docId: string; actorUserId: string },
+  db: Db = prisma,
+): Promise<{ documents: ListingDocument[] }> {
+  const application = await draftOrThrow(args.applicationId, db);
+  const documents = documentsOf(application).filter((d) => d.docId !== args.docId);
+
+  await deleteDocument(application.id, args.docId);
+  const updated = await db.listingApplication.update({
+    where: { id: application.id },
+    data: { documents: documents as unknown as Prisma.InputJsonValue },
+  });
+  await writeAudit(db, {
+    actor: args.actorUserId,
+    entity: "ListingApplication",
+    entityId: application.id,
+    action: "listing.document.removed",
+    after: { docId: args.docId, left: documents.length },
+  });
+  return { ...updated, documents };
+}
+
+/**
+ * POST /v1/listing-applications — §14 draft → submitted.
+ *
+ * The cabinet uploads files into the draft first and submits with no
+ * `documents`; an API client may instead hand over links in one call, which
+ * replaces whatever the draft held.
+ */
 export async function submitApplication(
-  args: { companyId: string; documents: ListingDocument[]; actorUserId: string },
+  args: { companyId: string; documents?: ListingDocument[]; actorUserId: string },
   db: Db = prisma,
 ) {
-  const problem = validateDocuments(args.documents);
-  if (problem) throw new ListingError(problem);
-
   const open = await db.listingApplication.findFirst({
     where: {
       companyId: args.companyId,
       status: { in: [ListingApplicationStatus.DRAFT, ListingApplicationStatus.SUBMITTED] },
     },
+    orderBy: { createdAt: "desc" },
   });
 
+  const documents = args.documents ?? documentsOf(open ?? { documents: [] });
+  const problem = validateDocuments(documents);
+  if (problem) throw new ListingError(problem);
+
   const data = {
-    documents: args.documents as unknown as Prisma.InputJsonValue,
+    documents: documents as unknown as Prisma.InputJsonValue,
     status: ListingApplicationStatus.SUBMITTED,
     submittedAt: new Date(),
     decisionComment: null,
@@ -117,7 +221,7 @@ export async function submitApplication(
     entity: "ListingApplication",
     entityId: application.id,
     action: "listing.submitted",
-    after: { documents: args.documents.length },
+    after: { documents: documents.length },
   });
   return application;
 }

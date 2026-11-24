@@ -271,6 +271,18 @@ and `docs/superpowers/plans/2026-05-25-android-build-pipeline.md`.
     | sed 's|/poolwatt?|/poolwatt_test?|')" npx vitest run
   ```
 
+  The same shell also exports `NODE_ENV=production`, and vite copies it over
+  too, so gates that refuse to open in production (`ibansOpen`) stay shut and
+  two cases in `gates-flow.test.ts` / `exchange-flow.test.ts` fail for reasons
+  that have nothing to do with the code. Pass `NODE_ENV=test` alongside the
+  database:
+
+  ```bash
+  cd ~/poolwatt
+  NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
+    | tr -d '"' | sed 's|/poolwatt?|/poolwatt_test?|')" npx vitest run
+  ```
+
   `poolwatt_test` lives on the same local cluster, same role. Recreate it
   with `createdb poolwatt_test`, then `npx prisma migrate deploy` and
   `npx tsx scripts/seed.ts` under the same override — unseeded, the four
