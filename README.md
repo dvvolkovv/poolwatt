@@ -16,7 +16,7 @@ the *Green Index*, exchanges become *hubs*, and the trading pair becomes an
 - **Framework:** Next.js 16 (App Router, TypeScript)
 - **Database:** PostgreSQL 16 + Prisma ORM
 - **Cache:** Redis 8 (ioredis)
-- **Auth:** Auth.js v5 (Google + GitHub + Telegram Login Widget) — wired in Phase 2
+- **Auth:** Auth.js v5 — nickname + password, and Taler ID (OpenID Connect)
 - **UI:** shadcn/ui + TailwindCSS 4
 - **i18n:** next-intl (`en`, `ru` shipped — more languages planned)
 - **Bot:** grammy (Telegram)
@@ -92,6 +92,7 @@ See [`.env.example`](.env.example). Key vars:
 | `REDIS_URL`            | Redis connection string                      |
 | `NEXTAUTH_URL`         | Public URL of the web app                    |
 | `NEXTAUTH_SECRET`      | Random 32-byte secret                        |
+| `TALERID_CLIENT_ID`, `TALERID_CLIENT_SECRET` | Taler ID OAuth client; empty = button hidden |
 | `TELEGRAM_BOT_TOKEN`   | Telegram bot token from @BotFather           |
 | `BOT_ADMIN_USER_IDS`   | Comma-separated Telegram ids with sudo verbs |
 | `ADMIN_WHITELIST`      | Comma-separated admin identities             |

@@ -76,6 +76,22 @@ ssh -i ~/.ssh/id_ed25519 dv@77.221.159.163
 There is also `~/.ssh/id_ed25519_poolwatt` left over from a one-time
 provisioning attempt — **don't use it**, it's not installed on the server.
 
+## Taler ID login
+
+Sign-in and registration with Taler ID (OpenID Connect) next to nickname +
+password. Design: `docs/superpowers/specs/2026-11-24-talerid-login-design.md`.
+
+- Code: `src/lib/talerid/` (provider, linking rules), wired in `src/lib/auth.ts`.
+  No PrismaAdapter; no provider tokens are stored.
+- Keys: `TALERID_CLIENT_ID`, `TALERID_CLIENT_SECRET` in `.env.local`. The client
+  is managed at https://talerid.io/developers/, redirect URI
+  `https://poolwatt.com/api/auth/callback/talerid`.
+- `User.passwordHash` is nullable: accounts created through Taler ID have none.
+- Accounts are never linked by email, only from settings by the signed-in user.
+  Accounts hold exchange wallets, so keep it that way.
+- nginx redirects `www.poolwatt.com` to the apex. Without it a flow started on
+  www loses its state cookie, because callbacks always go to `NEXTAUTH_URL`.
+
 ## Common ops
 
 ```bash
