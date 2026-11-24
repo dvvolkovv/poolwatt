@@ -766,7 +766,7 @@
     },
     "setPassword": {
       "title": "Set a password",
-      "note": "Your account has no password yet. Set one to also sign in with @{username}.",
+      "note": "Your account has no password yet. Set one to also sign in with your nickname.",
       "newLabel": "New password",
       "submit": "Set password",
       "submitting": "Saving…"

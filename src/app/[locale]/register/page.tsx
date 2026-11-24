@@ -1,6 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { RegisterForm } from "@/components/register-form";
+import { TalerIdPanel } from "@/components/talerid-panel";
 import { auth } from "@/lib/auth";
 
 export default async function RegisterPage({
@@ -32,7 +33,9 @@ export default async function RegisterPage({
           signIn: t("signIn"),
           emailNote: t("emailNote"),
         }}
-      />
+      >
+        <TalerIdPanel locale={locale} mode="continue" />
+      </RegisterForm>
     </main>
   );
 }

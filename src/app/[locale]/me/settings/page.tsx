@@ -6,14 +6,21 @@ import { NameSection } from "@/components/settings/name-section";
 import { EmailSection } from "@/components/settings/email-section";
 import { PhoneSection } from "@/components/settings/phone-section";
 import { PasswordSection } from "@/components/settings/password-section";
+import { SetPasswordSection } from "@/components/settings/set-password-section";
+import { TalerIdSection } from "@/components/settings/talerid-section";
 import { DangerZone } from "@/components/settings/danger-zone";
+import { isTalerIdEnabled, TALERID_PROVIDER_ID } from "@/lib/talerid/config";
+import { talerIdErrorKey } from "@/lib/talerid/errors";
 
 export default async function SettingsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { locale } = await params;
+  const query = await searchParams;
   setRequestLocale(locale);
 
   const session = await auth();
@@ -30,11 +37,16 @@ export default async function SettingsPage({
       preferredLocale: true,
       preferredCurrency: true,
       preferredTheme: true,
+      passwordHash: true,
+      accounts: { where: { provider: TALERID_PROVIDER_ID }, select: { id: true } },
     },
   });
   if (!user) redirect(`/${locale}/login`);
 
   const t = await getTranslations("settings");
+  const tTalerId = await getTranslations("auth.talerId");
+  const hasPassword = user.passwordHash != null;
+  const talerIdError = talerIdErrorKey(query.error);
 
   return (
     <div>
@@ -79,16 +91,50 @@ export default async function SettingsPage({
           }}
         />
 
-        <PasswordSection
-          labels={{
-            title: t("password.title"),
-            currentLabel: t("password.currentLabel"),
-            newLabel: t("password.newLabel"),
-            submit: t("password.submit"),
-            submitting: t("password.submitting"),
-            success: t("password.success"),
-          }}
-        />
+        {isTalerIdEnabled() && (
+          <TalerIdSection
+            locale={locale}
+            linked={user.accounts.length > 0}
+            hasPassword={hasPassword}
+            justLinked={query.talerid === "linked"}
+            error={talerIdError && tTalerId(`errors.${talerIdError}`)}
+            labels={{
+              title: t("talerId.title"),
+              linked: t("talerId.linked"),
+              notLinked: t("talerId.notLinked"),
+              link: t("talerId.link"),
+              linkPending: tTalerId("pending"),
+              unlink: t("talerId.unlink"),
+              unlinking: t("talerId.unlinking"),
+              needsPassword: t("talerId.needsPassword"),
+              linkedNotice: t("talerId.linkedNotice"),
+            }}
+          />
+        )}
+
+        {hasPassword ? (
+          <PasswordSection
+            labels={{
+              title: t("password.title"),
+              currentLabel: t("password.currentLabel"),
+              newLabel: t("password.newLabel"),
+              submit: t("password.submit"),
+              submitting: t("password.submitting"),
+              success: t("password.success"),
+            }}
+          />
+        ) : (
+          <SetPasswordSection
+            username={user.username}
+            labels={{
+              title: t("setPassword.title"),
+              note: t("setPassword.note"),
+              newLabel: t("setPassword.newLabel"),
+              submit: t("setPassword.submit"),
+              submitting: t("setPassword.submitting"),
+            }}
+          />
+        )}
 
         <DangerZone
           username={user.username}

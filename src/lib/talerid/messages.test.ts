@@ -24,6 +24,11 @@ describe("Taler ID messages", () => {
     expect(paths(ours(m as unknown as typeof en))).toEqual(paths(ours(en)));
   });
 
+  // The English fallback returns the raw string, so a placeholder would show.
+  it("uses no placeholders", () => {
+    expect(JSON.stringify(ours(en))).not.toMatch(/\{[a-z]+\}/i);
+  });
+
   it("has a text for every error key", () => {
     const codes = ["AccessDenied", "Configuration", ...Object.values(TALERID_REFUSAL_CODE)];
     for (const code of codes) {

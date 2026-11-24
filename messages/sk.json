@@ -766,7 +766,7 @@
     },
     "setPassword": {
       "title": "Nastaviť heslo",
-      "note": "Váš účet zatiaľ nemá heslo. Nastavte si ho, aby ste sa mohli prihlasovať aj prezývkou @{username}.",
+      "note": "Váš účet zatiaľ nemá heslo. Nastavte si ho, aby ste sa mohli prihlasovať aj prezývkou.",
       "newLabel": "Nové heslo",
       "submit": "Nastaviť heslo",
       "submitting": "Ukladá sa…"

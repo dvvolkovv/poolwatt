@@ -1,18 +1,32 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/login-form";
+import { TalerIdPanel } from "@/components/talerid-panel";
 import { auth } from "@/lib/auth";
+import { safeRedirectPath } from "@/lib/safe-redirect";
+import { talerIdErrorKey } from "@/lib/talerid/errors";
 
 export default async function LoginPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { locale } = await params;
+  const { error, callbackUrl } = await searchParams;
   setRequestLocale(locale);
 
+  const errorKey = talerIdErrorKey(error);
   const session = await auth();
-  if (session?.user) redirect(`/${locale}/me`);
+  if (session?.user) {
+    // Auth.js sends every failure here, including a failed link from settings.
+    redirect(
+      errorKey
+        ? `/${locale}/me/settings?error=${encodeURIComponent(String(error))}`
+        : `/${locale}/me`,
+    );
+  }
 
   const t = await getTranslations("auth.login");
 
@@ -32,7 +46,17 @@ export default async function LoginPage({
           register: t("register"),
           forgotPassword: t("forgotPassword"),
         }}
-      />
+      >
+        <TalerIdPanel
+          locale={locale}
+          mode="signIn"
+          callbackUrl={safeRedirectPath(
+            typeof callbackUrl === "string" ? callbackUrl : null,
+            `/${locale}/me`,
+          )}
+          errorKey={errorKey}
+        />
+      </LoginForm>
     </main>
   );
 }
