@@ -892,6 +892,30 @@
       "refreshing": "Obnovujem…",
       "refreshed": "Obnovené: uložených intervalov — {stored}.",
       "refreshFailed": "Zdroj sa nepodarilo prečítať: {error}. Predchádzajúca referencia je nedotknutá."
+    },
+    "navReconciliation": "Zhoda registra",
+    "reconciliation": {
+      "title": "Zhoda registra tokenov",
+      "intro": "Každú noc sa registor porovná s meraniami, z ktorých bol vydaný (ТЗ §16.11). Nič sa neopravuje samo: rozdiel je chyba vyššie v toku a kontrola, ktorá si opravuje vlastné nálezy, ich skrýva.",
+      "runNow": "Porovnať teraz",
+      "running": "Porovnávam…",
+      "ranOk": "Hotovo: žiadne rozdiely, porovnaných — {checked}.",
+      "ranDrift": "Hotovo: nájdených rozdielov — {drifts}.",
+      "ranFailed": "Nepodarilo sa: {error}",
+      "noRuns": "Zatiaľ žiadne spustenia. Worker ich robí každú noc o 03:15.",
+      "startedAt": "Začaté",
+      "window": "Okno",
+      "result": "Výsledok",
+      "drifts": "Rozdiely",
+      "clean": "čisté",
+      "failed": "rozdiel",
+      "unfinished": "neskončilo",
+      "checks": "Kontroly",
+      "checked": "porovnané",
+      "expected": "očakávané",
+      "found": "nájdené",
+      "lastRun": "Posledné spustenie",
+      "externalFeed": "«Dáta siete» tu znamenajú merania podpísané samotnými objektmi. Porovnanie s výkazom prevádzkovateľa siete si vyžaduje zmluvu a prístup k ich dátam; denný súčet za objekt je navrhnutý tak, aby sa tento výkaz dal postaviť vedľa."
     }
   },
   "claim": {

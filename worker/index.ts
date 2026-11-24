@@ -13,7 +13,8 @@ loadDotenv({ path: ".env.local", override: true });
 
 import cron from "node-cron";
 import { prisma } from "@/lib/prisma";
-import { closeInterval, reconcileWalletBalances } from "@/lib/exchange/interval-close-service";
+import { closeInterval } from "@/lib/exchange/interval-close-service";
+import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/spot-service";
 import { intervalStartFor } from "@/lib/exchange/zone-service";
@@ -50,15 +51,25 @@ export async function runIntervalClose(now = new Date()): Promise<void> {
   }
 }
 
-/** §16.11 — report any drift between wallet balances and the token registry. */
+/**
+ * §16.11 — the nightly check of the registry against the readings it was
+ * issued from. Four checks, a recorded run, and mail to the operator on
+ * drift; nothing is ever repaired here.
+ */
 export async function runReconciliation(): Promise<void> {
-  const drifts = await reconcileWalletBalances();
-  if (drifts.length === 0) {
-    log("reconciliation: no drift");
+  const outcome = await reconcileRegistry({ scope: "daily" });
+  const summary = outcome.checks
+    .map((c) => `${c.name}=${c.drifts.length}/${c.checked}`)
+    .join(" ");
+  if (outcome.ok) {
+    log(`reconciliation: no drift (${summary})`);
     return;
   }
   // Drift means a bug upstream, so it is reported loudly and never auto-fixed.
-  console.error(`[worker] RECONCILIATION DRIFT on ${drifts.length} wallet(s):`, drifts);
+  console.error(
+    `[worker] RECONCILIATION DRIFT: ${outcome.driftCount} finding(s) — ${summary}. ` +
+      `See /admin/reconciliation (run ${outcome.runId}).`,
+  );
 }
 
 /**

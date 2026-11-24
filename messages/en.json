@@ -892,6 +892,30 @@
       "refreshing": "Refreshing…",
       "refreshed": "Refreshed: {stored} intervals stored.",
       "refreshFailed": "The source could not be read: {error}. The previous reference is untouched."
+    },
+    "navReconciliation": "Reconciliation",
+    "reconciliation": {
+      "title": "Token registry reconciliation",
+      "intro": "Every night the registry is checked against the meter readings it was issued from (ТЗ §16.11). Nothing is ever repaired automatically: a disagreement is a bug upstream, and a check that fixes its own findings hides them.",
+      "runNow": "Run now",
+      "running": "Running…",
+      "ranOk": "Done: no drift in {checked} comparisons.",
+      "ranDrift": "Done: {drifts} drift(s) found.",
+      "ranFailed": "Could not run: {error}",
+      "noRuns": "No runs yet. The worker runs one every night at 03:15.",
+      "startedAt": "Started",
+      "window": "Window",
+      "result": "Result",
+      "drifts": "Drifts",
+      "clean": "clean",
+      "failed": "drift",
+      "unfinished": "did not finish",
+      "checks": "Checks",
+      "checked": "compared",
+      "expected": "expected",
+      "found": "found",
+      "lastRun": "Latest run",
+      "externalFeed": "«Данные сети» here means the readings signed by the assets themselves. Comparing against the grid operator's own statement needs a contract and a feed from them — the per-asset daily total is shaped so that feed can be dropped in beside it."
     }
   },
   "claim": {

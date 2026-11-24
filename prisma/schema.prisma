@@ -1529,3 +1529,21 @@ model IdempotencyRecord {
   @@unique([endpoint, userKey, key])
   @@index([createdAt])
 }
+
+// §16.11 — "реестр токенов сверяется с данными сети раз в сутки". One row per
+// run, so the operator can see that the check ran at all, and what it found.
+// Drifts are never repaired automatically: each one is a bug upstream.
+model ReconciliationRun {
+  id         String    @id @default(cuid())
+  scope      String    @default("daily")
+  windowFrom DateTime
+  windowTo   DateTime
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  // Per check: how much was compared and every disagreement found.
+  checks     Json      @default("[]")
+  driftCount Int       @default(0)
+  ok         Boolean   @default(true)
+
+  @@index([startedAt])
+}

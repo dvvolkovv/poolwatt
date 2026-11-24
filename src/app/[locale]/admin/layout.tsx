@@ -57,6 +57,13 @@ export default async function AdminLayout({
               >
                 ⚡ {tNav("navZones")}
               </Link>
+              <Link
+                href={`/${locale}/admin/reconciliation`}
+                prefetch={false}
+                className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
+              >
+                🧮 {tNav("navReconciliation")}
+              </Link>
             </nav>
           </aside>
           <section className="min-w-0">{children}</section>
