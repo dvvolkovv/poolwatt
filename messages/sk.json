@@ -204,7 +204,8 @@
       "buildRequests": "Žiadosti o výstavbu",
       "contractor": "Moja firma",
       "wallet": "Peňaženka",
-      "listing": "Listing"
+      "listing": "Listing",
+      "home": "Domov"
     },
     "favorites": {
       "title": "Obľúbené",
@@ -767,6 +768,32 @@
           "BURNED": "spálený",
           "ROUTED": "odovzdaný"
         }
+      }
+    },
+    "home": {
+      "eyebrow": "Hlavná obrazovka",
+      "status": {
+        "GUEST": "Hosť",
+        "CONSUMER": "Spotrebiteľ",
+        "PROSUMER": "Prosumer",
+        "COOP_MEMBER": "Člen družstva"
+      },
+      "kwhBalance": "Zostatok kWh",
+      "fiatBalance": "Peniaze",
+      "available": "K dispozícii",
+      "live": "V reálnom čase",
+      "offline": "Bez spojenia — zostatky z času načítania",
+      "noWallet": "Peňaženka zatiaľ nie je — kúpte kWh alebo prijmite prevod a otvorí sa.",
+      "zonePrice": "Cena v zóne",
+      "bestAsk": "Najlepšia ponuka",
+      "zone": "Zóna",
+      "actions": {
+        "buy": "Kúpiť",
+        "transfer": "Previesť",
+        "charge": "Nabiť",
+        "topUp": "Dobiť",
+        "transferClosed": "čaká na právny posudok",
+        "topUpClosed": "čaká na banku"
       }
     }
   },

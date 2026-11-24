@@ -204,7 +204,8 @@
       "buildRequests": "Build requests",
       "contractor": "My company",
       "wallet": "Wallet",
-      "listing": "Listing"
+      "listing": "Listing",
+      "home": "Home"
     },
     "favorites": {
       "title": "Favorites",
@@ -767,6 +768,32 @@
           "BURNED": "burned",
           "ROUTED": "routed"
         }
+      }
+    },
+    "home": {
+      "eyebrow": "Main screen",
+      "status": {
+        "GUEST": "Guest",
+        "CONSUMER": "Consumer",
+        "PROSUMER": "Prosumer",
+        "COOP_MEMBER": "Co-op member"
+      },
+      "kwhBalance": "kWh balance",
+      "fiatBalance": "Money",
+      "available": "Available",
+      "live": "Live",
+      "offline": "Offline — showing the last loaded balances",
+      "noWallet": "No wallet yet — buy kWh or receive a transfer and one opens.",
+      "zonePrice": "Zone price",
+      "bestAsk": "Best ask",
+      "zone": "Zone",
+      "actions": {
+        "buy": "Buy",
+        "transfer": "Transfer",
+        "charge": "Charge",
+        "topUp": "Top up",
+        "transferClosed": "awaiting a legal opinion",
+        "topUpClosed": "awaiting a bank"
       }
     }
   },

@@ -16,7 +16,7 @@ export default async function CabinetLayout({
 
   const session = await auth();
   if (!session?.user) {
-    redirect(`/${locale}/login?callbackUrl=/${locale}/me/favorites`);
+    redirect(`/${locale}/login?callbackUrl=/${locale}/me`);
   }
 
   const t = await getTranslations("cabinet.sidebar");
@@ -48,6 +48,9 @@ export default async function CabinetLayout({
               </div>
             </div>
             <nav className="flex md:flex-col gap-1 md:gap-0 overflow-x-auto md:overflow-visible">
+              <SidebarLink href={`/${locale}/me`}>
+                ⌂ {t("home")}
+              </SidebarLink>
               <SidebarLink href={`/${locale}/me/favorites`}>
                 ★ {t("favorites")}
               </SidebarLink>
