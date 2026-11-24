@@ -63,7 +63,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
         const { username, password } = parsed.data;
         const user = await prisma.user.findUnique({ where: { username } });
-        if (!user) return null;
+        // No hash: the account signs in with Taler ID only.
+        if (!user?.passwordHash) return null;
         const ok = await verifyPassword(password, user.passwordHash);
         if (!ok) return null;
         return {

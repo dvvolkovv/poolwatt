@@ -93,6 +93,7 @@ export async function changePasswordAction(
     select: { passwordHash: true },
   });
   if (!user) return { formError: "Пользователь не найден" };
+  if (!user.passwordHash) return { formError: "Пароль ещё не задан" };
 
   const ok = await verifyPassword(parsed.data.currentPassword, user.passwordHash);
   if (!ok) return { fieldErrors: { currentPassword: "Неверный текущий пароль" } };

@@ -14,10 +14,10 @@ enum Role {
 
 model User {
   id                String    @id @default(cuid())
-  // V1 personal cabinet: username + bcrypt password are required at
-  // registration; email is optional and only used for password recovery.
+  // Nickname + bcrypt password registration, or Taler ID (no password, nickname
+  // derived from the name). Email is optional: password recovery needs it.
   username          String    @unique // 3–30 chars, lowercase, [a-z0-9_-]
-  passwordHash      String // bcryptjs hash
+  passwordHash      String? // bcryptjs hash; null = signs in with Taler ID only
   email             String?   @unique
   name              String?
   image             String?
@@ -115,6 +115,7 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@unique([userId, provider])
 }
 
 model Session {
