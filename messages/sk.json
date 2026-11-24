@@ -700,7 +700,7 @@
         "capacity": "Výkon",
         "meter": "Merač",
         "keys": "Kľúče telemetrie",
-        "keysHelp": "Kľúč sa zobrazí raz. Merania prichádzajú dvoma cestami. REST: POST /api/v1/telemetry/readings s hlavičkou Authorization: Bearer <kľúč>. MQTT: publikovanie do témy poolwatt/v1/assets/{assetId}/readings, v tele JSON s poliami key, intervalStart a energyKwh.",
+        "keysHelp": "Kľúč sa zobrazí raz. Merania prichádzajú dvoma cestami. REST: POST /api/v1/telemetry/readings s hlavičkou Authorization s hodnotou «Bearer» a kľúčom. MQTT: publikovanie do témy poolwatt/v1/assets/{assetId}/readings, v tele JSON s poliami key, intervalStart a energyKwh.",
         "noKeys": "Žiadne kľúče.",
         "issueKey": "Vydať kľúč",
         "issuing": "Vydávame…",

@@ -1,5 +1,6 @@
 import { sendEmail } from "@/lib/email";
 import { emailLink, emailText } from "@/lib/email-i18n";
+import { operatorEmail } from "@/lib/operator-email";
 import { prisma } from "@/lib/prisma";
 import type { ContractorStatus } from "@prisma/client";
 
@@ -14,9 +15,9 @@ export type ContractorSummary = {
 };
 
 export async function sendContractorNewToAdmin(c: ContractorSummary): Promise<void> {
-  const to = process.env.ADMIN_EMAIL;
+  const to = operatorEmail();
   if (!to) {
-    console.warn("[resend-contractor] ADMIN_EMAIL not set, skipping new-contractor notification");
+    console.warn("[resend-contractor] no ADMIN_EMAIL or EMAIL_REPLY_TO, skipping new-contractor notification");
     return;
   }
   const url = `${BASE}/admin/contractors/${c.id}`;
@@ -62,9 +63,9 @@ export async function sendContractorStatusChangedToOwner(
 }
 
 export async function sendContractorWithdrawnToAdmin(c: ContractorSummary): Promise<void> {
-  const to = process.env.ADMIN_EMAIL;
+  const to = operatorEmail();
   if (!to) {
-    console.warn("[resend-contractor] ADMIN_EMAIL not set, skipping withdraw notification");
+    console.warn("[resend-contractor] no ADMIN_EMAIL or EMAIL_REPLY_TO, skipping withdraw notification");
     return;
   }
   const shortId = c.id.slice(0, 8);

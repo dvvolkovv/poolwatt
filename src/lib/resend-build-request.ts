@@ -1,5 +1,6 @@
 import { sendEmail } from "@/lib/email";
 import { emailLink, emailText } from "@/lib/email-i18n";
+import { operatorEmail } from "@/lib/operator-email";
 import { prisma } from "@/lib/prisma";
 import type { BuildRequestStatus } from "@prisma/client";
 
@@ -13,9 +14,9 @@ export type AdminNotification = {
 };
 
 export async function sendBuildRequestNewToAdmin(req: AdminNotification): Promise<void> {
-  const to = process.env.ADMIN_EMAIL;
+  const to = operatorEmail();
   if (!to) {
-    console.warn("[resend-build-request] ADMIN_EMAIL not set, skipping new-request notification");
+    console.warn("[resend-build-request] no ADMIN_EMAIL or EMAIL_REPLY_TO, skipping operator notification");
     return;
   }
 

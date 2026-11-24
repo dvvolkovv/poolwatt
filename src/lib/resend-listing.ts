@@ -6,6 +6,7 @@
 
 import { sendEmail } from "@/lib/email";
 import { emailLink, emailText } from "@/lib/email-i18n";
+import { operatorEmail } from "@/lib/operator-email";
 import { prisma } from "@/lib/prisma";
 
 const BASE = process.env.NEXTAUTH_URL ?? "https://poolwatt.com";
@@ -17,9 +18,9 @@ export async function sendListingSubmittedToAdmin(args: {
   type: string;
   documents: number;
 }): Promise<void> {
-  const to = process.env.ADMIN_EMAIL;
+  const to = operatorEmail();
   if (!to) {
-    console.warn("[resend-listing] ADMIN_EMAIL not set, skipping listing notification");
+    console.warn("[resend-listing] no ADMIN_EMAIL or EMAIL_REPLY_TO, skipping operator notification");
     return;
   }
 
