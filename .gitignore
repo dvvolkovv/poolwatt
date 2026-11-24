@@ -45,7 +45,7 @@ yarn-error.log*
 /prisma/dev.db-journal
 
 # Ad-hoc TTS report outputs (scripts/status-report-audio*.ts)
-/status-report*.mp3
+/*.mp3
 
 # Telegram document uploads land here (ТЗ, specs, attachments) — not committed.
 inbox/

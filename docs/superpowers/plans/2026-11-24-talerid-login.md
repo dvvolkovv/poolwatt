@@ -36,8 +36,8 @@
 
 **Files:** Modify `prisma/schema.prisma`; create `prisma/migrations/20261124123500_talerid_login/migration.sql`
 
-- [ ] **Step 1:** In `model User` change `passwordHash String // bcryptjs hash` to `passwordHash String? // bcryptjs hash; null = signs in with Taler ID only`. In `model Account` add `@@unique([userId, provider])` after the existing unique.
-- [ ] **Step 2:** Migration:
+- [x] **Step 1:** In `model User` change `passwordHash String // bcryptjs hash` to `passwordHash String? // bcryptjs hash; null = signs in with Taler ID only`. In `model Account` add `@@unique([userId, provider])` after the existing unique.
+- [x] **Step 2:** Migration:
 
 ```sql
 -- Accounts created through Taler ID have no password.
@@ -47,13 +47,13 @@ ALTER TABLE "User" ALTER COLUMN "passwordHash" DROP NOT NULL;
 CREATE UNIQUE INDEX "Account_userId_provider_key" ON "Account"("userId", "provider");
 ```
 
-- [ ] **Step 3:** `npx prisma migrate deploy && npx prisma generate && npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url <empty db> --exit-code` → "No difference detected".
-- [ ] **Step 4:** Guard the three places that read the hash (tsc lists them): credentials `authorize` returns null for a null hash, `changePasswordAction` returns `{ formError }`.
-- [ ] **Step 5:** Commit `feat(auth): allow accounts without a password`.
+- [x] **Step 3:** `npx prisma migrate deploy && npx prisma generate && npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url <empty db> --exit-code` → "No difference detected".
+- [x] **Step 4:** Guard the three places that read the hash (tsc lists them): credentials `authorize` returns null for a null hash, `changePasswordAction` returns `{ formError }`.
+- [x] **Step 5:** Commit `feat(auth): allow accounts without a password`.
 
 ### Task 2: Pure units
 
-- [ ] **Step 1: failing tests**
+- [x] **Step 1: failing tests**
 
 ```ts file=src/lib/talerid/username.test.ts
 import { describe, expect, it } from "vitest";
@@ -249,8 +249,8 @@ describe("safeRedirectPath", () => {
 });
 ```
 
-- [ ] **Step 2:** `npx vitest run src/lib/talerid src/lib/safe-redirect.test.ts` → FAIL, modules not found.
-- [ ] **Step 3: implementation**
+- [x] **Step 2:** `npx vitest run src/lib/talerid src/lib/safe-redirect.test.ts` → FAIL, modules not found.
+- [x] **Step 3: implementation**
 
 ```ts file=src/lib/talerid/config.ts
 // Taler ID as an OpenID Connect provider for Auth.js.
@@ -423,12 +423,12 @@ export function safeRedirectPath(value: string | null | undefined, fallback: str
 }
 ```
 
-- [ ] **Step 4:** same command → all pass (after Task 3 adds the `TalerIdRefusal` type; vitest erases type imports, so tests pass already).
-- [ ] **Step 5:** Commit `feat(talerid): provider config, nicknames, link intent, error codes`.
+- [x] **Step 4:** same command → all pass (after Task 3 adds the `TalerIdRefusal` type; vitest erases type imports, so tests pass already).
+- [x] **Step 5:** Commit `feat(talerid): provider config, nicknames, link intent, error codes`.
 
 ### Task 3: resolveTalerIdUser
 
-- [ ] **Step 1: failing test**
+- [x] **Step 1: failing test**
 
 ```ts file=src/lib/talerid/resolve-user.test.ts
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
@@ -597,8 +597,8 @@ describe("link", () => {
 });
 ```
 
-- [ ] **Step 2:** `npx vitest run src/lib/talerid/resolve-user.test.ts` → FAIL, module not found.
-- [ ] **Step 3: implementation**
+- [x] **Step 2:** `npx vitest run src/lib/talerid/resolve-user.test.ts` → FAIL, module not found.
+- [x] **Step 3: implementation**
 
 ```ts file=src/lib/talerid/resolve-user.ts
 // Turns a Taler ID profile into a local user: finds, creates or links one.
@@ -710,12 +710,12 @@ async function register(claims: TalerIdClaims): Promise<TalerIdResult> {
 }
 ```
 
-- [ ] **Step 4:** same command → PASS.
-- [ ] **Step 5:** Commit `feat(talerid): find, create or link the local user`.
+- [x] **Step 4:** same command → PASS.
+- [x] **Step 5:** Commit `feat(talerid): find, create or link the local user`.
 
 ### Task 4: Auth.js wiring
 
-- [ ] **Step 1:** cookie wrapper
+- [x] **Step 1:** cookie wrapper
 
 ```ts file=src/lib/talerid/link-intent-cookie.ts
 import { cookies } from "next/headers";
@@ -758,7 +758,7 @@ export async function takeLinkIntent(): Promise<string | null> {
 }
 ```
 
-- [ ] **Step 2:** `src/lib/auth.ts`: make the augmented `User` fields optional; add the provider; `pages: { signIn: "/login", error: "/login" }`; callbacks:
+- [x] **Step 2:** `src/lib/auth.ts`: make the augmented `User` fields optional; add the provider; `pages: { signIn: "/login", error: "/login" }`; callbacks:
 
 ```ts
 async signIn({ account, profile }): Promise<boolean | string> {
@@ -795,13 +795,13 @@ async jwt({ token, user, account }) {
 },
 ```
 
-- [ ] **Step 3:** `npx tsc --noEmit` → clean. Commit `feat(auth): Taler ID provider`.
+- [x] **Step 3:** `npx tsc --noEmit` → clean. Commit `feat(auth): Taler ID provider`.
 
 ### Task 5: Actions
 
-- [ ] **Step 1: failing tests** in `src/app/[locale]/me/settings/actions.test.ts` for `setPasswordAction` (sets when null, refuses when a password exists, validates) and `unlinkTalerIdAction` (removes only the Taler ID link of the caller, refuses without a password, needs a session).
-- [ ] **Step 2:** run → FAIL.
-- [ ] **Step 3:** implement both in `settings/actions.ts`; add `setPasswordSchema` to `validation.ts`; create `src/app/actions/talerid.ts`:
+- [x] **Step 1: failing tests** in `src/app/[locale]/me/settings/actions.test.ts` for `setPasswordAction` (sets when null, refuses when a password exists, validates) and `unlinkTalerIdAction` (removes only the Taler ID link of the caller, refuses without a password, needs a session).
+- [x] **Step 2:** run → FAIL.
+- [x] **Step 3:** implement both in `settings/actions.ts`; add `setPasswordSchema` to `validation.ts`; create `src/app/actions/talerid.ts`:
 
 ```ts file=src/app/actions/talerid.ts
 "use server";
@@ -845,27 +845,27 @@ export async function linkTalerId(formData: FormData): Promise<void> {
 }
 ```
 
-- [ ] **Step 4:** run → PASS. Commit `feat(talerid): start, link, unlink; set a password`.
+- [x] **Step 4:** run → PASS. Commit `feat(talerid): start, link, unlink; set a password`.
 
 ### Task 6: Interface
 
-- [ ] `talerid-submit.tsx` (client, `useFormStatus`), `talerid-panel.tsx`; `LoginForm` and `RegisterForm` take `children` rendered between the heading and their `<form>`; `/login` reads `searchParams`, shows the message, sends signed-in visitors with an error to settings; `talerid-section.tsx`, `set-password-section.tsx`; settings page picks between "set" and "change" password.
-- [ ] Strings `auth.talerId.*`, `settings.talerId.*`, `settings.setPassword.*` in en, ru, sk. Test: the three files have the same keys under those paths.
-- [ ] `npx tsc --noEmit`, `npx eslint` on changed files → clean. Commit `feat(talerid): sign-in button and settings section`.
+- [x] `talerid-submit.tsx` (client, `useFormStatus`), `talerid-panel.tsx`; `LoginForm` and `RegisterForm` take `children` rendered between the heading and their `<form>`; `/login` reads `searchParams`, shows the message, sends signed-in visitors with an error to settings; `talerid-section.tsx`, `set-password-section.tsx`; settings page picks between "set" and "change" password.
+- [x] Strings `auth.talerId.*`, `settings.talerId.*`, `settings.setPassword.*` in en, ru, sk. Test: the three files have the same keys under those paths.
+- [x] `npx tsc --noEmit`, `npx eslint` on changed files → clean. Commit `feat(talerid): sign-in button and settings section`.
 
 ### Task 7: Docs
 
-- [ ] `.env.example`, `README.md` (auth row, env table), `CLAUDE.md` (short Taler ID section). Commit `docs: Taler ID login`.
+- [x] `.env.example`, `README.md` (auth row, env table), `CLAUDE.md` (short Taler ID section). Commit `docs: Taler ID login`.
 
 ### Task 8: Full flow
 
-- [ ] Production build in the clone against the throwaway database with an `oidc-provider` stub as issuer; drive Chrome through: register, sign out, sign in again, link a password account, refuse a taken Taler ID, refuse a taken email, cancel, unlink, set password then password sign-in, password registration unchanged.
-- [ ] `tests/e2e/talerid-login.spec.ts`: button on `/en/login` and `/en/register`; it leads to the issuer with `code_challenge_method=S256`, `scope=openid profile email` and the right `redirect_uri`.
+- [x] Production build in the clone against the throwaway database with an `oidc-provider` stub as issuer; drive Chrome through: register, sign out, sign in again, link a password account, refuse a taken Taler ID, refuse a taken email, cancel, unlink, set password then password sign-in, password registration unchanged.
+- [x] `tests/e2e/talerid-login.spec.ts`: button on `/en/login` and `/en/register`; it leads to the issuer with `code_challenge_method=S256`, `scope=openid profile email` and the right `redirect_uri`.
 
 ### Task 9: Rollout
 
-- [ ] Server: `pgrep -x claude` empty, tree clean, `git log` unchanged since branching, otherwise rebase.
-- [ ] `pg_dump` backup, copy `.next`.
-- [ ] `git merge --ff-only feat/talerid-login`, `npm ci` only if the lockfile changed, `prisma migrate deploy`, `prisma generate`, `npm run build`, `pm2 restart poolwatt-web`.
-- [ ] nginx www → apex 308, `nginx -t`, reload.
-- [ ] Verify from outside; human signs in with a real Taler ID; `git push`.
+- [x] Server: `pgrep -x claude` empty, tree clean, `git log` unchanged since branching, otherwise rebase.
+- [x] `pg_dump` backup, copy `.next`.
+- [x] `git merge --ff-only feat/talerid-login`, `npm ci` only if the lockfile changed, `prisma migrate deploy`, `prisma generate`, `npm run build`, `pm2 restart poolwatt-web`.
+- [x] nginx www → apex 308, `nginx -t`, reload.
+- [x] Verify from outside; human signs in with a real Taler ID; `git push`.

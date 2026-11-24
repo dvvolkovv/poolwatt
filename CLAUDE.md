@@ -7,6 +7,45 @@ Poolwatt is the energy-market sibling of
 deliberately the same shape (Next.js 16 + Prisma + Redis + grammy bot + PM2
 under nginx) so patterns learned in either project transfer directly.
 
+## Active assignment: the TZ
+
+The owner wants the whole TZ delivered. It is the default job: "продолжай",
+"дальше", "делай остальное" mean the TZ, not some other plan with open boxes.
+
+- Requirements: `inbox/Poolwatt__ТЗ_на_биржу_листинг_и_платежную_систему.md`
+  (54 sections, 55 user stories), limits in the two legal plans next to it.
+- Progress: `inbox/TZ-STATUS.md`. It is the only source of truth: read it first,
+  update it last. Both stay out of git, because the repo is public: do not copy
+  TZ text into commits, docs or code beyond section and story numbers.
+
+Every run:
+
+1. Take the first block in the tracker that is neither finished nor waiting for
+   the owner. One block per run, or a part of one that can be finished.
+2. Follow the skills: brainstorming → spec → writing-plans → TDD →
+   verification-before-completion. When brainstorming needs the owner, send one
+   message with numbered questions and a recommendation for each, write them to
+   the tracker, and move on to the next unblocked block.
+3. Commit after every green step. A run is killed at `CLAUDE_TIMEOUT_MS` and
+   leaves behind whatever was not committed.
+4. A story is done when every acceptance criterion in the TZ is met through what
+   a person of that role really uses (a page, a notification, a file), checked on
+   a running build. An endpoint without a page is "частично".
+5. Never stand in for the outside world in production: no invented IBANs, cards,
+   KYC results, prices or licences. Build such features behind a switch in
+   `src/lib/exchange/gates.ts` that is closed by default, mark the story
+   "ждёт владельца" and say what is needed. Only the owner opens a switch.
+6. Anything that moves money or energy: `Idempotency-Key`, one transaction, an
+   AuditLog entry, and a test for the concurrent case.
+7. Tests only against the throwaway database (see Known gotchas), and the whole
+   suite with e2e before a deploy.
+8. Tick the boxes of a plan as you go.
+9. Finish with a report: what is done and how it was checked, what is next, what
+   you need from the owner. Audio reports are not committed (`*.mp3` is ignored).
+
+Other Claude sessions deploy from this directory too. Before `git add -A`, look
+at `git status` and leave alone what you did not change.
+
 ## Domain cheat sheet (trientes → Poolwatt)
 
 | trientes                 | Poolwatt                                              |
