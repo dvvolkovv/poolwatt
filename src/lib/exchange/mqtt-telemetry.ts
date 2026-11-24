@@ -7,7 +7,12 @@
 // named in the topic. So a broker that lets anyone publish still cannot forge
 // a reading, and the two intake paths share one authentication rule.
 
-import { authenticateAssetKey } from "./asset-service";
+import { assetKeySigningSecret, authenticateAssetKey } from "./asset-service";
+import {
+  type SignedReading,
+  mqttCanonicalString,
+  verifySignature,
+} from "./equipment-signature";
 import { MAX_READINGS_PER_BATCH, type ReadingPayload, ingestReadings } from "./telemetry-service";
 
 /** Equipment publishes to poolwatt/v1/assets/<assetId>/readings. */
@@ -25,6 +30,11 @@ export class MqttMessageError extends Error {}
 export interface TelemetryMessage {
   key: string;
   readings: ReadingPayload[];
+  /** §15 — `ts` and `sig`, present when the gateway signs its messages. */
+  timestamp: string | null;
+  signature: string | null;
+  /** The readings as the gateway wrote them, which is what it signed. */
+  signed: SignedReading[];
 }
 
 /**
@@ -60,6 +70,7 @@ export function parseTelemetryMessage(raw: Buffer | string): TelemetryMessage {
     );
   }
 
+  const signed: SignedReading[] = [];
   const readings: ReadingPayload[] = list.map((item, i) => {
     if (typeof item !== "object" || item === null) {
       throw new MqttMessageError(`Reading ${i} is not an object`);
@@ -74,6 +85,9 @@ export function parseTelemetryMessage(raw: Buffer | string): TelemetryMessage {
       throw new MqttMessageError(`Reading ${i} has no numeric energyKwh`);
     }
     const expected = r.expectedKwh ?? r.expected_kwh;
+    // The signature covers the interval exactly as written on the wire, so it
+    // is remembered before the epoch form is normalised away.
+    signed.push({ intervalStart: String(intervalStart), energyKwh });
     return {
       intervalStart: typeof intervalStart === "number"
         ? new Date(intervalStart).toISOString()
@@ -83,7 +97,14 @@ export function parseTelemetryMessage(raw: Buffer | string): TelemetryMessage {
     };
   });
 
-  return { key, readings };
+  const ts = record.ts ?? record.timestamp;
+  return {
+    key,
+    readings,
+    signed,
+    timestamp: ts == null ? null : String(ts),
+    signature: typeof record.sig === "string" ? record.sig : null,
+  };
 }
 
 export type MqttIntakeResult =
@@ -118,6 +139,24 @@ export async function handleTelemetryMessage(args: {
     // The key is real but belongs to a different asset: someone is publishing
     // on a topic they do not own.
     return { status: "rejected", reason: "Telemetry key does not belong to this asset" };
+  }
+
+  // §15 — a key issued with a signing secret must sign. The broker is
+  // anonymous transport, so this is the only thing standing between a reading
+  // and anyone who can publish to the topic.
+  const secret = assetKeySigningSecret(key);
+  if (secret) {
+    const verdict = verifySignature({
+      secret,
+      signature: message.signature,
+      timestamp: message.timestamp,
+      canonical: mqttCanonicalString({
+        timestamp: message.timestamp ?? "",
+        topic: args.topic,
+        readings: message.signed,
+      }),
+    });
+    if (!verdict.ok) return { status: "rejected", reason: verdict.reason };
   }
 
   try {

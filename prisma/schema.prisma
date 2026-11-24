@@ -1059,6 +1059,11 @@ model AssetApiKey {
   label      String?
   tokenHash  String    @unique
   prefix     String // first chars of the plaintext, for display
+  // §15 HMAC signing secret, sealed with API_KEY_ENC_KEY (src/lib/crypto-box.ts).
+  // Null on keys issued before signing existed, or where no key is configured:
+  // those keep working unsigned until they are rotated.
+  signingSecretEnc String?
+  signingSecretIv  String?
   createdAt  DateTime  @default(now())
   lastUsedAt DateTime?
   revokedAt  DateTime?

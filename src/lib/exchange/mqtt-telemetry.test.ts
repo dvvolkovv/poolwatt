@@ -1,9 +1,11 @@
 // MQTT telemetry intake — ТЗ §4, §12 US-03.
 
 import { Prisma } from "@prisma/client";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { issueAssetKey, revokeAssetKey } from "./asset-service";
+import { mqttCanonicalString, signCanonical } from "./equipment-signature";
 import {
   MqttMessageError,
   handleTelemetryMessage,
@@ -33,6 +35,10 @@ async function cleanup() {
 }
 
 beforeAll(async () => {
+  // These cases cover the path of a key issued before §15 signing existed, or
+  // on a deployment that cannot hold a secret: no secret, no signature asked.
+  // The signed path has its own describe below.
+  vi.stubEnv("API_KEY_ENC_KEY", "");
   await cleanup();
   const owner = await prisma.user.create({
     data: { username: PREFIX + "owner", passwordHash: "x" },
@@ -218,5 +224,110 @@ describe("handleTelemetryMessage — US-03", () => {
     expect(again).toMatchObject({ status: "ingested", accepted: 0, minted: 0 });
     expect(await prisma.meterReading.count({ where: { assetId } })).toBe(1);
     expect(await prisma.energyToken.count({ where: { assetId } })).toBe(1);
+  });
+});
+
+// §15 — "API-ключи с подписью HMAC для оборудования". A key issued on a
+// deployment that can hold a signing secret must sign every message; the
+// broker itself authenticates nobody.
+describe("handleTelemetryMessage with a signing secret — §15", () => {
+  let signedKey: string;
+  let secret: string;
+  let signedAssetId: string;
+
+  beforeAll(async () => {
+    vi.stubEnv("API_KEY_ENC_KEY", randomBytes(32).toString("base64"));
+    const asset = await prisma.asset.create({
+      data: {
+        companyId,
+        kind: "SOLAR",
+        name: PREFIX + "signed",
+        capacityKw: new Prisma.Decimal(20),
+        gridZoneId: zoneId,
+        status: "ACTIVE",
+        activatedAt: new Date("2026-01-01T00:00:00.000Z"),
+      },
+    });
+    signedAssetId = asset.id;
+    const issued = await issueAssetKey({
+      assetId: signedAssetId,
+      actorUserId: PREFIX + "owner",
+    });
+    signedKey = issued.plaintext;
+    expect(issued.signingSecret).toBeTruthy();
+    secret = issued.signingSecret as string;
+  });
+
+  afterAll(async () => {
+    await prisma.energyToken.deleteMany({ where: { assetId: signedAssetId } });
+    await prisma.meterReading.deleteMany({ where: { assetId: signedAssetId } });
+    await prisma.assetApiKey.deleteMany({ where: { assetId: signedAssetId } });
+    await prisma.asset.delete({ where: { id: signedAssetId } });
+    vi.unstubAllEnvs();
+  });
+
+  beforeEach(async () => {
+    await prisma.energyToken.deleteMany({ where: { assetId: signedAssetId } });
+    await prisma.meterReading.deleteMany({ where: { assetId: signedAssetId } });
+  });
+
+  function message(energyKwh: number, atSeconds = Math.floor(Date.now() / 1000)) {
+    const readings = [{ intervalStart: INTERVAL, energyKwh }];
+    const sig = signCanonical(
+      secret,
+      mqttCanonicalString({
+        timestamp: atSeconds,
+        topic: topic(signedAssetId),
+        readings: readings.map((r) => ({ intervalStart: r.intervalStart, energyKwh: r.energyKwh })),
+      }),
+    );
+    return { key: signedKey, readings, ts: atSeconds, sig };
+  }
+
+  const send = (payload: unknown) =>
+    handleTelemetryMessage({ topic: topic(signedAssetId), payload: JSON.stringify(payload) });
+
+  it("accepts a correctly signed message", async () => {
+    const result = await send(message(3.75));
+    expect(result).toMatchObject({ status: "ingested", accepted: 1, mintedKwh: 3.75 });
+  });
+
+  it("refuses an unsigned message once the key signs", async () => {
+    const result = await send({ key: signedKey, readings: [{ intervalStart: INTERVAL, energyKwh: 3.75 }] });
+    expect(result).toEqual({
+      status: "rejected",
+      reason: "Missing X-Poolwatt-Signature header",
+    });
+    expect(await prisma.meterReading.count({ where: { assetId: signedAssetId } })).toBe(0);
+  });
+
+  it("refuses a message whose kWh were edited after signing", async () => {
+    const payload = message(3.75);
+    const result = await send({ ...payload, readings: [{ intervalStart: INTERVAL, energyKwh: 37.5 }] });
+    expect(result).toEqual({ status: "rejected", reason: "Signature does not match" });
+    expect(await prisma.meterReading.count({ where: { assetId: signedAssetId } })).toBe(0);
+  });
+
+  it("refuses a signature replayed from yesterday", async () => {
+    const yesterday = Math.floor(Date.now() / 1000) - 24 * 60 * 60;
+    const result = await send(message(3.75, yesterday));
+    expect(result.status).toBe("rejected");
+    expect(await prisma.meterReading.count({ where: { assetId: signedAssetId } })).toBe(0);
+  });
+
+  it("refuses a signature made with someone else's secret", async () => {
+    const payload = message(3.75);
+    const result = await send({
+      ...payload,
+      sig: signCanonical(
+        "pws_not_the_real_secret",
+        mqttCanonicalString({
+          timestamp: payload.ts,
+          topic: topic(signedAssetId),
+          readings: [{ intervalStart: INTERVAL, energyKwh: 3.75 }],
+        }),
+      ),
+    });
+    expect(result).toEqual({ status: "rejected", reason: "Signature does not match" });
   });
 });

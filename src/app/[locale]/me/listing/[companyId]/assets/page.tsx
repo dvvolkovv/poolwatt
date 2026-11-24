@@ -109,6 +109,7 @@ export default async function AssetsPage({
                   label: k.label,
                   lastUsedAt: stamp(k.lastUsedAt),
                   revokedAt: stamp(k.revokedAt),
+                  signs: k.signingSecretEnc !== null,
                 }))}
                 labels={{
                   keys: t("assets.keys"),
@@ -122,6 +123,10 @@ export default async function AssetsPage({
                   lastUsed: t("assets.lastUsed"),
                   never: t("assets.never"),
                   keyOnce: t("assets.keyOnce"),
+                  secretOnce: t("assets.secretOnce"),
+                  signing: t("assets.signing"),
+                  signed: t("assets.signed"),
+                  unsigned: t("assets.unsigned"),
                 }}
               />
             </div>

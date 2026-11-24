@@ -19,6 +19,10 @@ export type AssetKeysLabels = {
   lastUsed: string;
   never: string;
   keyOnce: string;
+  secretOnce: string;
+  signing: string;
+  signed: string;
+  unsigned: string;
 };
 
 export type KeyRow = {
@@ -27,6 +31,8 @@ export type KeyRow = {
   label: string | null;
   lastUsedAt: string | null;
   revokedAt: string | null;
+  /** §15 — whether this key signs its requests. */
+  signs: boolean;
 };
 
 export function AssetKeys({
@@ -40,6 +46,7 @@ export function AssetKeys({
 }) {
   const router = useRouter();
   const [plaintext, setPlaintext] = useState<string | null>(null);
+  const [signingSecret, setSigningSecret] = useState<string | null>(null);
   const [label, setLabel] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +62,7 @@ export function AssetKeys({
       return;
     }
     setPlaintext(result.plaintext ?? null);
+    setSigningSecret(result.signingSecret ?? null);
     setLabel("");
     startTransition(() => router.refresh());
   }
@@ -80,6 +88,12 @@ export function AssetKeys({
         <div className="mb-3 rounded border border-accent/60 bg-card p-3">
           <p className="mb-1 text-[12px] text-accent">{labels.keyOnce}</p>
           <code className="num block break-all text-[13px]">{plaintext}</code>
+          {signingSecret && (
+            <>
+              <p className="mb-1 mt-3 text-[12px] text-accent">{labels.secretOnce}</p>
+              <code className="num block break-all text-[13px]">{signingSecret}</code>
+            </>
+          )}
         </div>
       )}
 
@@ -93,6 +107,9 @@ export function AssetKeys({
                 {k.prefix}… {k.label && <span className="text-muted">· {k.label}</span>}
               </span>
               <span className="flex items-center gap-4 text-[12px] text-muted">
+                <span>
+                  {labels.signing}: {k.signs ? labels.signed : labels.unsigned}
+                </span>
                 <span className="num">
                   {labels.lastUsed}: {k.lastUsedAt ?? labels.never}
                 </span>

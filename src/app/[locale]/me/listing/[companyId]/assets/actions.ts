@@ -19,6 +19,8 @@ export type AssetActionResult = {
   assetId?: string;
   /** Returned exactly once, when a key is issued. */
   plaintext?: string;
+  /** §15 signing secret, also exactly once. Null when none was issued. */
+  signingSecret?: string | null;
   fieldErrors?: Record<string, string>;
   formError?: string;
 };
@@ -127,13 +129,13 @@ export async function issueKey(
   if ("error" in guard) return { ok: false, formError: guard.error };
 
   try {
-    const { plaintext } = await issueAssetKey({
+    const { plaintext, signingSecret } = await issueAssetKey({
       assetId,
       label,
       actorUserId: guard.userId,
     });
     refreshAssets();
-    return { ok: true, assetId, plaintext };
+    return { ok: true, assetId, plaintext, signingSecret };
   } catch (err) {
     return { ok: false, formError: err instanceof Error ? err.message : "Key issue failed." };
   }

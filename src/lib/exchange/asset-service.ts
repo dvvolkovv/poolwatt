@@ -3,6 +3,7 @@
 
 import { AssetKind, AssetStatus, KybStatus, Prisma } from "@prisma/client";
 import { createHash, randomBytes } from "node:crypto";
+import { encryptionKeyConfigured, open, seal } from "@/lib/crypto-box";
 import { prisma } from "@/lib/prisma";
 import { type Db, writeAudit } from "./audit";
 import { num } from "./decimal";
@@ -10,6 +11,7 @@ import { probationComplete } from "./minting";
 import { roundKwh } from "./precision";
 
 const KEY_PREFIX = "pwt_";
+const SIGNING_PREFIX = "pws_";
 
 export class AssetError extends Error {}
 
@@ -33,6 +35,23 @@ export function hashAssetKey(plaintext: string): string {
 
 export function looksLikeAssetKey(s: string): boolean {
   return s.startsWith(KEY_PREFIX) && s.length >= KEY_PREFIX.length + 30;
+}
+
+/**
+ * §15 signing secret. Unlike the key itself it has to be recoverable — a
+ * signature is verified by recomputing it — so it is sealed, not hashed.
+ */
+export function generateSigningSecret(): string {
+  return `${SIGNING_PREFIX}${randomBytes(32).toString("base64url")}`;
+}
+
+/** The secret a key signs with, or null when the key predates signing. */
+export function assetKeySigningSecret(key: {
+  signingSecretEnc: string | null;
+  signingSecretIv: string | null;
+}): string | null {
+  if (!key.signingSecretEnc || !key.signingSecretIv) return null;
+  return open(key.signingSecretEnc, key.signingSecretIv);
 }
 
 export interface CreateAssetInput {
@@ -93,18 +112,30 @@ export async function createAsset(input: CreateAssetInput, db: Db = prisma) {
   return asset;
 }
 
-/** POST /v1/assets/{id}/keys — US-03. Plaintext is returned exactly once. */
+/**
+ * POST /v1/assets/{id}/keys — US-03. Both the key and its §15 signing secret
+ * are returned exactly once; neither can be read back afterwards.
+ *
+ * Without `API_KEY_ENC_KEY` the deployment cannot hold a signing secret, so
+ * the key is issued without one and keeps the unsigned path. That is a
+ * deliberate fallback, not a silent downgrade: the cabinet says so.
+ */
 export async function issueAssetKey(
   args: { assetId: string; label?: string | null; actorUserId: string },
   db: Db = prisma,
 ) {
   const { plaintext, hash, prefix } = generateAssetKey();
+  const signingSecret = encryptionKeyConfigured() ? generateSigningSecret() : null;
+  const sealed = signingSecret ? seal(signingSecret) : null;
+
   const key = await db.assetApiKey.create({
     data: {
       assetId: args.assetId,
       label: args.label?.trim() || null,
       tokenHash: hash,
       prefix,
+      signingSecretEnc: sealed?.ciphertext ?? null,
+      signingSecretIv: sealed?.iv ?? null,
     },
   });
   await writeAudit(db, {
@@ -112,9 +143,9 @@ export async function issueAssetKey(
     entity: "AssetApiKey",
     entityId: key.id,
     action: "asset.key.issued",
-    after: { assetId: args.assetId, prefix },
+    after: { assetId: args.assetId, prefix, signed: signingSecret !== null },
   });
-  return { key, plaintext };
+  return { key, plaintext, signingSecret };
 }
 
 export async function revokeAssetKey(

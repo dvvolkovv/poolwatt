@@ -24,7 +24,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (asset.company.ownerUserId !== user.id && user.role !== "ADMIN") return forbidden();
 
   try {
-    const { key, plaintext } = await issueAssetKey({
+    const { key, plaintext, signingSecret } = await issueAssetKey({
       assetId: id,
       label: parsed.data.label ?? null,
       actorUserId: user.id,
@@ -32,8 +32,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return ok(
       {
         key: { id: key.id, prefix: key.prefix, label: key.label },
-        // Shown once — the client must store it now.
+        // Both shown once — the client must store them now (§15).
         plaintext,
+        signingSecret,
       },
       201,
     );

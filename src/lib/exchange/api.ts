@@ -96,14 +96,22 @@ export type Parsed<T> = { data: T } | { response: NextResponse };
 
 /** Parse and validate a JSON body, returning a ready response on failure. */
 export async function parseBody<T>(req: NextRequest, schema: ZodType<T>): Promise<Parsed<T>> {
-  let raw: unknown;
+  return parseRawBody(await req.text(), schema);
+}
+
+/**
+ * Same, from text already read off the request. Signed endpoints need the
+ * exact bytes for the HMAC (§15), and a body can only be read once.
+ */
+export function parseRawBody<T>(raw: string, schema: ZodType<T>): Parsed<T> {
+  let body: unknown;
   try {
-    raw = await req.json();
+    body = JSON.parse(raw);
   } catch {
     return { response: fail("Body must be JSON", 400) };
   }
   try {
-    return { data: schema.parse(raw) };
+    return { data: schema.parse(body) };
   } catch (err) {
     if (err instanceof ZodError) {
       return { response: fail("Invalid body", 422, { issues: err.issues }) };
