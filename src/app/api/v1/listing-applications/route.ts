@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { domainError, forbidden, ok, parseBody, sessionUser, unauthorized } from "@/lib/exchange/api";
 import { MAX_DOCUMENT_BYTES, submitApplication } from "@/lib/exchange/listing-service";
+import { sendListingSubmittedToAdmin } from "@/lib/resend-listing";
 import { prisma } from "@/lib/prisma";
 
 const bodySchema = z.object({
@@ -36,6 +37,13 @@ export async function POST(req: NextRequest) {
       companyId: parsed.data.companyId,
       documents: parsed.data.documents,
       actorUserId: user.id,
+    });
+    await sendListingSubmittedToAdmin({
+      applicationId: application.id,
+      legalName: company.legalName,
+      country: company.country,
+      type: company.type,
+      documents: parsed.data.documents.length,
     });
     return ok(
       {

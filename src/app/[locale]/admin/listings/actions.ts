@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { ListingError, decideApplication } from "@/lib/exchange/listing-service";
+import { sendListingDecisionToOwner } from "@/lib/resend-listing";
 
 export type DecisionResult =
   | { ok: true; status: string; accountId: string | null; promotedAssets: number }
@@ -42,6 +43,13 @@ export async function decideListing(input: unknown): Promise<DecisionResult> {
       approve: parsed.data.approve,
       comment: parsed.data.comment ?? null,
       screeningNote: parsed.data.screeningNote ?? null,
+    });
+    // US-02 — the producer must learn the decision and its comment.
+    await sendListingDecisionToOwner({
+      applicationId: parsed.data.applicationId,
+      ownerUserId: result.ownerUserId,
+      approved: parsed.data.approve,
+      comment: parsed.data.comment ?? null,
     });
     revalidatePath("/[locale]/admin/listings", "page");
     return {

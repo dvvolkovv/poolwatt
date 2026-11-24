@@ -11,6 +11,7 @@ import {
   createCompany,
   decideApplication,
   draftApplicationFor,
+  fetchDocument,
   removeDocument,
   submitApplication,
 } from "./listing-service";
@@ -194,5 +195,73 @@ describe("submitApplication from the draft — US-01", () => {
     const rejected = await prisma.listingApplication.findUniqueOrThrow({ where: { id: draft.id } });
     expect(rejected.status).toBe("REJECTED");
     expect(rejected.decisionComment).toBe("Лицензия просрочена");
+  });
+});
+
+describe("fetchDocument — US-01/US-02 access control", () => {
+  it("serves the file to the company owner and to an operator, nobody else", async () => {
+    const company = await makeCompany();
+    const draft = await draftApplicationFor(company.id);
+    const { document } = await addDocument({
+      applicationId: draft.id, filename: "licence.pdf", bytes: PDF, actorUserId: ownerId,
+    });
+    const stranger = await prisma.user.create({
+      data: { username: PREFIX + "stranger" + seq, passwordHash: "x" },
+    });
+
+    const asOwner = await fetchDocument({
+      applicationId: draft.id, docId: document.docId,
+      user: { id: ownerId, role: "USER" },
+    });
+    expect(asOwner.status).toBe("ok");
+    if (asOwner.status === "ok") {
+      expect(asOwner.bytes.equals(PDF)).toBe(true);
+      expect(asOwner.name).toBe("licence.pdf");
+      expect(asOwner.mime).toBe("application/pdf");
+    }
+
+    const asOperator = await fetchDocument({
+      applicationId: draft.id, docId: document.docId,
+      user: { id: operatorId, role: "ADMIN" },
+    });
+    expect(asOperator.status).toBe("ok");
+
+    const asStranger = await fetchDocument({
+      applicationId: draft.id, docId: document.docId,
+      user: { id: stranger.id, role: "USER" },
+    });
+    expect(asStranger.status).toBe("forbidden");
+  });
+
+  it("is a 404 for an id that is not on this application", async () => {
+    const company = await makeCompany();
+    const draft = await draftApplicationFor(company.id);
+    await addDocument({
+      applicationId: draft.id, filename: "a.pdf", bytes: PDF, actorUserId: ownerId,
+    });
+
+    expect(
+      (await fetchDocument({
+        applicationId: draft.id, docId: "deadbeefdeadbeefdeadbeef",
+        user: { id: ownerId, role: "USER" },
+      })).status,
+    ).toBe("not-found");
+    expect(
+      (await fetchDocument({
+        applicationId: "nosuchapplication", docId: "deadbeef",
+        user: { id: ownerId, role: "USER" },
+      })).status,
+    ).toBe("not-found");
+  });
+
+  it("refuses an anonymous reader", async () => {
+    const company = await makeCompany();
+    const draft = await draftApplicationFor(company.id);
+    const { document } = await addDocument({
+      applicationId: draft.id, filename: "a.pdf", bytes: PDF, actorUserId: ownerId,
+    });
+    expect(
+      (await fetchDocument({ applicationId: draft.id, docId: document.docId, user: null })).status,
+    ).toBe("unauthorized");
   });
 });

@@ -1008,6 +1008,16 @@
         "subject": "The homeowner chose another contractor for request #{id}",
         "body": "The homeowner chose another contractor for build request #{id}.",
         "more": "You'll see new matching requests as they come in."
+      },
+      "listingDecision": {
+        "subject": "Your listing application #{id}: {status}",
+        "body": "The operator has reviewed your listing application #{id}. Decision: {status}.",
+        "comment": "Operator comment: {comment}",
+        "cta": "Open your listing applications"
+      },
+      "listingStatusName": {
+        "APPROVED": "approved",
+        "REJECTED": "rejected"
       }
     }
   }

@@ -20,6 +20,7 @@ import {
   MAX_DOCUMENT_BYTES,
   type StoredDocument,
   deleteDocument,
+  readDocument,
   storeDocument,
 } from "./listing-docs";
 import { openCompanyAccount } from "./settlement-service";
@@ -180,6 +181,47 @@ export async function removeDocument(
   return { ...updated, documents };
 }
 
+export type DocumentFetch =
+  | { status: "ok"; bytes: Buffer; mime: string; name: string }
+  | { status: "unauthorized" }
+  | { status: "forbidden" }
+  | { status: "not-found" };
+
+/**
+ * One document, for the download route. KYB papers are visible to the company
+ * that filed them and to the operator reviewing them (US-02), and to nobody
+ * else — the id alone is not an access grant.
+ */
+export async function fetchDocument(
+  args: {
+    applicationId: string;
+    docId: string;
+    user: { id: string; role: "USER" | "ADMIN" } | null;
+  },
+  db: Db = prisma,
+): Promise<DocumentFetch> {
+  if (!args.user) return { status: "unauthorized" };
+
+  const application = await db.listingApplication.findUnique({
+    where: { id: args.applicationId },
+    select: { id: true, documents: true, company: { select: { ownerUserId: true } } },
+  });
+  if (!application) return { status: "not-found" };
+
+  const isOwner =
+    application.company.ownerUserId !== null &&
+    application.company.ownerUserId === args.user.id;
+  if (!isOwner && args.user.role !== "ADMIN") return { status: "forbidden" };
+
+  const entry = documentsOf(application).find((d) => d.docId === args.docId);
+  if (!entry) return { status: "not-found" };
+
+  const file = await readDocument(application.id, args.docId);
+  if (!file) return { status: "not-found" };
+
+  return { status: "ok", bytes: file.bytes, mime: file.mime, name: entry.name };
+}
+
 /**
  * POST /v1/listing-applications — §14 draft → submitted.
  *
@@ -303,6 +345,12 @@ export async function decideApplication(input: DecisionInput) {
       after: { status: updated.status, comment: updated.decisionComment, accountId, promotedAssets },
     });
 
-    return { application: updated, accountId, promotedAssets };
+    // The caller sends the decision mail after the transaction commits.
+    return {
+      application: updated,
+      accountId,
+      promotedAssets,
+      ownerUserId: application.company.ownerUserId,
+    };
   });
 }

@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { domainError, forbidden, ok, operatorUser, parseBody } from "@/lib/exchange/api";
 import { decideApplication } from "@/lib/exchange/listing-service";
+import { sendListingDecisionToOwner } from "@/lib/resend-listing";
 
 const bodySchema = z
   .object({
@@ -32,6 +33,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       approve: parsed.data.approve,
       comment: parsed.data.comment ?? null,
       screeningNote: parsed.data.screeningNote ?? null,
+    });
+    await sendListingDecisionToOwner({
+      applicationId: id,
+      ownerUserId: result.ownerUserId,
+      approved: parsed.data.approve,
+      comment: parsed.data.comment ?? null,
     });
     return ok({
       application: {

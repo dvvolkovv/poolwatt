@@ -1008,6 +1008,16 @@
         "subject": "Pri žiadosti #{id} bol vybraný iný zhotoviteľ",
         "body": "Majiteľ domu vybral pri žiadosti #{id} iného zhotoviteľa.",
         "more": "Nové vhodné žiadosti sa zobrazia vo vašom kabinete."
+      },
+      "listingDecision": {
+        "subject": "Vaša žiadosť o listing #{id}: {status}",
+        "body": "Operátor posúdil vašu žiadosť o listing #{id}. Rozhodnutie: {status}.",
+        "comment": "Komentár operátora: {comment}",
+        "cta": "Otvoriť žiadosti o listing"
+      },
+      "listingStatusName": {
+        "APPROVED": "schválená",
+        "REJECTED": "zamietnutá"
       }
     }
   }
