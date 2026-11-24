@@ -1,28 +1,11 @@
-import { Resend } from "resend";
-
-const FROM = "Poolwatt <noreply@poolwatt.com>";
-
-let cachedClient: Resend | null = null;
-function client(): Resend | null {
-  if (cachedClient) return cachedClient;
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  cachedClient = new Resend(key);
-  return cachedClient;
-}
+import { sendEmail } from "@/lib/email";
 
 export async function sendClaimVerificationEmail(
   email: string,
   code: string,
   displayName: string,
 ): Promise<void> {
-  const c = client();
-  if (!c) {
-    console.log(`[resend stub] would send claim code to ${email}: ${code} (for ${displayName})`);
-    return;
-  }
-  await c.emails.send({
-    from: FROM,
+  await sendEmail({
     to: email,
     subject: `Poolwatt — verification code for ${displayName}`,
     html: `

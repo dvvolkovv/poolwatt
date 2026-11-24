@@ -1,32 +1,13 @@
-// Resend integration for email verification + password reset. Lives in a
-// dedicated module so the rest of the app doesn't import the SDK; missing
-// RESEND_API_KEY is handled here, not at every call-site. When the env var
-// is empty the helpers log to console and resolve successfully — useful for
-// local development without a real key.
+// Email verification + password reset messages. Transport (SMTP / Resend /
+// dev stub) lives in email.ts; these helpers throw when a mail can't be sent.
 
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 
-const FROM = "Poolwatt <noreply@poolwatt.com>";
 const BASE = process.env.NEXTAUTH_URL ?? "https://poolwatt.com";
-
-let cachedClient: Resend | null = null;
-function client(): Resend | null {
-  if (cachedClient) return cachedClient;
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  cachedClient = new Resend(key);
-  return cachedClient;
-}
 
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
   const url = `${BASE}/verify-email?token=${token}`;
-  const c = client();
-  if (!c) {
-    console.log(`[resend stub] would send verification to ${email}: ${url}`);
-    return;
-  }
-  await c.emails.send({
-    from: FROM,
+  await sendEmail({
     to: email,
     subject: "Подтвердите email для Poolwatt",
     html: `
@@ -40,13 +21,7 @@ export async function sendVerificationEmail(email: string, token: string): Promi
 
 export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
   const url = `${BASE}/reset-password?token=${token}`;
-  const c = client();
-  if (!c) {
-    console.log(`[resend stub] would send password reset to ${email}: ${url}`);
-    return;
-  }
-  await c.emails.send({
-    from: FROM,
+  await sendEmail({
     to: email,
     subject: "Сброс пароля Poolwatt",
     html: `

@@ -1,18 +1,8 @@
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import type { BuildRequestStatus } from "@prisma/client";
 
-const FROM = "Poolwatt <noreply@poolwatt.com>";
 const BASE = process.env.NEXTAUTH_URL ?? "https://poolwatt.com";
-
-let cachedClient: Resend | null = null;
-function client(): Resend | null {
-  if (cachedClient) return cachedClient;
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  cachedClient = new Resend(key);
-  return cachedClient;
-}
 
 export type AdminNotification = {
   id: string;
@@ -28,17 +18,11 @@ export async function sendBuildRequestNewToAdmin(req: AdminNotification): Promis
     return;
   }
 
-  const c = client();
   const kw = typeof req.peakKw === "number" ? req.peakKw : req.peakKw.toNumber();
   const url = `${BASE}/admin/build-requests/${req.id}`;
   const shortId = req.id.slice(0, 8);
 
-  if (!c) {
-    console.log(`[resend stub] new build request ${shortId} → ${to}: ${url}`);
-    return;
-  }
-  await c.emails.send({
-    from: FROM,
+  await sendEmail({
     to,
     subject: `[Poolwatt] New build request #${shortId} — ${req.source} ${kw}kW, ${req.country}`,
     html: `
@@ -62,16 +46,10 @@ export async function sendBuildRequestStatusChangedToOwner(
     return;  // silent skip — owner has no verified email
   }
 
-  const c = client();
   const url = `${BASE}/me/build-requests/${requestId}`;
   const shortId = requestId.slice(0, 8);
 
-  if (!c) {
-    console.log(`[resend stub] status change ${shortId} → ${newStatus} for ${owner.email}: ${url}`);
-    return;
-  }
-  await c.emails.send({
-    from: FROM,
+  await sendEmail({
     to: owner.email,
     subject: `[Poolwatt] Your build request #${shortId} is now ${newStatus}`,
     html: `

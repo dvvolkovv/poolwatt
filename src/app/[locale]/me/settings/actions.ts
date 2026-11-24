@@ -54,13 +54,12 @@ export async function addOrChangeEmailAction(
     },
   });
 
-  // Send the email if Resend is provisioned. Without RESEND_API_KEY we log
-  // the link so devs can still test in staging; the user sees the same UX.
   try {
     const { sendVerificationEmail } = await import("@/lib/resend");
     await sendVerificationEmail(parsed.data.email, token);
   } catch (err) {
     console.error("[settings] verification-email send failed:", err);
+    return { formError: "Не удалось отправить письмо. Попробуйте позже." };
   }
 
   return { ok: true };

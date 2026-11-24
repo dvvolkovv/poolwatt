@@ -76,6 +76,11 @@ export async function submitClaim(input: SubmitClaimInput): Promise<SubmitClaimR
     },
   });
 
-  await sendClaimVerificationEmail(input.email, token, entity.displayName);
+  try {
+    await sendClaimVerificationEmail(input.email, token, entity.displayName);
+  } catch (err) {
+    console.error("[claim] verification-email send failed:", err);
+    return { ok: false, formError: "Could not send the email. Please try again later." };
+  }
   return { ok: true };
 }

@@ -1,17 +1,7 @@
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
-const FROM = "Poolwatt <noreply@poolwatt.com>";
 const BASE = process.env.NEXTAUTH_URL ?? "https://poolwatt.com";
-
-let cachedClient: Resend | null = null;
-function client(): Resend | null {
-  if (cachedClient) return cachedClient;
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  cachedClient = new Resend(key);
-  return cachedClient;
-}
 
 export type InterestExpressedPayload = {
   claimId: string;
@@ -29,13 +19,7 @@ export async function sendInterestExpressedToOwner(p: InterestExpressedPayload):
 
   const url = `${BASE}/en/me/build-requests/${p.buildRequestId}`;
   const shortId = p.buildRequestId.slice(0, 8);
-  const c = client();
-  if (!c) {
-    console.log(`[resend stub] interest expressed by ${p.contractorName} on BR ${shortId} → ${owner.email}: ${url}`);
-    return;
-  }
-  await c.emails.send({
-    from: FROM,
+  await sendEmail({
     to: owner.email,
     subject: `[Poolwatt] ${p.contractorName} is interested in your build request #${shortId}`,
     html: `
@@ -86,13 +70,7 @@ export async function sendClaimAcceptedToContractor(p: ClaimAcceptedPayload): Pr
   const url = `${BASE}/en/me/contractor/${p.contractorId}/requests`;
   const hw = claim.buildRequest.user;
 
-  const cli = client();
-  if (!cli) {
-    console.log(`[resend stub] claim ${p.claimId} ACCEPTED — contact ${owner.email}`);
-    return;
-  }
-  await cli.emails.send({
-    from: FROM,
+  await sendEmail({
     to: owner.email,
     subject: `[Poolwatt] Your interest in request #${shortId} was accepted — contact details inside`,
     html: `
@@ -137,13 +115,7 @@ export async function sendClaimRejectedToContractor(p: ClaimRejectedPayload): Pr
   if (!owner?.email || !owner.emailVerified) return;
 
   const shortId = p.buildRequestId.slice(0, 8);
-  const cli = client();
-  if (!cli) {
-    console.log(`[resend stub] claim ${p.claimId} REJECTED → ${owner.email}`);
-    return;
-  }
-  await cli.emails.send({
-    from: FROM,
+  await sendEmail({
     to: owner.email,
     subject: `[Poolwatt] Homeowner chose another contractor for request #${shortId}`,
     html: `

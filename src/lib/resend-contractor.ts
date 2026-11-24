@@ -1,18 +1,8 @@
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import type { ContractorStatus } from "@prisma/client";
 
-const FROM = "Poolwatt <noreply@poolwatt.com>";
 const BASE = process.env.NEXTAUTH_URL ?? "https://poolwatt.com";
-
-let cachedClient: Resend | null = null;
-function client(): Resend | null {
-  if (cachedClient) return cachedClient;
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  cachedClient = new Resend(key);
-  return cachedClient;
-}
 
 export type ContractorSummary = {
   id: string;
@@ -30,13 +20,7 @@ export async function sendContractorNewToAdmin(c: ContractorSummary): Promise<vo
   }
   const url = `${BASE}/admin/contractors/${c.id}`;
   const shortId = c.id.slice(0, 8);
-  const r = client();
-  if (!r) {
-    console.log(`[resend stub] new contractor ${shortId} → ${to}: ${url}`);
-    return;
-  }
-  await r.emails.send({
-    from: FROM,
+  await sendEmail({
     to,
     subject: `[Poolwatt] New contractor registration #${shortId} — ${c.displayName}, ${c.country}`,
     html: `
@@ -63,13 +47,7 @@ export async function sendContractorStatusChangedToOwner(
   }
   const url = `${BASE}/me/contractor/${contractorId}`;
   const shortId = contractorId.slice(0, 8);
-  const r = client();
-  if (!r) {
-    console.log(`[resend stub] contractor ${shortId} → ${newStatus} for ${owner.email}: ${url}`);
-    return;
-  }
-  await r.emails.send({
-    from: FROM,
+  await sendEmail({
     to: owner.email,
     subject: `[Poolwatt] Your contractor registration #${shortId} is now ${newStatus}`,
     html: `
@@ -87,13 +65,7 @@ export async function sendContractorWithdrawnToAdmin(c: ContractorSummary): Prom
     return;
   }
   const shortId = c.id.slice(0, 8);
-  const r = client();
-  if (!r) {
-    console.log(`[resend stub] contractor ${shortId} withdrawn → ${to}`);
-    return;
-  }
-  await r.emails.send({
-    from: FROM,
+  await sendEmail({
     to,
     subject: `[Poolwatt] Contractor registration #${shortId} withdrawn`,
     html: `<p>Owner withdrew the registration for <b>${c.displayName}</b> (${c.country}). The DB row has been deleted.</p>`,
