@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { signInWithPassword } from "./login";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -34,11 +35,7 @@ test.afterAll(async () => {
 
 test("owner registers a contractor, admin approves it", async ({ page }) => {
   // Owner logs in
-  await page.goto("/en/login");
-  await page.fill('input[name="username"]', OWNER.username);
-  await page.fill('input[name="password"]', OWNER.password);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/\/en\/me(\/|$)/);
+  await signInWithPassword(page, OWNER);
 
   // Registration form
   await page.goto("/en/me/contractor/new");
@@ -67,11 +64,7 @@ test("owner registers a contractor, admin approves it", async ({ page }) => {
 
   // Switch to admin via clearCookies (Auth.js signout is brittle in tests)
   await page.context().clearCookies();
-  await page.goto("/en/login");
-  await page.fill('input[name="username"]', ADMIN.username);
-  await page.fill('input[name="password"]', ADMIN.password);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/\/en\/me(\/|$)/);
+  await signInWithPassword(page, ADMIN);
 
   // Admin approves
   await page.goto(`/en/admin/contractors/${contractorId}`);

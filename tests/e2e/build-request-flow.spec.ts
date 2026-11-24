@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { signInWithPassword } from "./login";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -29,11 +30,7 @@ test.afterAll(async () => {
 
 test("homeowner files request, admin marks it MATCHED", async ({ page }) => {
   // Owner logs in
-  await page.goto("/en/login");
-  await page.fill('input[name="username"]', OWNER.username);
-  await page.fill('input[name="password"]', OWNER.password);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/\/en\/me(\/|$)/);
+  await signInWithPassword(page, OWNER);
 
   // New request
   await page.goto("/en/me/build-requests/new");
@@ -50,11 +47,7 @@ test("homeowner files request, admin marks it MATCHED", async ({ page }) => {
 
   // Log out (clear cookies — Auth.js signout endpoint requires CSRF flow that's brittle in tests)
   await page.context().clearCookies();
-  await page.goto("/en/login");
-  await page.fill('input[name="username"]', ADMIN.username);
-  await page.fill('input[name="password"]', ADMIN.password);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/\/en\/me(\/|$)/);
+  await signInWithPassword(page, ADMIN);
 
   // Admin detail + status change
   await page.goto(`/en/admin/build-requests/${requestId}`);

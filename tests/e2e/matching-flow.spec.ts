@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { signInWithPassword } from "./login";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -88,11 +89,7 @@ test.afterAll(async () => {
 });
 
 test("contractor expresses interest → homeowner accepts → both see contacts", async ({ page }) => {
-  await page.goto("/en/login");
-  await page.fill('input[name="username"]', CONTRACTOR_USER.username);
-  await page.fill('input[name="password"]', CONTRACTOR_USER.password);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/\/en\/me(\/|$)/);
+  await signInWithPassword(page, CONTRACTOR_USER);
 
   await page.goto(`/en/me/contractor/${contractorId}/requests`);
   await expect(page.locator("text=Available build requests")).toBeVisible();
@@ -104,11 +101,7 @@ test("contractor expresses interest → homeowner accepts → both see contacts"
   await expect(page.locator("text=You expressed interest")).toBeVisible();
 
   await page.context().clearCookies();
-  await page.goto("/en/login");
-  await page.fill('input[name="username"]', HOMEOWNER.username);
-  await page.fill('input[name="password"]', HOMEOWNER.password);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(/\/en\/me(\/|$)/);
+  await signInWithPassword(page, HOMEOWNER);
 
   await page.goto(`/en/me/build-requests/${buildRequestId}`);
   await expect(page.locator("text=Interested contractors")).toBeVisible();
