@@ -168,6 +168,21 @@
       "noAccount": "Prvýkrát tu?",
       "register": "Registrovať sa",
       "forgotPassword": "Zabudli ste heslo?"
+    },
+    "talerId": {
+      "signIn": "Prihlásiť sa cez Taler ID",
+      "continue": "Pokračovať s Taler ID",
+      "pending": "Otvára sa Taler ID…",
+      "noTalerId": "Ešte nemáte Taler ID?",
+      "create": "Stiahnuť aplikáciu",
+      "or": "alebo",
+      "errors": {
+        "cancelled": "Prihlásenie cez Taler ID bolo zrušené.",
+        "emailTaken": "Účet s týmto emailom už existuje. Prihláste sa prezývkou a prepojte Taler ID v nastaveniach.",
+        "taken": "Toto Taler ID je už prepojené s iným účtom Poolwatt.",
+        "alreadyLinked": "Váš účet je už prepojený s iným Taler ID. Najprv ho odpojte.",
+        "failed": "Prihlásenie cez Taler ID sa nepodarilo dokončiť. Skúste to znova v tom istom prehliadači."
+      }
     }
   },
   "cabinet": {
@@ -738,6 +753,23 @@
       "confirmLabel": "Pre potvrdenie napíšte {username}",
       "submit": "Vymazať natrvalo",
       "submitting": "Mazanie…"
+    },
+    "talerId": {
+      "title": "Taler ID",
+      "linked": "Prepojené. Môžete sa prihlasovať cez Taler ID.",
+      "notLinked": "Prepojte Taler ID a prihlasujte sa bez prezývky a hesla.",
+      "link": "Prepojiť Taler ID",
+      "unlink": "Odpojiť",
+      "unlinking": "Odpája sa…",
+      "needsPassword": "Ak chcete odpojiť Taler ID, najprv si nastavte heslo — inak by ste sa nemohli prihlásiť.",
+      "linkedNotice": "Taler ID je prepojené."
+    },
+    "setPassword": {
+      "title": "Nastaviť heslo",
+      "note": "Váš účet zatiaľ nemá heslo. Nastavte si ho, aby ste sa mohli prihlasovať aj prezývkou @{username}.",
+      "newLabel": "Nové heslo",
+      "submit": "Nastaviť heslo",
+      "submitting": "Ukladá sa…"
     }
   },
   "verifyEmail": {

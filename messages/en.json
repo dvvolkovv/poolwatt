@@ -168,6 +168,21 @@
       "noAccount": "First time here?",
       "register": "Register",
       "forgotPassword": "Forgot password?"
+    },
+    "talerId": {
+      "signIn": "Sign in with Taler ID",
+      "continue": "Continue with Taler ID",
+      "pending": "Opening Taler ID…",
+      "noTalerId": "No Taler ID yet?",
+      "create": "Get the app",
+      "or": "or",
+      "errors": {
+        "cancelled": "Sign-in with Taler ID was cancelled.",
+        "emailTaken": "An account with this email already exists. Sign in with your nickname, then link Taler ID in settings.",
+        "taken": "This Taler ID is already linked to another Poolwatt account.",
+        "alreadyLinked": "Your account is already linked to another Taler ID. Unlink it first.",
+        "failed": "Could not finish with Taler ID. Please try again in this same browser."
+      }
     }
   },
   "cabinet": {
@@ -738,6 +753,23 @@
       "confirmLabel": "Type {username} to confirm",
       "submit": "Delete forever",
       "submitting": "Deleting…"
+    },
+    "talerId": {
+      "title": "Taler ID",
+      "linked": "Linked. You can sign in with Taler ID.",
+      "notLinked": "Link Taler ID to sign in without a nickname and password.",
+      "link": "Link Taler ID",
+      "unlink": "Unlink",
+      "unlinking": "Unlinking…",
+      "needsPassword": "To unlink Taler ID, set a password first — otherwise you could not sign in.",
+      "linkedNotice": "Taler ID linked."
+    },
+    "setPassword": {
+      "title": "Set a password",
+      "note": "Your account has no password yet. Set one to also sign in with @{username}.",
+      "newLabel": "New password",
+      "submit": "Set password",
+      "submitting": "Saving…"
     }
   },
   "verifyEmail": {

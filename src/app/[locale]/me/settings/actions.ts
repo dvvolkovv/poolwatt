@@ -7,10 +7,12 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import {
   changePasswordSchema,
+  setPasswordSchema,
   addEmailSchema,
   updatePhoneSchema,
   updateNameSchema,
 } from "@/lib/validation";
+import { TALERID_PROVIDER_ID } from "@/lib/talerid/config";
 
 export type FieldError = { fieldErrors?: Record<string, string>; formError?: string; ok?: boolean };
 
@@ -104,6 +106,54 @@ export async function changePasswordAction(
     data: { passwordHash: newHash },
   });
 
+  return { ok: true };
+}
+
+// Accounts created through Taler ID start without a password. There is no
+// current password to ask for, so the update is conditional on the hash still
+// being null: this can never overwrite an existing password.
+export async function setPasswordAction(
+  _prev: FieldError,
+  formData: FormData,
+): Promise<FieldError> {
+  const session = await auth();
+  if (!session?.user) return { formError: "Не авторизован" };
+
+  const parsed = setPasswordSchema.safeParse({
+    newPassword: String(formData.get("newPassword") ?? ""),
+  });
+  if (!parsed.success) {
+    return { fieldErrors: { newPassword: parsed.error.issues[0].message } };
+  }
+
+  const { count } = await prisma.user.updateMany({
+    where: { id: session.user.id, passwordHash: null },
+    data: { passwordHash: await hashPassword(parsed.data.newPassword) },
+  });
+  if (count === 0) return { formError: "Пароль уже задан" };
+
+  revalidatePath("/[locale]/me/settings", "page");
+  return { ok: true };
+}
+
+// ─── Taler ID ─────────────────────────────────────────────────────────────
+
+export async function unlinkTalerIdAction(): Promise<FieldError> {
+  const session = await auth();
+  if (!session?.user) return { formError: "Не авторизован" };
+
+  // Without a password the link is the only way in. One statement, so the
+  // check and the delete cannot drift apart.
+  const { count } = await prisma.account.deleteMany({
+    where: {
+      userId: session.user.id,
+      provider: TALERID_PROVIDER_ID,
+      user: { passwordHash: { not: null } },
+    },
+  });
+  if (count === 0) return { formError: "password_required" };
+
+  revalidatePath("/[locale]/me/settings", "page");
   return { ok: true };
 }
 

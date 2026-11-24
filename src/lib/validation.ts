@@ -47,6 +47,10 @@ export const changePasswordSchema = z
     path: ["newPassword"],
   });
 
+export const setPasswordSchema = z.object({
+  newPassword: passwordSchema,
+});
+
 export const addEmailSchema = z.object({
   email: emailSchema,
 });

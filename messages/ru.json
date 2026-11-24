@@ -168,6 +168,21 @@
       "noAccount": "Впервые здесь?",
       "register": "Зарегистрироваться",
       "forgotPassword": "Забыли пароль?"
+    },
+    "talerId": {
+      "signIn": "Войти через Taler ID",
+      "continue": "Продолжить с Taler ID",
+      "pending": "Открываем Taler ID…",
+      "noTalerId": "Ещё нет Taler ID?",
+      "create": "Скачать приложение",
+      "or": "или",
+      "errors": {
+        "cancelled": "Вход через Taler ID отменён.",
+        "emailTaken": "Аккаунт с таким email уже есть. Войдите по нику и привяжите Taler ID в настройках.",
+        "taken": "Этот Taler ID уже привязан к другому аккаунту Poolwatt.",
+        "alreadyLinked": "К вашему аккаунту уже привязан другой Taler ID. Сначала отвяжите его.",
+        "failed": "Не удалось завершить вход через Taler ID. Попробуйте ещё раз в этом же браузере."
+      }
     }
   },
   "cabinet": {
@@ -738,6 +753,23 @@
       "confirmLabel": "Введите {username} для подтверждения",
       "submit": "Удалить навсегда",
       "submitting": "Удаление…"
+    },
+    "talerId": {
+      "title": "Taler ID",
+      "linked": "Привязан. Можно входить через Taler ID.",
+      "notLinked": "Привяжите Taler ID, чтобы входить без ника и пароля.",
+      "link": "Привязать Taler ID",
+      "unlink": "Отвязать",
+      "unlinking": "Отвязываем…",
+      "needsPassword": "Чтобы отвязать Taler ID, сначала задайте пароль — иначе вы не сможете войти.",
+      "linkedNotice": "Taler ID привязан."
+    },
+    "setPassword": {
+      "title": "Задать пароль",
+      "note": "У аккаунта пока нет пароля. Задайте его, чтобы входить и по нику @{username}.",
+      "newLabel": "Новый пароль",
+      "submit": "Задать пароль",
+      "submitting": "Сохранение…"
     }
   },
   "verifyEmail": {
