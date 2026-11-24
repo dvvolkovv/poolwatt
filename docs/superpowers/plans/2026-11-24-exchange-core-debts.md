@@ -60,19 +60,19 @@
 
 ## Часть 4. WebSocket-каналы (§15)
 
-- [ ] `src/lib/exchange/realtime.ts`: `publish`, имена каналов, билеты
-      (`issueTicket`, `verifyTicket`) на HMAC от `NEXTAUTH_SECRET`.
-- [ ] Тесты: билет проверяется, просроченный отклоняется, чужой канал
+- [x] `src/lib/exchange/realtime.ts`: `publish`, имена каналов, билеты
+      (`issueTicket`, `verifyTicket`) на HMAC от `AUTH_SECRET`.
+- [x] Тесты: билет проверяется, просроченный отклоняется, чужой канал
       отклоняется, подделанный билет отклоняется.
-- [ ] `realtime/index.ts`: сервер `ws` на 3101, подписка на Redis,
+- [x] `realtime/index.ts`: сервер `ws` на 3101, подписка на Redis,
       рассылка по каналам, пинг каждые 30 с.
-- [ ] `POST /v1/realtime/ticket`.
-- [ ] Публикация из `order-service`, `wallet-service`,
+- [x] `POST /v1/realtime/ticket`.
+- [x] Публикация из `order-service`, `wallet-service`,
       `telemetry-service`; ошибка Redis только в лог.
-- [ ] `src/hooks/use-channel.ts` + подключение в `/me/wallet` (US-17).
-- [ ] PM2 `poolwatt-realtime`, nginx `/ws` с `Upgrade`.
-- [ ] e2e: баланс кошелька меняется без перезагрузки.
-- [ ] Прогон, коммит.
+- [x] `src/hooks/use-channel.ts` + подключение в `/me/wallet` (US-17).
+- [x] PM2 `poolwatt-realtime`, nginx `/ws` с `Upgrade`.
+- [x] e2e: баланс кошелька меняется без перезагрузки.
+- [x] Прогон, коммит.
 
 ## Часть 5. Нагрузочный тест матчинга (§17)
 

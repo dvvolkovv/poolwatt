@@ -18,6 +18,7 @@ import { num, numOrNull } from "./decimal";
 import { DEFAULT_FEE_RATES } from "./fees";
 import type { MatchResult } from "./matching";
 import { isKwhDust, roundKwh, roundMoney } from "./precision";
+import { notifyWallets } from "./realtime-notify";
 import { placeOrder, quoteMarketOrder } from "./order-service";
 import { burnTokens } from "./token-registry";
 import { availableFiat, getOrCreateWallet } from "./wallet-service";
@@ -276,6 +277,9 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       },
     });
   }, { timeout: 20_000 });
+
+  // §15, US-17 — the balance the driver just spent from, on any open page.
+  await notifyWallets([input.userId]);
 
   return {
     paymentId: payment.id,

@@ -13,6 +13,7 @@ import { type Db, writeAudit } from "./audit";
 import { num } from "./decimal";
 import { canMint, splitMint, validateReading } from "./minting";
 import { roundKwh } from "./precision";
+import { notifyTelemetry } from "./realtime-notify";
 import { mintToken } from "./token-registry";
 import { getOrCreateWallet } from "./wallet-service";
 import { intervalEndFor, intervalStartFor } from "./zone-service";
@@ -209,6 +210,17 @@ export async function ingestReadings(
   await prisma.assetApiKey.updateMany({
     where: { assetId: asset.id, revokedAt: null },
     data: { lastUsedAt: new Date() },
+  });
+
+  // §15 — the asset's own channel, plus the owner's balance when kWh were
+  // minted (US-26 "выработку и доход в реальном времени").
+  await notifyTelemetry({
+    assetId: asset.id,
+    ownerUserId: asset.company.ownerUserId,
+    accepted: outcome.accepted,
+    minted: outcome.minted,
+    mintedKwh: outcome.mintedKwh,
+    lastIntervalStart: outcome.results.at(-1)?.intervalStart ?? null,
   });
 
   return outcome;

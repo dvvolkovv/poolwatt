@@ -1167,7 +1167,9 @@
       "receipts": "Doklady",
       "receiptKwh": "kWh",
       "receiptTotal": "Celkom",
-      "issuedAt": "Vydaný"
+      "issuedAt": "Vydaný",
+      "live": "V reálnom čase",
+      "offline": "Bez spojenia — zobrazené zostatky z načítania"
     }
   },
   "emails": {

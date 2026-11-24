@@ -92,6 +92,7 @@ the upstream trientes repo — it almost always does, and porting saves time.
 | Canonical checkout      | `/home/dv/poolwatt/` (push originates here, not laptop) |
 | GitHub origin           | `git@github.com:dvvolkovv/poolwatt.git` (public)        |
 | Telegram bot            | `@poolwattbot` — live under PM2 process `poolwatt-bot`  |
+| PM2 processes           | `poolwatt-web`, `poolwatt-worker`, `poolwatt-realtime`, `poolwatt-bot` — all four in `ecosystem.config.js` |
 | Phase                   | 1 — landing renders mock data; no DB yet                |
 
 ## Deploy & push — "the server IS production"
@@ -166,6 +167,13 @@ ssh dv@77.221.159.163 'pm2 restart poolwatt-bot poolwatt-worker'
 # so `pm2 restart poolwatt-web` alone serves stale code. Curl smoke
 # checks may pass by coincidence (mock and DB data overlap).
 ssh dv@77.221.159.163 'cd ~/poolwatt && npm run build && pm2 restart poolwatt-web'
+
+# §15 WebSocket channels run in their own process (Next.js serves no
+# upgrades). nginx proxies /ws to 127.0.0.1:3101; the process only fans out
+# what the web process publishes on Redis, so restart it after changes to
+# src/lib/exchange/realtime.ts.
+ssh dv@77.221.159.163 'pm2 restart poolwatt-realtime'
+ssh dv@77.221.159.163 'curl -s http://127.0.0.1:3101/health'
 ```
 
 
@@ -252,6 +260,25 @@ and `docs/superpowers/plans/2026-05-25-android-build-pipeline.md`.
 
   Exposing it to real inverters needs TLS on 8883 and per-asset broker
   credentials — the owner's call, not ours.
+
+- **A PM2 process can carry a stale environment forever.** `poolwatt-web`
+  was started by hand long ago in a shell that had `NEXTAUTH_SECRET=CHANGE_ME`,
+  and Next.js never overrides a variable that already exists in
+  `process.env` — so for months the web process signed with `CHANGE_ME`
+  while `.env.local` said otherwise. Nothing broke only because Auth.js v5
+  prefers `AUTH_SECRET`, which was absent from that environment and therefore
+  came from the file. It surfaced when the realtime process started refusing
+  every ticket. All four apps are now defined in `ecosystem.config.js`;
+  start them from there (`pm2 start ecosystem.config.js --only <name>`) and
+  check with `pm2 env <id>` when two processes disagree about a secret.
+  `poolwatt-bot` still holds the stale value — harmless, it signs nothing,
+  and restarting the bot kills the `claude -p` run that is doing the work.
+
+- **Redis is now a running dependency.** `redis-server` on
+  `127.0.0.1:6379` (local only, `protected-mode yes`) carries the §15
+  realtime bus: the web process `PUBLISH`es, `poolwatt-realtime`
+  subscribes to `poolwatt:rt:*` and fans out to browsers. Nothing is
+  stored, so a Redis restart costs at most one missed tick.
 
 - **dotenv + `.env.local`.** Standalone Node entrypoints (`bot/`, `worker/`)
   must explicitly load both files; `import "dotenv/config"` only loads

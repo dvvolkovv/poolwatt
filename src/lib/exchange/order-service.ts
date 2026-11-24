@@ -28,6 +28,7 @@ import {
   matchOrder,
 } from "./matching";
 import { isKwhDust, notional as notionalOf, roundKwh, roundMoney, roundPrice } from "./precision";
+import { notifyOrder, notifyWallets } from "./realtime-notify";
 import { InsufficientTokensError, spendableTokens, transferTokens } from "./token-registry";
 import { getOrCreateWallet } from "./wallet-service";
 import { zoneCorridor } from "./zone-service";
@@ -337,7 +338,26 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
   }
 
   try {
-    return await placeOrderTx(input, amountKwh, limitPrice);
+    const result = await placeOrderTx(input, amountKwh, limitPrice);
+    // §15 — the book, the tape and the balances of everyone filled. After the
+    // commit, and never allowed to fail the order.
+    if (!result.idempotentReplay) {
+      const zone = await prisma.gridZone.findUnique({
+        where: { id: input.zoneId },
+        select: { code: true },
+      });
+      if (zone) {
+        await notifyOrder({
+          zoneCode: zone.code,
+          intervalStart: input.intervalStart ?? null,
+          userId: input.userId,
+          tradeIds: result.tradeIds,
+          filledKwh: result.filledKwh,
+          avgPrice: result.avgPrice,
+        });
+      }
+    }
+    return result;
   } catch (err) {
     // Two concurrent requests with one key: the one that lost the unique
     // index answers with the order the winner created (§15).
@@ -594,6 +614,8 @@ async function placeOrderTx(
 
 /** DELETE /v1/orders/{id} — §14 new / partially_filled → cancelled. */
 export async function cancelOrder(orderId: string, userId: string): Promise<void> {
+  let zoneCode: string | null = null;
+  let intervalStart: Date | null = null;
   await prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { id: orderId },
@@ -627,7 +649,21 @@ export async function cancelOrder(orderId: string, userId: string): Promise<void
       action: "order.cancelled",
       before: { status: order.status, reservedFiat: reserved },
     });
+
+    const zone = await tx.gridZone.findUnique({
+      where: { id: order.zoneId },
+      select: { code: true },
+    });
+    zoneCode = zone?.code ?? null;
+    intervalStart = order.intervalStart;
   });
+
+  // A withdrawn order leaves the book and releases its reserve (§15).
+  if (zoneCode) {
+    await notifyOrder({ zoneCode, intervalStart, userId });
+  } else {
+    await notifyWallets([userId]);
+  }
 }
 
 /** §14 — expire resting orders once their delivery interval starts. */

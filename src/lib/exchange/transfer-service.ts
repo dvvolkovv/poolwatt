@@ -14,6 +14,7 @@ import { num } from "./decimal";
 import { assertTransfersOpen } from "./gates";
 import { shareCooperative } from "./membership";
 import { isKwhDust, roundKwh } from "./precision";
+import { notifyWallets } from "./realtime-notify";
 import { transferTokens } from "./token-registry";
 import { getOrCreateWallet } from "./wallet-service";
 
@@ -133,7 +134,16 @@ export async function transferKwh(input: TransferInput): Promise<TransferResult>
   }
 
   try {
-    return await runTransfer(input, { amount, fromWalletId: fromWallet.id, toWalletId: toWallet.id, recipientName: recipient.username, now });
+    const result = await runTransfer(input, {
+      amount,
+      fromWalletId: fromWallet.id,
+      toWalletId: toWallet.id,
+      recipientName: recipient.username,
+      now,
+    });
+    // §15 — energy moved between two people; both their pages should know.
+    await notifyWallets([input.fromUserId, recipient.id]);
+    return result;
   } catch (err) {
     // Two concurrent requests with one key: the loser of the unique index
     // answers with what the winner did, so the caller sees one transfer.

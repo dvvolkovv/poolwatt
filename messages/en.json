@@ -1167,7 +1167,9 @@
       "receipts": "Receipts",
       "receiptKwh": "kWh",
       "receiptTotal": "Total",
-      "issuedAt": "Issued"
+      "issuedAt": "Issued",
+      "live": "Live",
+      "offline": "Not live — showing the last loaded balances"
     }
   },
   "emails": {

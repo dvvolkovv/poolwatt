@@ -11,6 +11,8 @@ import { publishableIban } from "@/lib/exchange/gates";
 import { roundPrice } from "@/lib/exchange/precision";
 import { readWallets } from "@/lib/exchange/wallet-service";
 import { BuyAheadForm } from "@/components/exchange/buy-ahead-form";
+import { LiveWallets } from "@/components/exchange/live-wallets";
+import { walletChannel } from "@/lib/exchange/realtime";
 
 export const dynamic = "force-dynamic";
 
@@ -76,30 +78,21 @@ export default async function WalletPage({
       {wallets.length === 0 ? (
         <p className="text-sm text-muted mb-8">{t("noWallet")}</p>
       ) : (
-        <div className="space-y-4 mb-10">
-          {wallets.map((w) => (
-            <section key={w.id} className="border border-hairline rounded p-4">
-              <div className="flex items-baseline justify-between mb-3">
-                <span className="text-[12px] uppercase tracking-[0.14em] text-muted">
-                  {t("zone")} {w.zoneCode}
-                </span>
-                <Link
-                  href={`/${locale}/exchange?zone=${w.zoneCode}`}
-                  prefetch={false}
-                  className="text-[12px] underline text-muted hover:text-foreground"
-                >
-                  {w.currency}
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Figure label={t("kwhBalance")} value={`${w.kwhBalance.toFixed(3)}`} unit="kWh" big />
-                <Figure label={t("fiatBalance")} value={w.fiatBalance.toFixed(2)} unit={w.currency} />
-                <Figure label={t("reserved")} value={w.reservedFiat.toFixed(2)} unit={w.currency} />
-                <Figure label={t("available")} value={w.availableFiat.toFixed(2)} unit={w.currency} />
-              </div>
-            </section>
-          ))}
-        </div>
+        // US-17 — the balances keep themselves current over the §15 channel.
+        <LiveWallets
+          initial={wallets}
+          channel={walletChannel(userId)}
+          locale={locale}
+          labels={{
+            zone: t("zone"),
+            kwhBalance: t("kwhBalance"),
+            fiatBalance: t("fiatBalance"),
+            reserved: t("reserved"),
+            available: t("available"),
+            live: t("live"),
+            offline: t("offline"),
+          }}
+        />
       )}
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
