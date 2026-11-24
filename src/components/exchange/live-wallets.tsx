@@ -42,6 +42,15 @@ export function LiveWallets({
   labels: LiveWalletsLabels;
 }) {
   const [wallets, setWallets] = useState(initial);
+  // A purchase refreshes the route, and the server sends fresh balances down
+  // as `initial`. Without this the figures would sit at whatever they were on
+  // first render whenever the channel is down — and US-07 wants the kWh
+  // balance to move straight away, socket or no socket.
+  const [seeded, setSeeded] = useState(initial);
+  if (seeded !== initial) {
+    setSeeded(initial);
+    setWallets(initial);
+  }
 
   const { connected } = useChannel(channel, (event) => {
     if (event.type !== "wallet.updated") return;

@@ -1197,7 +1197,9 @@
       "receiptTotal": "Celkom",
       "issuedAt": "Vydaný",
       "live": "V reálnom čase",
-      "offline": "Bez spojenia — zobrazené zostatky z načítania"
+      "offline": "Bez spojenia — zobrazené zostatky z načítania",
+      "quickBuy": "Jedným kliknutím, za trhovú cenu",
+      "noLiquidity": "nie je v ponuke"
     },
     "ladder": {
       "title": "Intervaly vpred",
@@ -1205,6 +1207,21 @@
       "bid": "Nákup",
       "ask": "Predaj",
       "mine": "Moje"
+    },
+    "receipt": {
+      "eyebrow": "Účtenka",
+      "kindTrade": "Nákup kWh",
+      "kindCharge": "Nabíjanie",
+      "back": "Späť do peňaženky",
+      "issuedAt": "Vydané",
+      "zone": "Zóna",
+      "kwh": "Energia",
+      "price": "Cena",
+      "notional": "Hodnota",
+      "fee": "Poplatok",
+      "total": "Spolu",
+      "reference": "Podklad",
+      "tokens": "Minuté tokeny"
     }
   },
   "emails": {

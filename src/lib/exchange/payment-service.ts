@@ -309,6 +309,72 @@ export async function readReceipt(receiptId: string, db: Db = prisma) {
   });
 }
 
+export interface ReceiptView {
+  id: string;
+  paymentId: string | null;
+  tradeId: string | null;
+  burnedTokenIds: string[];
+  totalKwh: number;
+  totalFiat: number;
+  currency: string;
+  breakdown: unknown;
+  issuedAt: Date;
+}
+
+/**
+ * The receipt as its owner may see it, or null — §46, and US-07's "чек в
+ * истории". A receipt belongs to whoever stood on either leg: the payer of a
+ * charge, or both sides of a trade. The operator sees every one.
+ *
+ * Both the page and GET /v1/receipts/{id} ask this, so the rule is written
+ * once; a receipt is a financial document and "who may read it" is not a
+ * decision to leave to each caller.
+ */
+export async function readReceiptForUser(
+  receiptId: string,
+  userId: string,
+  isOperator: boolean,
+  db: Db = prisma,
+): Promise<ReceiptView | null> {
+  const receipt = await readReceipt(receiptId, db);
+  if (!receipt) return null;
+
+  if (!isOperator) {
+    const wallets = await db.wallet.findMany({
+      where: { ownerUserId: userId },
+      select: { id: true },
+    });
+    const mine = new Set(wallets.map((w) => w.id));
+
+    let owned = receipt.payment ? mine.has(receipt.payment.walletId) : false;
+    if (!owned && receipt.trade) {
+      const trade = await db.trade.findUnique({
+        where: { id: receipt.trade.id },
+        select: {
+          buyOrder: { select: { walletId: true } },
+          sellOrder: { select: { walletId: true } },
+        },
+      });
+      owned = Boolean(
+        trade && (mine.has(trade.buyOrder.walletId) || mine.has(trade.sellOrder.walletId)),
+      );
+    }
+    if (!owned) return null;
+  }
+
+  return {
+    id: receipt.id,
+    paymentId: receipt.paymentId,
+    tradeId: receipt.tradeId,
+    burnedTokenIds: receipt.burnedTokenIds,
+    totalKwh: num(receipt.totalKwh),
+    totalFiat: num(receipt.totalFiat),
+    currency: receipt.currency,
+    breakdown: receipt.breakdown,
+    issuedAt: receipt.issuedAt,
+  };
+}
+
 /** §7 / US-07 — buy kWh ahead at the market price, in one click. */
 export async function buyAhead(args: {
   userId: string;

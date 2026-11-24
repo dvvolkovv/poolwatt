@@ -1197,7 +1197,9 @@
       "receiptTotal": "Total",
       "issuedAt": "Issued",
       "live": "Live",
-      "offline": "Not live — showing the last loaded balances"
+      "offline": "Not live — showing the last loaded balances",
+      "quickBuy": "One click, at the market price",
+      "noLiquidity": "not on offer"
     },
     "ladder": {
       "title": "Intervals ahead",
@@ -1205,6 +1207,21 @@
       "bid": "Bid",
       "ask": "Ask",
       "mine": "Mine"
+    },
+    "receipt": {
+      "eyebrow": "Receipt",
+      "kindTrade": "Purchase of kWh",
+      "kindCharge": "Charging session",
+      "back": "Back to the wallet",
+      "issuedAt": "Issued",
+      "zone": "Zone",
+      "kwh": "Energy",
+      "price": "Price",
+      "notional": "Value",
+      "fee": "Fee",
+      "total": "Total",
+      "reference": "Reference",
+      "tokens": "Tokens spent"
     }
   },
   "emails": {

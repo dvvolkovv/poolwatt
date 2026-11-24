@@ -8,13 +8,17 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
 import { publishableIban } from "@/lib/exchange/gates";
-import { roundPrice } from "@/lib/exchange/precision";
+import { roundMoney, roundPrice } from "@/lib/exchange/precision";
 import { readWallets } from "@/lib/exchange/wallet-service";
+import { quoteMarketOrder } from "@/lib/exchange/order-service";
 import { BuyAheadForm } from "@/components/exchange/buy-ahead-form";
 import { LiveWallets } from "@/components/exchange/live-wallets";
 import { walletChannel } from "@/lib/exchange/realtime";
 
 export const dynamic = "force-dynamic";
+
+/** §22.3 — the amounts the buy screen offers in one click. */
+const QUICK_AMOUNTS = [10, 50, 100];
 
 export default async function WalletPage({
   params,
@@ -70,6 +74,22 @@ export default async function WalletPage({
     ? zones.find((z) => z.id === wallets[0].zoneId) ?? zones[0]
     : zones[0];
 
+  // US-07 "в один клик" — the cost of each quick amount, priced off the live
+  // book before the buyer commits. A zone whose book cannot fill the amount
+  // says so instead of quoting (§16.7).
+  const quotes = await Promise.all(
+    zones.flatMap((zone) =>
+      QUICK_AMOUNTS.map(async (amountKwh) => {
+        const quote = await quoteMarketOrder(zone.id, "BUY", amountKwh);
+        return {
+          zoneId: zone.id,
+          amountKwh,
+          estimate: quote.unavailableKwh > 0 ? null : roundMoney(quote.notional),
+        };
+      }),
+    ),
+  );
+
   return (
     <div>
       <div className="text-[11px] uppercase tracking-[0.18em] text-muted">{t("eyebrow")}</div>
@@ -105,10 +125,13 @@ export default async function WalletPage({
             <BuyAheadForm
               zones={zones.map((z) => ({ id: z.id, code: z.code, currency: z.currency }))}
               defaultZoneId={defaultZone.id}
+              quotes={quotes}
               labels={{
                 amount: t("amount"),
                 limitPrice: t("limitPrice"),
                 buy: t("buy"),
+                quickBuy: t("quickBuy"),
+                noLiquidity: t("noLiquidity"),
               }}
             />
           )}
@@ -168,7 +191,14 @@ export default async function WalletPage({
               {receipts.map((r) => (
                 <tr key={r.id} className="border-b border-hairline">
                   <td className="py-2 num text-muted">
-                    {r.issuedAt.toISOString().slice(0, 16).replace("T", " ")}
+                    {/* US-07 — the receipt is a document, so it opens. */}
+                    <Link
+                      href={`/${locale}/me/wallet/receipts/${r.id}`}
+                      prefetch={false}
+                      className="underline hover:text-foreground"
+                    >
+                      {r.issuedAt.toISOString().slice(0, 16).replace("T", " ")}
+                    </Link>
                   </td>
                   <td>{r.paymentId ? "charge" : "trade"}</td>
                   <td className="text-right num">{num(r.totalKwh).toFixed(3)}</td>
