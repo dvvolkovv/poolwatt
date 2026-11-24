@@ -54,6 +54,9 @@ export default async function CabinetLayout({
               <SidebarLink href={`/${locale}/me/wallet`}>
                 ⚡ {t("wallet")}
               </SidebarLink>
+              <SidebarLink href={`/${locale}/me/listing`}>
+                📄 {t("listing")}
+              </SidebarLink>
               <SidebarLink href={`/${locale}/me/build-requests`}>
                 🔧 {t("buildRequests")}
               </SidebarLink>

@@ -110,7 +110,8 @@ export async function draftApplicationFor(companyId: string, db: Db = prisma) {
   });
 }
 
-function documentsOf(application: { documents: unknown }): ListingDocument[] {
+/** The documents column, typed. Shared by the cabinet, the admin page and the API. */
+export function documentsOf(application: { documents: unknown }): ListingDocument[] {
   return Array.isArray(application.documents) ? (application.documents as ListingDocument[]) : [];
 }
 
