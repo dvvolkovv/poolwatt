@@ -1110,6 +1110,15 @@
       "newLabel": "New password",
       "submit": "Set password",
       "submitting": "Saving…"
+    },
+    "receipts": {
+      "title": "Receipts",
+      "hint": "A receipt is always in your wallet. Choose how else you want it.",
+      "email": "By email",
+      "push": "Push notification",
+      "pushClosed": "not available yet",
+      "submit": "Save",
+      "success": "Saved"
     }
   },
   "verifyEmail": {
@@ -1384,6 +1393,22 @@
         "APPROVED": "approved",
         "REJECTED": "rejected"
       }
+    },
+    "receipt": {
+      "subject": "Poolwatt receipt {number}",
+      "body": "Your receipt for {kind} is ready. It is also in your wallet:",
+      "cta": "Open the receipt",
+      "kindCharge": "a charging session",
+      "kindTrade": "a purchase of kWh",
+      "kindNoShow": "a missed booking",
+      "kindOther": "an operation",
+      "point": "Point",
+      "kwh": "Volume",
+      "total": "Total",
+      "vat": "VAT",
+      "vatNotStated": "not stated by the network",
+      "vatNumber": "VAT no.",
+      "qrHint": "Check this receipt"
     }
   },
   "points": {

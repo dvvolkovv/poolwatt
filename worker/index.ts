@@ -29,6 +29,7 @@ import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/spot-service";
 import { intervalStartFor } from "@/lib/exchange/zone-service";
 import { startTelemetrySubscriber } from "./mqtt";
+import { notifyPendingReceipts } from "@/lib/receipts/receipt-delivery";
 
 function log(...args: unknown[]) {
   console.log(`[worker]`, ...args);
@@ -162,6 +163,16 @@ export async function runAlertSweep(now = new Date()): Promise<void> {
     console.error("[worker] work order notification failed:", err);
   }
 
+  // §46 / US-45 — "чек формируется в течение минуты после зарядки": the
+  // inline attempt happens in the payment path, and this is what makes the
+  // minute hold when that attempt failed.
+  try {
+    const sent = await notifyPendingReceipts();
+    if (sent > 0) log(`receipts: ${sent} delivered`);
+  } catch (err) {
+    console.error("[worker] receipt delivery failed:", err);
+  }
+
   // §35 / US-33 — a booking whose window has closed with nobody there.
   try {
     const closed = await closeExpiredReservations(now);
@@ -222,7 +233,7 @@ async function main() {
   await runIntervalClose();
   await runSpotRefresh();
   log(
-    "schedules registered: interval close + spot apply */5 min, alerts, work orders + reservations every min, spot refresh :10, reconciliation 03:15, idempotency purge 03:40",
+    "schedules registered: interval close + spot apply */5 min, alerts, work orders, receipts + reservations every min, spot refresh :10, reconciliation 03:15, idempotency purge 03:40",
   );
 }
 

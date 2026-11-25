@@ -9,6 +9,8 @@ import { PasswordSection } from "@/components/settings/password-section";
 import { SetPasswordSection } from "@/components/settings/set-password-section";
 import { TalerIdSection } from "@/components/settings/talerid-section";
 import { DangerZone } from "@/components/settings/danger-zone";
+import { ReceiptDeliverySection } from "@/components/settings/receipt-delivery-section";
+import { pushOpen } from "@/lib/exchange/gates";
 import { isTalerIdEnabled, TALERID_PROVIDER_ID } from "@/lib/talerid/config";
 import { talerIdErrorKey } from "@/lib/talerid/errors";
 
@@ -37,6 +39,8 @@ export default async function SettingsPage({
       preferredLocale: true,
       preferredCurrency: true,
       preferredTheme: true,
+      receiptEmail: true,
+      receiptPush: true,
       passwordHash: true,
       accounts: { where: { provider: TALERID_PROVIDER_ID }, select: { id: true } },
     },
@@ -88,6 +92,21 @@ export default async function SettingsPage({
             placeholder: t("phone.placeholder"),
             submit: t("phone.submit"),
             success: t("phone.success"),
+          }}
+        />
+
+        <ReceiptDeliverySection
+          receiptEmail={user.receiptEmail}
+          receiptPush={user.receiptPush}
+          pushAvailable={pushOpen()}
+          labels={{
+            title: t("receipts.title"),
+            hint: t("receipts.hint"),
+            email: t("receipts.email"),
+            push: t("receipts.push"),
+            pushClosed: t("receipts.pushClosed"),
+            submit: t("receipts.submit"),
+            success: t("receipts.success"),
           }}
         />
 

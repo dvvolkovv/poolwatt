@@ -180,6 +180,31 @@ export async function updatePreferencesAction(
   return { ok: true };
 }
 
+// ─── Receipt delivery (§46) ───────────────────────────────────────────────
+
+/**
+ * §46 "Клиент выбирает способ в настройках; по умолчанию только электронный".
+ * An unchecked box is simply absent from a form submit, so both flags are read
+ * as presence — otherwise turning one off could never be saved.
+ */
+export async function updateReceiptDeliveryAction(
+  _prev: FieldError,
+  formData: FormData,
+): Promise<FieldError> {
+  const session = await auth();
+  if (!session?.user) return { formError: "Не авторизован" };
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      receiptEmail: formData.get("receiptEmail") != null,
+      receiptPush: formData.get("receiptPush") != null,
+    },
+  });
+  revalidatePath("/[locale]/me/settings", "page");
+  return { ok: true };
+}
+
 // ─── Phone ────────────────────────────────────────────────────────────────
 
 export async function updatePhoneAction(

@@ -23,6 +23,7 @@ import { placeOrder, quoteMarketOrder } from "./order-service";
 import { burnTokens } from "./token-registry";
 import { availableFiat, getOrCreateWallet } from "./wallet-service";
 import { receiptStamp } from "@/lib/receipts/receipt-number";
+import { deliverReceipt } from "@/lib/receipts/receipt-delivery";
 
 export class PaymentError extends Error {}
 
@@ -282,6 +283,12 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
 
   // §15, US-17 — the balance the driver just spent from, on any open page.
   await notifyWallets([input.userId]);
+
+  // §46, US-45 — "чек формируется в течение минуты". It is already formed;
+  // this tells the driver about it. Not awaited: a slow mail server must not
+  // hold up the response to a charge that has already happened, and whatever
+  // fails here the worker retries within the minute.
+  if (receiptId) void deliverReceipt(receiptId);
 
   return {
     paymentId: payment.id,

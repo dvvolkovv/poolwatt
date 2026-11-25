@@ -1110,6 +1110,15 @@
       "newLabel": "Nové heslo",
       "submit": "Nastaviť heslo",
       "submitting": "Ukladá sa…"
+    },
+    "receipts": {
+      "title": "Doklady",
+      "hint": "Doklad je vždy v peňaženke. Vyberte, ako ho chcete dostávať aj inak.",
+      "email": "E-mailom",
+      "push": "Push notifikácia",
+      "pushClosed": "zatiaľ nedostupné",
+      "submit": "Uložiť",
+      "success": "Uložené"
     }
   },
   "verifyEmail": {
@@ -1384,6 +1393,22 @@
         "APPROVED": "schválená",
         "REJECTED": "zamietnutá"
       }
+    },
+    "receipt": {
+      "subject": "Doklad Poolwatt {number}",
+      "body": "Váš doklad za {kind} je pripravený. Nájdete ho aj v peňaženke:",
+      "cta": "Otvoriť doklad",
+      "kindCharge": "nabíjanie",
+      "kindTrade": "nákup kWh",
+      "kindNoShow": "nevyužitú rezerváciu",
+      "kindOther": "operáciu",
+      "point": "Miesto",
+      "kwh": "Objem",
+      "total": "Celkom",
+      "vat": "DPH",
+      "vatNotStated": "sieť neuviedla sadzbu",
+      "vatNumber": "DIČ",
+      "qrHint": "Skontrolovať doklad"
     }
   },
   "points": {
