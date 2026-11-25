@@ -60,6 +60,17 @@ export default async function CampaignsPage({
 
       <div className="mt-4 text-[11px] uppercase tracking-[0.18em] text-muted">{t("eyebrow")}</div>
       <h1 className="mb-2 text-[28px] font-bold">{t("title")}</h1>
+      {/* §44, US-44 — the numbers behind the campaigns. */}
+      <p className="mb-2 text-[13px]">
+        <Link
+          href={`/${locale}/me/charger-operator/${id}/campaigns/analytics`}
+          prefetch={false}
+          data-testid="analytics-link"
+          className="underline hover:text-accent"
+        >
+          {t("analytics.link")} →
+        </Link>
+      </p>
       <p className="mb-2 text-sm text-muted">{t("intro")}</p>
       {!campaignFiatFundingOpen() && (
         <p className="mb-8 text-[13px] text-muted" data-testid="funding-note">

@@ -1981,6 +1981,29 @@
       "PAUSED": "Pozastavená",
       "EXHAUSTED": "Rozpočet vyčerpaný",
       "ENDED": "Ukončená"
+    },
+    "analytics": {
+      "link": "Výkon kampaní",
+      "eyebrow": "Analytika",
+      "title": "Výkon kampaní",
+      "intro": "Čo kampane priniesli: kto dostal darček, kto prišiel prvýkrát, kto sa vrátil, koľko kWh to stálo a čo tí klienti priniesli. Nižšie — zobrazenia a kliknutia na váš obsah.",
+      "campaigns": "Kampane",
+      "campaign": "Kampaň",
+      "clients": "Klientov",
+      "newClients": "Nových",
+      "returning": "Vrátili sa",
+      "cost": "Na klienta, kWh",
+      "revenue30": "Príjem 30 dní",
+      "revenue90": "Príjem 90 dní",
+      "csv": "Export",
+      "content": "Obsah",
+      "contentNote": "Zobrazenia a kliknutia sa počítajú na obsah siete: systém nemá väzbu medzi kampaňou a obsahom a nevymýšľali sme ju.",
+      "noContent": "Zatiaľ žiadny obsah.",
+      "contentTitle": "Obsah",
+      "impressions": "Zobrazenia",
+      "clicks": "Kliknutia",
+      "videoViews": "Prehrania videa",
+      "ctr": "Kliknutia k zobrazeniam"
     }
   },
   "gifts": {

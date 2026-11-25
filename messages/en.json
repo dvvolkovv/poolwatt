@@ -1981,6 +1981,29 @@
       "PAUSED": "Paused",
       "EXHAUSTED": "Budget spent",
       "ENDED": "Ended"
+    },
+    "analytics": {
+      "link": "Campaign performance",
+      "eyebrow": "Analytics",
+      "title": "Campaign performance",
+      "intro": "What the campaigns did: who got a gift, who came for the first time, who came back, how many kWh it cost and what those clients brought in. Below — shows and clicks on your content.",
+      "campaigns": "Campaigns",
+      "campaign": "Campaign",
+      "clients": "Clients",
+      "newClients": "New",
+      "returning": "Came back",
+      "cost": "Per client, kWh",
+      "revenue30": "Revenue 30 days",
+      "revenue90": "Revenue 90 days",
+      "csv": "Export",
+      "content": "Content",
+      "contentNote": "Shows and clicks are counted per piece of content of the network: the system holds no link between a campaign and a piece of content, and we did not invent one.",
+      "noContent": "No content yet.",
+      "contentTitle": "Content",
+      "impressions": "Shows",
+      "clicks": "Clicks",
+      "videoViews": "Video views",
+      "ctr": "Click-through"
     }
   },
   "gifts": {

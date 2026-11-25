@@ -3,17 +3,31 @@
 // screen a driver sees when a charge ends.
 
 import type { ContentForDisplay } from "@/lib/marketing/visibility";
+import { ContentTracker } from "./content-tracker";
 
 function mediaUrl(assetId: string): string {
   return `/api/v1/marketing/media/${assetId}`;
 }
 
-export function ContentBlock({ content }: { content: ContentForDisplay }) {
+export function ContentBlock({
+  content,
+  pointId,
+}: {
+  content: ContentForDisplay;
+  /** The point card this is shown on, for §44's counters. */
+  pointId?: string | null;
+}) {
   const images = content.assets.filter((a) => a.contentType.startsWith("image/"));
   const video = content.assets.find((a) => a.contentType.startsWith("video/"));
 
   return (
-    <article className="space-y-2" data-testid={`marketing-${content.type.toLowerCase()}`}>
+    <article
+      className="space-y-2"
+      data-content-id={content.id}
+      data-testid={`marketing-${content.type.toLowerCase()}`}
+    >
+      {/* §44, US-44 — one show per block per page view. */}
+      <ContentTracker contentId={content.id} pointId={pointId} />
       {content.type !== "BANNER" && (
         <h3 className="text-[15px] font-semibold">{content.title}</h3>
       )}
@@ -65,9 +79,11 @@ export function ContentBlock({ content }: { content: ContentForDisplay }) {
 export function ContentSection({
   contents,
   heading,
+  pointId,
 }: {
   contents: ContentForDisplay[];
   heading: string;
+  pointId?: string | null;
 }) {
   if (contents.length === 0) return null;
   return (
@@ -75,7 +91,7 @@ export function ContentSection({
       <h2 className="mb-3 text-[11px] uppercase tracking-[0.18em] text-muted">{heading}</h2>
       <div className="space-y-6">
         {contents.map((c) => (
-          <ContentBlock key={c.id} content={c} />
+          <ContentBlock key={c.id} content={c} pointId={pointId} />
         ))}
       </div>
     </section>

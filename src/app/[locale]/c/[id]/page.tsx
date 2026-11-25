@@ -146,7 +146,11 @@ export default async function ChargerDetailPage({
           <p className="mt-2 text-[11px] text-muted">{t("buildRouteHint")}</p>
         </div>
 
-        <ContentSection contents={marketing} heading={tMarketing("sectionHeading")} />
+        <ContentSection
+          contents={marketing}
+          heading={tMarketing("sectionHeading")}
+          pointId={charger.poolwattPointId}
+        />
 
         {policy?.enabled && bookable.length > 0 && (
           <section className="mb-10 max-w-[420px] rounded-lg border border-hairline p-4">
