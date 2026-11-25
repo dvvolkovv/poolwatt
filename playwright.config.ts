@@ -26,6 +26,14 @@ export default defineConfig({
       // ("resolute") yet — see CLAUDE.md gotcha.
       name: "chromium",
       use: { ...devices["Desktop Chrome"], channel: "chrome" },
+      testIgnore: /\.mobile\.spec\.ts$/,
+    },
+    {
+      // §22 is a phone screen: on a desktop viewport the bottom bar and the
+      // safe-area padding never come into play.
+      name: "mobile",
+      use: { ...devices["Pixel 7"], channel: "chrome" },
+      testMatch: /\.mobile\.spec\.ts$/,
     },
   ],
 });

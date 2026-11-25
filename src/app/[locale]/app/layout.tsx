@@ -5,7 +5,6 @@
 import type { Metadata, Viewport } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { auth } from "@/lib/auth";
-import { readUserStatus } from "@/lib/exchange/user-status";
 import { visibleTabs } from "@/lib/mobile/tabs";
 import { TabBar } from "@/components/mobile/tab-bar";
 import { SwRegister } from "@/components/mobile/sw-register";
@@ -39,13 +38,12 @@ export default async function MobileLayout({
   setRequestLocale(locale);
 
   const session = await auth();
-  const status = session?.user ? await readUserStatus(session.user.id) : "GUEST";
 
   return (
     <div className="min-h-screen bg-bg">
       <SwRegister locale={locale} />
       {children}
-      <TabBar tabs={visibleTabs(status)} locale={locale} />
+      <TabBar tabs={visibleTabs(Boolean(session?.user))} locale={locale} />
     </div>
   );
 }

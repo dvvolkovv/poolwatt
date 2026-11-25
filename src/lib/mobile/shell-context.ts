@@ -9,6 +9,8 @@ import { readUserStatus, type UserStatus } from "@/lib/exchange/user-status";
 import { readWallets, type WalletView } from "@/lib/exchange/wallet-service";
 
 export interface ShellContext {
+  /** Always true: the context is only read for a signed-in account. */
+  signedIn: boolean;
   status: UserStatus;
   hasAsset: boolean;
   isCoopMember: boolean;
@@ -38,6 +40,7 @@ export async function readShellContext(userId: string): Promise<ShellContext> {
     wallets.slice().sort((a, b) => b.kwhBalance - a.kwhBalance)[0] ?? null;
 
   return {
+    signedIn: true,
     status,
     hasAsset: Boolean(asset),
     isCoopMember: Boolean(member),

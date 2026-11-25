@@ -2,12 +2,12 @@ import { describe, it, expect } from "vitest";
 import { visibleTabs, moreSections } from "./tabs";
 
 describe("visibleTabs — §20", () => {
-  it("shows a guest only the map, the main screen and the profile", () => {
-    expect(visibleTabs("GUEST")).toEqual(["home", "charge", "profile"]);
+  it("shows a visitor only the map, the main screen and the profile", () => {
+    expect(visibleTabs(false)).toEqual(["home", "charge", "profile"]);
   });
 
-  it("gives a consumer the wallet and the hub", () => {
-    expect(visibleTabs("CONSUMER")).toEqual([
+  it("gives a signed-in account the wallet and the hub", () => {
+    expect(visibleTabs(true)).toEqual([
       "home",
       "wallet",
       "charge",
@@ -17,34 +17,33 @@ describe("visibleTabs — §20", () => {
   });
 
   it("never offers more than five tabs", () => {
-    for (const status of ["GUEST", "CONSUMER", "PROSUMER", "COOP_MEMBER"] as const) {
-      expect(visibleTabs(status).length).toBeLessThanOrEqual(5);
-    }
+    expect(visibleTabs(true).length).toBeLessThanOrEqual(5);
+    expect(visibleTabs(false).length).toBeLessThanOrEqual(5);
   });
 });
 
 describe("moreSections — §22", () => {
-  it("offers a guest nothing: every section needs KYC", () => {
+  it("offers a visitor nothing: every section needs an account", () => {
     expect(
-      moreSections({ status: "GUEST", hasAsset: false, isCoopMember: false }),
+      moreSections({ signedIn: false, hasAsset: false, isCoopMember: false }),
     ).toEqual([]);
   });
 
-  it("offers a consumer the account, the card, contacts and roaming", () => {
+  it("offers a plain account the account, the card, contacts and roaming", () => {
     expect(
-      moreSections({ status: "CONSUMER", hasAsset: false, isCoopMember: false }),
+      moreSections({ signedIn: true, hasAsset: false, isCoopMember: false }),
     ).toEqual(["account", "card", "contacts", "roaming"]);
   });
 
   it("puts the station first for a prosumer", () => {
     expect(
-      moreSections({ status: "PROSUMER", hasAsset: true, isCoopMember: false })[0],
+      moreSections({ signedIn: true, hasAsset: true, isCoopMember: false })[0],
     ).toBe("station");
   });
 
   it("keeps both the station and the cooperative for a member who produces", () => {
     const sections = moreSections({
-      status: "COOP_MEMBER",
+      signedIn: true,
       hasAsset: true,
       isCoopMember: true,
     });
@@ -54,7 +53,7 @@ describe("moreSections — §22", () => {
 
   it("gives a member without a station no station section", () => {
     expect(
-      moreSections({ status: "COOP_MEMBER", hasAsset: false, isCoopMember: true }),
+      moreSections({ signedIn: true, hasAsset: false, isCoopMember: true }),
     ).not.toContain("station");
   });
 });
