@@ -2144,5 +2144,55 @@
       "paymentMethods": "Spôsoby platby",
       "currency": "Valuta"
     }
+  },
+  "pipeline": {
+    "eyebrow": "Rozvoj",
+    "title": "Lievik nových miest",
+    "intro": "Sedem etáp, ktorými miesto prejde, kým sa stane stanicou. Každá karta nesie zodpovednú osobu a termín; prehraný lead si kartu aj dôvod ponechá, pretože lievik bez strát nič nemeria.",
+    "new": "Miesto, ktoré niekto našiel",
+    "create": "Pridať do lievika",
+    "nobody": "zatiaľ nikto",
+    "overdue": "termín prešiel",
+    "moveTo": "Etapa",
+    "comment": "Komentár",
+    "send": "Pridať",
+    "lost": "Prehraté",
+    "lostWhy": "Prečo prehraté",
+    "reopen": "Späť na tabuľu",
+    "remove": "Zmazať lead",
+    "notes": "komentárov",
+    "documents": "dokumentov",
+    "save": "Uložiť",
+    "emptyColumn": "nič tu nie je",
+    "totalOpen": "V procese",
+    "totalOverdue": "Po termíne",
+    "totalPublished": "Zverejnené",
+    "totalLost": "Prehraté",
+    "lostTitle": "Prehraté",
+    "lostHelp": "Uchované zámerne: pomer medzi stĺpcami je jediné, čo lievik meria.",
+    "cabinetLink": "Lievik",
+    "docsTitle": "Dokumenty a komentáre",
+    "upload": "Pridať dokument",
+    "uploadHint": "PDF, JPEG alebo PNG, do 20 MB. Zmluva o nájme nie je verejný súbor: otvoriť ju môže len vaša sieť.",
+    "noDocuments": "Zatiaľ žiadne dokumenty.",
+    "noNotes": "Zatiaľ žiadne komentáre.",
+    "dropDocument": "Odobrať",
+    "field": {
+      "title": "Miesto",
+      "city": "Mesto",
+      "country": "Krajina",
+      "address": "Adresa",
+      "owner": "Zodpovedný",
+      "due": "Termín"
+    },
+    "stage": {
+      "SCOUTING": "Hľadanie miesta",
+      "NEGOTIATION": "Vyjednávanie",
+      "CONTRACT": "Zmluva",
+      "DESIGN": "Projekt a súhlasy",
+      "INSTALLATION": "Montáž",
+      "COMMISSIONING": "Pripojenie a test",
+      "PUBLISHED": "Zverejnenie"
+    }
   }
 }

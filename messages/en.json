@@ -2144,5 +2144,55 @@
       "paymentMethods": "Payment methods",
       "currency": "Currency"
     }
+  },
+  "pipeline": {
+    "eyebrow": "Development",
+    "title": "New points funnel",
+    "intro": "The seven stages a place goes through before it is a station. Each card carries the person answerable and the date it is due; a lost lead keeps its card and its reason, because a funnel without its losses measures nothing.",
+    "new": "A place somebody spotted",
+    "create": "Add to the funnel",
+    "nobody": "nobody yet",
+    "overdue": "overdue",
+    "moveTo": "Stage",
+    "comment": "Comment",
+    "send": "Add",
+    "lost": "Lost",
+    "lostWhy": "Why it was lost",
+    "reopen": "Back on the board",
+    "remove": "Delete the lead",
+    "notes": "notes",
+    "documents": "documents",
+    "save": "Save",
+    "emptyColumn": "nothing here",
+    "totalOpen": "In flight",
+    "totalOverdue": "Overdue",
+    "totalPublished": "Published",
+    "totalLost": "Lost",
+    "lostTitle": "Lost",
+    "lostHelp": "Kept on purpose: the ratio between the columns is the only thing a funnel measures.",
+    "cabinetLink": "Funnel",
+    "docsTitle": "Documents and comments",
+    "upload": "Add a document",
+    "uploadHint": "PDF, JPEG or PNG, up to 20 MB. A lease or a grid agreement is not a public file: only your network can open it.",
+    "noDocuments": "No documents yet.",
+    "noNotes": "No comments yet.",
+    "dropDocument": "Remove",
+    "field": {
+      "title": "Place",
+      "city": "City",
+      "country": "Country",
+      "address": "Address",
+      "owner": "Answerable",
+      "due": "Due"
+    },
+    "stage": {
+      "SCOUTING": "Scouting",
+      "NEGOTIATION": "Negotiation",
+      "CONTRACT": "Contract",
+      "DESIGN": "Design and grid consent",
+      "INSTALLATION": "Installation",
+      "COMMISSIONING": "Commissioning and test",
+      "PUBLISHED": "Published"
+    }
   }
 }

@@ -231,6 +231,7 @@ model ChargerOperator {
   subpartnersAsHead SubpartnerAgreement[] @relation("SubpartnerHead")
   subpartnerOf      SubpartnerAgreement[] @relation("SubpartnerSub")
   pointTemplates    PointTemplate[]
+  siteLeads         SiteLead[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -314,6 +315,7 @@ model AcceptancePoint {
   reservations Reservation[]
   payments     Payment[]
   policy       ReservationPolicy?
+  SiteLead     SiteLead?
 
   @@index([operatorId, status])
   @@index([status, latitude, longitude])
@@ -467,6 +469,8 @@ model Employee {
   updatedAt  DateTime        @updatedAt
 
   workOrders WorkOrder[] @relation("WorkOrderAssignee")
+  // §48 — the leads this person is answerable for.
+  siteLeads  SiteLead[]
 
   @@unique([operatorId, userId])
   @@index([userId])
@@ -2548,4 +2552,96 @@ model PointTemplate {
 
   @@unique([operatorId, name])
   @@index([operatorId, updatedAt])
+}
+
+// ---------------------------------------------------------------------------
+// §48 "Воронка развития сети" / US-51 — "Канбан по этапам с ответственными и
+// сроками."
+//
+// A lead is a place that might become a point. The seven stages are §48's own
+// words, in §48's order, and a lead that reaches PUBLISHED carries the id of
+// the point it became — so the funnel can be read against reality rather than
+// against somebody's optimism.
+// ---------------------------------------------------------------------------
+
+model SiteLead {
+  id         String          @id @default(cuid())
+  operatorId String
+  operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  title       String
+  country     String?
+  city        String?
+  addressLine String?
+  latitude    Float?
+  longitude   Float?
+
+  stage           LeadStage @default(SCOUTING)
+  // §48 "На каждом этапе ответственный, срок". The person answerable is an
+  // employee of the network (§47), so the scope rules already apply to them.
+  ownerEmployeeId String?
+  ownerEmployee   Employee? @relation(fields: [ownerEmployeeId], references: [id], onDelete: SetNull)
+  dueAt           DateTime?
+
+  // Where the lead sits inside its column, so a board can be reordered.
+  position Int @default(0)
+
+  // The point it became, once it did. Null for everything still in flight.
+  pointId String?          @unique
+  point   AcceptancePoint? @relation(fields: [pointId], references: [id], onDelete: SetNull)
+
+  // Dropped leads stay on the board's history: a funnel without its losses
+  // measures nothing.
+  lostAt     DateTime?
+  lostReason String?
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  notes     LeadNote[]
+  documents LeadDocument[]
+
+  @@index([operatorId, stage, position])
+  @@index([operatorId, dueAt])
+}
+
+// §48 "комментарии".
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      SiteLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorId  String?
+  text      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+// §48 "документы". The bytes live outside the web root, like the KYB papers
+// of §4: a lease or a grid agreement is not a public file.
+model LeadDocument {
+  id           String   @id @default(cuid())
+  leadId       String
+  lead         SiteLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  name         String
+  storageKey   String   @unique
+  contentType  String
+  sizeBytes    Int
+  uploadedById String?
+  uploadedAt   DateTime @default(now())
+
+  @@index([leadId, uploadedAt])
+}
+
+// §48 — "поиск места → переговоры → договор → проект и согласования с сетью →
+// монтаж → подключение и тест → публикация".
+enum LeadStage {
+  SCOUTING
+  NEGOTIATION
+  CONTRACT
+  DESIGN
+  INSTALLATION
+  COMMISSIONING
+  PUBLISHED
 }
