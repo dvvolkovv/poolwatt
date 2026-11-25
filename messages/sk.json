@@ -2037,5 +2037,67 @@
       "year": "rok"
     },
     "nav": "Tarifné plány"
+  },
+  "bookingsReport": {
+    "eyebrow": "Rezervácie",
+    "title": "Rezervácie a neúčasti",
+    "intro": "Rezervácia sa počíta v deň, na ktorý bola, nie v deň, kedy vznikla. Peniaze sú tie, ktoré hovorí samotná rezervácia: zmena podmienok neprepíše uzavretý mesiac.",
+    "totals": "Za mesiac",
+    "byDay": "Po dňoch",
+    "byPoint": "Podľa miesta",
+    "empty": "V tomto mesiaci neboli rezervácie.",
+    "date": "Deň",
+    "booked": "Rezervácie",
+    "fulfilled": "Nabili sa",
+    "noShow": "Neúčasti",
+    "noShowPct": "Podiel neúčastí",
+    "cancelled": "Zrušené",
+    "feeFiat": "Poplatky",
+    "penaltyFiat": "Pokuty",
+    "refundFiat": "Vrátené",
+    "netFiat": "Zostalo",
+    "cabinetLink": "Správa o rezerváciách"
+  },
+  "coop": {
+    "eyebrow": "Kooperatíva",
+    "listTitle": "Vaše kooperatívy",
+    "listIntro": "Podiely, príjem a hlasovania o tom, kde bude ďalší akumulátor.",
+    "noMemberships": "Nie ste členom kooperatívy. Členstvo udeľuje samotná kooperatíva.",
+    "shares": "podielov",
+    "share": "Váš podiel",
+    "sharesHelp": "Príjem sa delí podľa podielov; v hlasovaní má každý člen jeden hlas bez ohľadu na podiely.",
+    "openVotes": "čakajú na váš hlas",
+    "incomeToDate": "Príjem celkom",
+    "pending": "Ešte nevyplatené",
+    "incomeForPeriod": "Príjem za obdobie",
+    "payoutCount": "výplat",
+    "payoutHistory": "História výplat",
+    "noPayouts": "Zatiaľ žiadne výplaty.",
+    "paid": "vyplatené",
+    "notPaid": "ešte nevyplatené",
+    "votes": "Hlasovania",
+    "votesHelp": "Jeden člen, jeden hlas. Výsledok sa zobrazí až po uzavretí hlasovania — dovtedy ho nevidí nikto, ani vy. Hlasovania otvára a zatvára operátor Poolwatt: predstavenstvo kooperatívy v systéme zatiaľ nie je.",
+    "noVotes": "Zatiaľ žiadne hlasovania.",
+    "cast": "Hlasovať",
+    "change": "Zmeniť hlas",
+    "yourVote": "váš hlas",
+    "noScoreYet": "Výsledok sa zobrazí po uzavretí hlasovania.",
+    "closesOn": "zatvára sa",
+    "closedOn": "zatvorené",
+    "winner": "vybrané",
+    "votesCast": "podaných hlasov",
+    "youVoted": "hlasovali ste za",
+    "meLink": "Kooperatíva",
+    "period": {
+      "month": "Tento mesiac",
+      "year": "Tento rok",
+      "all": "Celé obdobie"
+    },
+    "status": {
+      "PENDING": "Členstvo sa posudzuje",
+      "ACTIVE": "Člen",
+      "SUSPENDED": "Pozastavené",
+      "LEFT": "Odišiel"
+    }
   }
 }

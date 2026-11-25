@@ -382,3 +382,150 @@ export async function readVoteOutcome(voteId: string, db: Db = prisma): Promise<
   );
   return { voteId: vote.id, ...result };
 }
+
+export interface MyCooperative {
+  coopId: string;
+  coopName: string;
+  zoneCode: string;
+  currency: string;
+  memberStatus: string;
+  shares: number;
+  sharePercent: number | null;
+  /** Open votes the member has not answered yet — the reason to open the page. */
+  openVotes: number;
+}
+
+/** US-10 — the cooperatives this person is in. Empty is an answer, not a fault. */
+export async function readMyCooperatives(
+  userId: string,
+  db: Db = prisma,
+): Promise<MyCooperative[]> {
+  const memberships = await db.coopMember.findMany({
+    where: { userId },
+    orderBy: { joinedAt: "asc" },
+    include: {
+      coop: { include: { zone: { select: { code: true, currency: true } } } },
+    },
+  });
+  if (memberships.length === 0) return [];
+
+  const coopIds = memberships.map((m) => m.coopId);
+  const activeMembers = await db.coopMember.findMany({
+    where: { coopId: { in: coopIds }, status: "ACTIVE" },
+    select: { coopId: true, shares: true },
+  });
+  const totals = new Map<string, number>();
+  for (const m of activeMembers) {
+    totals.set(m.coopId, (totals.get(m.coopId) ?? 0) + Math.max(0, m.shares));
+  }
+
+  const now = new Date();
+  return Promise.all(
+    memberships.map(async (m) => ({
+      coopId: m.coopId,
+      coopName: m.coop.name,
+      zoneCode: m.coop.zone.code,
+      currency: m.coop.zone.currency,
+      memberStatus: m.status,
+      shares: m.shares,
+      sharePercent: sharePercent(m.shares, totals.get(m.coopId) ?? 0),
+      openVotes: await db.coopVote.count({
+        where: {
+          coopId: m.coopId,
+          status: "OPEN",
+          closesAt: { gt: now },
+          ballots: { none: { memberId: m.id } },
+        },
+      }),
+    })),
+  );
+}
+
+export interface MemberVoteView {
+  id: string;
+  question: string;
+  options: string[];
+  status: string;
+  closesAt: Date;
+  closedAt: Date | null;
+  /** The option this member chose, if they have. */
+  myOption: string | null;
+  /** US-21 — null while the vote is open: nobody sees the score early. */
+  result: VoteOutcome | null;
+}
+
+/**
+ * US-21 — the votes of one cooperative as a member sees them.
+ *
+ * While a vote is open there is no tally and no sight of anybody else's
+ * ballot: the last member to vote must not be able to read the outcome off
+ * the page before deciding.
+ */
+export async function readMemberVotes(
+  coopId: string,
+  userId: string,
+  db: Db = prisma,
+): Promise<MemberVoteView[]> {
+  const member = await db.coopMember.findUnique({
+    where: { coopId_userId: { coopId, userId } },
+    select: { id: true },
+  });
+
+  const votes = await db.coopVote.findMany({
+    where: { coopId },
+    orderBy: [{ status: "asc" }, { closesAt: "desc" }],
+    take: 50,
+    include: member
+      ? { ballots: { where: { memberId: member.id }, select: { option: true } } }
+      : undefined,
+  });
+
+  return Promise.all(
+    votes.map(async (vote) => ({
+      id: vote.id,
+      question: vote.question,
+      options: vote.options,
+      status: vote.status,
+      closesAt: vote.closesAt,
+      closedAt: vote.closedAt,
+      myOption:
+        "ballots" in vote && Array.isArray(vote.ballots) ? (vote.ballots[0]?.option ?? null) : null,
+      result: vote.status === "CLOSED" ? await readVoteOutcome(vote.id, db) : null,
+    })),
+  );
+}
+
+/**
+ * US-10 — "доход за период". An allocation belongs to the period of its
+ * payout, not to the day it was processed: income for March is income for
+ * March even if the board approved it in May.
+ */
+export async function readIncomeForPeriod(
+  coopId: string,
+  userId: string,
+  from: Date,
+  to: Date,
+  db: Db = prisma,
+): Promise<{ amount: number; payouts: number; currency: string } | null> {
+  const member = await db.coopMember.findUnique({
+    where: { coopId_userId: { coopId, userId } },
+    include: { coop: { include: { zone: { select: { currency: true } } } } },
+  });
+  if (!member) return null;
+
+  const allocations = await db.coopPayoutAllocation.findMany({
+    where: {
+      memberId: member.id,
+      // Overlapping the window, so a payout spanning a month boundary counts
+      // in both months rather than vanishing from one.
+      payout: { periodStart: { lt: to }, periodEnd: { gt: from } },
+    },
+    select: { amount: true },
+  });
+
+  return {
+    amount: roundMoney(allocations.reduce((sum, a) => sum + num(a.amount), 0)),
+    payouts: allocations.length,
+    currency: member.coop.zone.currency,
+  };
+}

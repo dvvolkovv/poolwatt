@@ -12,6 +12,7 @@ import { transfersOpen } from "@/lib/exchange/gates";
 import { readOrderBook } from "@/lib/exchange/order-service";
 import { readUserStatus } from "@/lib/exchange/user-status";
 import { readWallets } from "@/lib/exchange/wallet-service";
+import { readMyCooperatives } from "@/lib/exchange/coop-service";
 import { intervalStartFor } from "@/lib/exchange/zone-service";
 import { walletChannel } from "@/lib/exchange/realtime";
 import { LiveBalanceSummary } from "@/components/exchange/live-balance-summary";
@@ -31,8 +32,14 @@ export default async function MainScreen({
   const userId = session.user.id;
 
   const t = await getTranslations("cabinet.home");
+  const tCoop = await getTranslations("coop");
 
-  const [wallets, status] = await Promise.all([readWallets(userId), readUserStatus(userId)]);
+  const [wallets, status, coops] = await Promise.all([
+    readWallets(userId),
+    readUserStatus(userId),
+    // US-10 — a member had no way into their own shares and votes.
+    readMyCooperatives(userId),
+  ]);
 
   // §22.2 "текущая цена кВт·ч в зоне" — of the zone the wallet is in, for the
   // interval trading right now.
@@ -94,6 +101,31 @@ export default async function MainScreen({
         <Action href={`/${locale}/navigator`} label={t("actions.charge")} />
         <ActionClosed label={t("actions.topUp")} hint={t("actions.topUpClosed")} />
       </section>
+
+      {coops.length > 0 && (
+        <section className="mt-8" data-testid="me-coop">
+          <Link
+            href={`/${locale}/me/coop`}
+            prefetch={false}
+            className="text-[13px] underline hover:text-accent"
+          >
+            {tCoop("listTitle")} →
+          </Link>
+          <span className="ml-2 text-[12px] text-muted">
+            <span className="num">{coops.reduce((n, c) => n + c.shares, 0)}</span>{" "}
+            {tCoop("shares")}
+            {coops.some((c) => c.openVotes > 0) && (
+              <span className="text-accent">
+                {" · "}
+                <span className="num">
+                  {coops.reduce((n, c) => n + c.openVotes, 0)}
+                </span>{" "}
+                {tCoop("openVotes")}
+              </span>
+            )}
+          </span>
+        </section>
+      )}
     </div>
   );
 }

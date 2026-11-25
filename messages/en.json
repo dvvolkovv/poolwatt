@@ -2037,5 +2037,67 @@
       "year": "year"
     },
     "nav": "Fee plans"
+  },
+  "bookingsReport": {
+    "eyebrow": "Bookings",
+    "title": "Bookings and no-shows",
+    "intro": "A booking counts on the day it was for, not the day it was made. The money is what each booking itself says: changing your terms does not rewrite a month that is closed.",
+    "totals": "The month",
+    "byDay": "By day",
+    "byPoint": "By point",
+    "empty": "No bookings in this month.",
+    "date": "Day",
+    "booked": "Booked",
+    "fulfilled": "Charged",
+    "noShow": "No-shows",
+    "noShowPct": "No-show rate",
+    "cancelled": "Cancelled",
+    "feeFiat": "Fees",
+    "penaltyFiat": "Penalties",
+    "refundFiat": "Refunded",
+    "netFiat": "Kept",
+    "cabinetLink": "Bookings report"
+  },
+  "coop": {
+    "eyebrow": "Cooperative",
+    "listTitle": "Your cooperatives",
+    "listIntro": "Shares, income and the votes on where the next battery goes.",
+    "noMemberships": "You are not a member of a cooperative. Membership is granted by the cooperative itself.",
+    "shares": "shares",
+    "share": "Your share",
+    "sharesHelp": "Income is split by shares; a vote is one member, one vote, whatever the shares.",
+    "openVotes": "waiting for your vote",
+    "incomeToDate": "Income to date",
+    "pending": "Not yet paid",
+    "incomeForPeriod": "Income for a period",
+    "payoutCount": "payouts",
+    "payoutHistory": "Payout history",
+    "noPayouts": "No payouts yet.",
+    "paid": "paid",
+    "notPaid": "not paid yet",
+    "votes": "Votes",
+    "votesHelp": "One member, one vote. The score appears only once the vote closes — until then nobody, including you, can read the outcome early. Votes are opened and closed by the Poolwatt operator: the cooperative's board is not in the system yet.",
+    "noVotes": "No votes yet.",
+    "cast": "Vote",
+    "change": "Change my vote",
+    "yourVote": "your vote",
+    "noScoreYet": "The score appears after the vote closes.",
+    "closesOn": "closes",
+    "closedOn": "closed",
+    "winner": "chosen",
+    "votesCast": "votes cast",
+    "youVoted": "you voted for",
+    "meLink": "Cooperative",
+    "period": {
+      "month": "This month",
+      "year": "This year",
+      "all": "All time"
+    },
+    "status": {
+      "PENDING": "Membership pending",
+      "ACTIVE": "Member",
+      "SUSPENDED": "Suspended",
+      "LEFT": "Left"
+    }
   }
 }
