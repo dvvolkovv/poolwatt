@@ -1967,6 +1967,17 @@
       "RESERVATION_POLICY": "Booking terms",
       "SALE_RULES": "Sale rules",
       "SUBPARTNER_FEE": "Subpartner commission"
+    },
+    "subpartners": "Franchisees",
+    "subpartnersHelp": "A percentage of what is earned at a franchisee's points, taken after the platform's own commission. Both sides see the same number in their books.",
+    "noSubpartners": "No franchisees.",
+    "youPay": "{network} takes",
+    "switchedOff": "switched off",
+    "saveSubpartner": "Save",
+    "field": {
+      "subpartner": "Franchisee",
+      "subpartnerPct": "Commission %",
+      "note": "Note"
     }
   },
   "feePlans": {

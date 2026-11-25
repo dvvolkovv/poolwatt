@@ -1967,6 +1967,17 @@
       "RESERVATION_POLICY": "Podmienky rezervácie",
       "SALE_RULES": "Pravidlá predaja",
       "SUBPARTNER_FEE": "Provízia subpartnerovi"
+    },
+    "subpartners": "Franšízanti",
+    "subpartnersHelp": "Percento z toho, čo sa zarobí na miestach franšízanta, sa берie po provízii platformy. Obe strany vidia v účtovníctve rovnaké číslo.",
+    "noSubpartners": "Žiadni franšízanti.",
+    "youPay": "{network} si berie",
+    "switchedOff": "vypnuté",
+    "saveSubpartner": "Uložiť",
+    "field": {
+      "subpartner": "Franšízant",
+      "subpartnerPct": "Provízia, %",
+      "note": "Poznámka"
     }
   },
   "feePlans": {

@@ -11,6 +11,8 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { readPricingOverview } from "@/lib/pricing/pricing-overview";
+import { readSubpartners } from "@/lib/pricing/subpartner-service";
+import { SubpartnerForm } from "@/components/pricing/subpartner-form";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +49,18 @@ export default async function PricingPage({
   if (operator.claimedById !== session.user.id) notFound();
 
   const t = await getTranslations("pricing");
-  const overview = await readPricingOverview(id);
+  const [overview, subpartners, otherNetworks] = await Promise.all([
+    readPricingOverview(id),
+    readSubpartners(id),
+    // §52 — only networks somebody has claimed can be a franchisee: an
+    // unclaimed OpenStreetMap operator has nobody to agree with.
+    prisma.chargerOperator.findMany({
+      where: { claimedById: { not: null }, id: { not: id } },
+      orderBy: { displayName: "asc" },
+      take: 300,
+      select: { id: true, displayName: true },
+    }),
+  ]);
 
   return (
     <div className="max-w-4xl">
@@ -170,6 +183,54 @@ export default async function PricingPage({
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="mb-10">
+        <h2 className="mb-3 text-[13px] uppercase tracking-[0.14em] text-muted">
+          {t("subpartners")}
+        </h2>
+
+        {subpartners.asSub.length > 0 && (
+          <ul className="mb-4 text-sm" data-testid="subpartner-of">
+            {subpartners.asSub.map((a) => (
+              <li key={a.id} className="text-muted">
+                {t("youPay", { network: a.partnerName })}{" "}
+                <span className="num">{a.chargeFeePct}</span>%
+                {!a.active && ` · ${t("switchedOff")}`}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {subpartners.asHead.length === 0 ? (
+          <p className="mb-4 text-sm text-muted">{t("noSubpartners")}</p>
+        ) : (
+          <ul className="mb-4 divide-y divide-hairline text-sm" data-testid="subpartner-list">
+            {subpartners.asHead.map((a) => (
+              <li key={a.id} className="flex flex-wrap items-baseline justify-between gap-3 py-2">
+                <span>{a.partnerName}</span>
+                <span className="text-[12px] text-muted">
+                  <span className="num">{a.chargeFeePct}</span>%
+                  {!a.active && ` · ${t("switchedOff")}`}
+                  {a.note ? ` · ${a.note}` : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <SubpartnerForm
+          headId={id}
+          networks={otherNetworks}
+          labels={{
+            network: t("field.subpartner"),
+            pct: t("field.subpartnerPct"),
+            note: t("field.note"),
+            save: t("saveSubpartner"),
+            help: t("subpartnersHelp"),
+            none: "—",
+          }}
+        />
       </section>
 
       <section>
