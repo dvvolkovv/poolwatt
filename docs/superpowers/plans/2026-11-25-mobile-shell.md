@@ -51,7 +51,7 @@ Prisma, Vitest, Playwright (Pixel 7 device project), Capacitor 7.
 - Create: `src/lib/mobile/tabs.ts`
 - Test: `src/lib/mobile/tabs.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 // src/lib/mobile/tabs.test.ts
@@ -111,7 +111,7 @@ describe("moreSections — §22", () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 ```bash
 cd ~/poolwatt
@@ -120,7 +120,7 @@ NODE_ENV=test npx vitest run src/lib/mobile/tabs.test.ts
 
 Expected: `Failed to resolve import "./tabs"`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 ```ts
 // src/lib/mobile/tabs.ts
@@ -178,7 +178,7 @@ export const SECTION_HREF: Record<MobileSection, string> = {
 };
 ```
 
-- [ ] **Step 4: Run it and watch it pass**
+- [x] **Step 4: Run it and watch it pass**
 
 ```bash
 NODE_ENV=test npx vitest run src/lib/mobile/tabs.test.ts
@@ -186,7 +186,7 @@ NODE_ENV=test npx vitest run src/lib/mobile/tabs.test.ts
 
 Expected: 8 passed.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/mobile/tabs.ts src/lib/mobile/tabs.test.ts
@@ -204,7 +204,7 @@ No test of its own: it is three Prisma reads and a call into
 `readUserStatus`, which `user-status.test.ts` already covers. The e2e run in
 Task 9 is what proves it wired up.
 
-- [ ] **Step 1: Write it**
+- [x] **Step 1: Write it**
 
 ```ts
 // src/lib/mobile/shell-context.ts
@@ -257,7 +257,7 @@ export async function readShellContext(userId: string): Promise<ShellContext> {
 }
 ```
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 ```bash
 npx tsc --noEmit
@@ -266,7 +266,7 @@ npx tsc --noEmit
 Expected: no errors. If `num` rejects a plain number, drop the call and
 return `totalKwh` as is — the figure is formatted at render time.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/mobile/shell-context.ts
@@ -281,7 +281,7 @@ git commit -m "feat(mobile): one read for the shell — status, flags, balances"
 - Create: `src/components/mobile/chrome-gate.tsx`
 - Modify: `src/app/[locale]/layout.tsx`
 
-- [ ] **Step 1: Write the gate**
+- [x] **Step 1: Write the gate**
 
 ```tsx
 // src/components/mobile/chrome-gate.tsx
@@ -302,7 +302,7 @@ export function ChromeGate({ children }: { children: React.ReactNode }) {
 }
 ```
 
-- [ ] **Step 2: Wire it into the locale layout**
+- [x] **Step 2: Wire it into the locale layout**
 
 Replace the returned tree in `src/app/[locale]/layout.tsx` with:
 
@@ -324,7 +324,7 @@ Replace the returned tree in `src/app/[locale]/layout.tsx` with:
 
 and add the import `import { ChromeGate } from "@/components/mobile/chrome-gate";`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/mobile/chrome-gate.tsx src/app/\[locale\]/layout.tsx
@@ -338,7 +338,7 @@ git commit -m "feat(mobile): the site chrome steps aside under /app"
 **Files:**
 - Modify: `messages/en.json`, `messages/ru.json`, `messages/sk.json`
 
-- [ ] **Step 1: Add the `app` namespace to `messages/en.json`**
+- [x] **Step 1: Add the `app` namespace to `messages/en.json`**
 
 Insert at the top level (the file is one JSON object; keep the existing keys):
 
@@ -396,7 +396,7 @@ Insert at the top level (the file is one JSON object; keep the existing keys):
   },
 ```
 
-- [ ] **Step 2: Translate into `messages/ru.json`**
+- [x] **Step 2: Translate into `messages/ru.json`**
 
 ```json
   "app": {
@@ -452,7 +452,7 @@ Insert at the top level (the file is one JSON object; keep the existing keys):
   },
 ```
 
-- [ ] **Step 3: Translate into `messages/sk.json`**
+- [x] **Step 3: Translate into `messages/sk.json`**
 
 ```json
   "app": {
@@ -508,7 +508,7 @@ Insert at the top level (the file is one JSON object; keep the existing keys):
   },
 ```
 
-- [ ] **Step 4: Check the three files still parse**
+- [x] **Step 4: Check the three files still parse**
 
 ```bash
 for f in en ru sk; do node -e "JSON.parse(require('fs').readFileSync('messages/$f.json','utf8'));console.log('$f ok')"; done
@@ -516,7 +516,7 @@ for f in en ru sk; do node -e "JSON.parse(require('fs').readFileSync('messages/$
 
 Expected: `en ok`, `ru ok`, `sk ok`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add messages/en.json messages/ru.json messages/sk.json
@@ -532,7 +532,7 @@ git commit -m "i18n(mobile): the app namespace in en, ru and sk"
 - Create: `src/components/mobile/screen.tsx`
 - Create: `src/app/[locale]/app/layout.tsx`
 
-- [ ] **Step 1: Write the bar**
+- [x] **Step 1: Write the bar**
 
 ```tsx
 // src/components/mobile/tab-bar.tsx
@@ -590,7 +590,7 @@ export function TabBar({ tabs, locale }: { tabs: MobileTab[]; locale: string }) 
 }
 ```
 
-- [ ] **Step 2: Write the screen frame**
+- [x] **Step 2: Write the screen frame**
 
 ```tsx
 // src/components/mobile/screen.tsx
@@ -629,7 +629,7 @@ export function Screen({
 }
 ```
 
-- [ ] **Step 3: Write the layout**
+- [x] **Step 3: Write the layout**
 
 ```tsx
 // src/app/[locale]/app/layout.tsx
@@ -682,7 +682,7 @@ export default async function MobileLayout({
 }
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/components/mobile/tab-bar.tsx src/components/mobile/screen.tsx \
@@ -700,7 +700,7 @@ git commit -m "feat(mobile): the shell and its bottom bar"
 - Create: `src/components/mobile/balance-cache.tsx`
 - Create: `src/app/[locale]/app/offline/page.tsx`
 
-- [ ] **Step 1: Make the icons from the existing mark**
+- [x] **Step 1: Make the icons from the existing mark**
 
 ```bash
 cd ~/poolwatt
@@ -716,7 +716,7 @@ file public/icon-192.png public/icon-512.png
 
 Expected: both reported as `PNG image data, 192 x 192` and `512 x 512`.
 
-- [ ] **Step 2: Write the manifest**
+- [x] **Step 2: Write the manifest**
 
 ```json
 {
@@ -736,7 +736,7 @@ Expected: both reported as `PNG image data, 192 x 192` and `512 x 512`.
 }
 ```
 
-- [ ] **Step 3: Write the service worker**
+- [x] **Step 3: Write the service worker**
 
 ```js
 // public/sw.js
@@ -803,7 +803,7 @@ self.addEventListener("fetch", (event) => {
 });
 ```
 
-- [ ] **Step 4: Write the registration and the balance cache**
+- [x] **Step 4: Write the registration and the balance cache**
 
 ```tsx
 // src/components/mobile/sw-register.tsx
@@ -856,7 +856,7 @@ export function BalanceCache(props: Omit<CachedBalance, "at">) {
 }
 ```
 
-- [ ] **Step 5: Write the offline screen**
+- [x] **Step 5: Write the offline screen**
 
 ```tsx
 // src/app/[locale]/app/offline/page.tsx
@@ -945,7 +945,7 @@ export function OfflineBalance({
 }
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add public/manifest.webmanifest public/sw.js public/icon-192.png public/icon-512.png \
@@ -962,7 +962,7 @@ git commit -m "feat(mobile): installable, and honest when the network is gone"
 - Create: `src/app/[locale]/app/page.tsx`
 - Create: `src/components/mobile/quick-actions.tsx`
 
-- [ ] **Step 1: Write the quick actions**
+- [x] **Step 1: Write the quick actions**
 
 ```tsx
 // src/components/mobile/quick-actions.tsx
@@ -996,7 +996,7 @@ export function QuickActions({ actions }: { actions: QuickAction[] }) {
 }
 ```
 
-- [ ] **Step 2: Write the screen**
+- [x] **Step 2: Write the screen**
 
 ```tsx
 // src/app/[locale]/app/page.tsx
@@ -1122,7 +1122,7 @@ export default async function MobileHome({
 }
 ```
 
-- [ ] **Step 3: Check the zone field name**
+- [x] **Step 3: Check the zone field name**
 
 ```bash
 grep -n "spotPrice\|model GridZone" -A 20 prisma/schema.prisma | sed -n '1,40p'
@@ -1132,7 +1132,7 @@ If `GridZone` has no `spotPrice` column, read the price the way
 `src/app/[locale]/exchange/page.tsx` does and use that call instead; do not
 invent a column.
 
-- [ ] **Step 4: Build and look at it**
+- [x] **Step 4: Build and look at it**
 
 ```bash
 cd ~/poolwatt && npm run build && pm2 restart poolwatt-web
@@ -1141,7 +1141,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/ru/app
 
 Expected: `200`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add "src/app/[locale]/app/page.tsx" src/components/mobile/quick-actions.tsx
@@ -1157,7 +1157,7 @@ git commit -m "feat(mobile): the §22.2 main screen"
 - Create: `src/app/[locale]/app/more/page.tsx`
 - Create: `src/app/[locale]/app/{wallet,charge,profile,station,coop,account,card,contacts,roaming,onboarding}/page.tsx`
 
-- [ ] **Step 1: Write the placeholder**
+- [x] **Step 1: Write the placeholder**
 
 ```tsx
 // src/components/mobile/soon.tsx
@@ -1178,7 +1178,7 @@ export async function Soon({ stage }: { stage: string }) {
 }
 ```
 
-- [ ] **Step 2: Write the hub**
+- [x] **Step 2: Write the hub**
 
 ```tsx
 // src/app/[locale]/app/more/page.tsx
@@ -1229,7 +1229,7 @@ export default async function MorePage({
 }
 ```
 
-- [ ] **Step 3: Write the ten placeholders**
+- [x] **Step 3: Write the ten placeholders**
 
 Each file is the same shape. `wallet` (stage M2) shown in full; repeat with
 the title key and stage from the table below.
@@ -1269,7 +1269,7 @@ export default async function WalletScreen({
 | `roaming` | `app.sections.roaming` | M3 |
 | `onboarding` | `app.sections.account` | M6 |
 
-- [ ] **Step 4: Build**
+- [x] **Step 4: Build**
 
 ```bash
 cd ~/poolwatt && npm run build && pm2 restart poolwatt-web
@@ -1281,7 +1281,7 @@ done
 Expected: `200` for every row (`/more` answers `307` when signed out — that
 is correct, it redirects to the login page).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/mobile/soon.tsx "src/app/[locale]/app"
@@ -1296,7 +1296,7 @@ git commit -m "feat(mobile): the hub and honest placeholders for M2-M6"
 - Modify: `playwright.config.ts`
 - Create: `tests/e2e/mobile-shell.mobile.spec.ts`
 
-- [ ] **Step 1: Add the phone project**
+- [x] **Step 1: Add the phone project**
 
 In `playwright.config.ts`, change `projects` to:
 
@@ -1316,7 +1316,7 @@ In `playwright.config.ts`, change `projects` to:
   ],
 ```
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 ```ts
 // tests/e2e/mobile-shell.mobile.spec.ts
@@ -1380,7 +1380,7 @@ test("the offline screen says its figure may be stale", async ({ page }) => {
 });
 ```
 
-- [ ] **Step 3: Run it**
+- [x] **Step 3: Run it**
 
 ```bash
 cd ~/poolwatt && npx playwright test --project=mobile
@@ -1389,7 +1389,7 @@ cd ~/poolwatt && npx playwright test --project=mobile
 Expected: 4 passed. A failure on tab counts means `visibleTabs` and the
 layout disagree — fix the layout, not the test.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add playwright.config.ts tests/e2e/mobile-shell.mobile.spec.ts
@@ -1403,7 +1403,7 @@ git commit -m "test(mobile): the shell on a Pixel 7 against the live build"
 **Files:**
 - Modify: `~/poolwatt-android/capacitor.config.json` (separate repo)
 
-- [ ] **Step 1: Change the entry point**
+- [x] **Step 1: Change the entry point**
 
 ```bash
 cd ~/poolwatt-android
@@ -1426,7 +1426,7 @@ JSON
 `/app` with no locale lets the next-intl middleware pick the phone's
 language — exactly what §25's locale list asks for.
 
-- [ ] **Step 2: Build and publish**
+- [x] **Step 2: Build and publish**
 
 ```bash
 /home/dv/bin/android-build
@@ -1434,7 +1434,7 @@ language — exactly what §25's locale list asks for.
 
 Expected: the script prints the latest and versioned download URLs.
 
-- [ ] **Step 3: Check the page the app will open**
+- [x] **Step 3: Check the page the app will open**
 
 ```bash
 curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" https://poolwatt.com/app
@@ -1443,7 +1443,7 @@ curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" https://poolwatt.com/ap
 Expected: `307 https://poolwatt.com/en/app` (or the locale the request
 negotiates). A `404` means the middleware matcher excludes `/app` — widen it.
 
-- [ ] **Step 4: Commit in the Android repo**
+- [x] **Step 4: Commit in the Android repo**
 
 ```bash
 cd ~/poolwatt-android && git add -A && \
@@ -1461,7 +1461,7 @@ The SwiftUI producer list goes; the bundle id `com.poolwatt.ios`, the
 provisioning profile and the two fastlane lanes stay, so TestFlight keeps
 working.
 
-- [ ] **Step 1: Keep what cannot be regenerated**
+- [x] **Step 1: Keep what cannot be regenerated**
 
 ```bash
 ssh -p 2222 aleksandrswiss@127.0.0.1 'cd ~/poolwatt-ios && \
@@ -1472,7 +1472,7 @@ ssh -p 2222 aleksandrswiss@127.0.0.1 'cd ~/poolwatt-ios && \
 
 Expected: `fastlane`, `Gemfile`, `Gemfile.lock`, the `.mobileprovision`.
 
-- [ ] **Step 2: Create the Capacitor project next to it**
+- [x] **Step 2: Create the Capacitor project next to it**
 
 ```bash
 ssh -p 2222 aleksandrswiss@127.0.0.1 'cd ~ && rm -rf poolwatt-ios-cap && \
@@ -1486,7 +1486,7 @@ ssh -p 2222 aleksandrswiss@127.0.0.1 'cd ~ && rm -rf poolwatt-ios-cap && \
 
 Expected: `App.xcodeproj`, `App`, `Podfile`.
 
-- [ ] **Step 3: Give it the same server entry as Android**
+- [x] **Step 3: Give it the same server entry as Android**
 
 ```bash
 ssh -p 2222 aleksandrswiss@127.0.0.1 'cd ~/poolwatt-ios-cap && cat > capacitor.config.json <<JSON
@@ -1501,7 +1501,7 @@ JSON
 npx cap sync ios'
 ```
 
-- [ ] **Step 4: Move the kept pieces in and point the lanes at the new project**
+- [x] **Step 4: Move the kept pieces in and point the lanes at the new project**
 
 ```bash
 ssh -p 2222 aleksandrswiss@127.0.0.1 'cd ~/poolwatt-ios-cap && \
@@ -1515,7 +1515,7 @@ scheme to `App`. The `build_sim` lane keeps `run_tests` only if a test target
 exists; a Capacitor shell has none, so drop that step from `build_sim` and
 leave the simulator build.
 
-- [ ] **Step 5: Prove the simulator build**
+- [x] **Step 5: Prove the simulator build**
 
 ```bash
 ssh -p 2222 aleksandrswiss@127.0.0.1 'cd ~/poolwatt-ios-cap && bundle exec fastlane build_sim'
@@ -1523,7 +1523,7 @@ ssh -p 2222 aleksandrswiss@127.0.0.1 'cd ~/poolwatt-ios-cap && bundle exec fastl
 
 Expected: `fastlane.tools finished successfully`.
 
-- [ ] **Step 6: Swap the directories and commit on the Mac**
+- [x] **Step 6: Swap the directories and commit on the Mac**
 
 ```bash
 ssh -p 2222 aleksandrswiss@127.0.0.1 'mv ~/poolwatt-ios ~/poolwatt-ios-swiftui-archive && \
@@ -1535,7 +1535,7 @@ ssh -p 2222 aleksandrswiss@127.0.0.1 'mv ~/poolwatt-ios ~/poolwatt-ios-swiftui-a
 The SwiftUI tree stays on disk as `poolwatt-ios-swiftui-archive` until a
 TestFlight build from the new shell is accepted.
 
-- [ ] **Step 7: Send a build to TestFlight**
+- [x] **Step 7: Send a build to TestFlight**
 
 ```bash
 /home/dv/bin/mac-ios --lane release_testflight
@@ -1543,7 +1543,7 @@ TestFlight build from the new shell is accepted.
 
 Expected: exit 0 and an upload confirmation. Apple then needs 5–15 minutes.
 
-- [ ] **Step 8: Update the repo documentation**
+- [x] **Step 8: Update the repo documentation**
 
 In `CLAUDE.md`, the iOS section now describes a Capacitor shell, not a
 SwiftUI app. Replace the sentence "the iOS project lives in
@@ -1560,7 +1560,7 @@ cd ~/poolwatt && git add CLAUDE.md && \
 
 ## Task 12: Whole suite before the deploy
 
-- [ ] **Step 1: Unit and integration**
+- [x] **Step 1: Unit and integration**
 
 ```bash
 cd ~/poolwatt
@@ -1572,7 +1572,7 @@ Expected: the same pass count as before this plan plus the 8 new cases from
 Task 1. The two `bot/__tests__/tts-bilingual.test.ts` cases need a working
 `OPENAI_API_KEY`.
 
-- [ ] **Step 2: End to end, both projects**
+- [x] **Step 2: End to end, both projects**
 
 ```bash
 npx playwright test
@@ -1580,13 +1580,13 @@ npx playwright test
 
 Expected: all passed.
 
-- [ ] **Step 3: Push**
+- [x] **Step 3: Push**
 
 ```bash
 cd ~/poolwatt && git status --short && git push
 ```
 
-- [ ] **Step 4: Tick M1 in the tracker**
+- [x] **Step 4: Tick M1 in the tracker**
 
 Set the M1 row in `inbox/TZ-STATUS.md` to `готово` with the commit range, the
 APK URL and the TestFlight build number as evidence. The file is gitignored;
