@@ -101,20 +101,25 @@ beforeAll(async () => {
     })
   ).id;
 
-  // Fifty points, which is the number the story names.
-  pointIds = [];
-  for (let i = 0; i < 50; i++) {
-    const point = await prisma.acceptancePoint.create({
-      data: {
-        operatorId,
-        type: "CHARGING_STATION",
-        name: `Point ${String(i).padStart(2, "0")}`,
-        status: i % 2 === 0 ? "PUBLISHED" : "DRAFT",
-        gridZoneId: zoneId,
-      },
-    });
-    pointIds.push(point.id);
-  }
+  // Fifty points, which is the number the story names. In one statement: the
+  // default hook timeout is five seconds, and fifty round trips under a
+  // parallel suite is close enough to it to matter.
+  await prisma.acceptancePoint.createMany({
+    data: Array.from({ length: 50 }, (_, i) => ({
+      operatorId,
+      type: "CHARGING_STATION" as const,
+      name: `Point ${String(i).padStart(2, "0")}`,
+      status: (i % 2 === 0 ? "PUBLISHED" : "DRAFT") as "PUBLISHED" | "DRAFT",
+      gridZoneId: zoneId,
+    })),
+  });
+  pointIds = (
+    await prisma.acceptancePoint.findMany({
+      where: { operatorId },
+      orderBy: { name: "asc" },
+      select: { id: true },
+    })
+  ).map((p) => p.id);
   foreignPointId = (
     await prisma.acceptancePoint.create({
       data: { operatorId: otherOperatorId, type: "CHARGING_STATION", name: "Theirs" },
