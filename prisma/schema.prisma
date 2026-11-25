@@ -67,6 +67,7 @@ model User {
   promoGrants       PromoGrant[]         @relation("PromoGrantHolder")
   roamingSessions   RoamingSettlement[]  @relation("RoamingDriver")
   dashboards        Dashboard[]          @relation("DashboardOwner")
+  contentViews      ContentEvent[]       @relation("ContentViewer")
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -2254,6 +2255,7 @@ model MarketingContent {
   updatedAt DateTime @updatedAt
 
   assets MarketingAsset[]
+  events ContentEvent[]
 
   @@index([operatorId, status])
   @@index([status, startsAt, endsAt])
@@ -2274,6 +2276,33 @@ model MarketingAsset {
   uploadedAt  DateTime         @default(now())
 
   @@index([contentId, position])
+}
+
+// §44 "Показы и клики по контенту, просмотры видео", US-44. Written from the
+// browser (see POST /v1/marketing/events): only it knows the block actually
+// reached a person — a page rendered for a crawler or a prefetch is not a
+// show. One row per event, so any window can be counted later.
+model ContentEvent {
+  id        String           @id @default(cuid())
+  contentId String
+  content   MarketingContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  kind      ContentEventKind
+  // Who saw it, when they were signed in. Null for a visitor: §44's returning
+  // share can only count the ones we can recognise.
+  userId    String?
+  user      User?            @relation("ContentViewer", fields: [userId], references: [id], onDelete: SetNull)
+  // The point card it was shown on, when it was shown on one.
+  pointId   String?
+  at        DateTime         @default(now())
+
+  @@index([contentId, kind, at])
+  @@index([at])
+}
+
+enum ContentEventKind {
+  IMPRESSION
+  CLICK
+  VIDEO_VIEW
 }
 
 enum MarketingContentType {

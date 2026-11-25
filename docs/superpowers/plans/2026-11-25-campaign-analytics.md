@@ -2,11 +2,11 @@
 
 Спецификация: `docs/superpowers/specs/2026-11-25-campaign-analytics-design.md`.
 
-- [ ] 1. Схема `ContentEvent` + миграция.
-- [ ] 2. `content-events.ts`: запись события с проверками. Тесты.
+- [x] 1. Схема `ContentEvent` + миграция.
+- [x] 2. `content-events.ts`: запись события с проверками. Тесты.
 - [ ] 3. `POST /v1/marketing/events` и клиентский трекер в блоке контента
       (показ, клик, просмотр видео).
-- [ ] 4. `campaign-analytics.ts`: метрики §44 по кампании и по контенту. Тесты.
+- [x] 4. `campaign-analytics.ts`: метрики §44 по кампании и по контенту. Тесты.
 - [ ] 5. Страница «Эффективность» в кабинете кампаний.
 - [ ] 6. `GET /v1/campaigns/{id}/stats` с `?format=csv`.
 - [ ] 7. Переводы RU/EN/SK.
