@@ -10,7 +10,8 @@ import { prisma } from "@/lib/prisma";
 import type { Db } from "./audit";
 import { writeAudit } from "./audit";
 import { num, numOrNull } from "./decimal";
-import { roamingQuote, type RoamingQuote } from "./roaming";
+import { roamingAffordableKwh, roamingQuote, type RoamingQuote } from "./roaming";
+import { roundKwh, roundPrice } from "./precision";
 import { requireZone } from "./zone-service";
 
 export interface UpsertRoamingAgreementInput {
@@ -62,6 +63,128 @@ export async function upsertRoamingAgreement(
   return agreement;
 }
 
+/** Start of the calendar day the §24.2 cap is counted over (UTC). */
+function startOfDay(now: Date): Date {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+/**
+ * §24.2 — visited-zone kWh this driver already took through this corridor
+ * today. The cap is an AML limit per user per day, so it is counted from the
+ * sessions that actually happened, not from the size of the one being asked
+ * about.
+ */
+export async function roamingUsedTodayKwh(
+  userId: string,
+  agreementId: string,
+  now: Date = new Date(),
+  db: Db = prisma,
+): Promise<number> {
+  const used = await db.roamingSettlement.aggregate({
+    where: { userId, agreementId, createdAt: { gte: startOfDay(now) } },
+    _sum: { deliveredKwh: true },
+  });
+  return roundKwh(num(used._sum.deliveredKwh ?? 0));
+}
+
+export interface RoamingLegView {
+  agreementId: string;
+  partnerName: string;
+  homeZoneId: string;
+  homeZoneCode: string;
+  homeWalletId: string;
+  visitedZoneCode: string;
+  conversionRate: number;
+  feePct: number;
+  homeBalanceKwh: number;
+  /** What §24.2 still allows today, or null when the corridor has no cap. */
+  allowanceKwh: number | null;
+  /** Visited-zone kWh this corridor can serve right now. */
+  maxKwh: number;
+}
+
+/**
+ * The corridor a session in `visitedZoneId` can lean on, or null when there is
+ * none — no kWh elsewhere, no agreement, no spot reference, or the day's
+ * allowance already spent.
+ *
+ * When several corridors are open, the one that serves the larger part of the
+ * session wins, and between two equal ones the cheaper conversion does: the
+ * driver should not pay more because we picked a corridor alphabetically.
+ */
+export async function resolveRoamingLeg(
+  input: { userId: string; visitedZoneId: string; now?: Date },
+  db: Db = prisma,
+): Promise<RoamingLegView | null> {
+  const visited = await db.gridZone.findUnique({ where: { id: input.visitedZoneId } });
+  if (!visited) return null;
+  const visitedSpot = numOrNull(visited.spotPrice);
+  if (visitedSpot == null || !(visitedSpot > 0)) return null;
+
+  const wallets = await db.wallet.findMany({
+    where: { ownerUserId: input.userId, zoneId: { not: visited.id } },
+    include: { zone: true },
+  });
+  const funded = wallets.filter((w) => num(w.kwhBalance) > 0);
+  if (funded.length === 0) return null;
+
+  const agreements = await db.roamingAgreement.findMany({
+    where: {
+      visitedZoneId: visited.id,
+      enabled: true,
+      homeZoneId: { in: funded.map((w) => w.zoneId) },
+    },
+  });
+  if (agreements.length === 0) return null;
+
+  const now = input.now ?? new Date();
+  const candidates: RoamingLegView[] = [];
+  for (const agreement of agreements) {
+    const wallet = funded.find((w) => w.zoneId === agreement.homeZoneId);
+    if (!wallet) continue;
+    const homeSpot = numOrNull(wallet.zone.spotPrice);
+    if (homeSpot == null || !(homeSpot > 0)) continue;
+
+    const conversionRate = roundPrice(visitedSpot / homeSpot);
+    const feePct = num(agreement.feePct);
+    const homeBalanceKwh = num(wallet.kwhBalance);
+    const affordableKwh = roamingAffordableKwh(homeBalanceKwh, conversionRate, feePct);
+
+    const limitKwh = numOrNull(agreement.dailyLimitKwh);
+    let allowanceKwh: number | null = null;
+    if (limitKwh != null) {
+      const used = await roamingUsedTodayKwh(input.userId, agreement.id, now, db);
+      allowanceKwh = Math.max(0, roundKwh(limitKwh - used));
+    }
+
+    const maxKwh =
+      allowanceKwh == null ? affordableKwh : roundKwh(Math.min(affordableKwh, allowanceKwh));
+    if (!(maxKwh > 0)) continue;
+
+    candidates.push({
+      agreementId: agreement.id,
+      partnerName: agreement.partnerName,
+      homeZoneId: wallet.zoneId,
+      homeZoneCode: wallet.zone.code,
+      homeWalletId: wallet.id,
+      visitedZoneCode: visited.code,
+      conversionRate,
+      feePct,
+      homeBalanceKwh,
+      allowanceKwh,
+      maxKwh,
+    });
+  }
+  if (candidates.length === 0) return null;
+
+  candidates.sort(
+    (a, b) =>
+      b.maxKwh - a.maxKwh ||
+      a.conversionRate * (1 + a.feePct / 100) - b.conversionRate * (1 + b.feePct / 100),
+  );
+  return candidates[0];
+}
+
 export interface QuoteRoamingInput {
   userId: string;
   /** Zone id or code where the energy will be consumed. */
@@ -79,6 +202,8 @@ export interface RoamingQuoteView {
   partnerName: string;
   feePct: number;
   limitKwh: number | null;
+  /** §24.2 — what is left of the daily cap today, null when there is none. */
+  allowanceKwh: number | null;
   homeBalanceKwh: number;
   quote: RoamingQuote;
 }
@@ -153,13 +278,18 @@ export async function quoteRoaming(
     );
   }
 
-  // §24.2 — the agreement's cap applies per session here; cumulative per-day
-  // tracking lands with roaming settlement, which records the actual debits.
+  // §24.2 — the cap is per user per day, counted from the sessions already
+  // settled through this corridor today.
   const limitKwh = numOrNull(agreement.dailyLimitKwh);
-  if (limitKwh != null && quote.amountKwh > limitKwh) {
-    throw new Error(
-      `Roaming limit for ${home.code}→${visited.code} is ${limitKwh} kWh per session`,
-    );
+  let allowanceKwh: number | null = null;
+  if (limitKwh != null) {
+    const used = await roamingUsedTodayKwh(input.userId, agreement.id, new Date(), db);
+    allowanceKwh = Math.max(0, roundKwh(limitKwh - used));
+    if (quote.amountKwh > allowanceKwh) {
+      throw new Error(
+        `Roaming limit for ${home.code}→${visited.code} leaves ${allowanceKwh} kWh today (daily ${limitKwh} kWh)`,
+      );
+    }
   }
 
   return {
@@ -170,6 +300,7 @@ export async function quoteRoaming(
     partnerName: agreement.partnerName,
     feePct: num(agreement.feePct),
     limitKwh,
+    allowanceKwh,
     homeBalanceKwh,
     quote,
   };

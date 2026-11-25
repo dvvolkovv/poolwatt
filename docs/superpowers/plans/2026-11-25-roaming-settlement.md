@@ -9,7 +9,7 @@
       новый вход `roaming`, выходы `kwhFromRoaming`, `roamingDebitKwh`,
       `roamingFeeKwh`, источник `"roaming"`; тесты в `charge.test.ts`.
 - [x] 3. Схема. Модель `RoamingSettlement` и перечисление статуса, миграция.
-- [ ] 4. Коридор для сессии. `resolveRoamingLeg` в `roaming-service.ts`:
+- [x] 4. Коридор для сессии. `resolveRoamingLeg` в `roaming-service.ts`:
       домашняя зона, коридор, курс, остаток суточного предела из сеансов за
       сутки; `quoteRoaming` считает предел накопленным за сутки. Тесты.
 - [ ] 5. Списание. `quoteCharge` и `chargeSession` в `payment-service.ts`
