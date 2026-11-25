@@ -119,6 +119,10 @@ const CSV_HEADER = [
   "vat",
   "vatRate",
   "gross",
+  // §54 — both commissions, so the two sets of books reconcile.
+  "platformFee",
+  "subpartnerFee",
+  "partnerNet",
   "currency",
   "receiptId",
 ];
@@ -137,6 +141,9 @@ export function renderCsv(ledger: Ledger): string {
         money(l.vat),
         l.vatRatePct != null ? money(l.vatRatePct) : "",
         money(l.gross),
+        money(l.platformFee),
+        money(l.subpartnerFee),
+        money(l.partnerNet),
         l.currency,
         l.receiptId,
       ]
@@ -155,6 +162,9 @@ export function renderCsv(ledger: Ledger): string {
       money(ledger.totals.vat),
       "",
       money(ledger.totals.gross),
+      money(ledger.totals.platformFee),
+      money(ledger.totals.subpartnerFee),
+      money(ledger.totals.partnerNet),
       ledger.currency,
       "",
     ]
@@ -396,6 +406,9 @@ export function renderBmd(ledger: Ledger): string {
         l.documentNumber,
         l.vatRatePct != null ? money(l.vatRatePct) : "",
         money(l.gross),
+        money(l.platformFee),
+        money(l.subpartnerFee),
+        money(l.partnerNet),
         l.currency,
         datevText(l),
         a.bmdClientNo,

@@ -225,10 +225,14 @@ model ChargerOperator {
   campaigns   Campaign[]
   promoGrants PromoGrant[]
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  PricingRule PricingRule[]
-  PartnerPlan PartnerPlan?
+  pricingRules      PricingRule[]
+  partnerPlan       PartnerPlan?
+  // §52 — a network can be the head of franchisees, or a franchisee itself.
+  subpartnersAsHead SubpartnerAgreement[] @relation("SubpartnerHead")
+  subpartnerOf      SubpartnerAgreement[] @relation("SubpartnerSub")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([claimedById])
 }
@@ -2470,4 +2474,34 @@ enum PlanTier {
   BASIC
   EXTENDED
   CORPORATE
+}
+
+// §52 last row — "Комиссия для своих субпартнёров (если партнёр — сеть с
+// франчайзи)". The head network keeps a percentage of what is charged at a
+// franchisee's points, on top of the platform's own commission (§53).
+//
+// Both sides read the same row, so §54's "расчёт комиссий … с отражением в
+// облачной бухгалтерии обеих сторон" is one number, not two.
+model SubpartnerAgreement {
+  id String @id @default(cuid())
+
+  headId String
+  head   ChargerOperator @relation("SubpartnerHead", fields: [headId], references: [id], onDelete: Cascade)
+  // The franchisee whose points the commission is taken at.
+  subId  String
+  sub    ChargerOperator @relation("SubpartnerSub", fields: [subId], references: [id], onDelete: Cascade)
+
+  // Taken from what the franchisee earns on a session, after the platform's
+  // own commission: the platform is paid first, as §53 has it.
+  chargeFeePct Decimal @db.Decimal(5, 2)
+
+  active     Boolean  @default(true)
+  activeFrom DateTime @default(now())
+  note       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([headId, subId])
+  @@index([subId, active])
 }

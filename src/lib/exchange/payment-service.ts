@@ -23,6 +23,7 @@ import { placeOrder, quoteMarketOrder } from "./order-service";
 import { burnTokens } from "./token-registry";
 import { availableFiat, getOrCreateWallet } from "./wallet-service";
 import { availableGiftKwh, spendGrants } from "@/lib/marketing/grant-spend";
+import { splitSessionRevenue, subpartnerFeePctFor } from "@/lib/pricing/subpartner-service";
 import { pricingAt } from "@/lib/pricing/pricing-service";
 import { receiptStamp } from "@/lib/receipts/receipt-number";
 import { deliverReceipt } from "@/lib/receipts/receipt-delivery";
@@ -287,6 +288,9 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
   // ── 2. Execute: buy the shortfall on the exchange (§16.6) ───────────────
   let kwhBought = 0;
   let energyCost = 0;
+  // §53 — what the platform actually took on this session: the commission of
+  // the market order that served it.
+  let marketFee = 0;
   let marketOrderId: string | null = null;
 
   const shortfall = roundKwh(requested - plan.kwhFromGift - plan.kwhFromBalance);
@@ -301,6 +305,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
     });
     marketOrderId = order.orderId;
     kwhBought = order.filledKwh;
+    marketFee = roundMoney(order.fee);
     energyCost = roundMoney(order.notional + order.fee);
 
     if (isKwhDust(kwhBought) && isKwhDust(plan.kwhFromBalance) && isKwhDust(plan.kwhFromGift)) {
@@ -309,6 +314,9 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
   }
 
   // ── 3. Burn what is delivered and capture (§8.2, §14 → captured) ────────
+  // §52 — a franchise commission, when this point belongs to a franchisee.
+  const subpartner = await subpartnerFeePctFor(session.pointId);
+
   let giftSpent = 0;
   let giftNetwork: string | null = null;
   let deliveredKwh = roundKwh(plan.kwhFromGift + plan.kwhFromBalance + kwhBought);
@@ -341,6 +349,14 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       );
     }
 
+    // What the driver paid, divided the way §53 orders it: the platform
+    // first, then the head network, and the rest is the partner's.
+    const revenue = splitSessionRevenue({
+      amountFiat: energyCost,
+      platformFeeFiat: marketFee,
+      subpartnerFeePct: subpartner.pct,
+    });
+
     const receipt = await tx.receipt.create({
       data: {
         ...(await receiptStamp(tx)),
@@ -358,6 +374,13 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
           requestedKwh: requested,
           kwhFromGift: giftSpent,
           giftNetwork,
+          // §54 — "расчёт комиссий … с отражением в облачной бухгалтерии
+          // обеих сторон". Written onto the document, not recomputed later:
+          // a rate that changes must not move a closed month.
+          platformFee: revenue.platformFee,
+          subpartnerFee: revenue.subpartnerFee,
+          subpartnerHeadId: subpartner.headId,
+          partnerNet: revenue.partnerNet,
           kwhFromBalance: roundKwh(deliveredKwh - giftSpent - kwhBought),
           kwhBought,
           unservedKwh: roundKwh(requested - deliveredKwh),

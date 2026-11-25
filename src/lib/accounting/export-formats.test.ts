@@ -38,6 +38,9 @@ const baseLedger: Ledger = {
       vat: 0.7,
       vatRatePct: 20,
       currency: "EUR",
+      platformFee: 0.09,
+      subpartnerFee: 0,
+      partnerNet: 4.11,
     },
     {
       date: new Date("2026-03-18T09:15:00Z"),
@@ -52,9 +55,20 @@ const baseLedger: Ledger = {
       vat: 0.5,
       vatRatePct: 20,
       currency: "EUR",
+      platformFee: 0.06,
+      subpartnerFee: 0.3,
+      partnerNet: 2.64,
     },
   ],
-  totals: { kwh: 10, gross: 7.2, net: 6, vat: 1.2 },
+  totals: {
+    kwh: 10,
+    gross: 7.2,
+    net: 6,
+    vat: 1.2,
+    platformFee: 0.15,
+    subpartnerFee: 0.3,
+    partnerNet: 6.75,
+  },
   accounts: {
     datevConsultantNo: "1234567",
     datevClientNo: "77001",
@@ -204,7 +218,7 @@ describe("BMD", () => {
 
 describe("an empty period", () => {
   it("still produces every file, with nothing in it", async () => {
-    const empty: Ledger = { ...baseLedger, lines: [], totals: { kwh: 0, gross: 0, net: 0, vat: 0 } };
+    const empty: Ledger = { ...baseLedger, lines: [], totals: { kwh: 0, gross: 0, net: 0, vat: 0, platformFee: 0, subpartnerFee: 0, partnerNet: 0 } };
     for (const format of EXPORT_FORMATS) {
       const file = await exportLedger(empty, format);
       expect(file.body.length).toBeGreaterThan(0);
