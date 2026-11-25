@@ -5,6 +5,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { quoteCharge } from "@/lib/exchange/payment-service";
 import { FeeePlanError, assignPartnerPlan, resolveFeeRates, savePlan } from "./fee-plan-service";
 
 const PREFIX = "test_feeplan_";
@@ -329,5 +330,212 @@ describe("the older Company.feePlan still decides, where it was set", () => {
 
     await prisma.company.update({ where: { id: producerCompanyId }, data: { feePlanId: null } });
     await prisma.feePlan.delete({ where: { id: legacy.id } });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// §53 on the charging path. In the same file as the rates above on purpose:
+// "the default plan" is one row for the whole platform, so two test files
+// racing over `PlatformFeePlan` saw each other's defaults. One file cannot
+// race with itself.
+// ---------------------------------------------------------------------------
+
+const CHG_PREFIX = "test_chgfee_";
+const CHG_ZONE = "TESTCHGFEE";
+
+let chgZoneId: string;
+let chgOperatorId: string;
+let chgDriverUserId: string;
+let chgPointId: string;
+let chgAssetId: string;
+
+async function chgWipe() {
+  await prisma.partnerPlan.deleteMany({ where: { operator: { slug: { startsWith: CHG_PREFIX } } } });
+  await prisma.platformFeePlan.deleteMany({ where: { name: { startsWith: CHG_PREFIX } } });
+  await prisma.energyToken.deleteMany({ where: { zone: { code: CHG_ZONE } } });
+  await prisma.wallet.deleteMany({ where: { zone: { code: CHG_ZONE } } });
+  await prisma.acceptancePoint.deleteMany({
+    where: { operator: { slug: { startsWith: CHG_PREFIX } } },
+  });
+  await prisma.chargerOperator.deleteMany({ where: { slug: { startsWith: CHG_PREFIX } } });
+  await prisma.order.deleteMany({ where: { zone: { code: CHG_ZONE } } });
+  await prisma.asset.deleteMany({ where: { company: { regNumber: `${CHG_PREFIX}reg` } } });
+  await prisma.company.deleteMany({ where: { regNumber: `${CHG_PREFIX}reg` } });
+  await prisma.gridZone.deleteMany({ where: { code: CHG_ZONE } });
+}
+
+/** A resting ask, so the session has to buy and therefore pays commission. */
+async function chgRestingAsk(amountKwh: number, price: number) {
+  const seller = await prisma.user.upsert({
+    where: { username: `${CHG_PREFIX}seller` },
+    update: {},
+    create: { username: `${CHG_PREFIX}seller`, passwordHash: "x" },
+  });
+  const wallet = await prisma.wallet.upsert({
+    where: { ownerUserId_zoneId: { ownerUserId: seller.id, zoneId: chgZoneId } },
+    update: {},
+    create: { ownerUserId: seller.id, zoneId: chgZoneId },
+  });
+  await prisma.energyToken.create({
+    data: {
+      zoneId: chgZoneId,
+      assetId: chgAssetId,
+      ownerWalletId: wallet.id,
+      amountKwh: new Prisma.Decimal(amountKwh),
+      intervalStart: new Date(),
+      status: "AVAILABLE",
+    },
+  });
+  await prisma.wallet.update({
+    where: { id: wallet.id },
+    data: { kwhBalance: { increment: new Prisma.Decimal(amountKwh) } },
+  });
+  await prisma.order.create({
+    data: {
+      walletId: wallet.id,
+      zoneId: chgZoneId,
+      side: "SELL",
+      type: "LIMIT",
+      amountKwh: new Prisma.Decimal(amountKwh),
+      limitPrice: new Prisma.Decimal(price),
+      status: "NEW",
+    },
+  });
+}
+
+beforeAll(async () => {
+  await chgWipe();
+
+  chgZoneId = (
+    await prisma.gridZone.create({
+      data: { code: CHG_ZONE, country: "SK", name: "Charge fee zone", currency: "EUR" },
+    })
+  ).id;
+
+  chgDriverUserId = (
+    await prisma.user.upsert({
+      where: { username: `${CHG_PREFIX}driver` },
+      update: {},
+      create: { username: `${CHG_PREFIX}driver`, passwordHash: "x" },
+    })
+  ).id;
+
+  chgOperatorId = (
+    await prisma.chargerOperator.create({
+      data: { slug: `${CHG_PREFIX}net`, displayName: "Charge fee network" },
+    })
+  ).id;
+  chgPointId = (
+    await prisma.acceptancePoint.create({
+      data: { operatorId: chgOperatorId, type: "CHARGING_STATION", name: "A", gridZoneId: chgZoneId },
+    })
+  ).id;
+
+  const company = await prisma.company.create({
+    data: {
+      legalName: "Charge fee producer",
+      country: "SK",
+      regNumber: `${CHG_PREFIX}reg`,
+      type: "PRODUCER",
+      kybStatus: "APPROVED",
+    },
+  });
+  chgAssetId = (
+    await prisma.asset.create({
+      data: {
+        companyId: company.id,
+        gridZoneId: chgZoneId,
+        kind: "SOLAR",
+        name: "Charge fee roof",
+        capacityKw: new Prisma.Decimal(10),
+        status: "ACTIVE",
+      },
+    })
+  ).id;
+});
+
+beforeEach(async () => {
+  await prisma.partnerPlan.deleteMany({ where: { operatorId: chgOperatorId } });
+  await prisma.platformFeePlan.deleteMany({ where: { name: { startsWith: CHG_PREFIX } } });
+  await prisma.order.deleteMany({ where: { zoneId: chgZoneId } });
+  await prisma.energyToken.deleteMany({ where: { zoneId: chgZoneId } });
+  await prisma.wallet.deleteMany({ where: { zoneId: chgZoneId } });
+  await chgRestingAsk(20, 0.2);
+});
+
+afterAll(async () => {
+  await chgWipe();
+  await prisma.user.deleteMany({ where: { username: { startsWith: CHG_PREFIX } } });
+});
+
+describe("the commission on a charging session comes from the network's plan", () => {
+  it("charges the built-in rate when no plan is configured", async () => {
+    const quote = await quoteCharge({
+      userId: chgDriverUserId,
+      zoneId: chgZoneId,
+      requestedKwh: 10,
+      pointId: chgPointId,
+    });
+
+    // 10 kWh at 0.20 = 2.00, and the built-in commission is 2 %.
+    expect(quote.energyCost).toBe(2);
+    expect(quote.fee).toBe(0.04);
+  });
+
+  it("charges the plan's rate once the network is on one", async () => {
+    const plan = await savePlan({ name: `${CHG_PREFIX}corp`, tier: "CORPORATE", chargeFeePct: 0.5 });
+    await assignPartnerPlan({ operatorId: chgOperatorId, planId: plan.id });
+
+    const quote = await quoteCharge({
+      userId: chgDriverUserId,
+      zoneId: chgZoneId,
+      requestedKwh: 10,
+      pointId: chgPointId,
+    });
+
+    expect(quote.energyCost).toBe(2);
+    expect(quote.fee).toBe(0.01);
+  });
+
+  it("charges the individual terms written over the plan", async () => {
+    const plan = await savePlan({ name: `${CHG_PREFIX}corp`, tier: "CORPORATE", chargeFeePct: 0.5 });
+    await assignPartnerPlan({
+      operatorId: chgOperatorId,
+      planId: plan.id,
+      overrides: { chargeFeePct: 0 },
+      note: "No commission for the pilot",
+    });
+
+    const quote = await quoteCharge({
+      userId: chgDriverUserId,
+      zoneId: chgZoneId,
+      requestedKwh: 10,
+      pointId: chgPointId,
+    });
+
+    expect(quote.fee).toBe(0);
+    expect(quote.total).toBe(2);
+  });
+
+  it("falls back to the built-in rate for a session at nobody's point", async () => {
+    const plan = await savePlan({ name: `${CHG_PREFIX}corp`, chargeFeePct: 0.5 });
+    await assignPartnerPlan({ operatorId: chgOperatorId, planId: plan.id });
+
+    const quote = await quoteCharge({ userId: chgDriverUserId, zoneId: chgZoneId, requestedKwh: 10 });
+    expect(quote.fee).toBe(0.04);
+  });
+
+  it("shows the commission before the driver confirms (§54)", async () => {
+    const quote = await quoteCharge({
+      userId: chgDriverUserId,
+      zoneId: chgZoneId,
+      requestedKwh: 10,
+      pointId: chgPointId,
+    });
+
+    // §54 "Клиент видит итоговую цену и все платы до подтверждения": the
+    // quote carries the energy, the fee and the total separately.
+    expect(quote.total).toBe(quote.energyCost + quote.fee);
+    expect(quote.authorizedFiat).toBeGreaterThanOrEqual(quote.total);
   });
 });
