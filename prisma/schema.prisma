@@ -230,6 +230,7 @@ model ChargerOperator {
   // §52 — a network can be the head of franchisees, or a franchisee itself.
   subpartnersAsHead SubpartnerAgreement[] @relation("SubpartnerHead")
   subpartnerOf      SubpartnerAgreement[] @relation("SubpartnerSub")
+  pointTemplates    PointTemplate[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2510,4 +2511,41 @@ model SubpartnerAgreement {
 
   @@unique([headId, subId])
   @@index([subId, active])
+}
+
+// §29.6 / US-25 — "Шаблоны: владелец сети пунктов создаёт шаблон и применяет
+// его ко всем своим пунктам массово."
+//
+// A template holds what §29.5 lets an owner change without going back through
+// moderation: the tariffs and the opening hours. Address and equipment are
+// deliberately not here — changing those needs the operator to look again, and
+// a template that quietly un-published fifty points would be a trap.
+model PointTemplate {
+  id         String          @id @default(cuid())
+  operatorId String
+  operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  name       String
+
+  // §28 "Тарифы" — the same shape `PointTariff` stores, as a snapshot.
+  tariffs Json @default("[]")
+
+  // §28 "Режим работы".
+  open24      Boolean @default(false)
+  openHours   Json?
+  holidayNote String?
+
+  // §28 "Способы оплаты" and "Удобства": an owner rolling out a tariff
+  // usually means the whole commercial offer.
+  paymentMethods String[] @default([])
+  amenities      String[] @default([])
+
+  lastAppliedAt    DateTime?
+  lastAppliedCount Int       @default(0)
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([operatorId, name])
+  @@index([operatorId, updatedAt])
 }

@@ -2105,5 +2105,44 @@
       "SUSPENDED": "Suspended",
       "LEFT": "Left"
     }
+  },
+  "templates": {
+    "eyebrow": "Templates",
+    "title": "One offer, every point",
+    "intro": "A template carries tariffs and opening hours — the two things §29.5 lets you change without going back through moderation. Applying one never touches a point's status, so no station is un-published by pressing a button.",
+    "formHelp": "Hours here are hours of the day: 0 to 24. Leave a price empty to say the point does not take that kind of payment.",
+    "new": "New template",
+    "list": "Your templates",
+    "empty": "No templates yet.",
+    "save": "Save template",
+    "addWindow": "Add a window",
+    "dropWindow": "Remove",
+    "applyAll": "Apply to every point",
+    "applySelected": "Apply to selected",
+    "pick": "Points",
+    "remove": "Delete template",
+    "applied": "Points changed",
+    "allHint": "Applying replaces each point's tariffs with the template's, and records a version for each of them.",
+    "lastApplied": "last applied",
+    "neverApplied": "never applied",
+    "points": "points",
+    "tokens": "tokens/kWh",
+    "ownHours": "own opening hours",
+    "cabinetLink": "Templates",
+    "field": {
+      "name": "Name",
+      "windows": "Tariff windows",
+      "windowLabel": "Label",
+      "fromHour": "From h",
+      "toHour": "To h",
+      "priceFiat": "Price",
+      "priceTokens": "Tokens",
+      "idleFee": "Idle/min",
+      "coopDiscount": "Co-op %",
+      "open24": "Open around the clock",
+      "holidayNote": "Holiday note",
+      "paymentMethods": "Payment methods",
+      "currency": "Currency"
+    }
   }
 }

@@ -2105,5 +2105,44 @@
       "SUSPENDED": "Pozastavené",
       "LEFT": "Odišiel"
     }
+  },
+  "templates": {
+    "eyebrow": "Šablóny",
+    "title": "Jedna ponuka pre všetky miesta",
+    "intro": "Šablóna nesie tarify a prevádzkový čas — to, čo §29.5 dovoľuje meniť bez opakovaného schvaľovania. Použitie sa nedotkne stavu miesta, takže žiadna stanica sa stlačením tlačidla nestáhne zo zverejnenia.",
+    "formHelp": "Hodiny sú hodiny dňa, od 0 do 24. Prázdna cena znamená, že miesto taký druh platby neprijíma.",
+    "new": "Nová šablóna",
+    "list": "Vaše šablóny",
+    "empty": "Zatiaľ žiadne šablóny.",
+    "save": "Uložiť šablónu",
+    "addWindow": "Pridať okno",
+    "dropWindow": "Odobrať",
+    "applyAll": "Použiť na všetky miesta",
+    "applySelected": "Použiť na vybrané",
+    "pick": "Miesta",
+    "remove": "Zmazať šablónu",
+    "applied": "Zmenených miest",
+    "allHint": "Použitie nahradí tarify každého miesta tarifami šablóny a pre každé zapíše verziu.",
+    "lastApplied": "použitá",
+    "neverApplied": "zatiaľ nepoužitá",
+    "points": "miest",
+    "tokens": "tokenov/kWh",
+    "ownHours": "vlastný prevádzkový čas",
+    "cabinetLink": "Šablóny",
+    "field": {
+      "name": "Názov",
+      "windows": "Tarifné okná",
+      "windowLabel": "Označenie",
+      "fromHour": "Od h",
+      "toHour": "Do h",
+      "priceFiat": "Cena",
+      "priceTokens": "Tokeny",
+      "idleFee": "Nečinnosť/min",
+      "coopDiscount": "Koop. %",
+      "open24": "Nonstop",
+      "holidayNote": "Poznámka k sviatkom",
+      "paymentMethods": "Spôsoby platby",
+      "currency": "Valuta"
+    }
   }
 }
