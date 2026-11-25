@@ -152,10 +152,10 @@
 
 **Файлы:** изменить `prisma/schema.prisma`, миграция; `src/lib/exchange/gates.ts`.
 
-- [ ] `Campaign`, `PromoGrant`, перечисления; `Payment.campaignsEvaluatedAt`.
-- [ ] `campaignFiatFundingOpen()` + `assertCampaignFiatFundingOpen()`, тест в
+- [x] `Campaign`, `PromoGrant`, перечисления; `Payment.campaignsEvaluatedAt`.
+- [x] `campaignFiatFundingOpen()` + `assertCampaignFiatFundingOpen()`, тест в
       `gates.test.ts`: закрыт без `CAMPAIGN_FIAT_FUNDING`.
-- [ ] Миграция, коммит.
+- [x] Миграция, коммит.
 
 ### Задача 12. Выдача подарка
 

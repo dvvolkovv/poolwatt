@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ibansOpen, publishableIban, transfersOpen } from "./gates";
+import {
+  FeatureClosedError,
+  assertCampaignFiatFundingOpen,
+  campaignFiatFundingOpen,
+  ibansOpen,
+  publishableIban,
+  transfersOpen,
+} from "./gates";
 
 describe("IBAN gate — ТЗ §19, §21", () => {
   it("is closed by default", () => {
@@ -27,5 +34,19 @@ describe("transfer gate — ТЗ §24.4", () => {
       expect(transfersOpen({ KWH_TRANSFERS_ENABLED: v }), v).toBe(false);
     }
     expect(transfersOpen({ KWH_TRANSFERS_ENABLED: "true" })).toBe(true);
+  });
+});
+
+describe("campaign money gate — ТЗ §42 'Источник финансирования'", () => {
+  it("opens only on an explicit true", () => {
+    expect(campaignFiatFundingOpen({})).toBe(false);
+    for (const v of ["", "1", "yes", "TRUE", "false"]) {
+      expect(campaignFiatFundingOpen({ CAMPAIGN_FIAT_FUNDING: v }), v).toBe(false);
+    }
+    expect(campaignFiatFundingOpen({ CAMPAIGN_FIAT_FUNDING: "true" })).toBe(true);
+  });
+
+  it("refuses rather than invents a reserve on an account nobody issued", () => {
+    expect(() => assertCampaignFiatFundingOpen()).toThrow(FeatureClosedError);
   });
 });

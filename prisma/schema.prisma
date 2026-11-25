@@ -64,6 +64,7 @@ model User {
   wallets           Wallet[]
   settlementAccount SettlementAccount?   @relation("UserSettlementAccount")
   coopMemberships   CoopMember[]         @relation("CoopMembership")
+  promoGrants       PromoGrant[]         @relation("PromoGrantHolder")
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -213,14 +214,16 @@ model ChargerOperator {
   claimedBy   User?     @relation("ChargerOperatorClaims", fields: [claimedById], references: [id])
   claimedAt   DateTime?
 
-  apiKeys    ChargerOperatorApiKey[]
-  accounting OperatorAccounting?
-  points     AcceptancePoint[]
-  roles      StaffRole[]
-  employees  Employee[]
-  workOrders WorkOrder[]
-  tickets    Ticket[]
-  marketing  MarketingContent[]
+  apiKeys     ChargerOperatorApiKey[]
+  accounting  OperatorAccounting?
+  points      AcceptancePoint[]
+  roles       StaffRole[]
+  employees   Employee[]
+  workOrders  WorkOrder[]
+  tickets     Ticket[]
+  marketing   MarketingContent[]
+  campaigns   Campaign[]
+  promoGrants PromoGrant[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1370,6 +1373,7 @@ model GridZone {
   payments  Payment[]
   transfers TokenTransfer[]
   readings  MeterReading[]
+  campaigns Campaign[]
 
   cooperatives         Cooperative[]
   acceptancePoints     AcceptancePoint[]
@@ -1720,37 +1724,41 @@ model Trade {
 
 // §8 Payment — the charge waterfall: balance first, shortfall bought at market.
 model Payment {
-  id             String           @id @default(cuid())
-  walletId       String
-  wallet         Wallet           @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  zoneId         String
-  zone           GridZone         @relation(fields: [zoneId], references: [id])
+  id                   String           @id @default(cuid())
+  walletId             String
+  wallet               Wallet           @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  zoneId               String
+  zone                 GridZone         @relation(fields: [zoneId], references: [id])
   // Free-form equipment identifier the station reports.
-  chargePointId  String?
+  chargePointId        String?
   // §46 "Пункт, разъём, дата и время начала и конца зарядки" — the real
   // session, when it happened at one of our points. Null for a charge
   // somewhere else: the receipt is still issued, just without branding.
-  pointId        String?
-  point          AcceptancePoint? @relation(fields: [pointId], references: [id], onDelete: SetNull)
-  connectorId    String?
-  connector      PointConnector?  @relation(fields: [connectorId], references: [id], onDelete: SetNull)
-  startedAt      DateTime?
-  endedAt        DateTime?
-  requestedKwh   Decimal          @db.Decimal(18, 3)
-  kwhFromBalance Decimal          @default(0) @db.Decimal(18, 3)
-  kwhBought      Decimal          @default(0) @db.Decimal(18, 3)
+  pointId              String?
+  point                AcceptancePoint? @relation(fields: [pointId], references: [id], onDelete: SetNull)
+  connectorId          String?
+  connector            PointConnector?  @relation(fields: [connectorId], references: [id], onDelete: SetNull)
+  startedAt            DateTime?
+  endedAt              DateTime?
+  requestedKwh         Decimal          @db.Decimal(18, 3)
+  kwhFromBalance       Decimal          @default(0) @db.Decimal(18, 3)
+  kwhBought            Decimal          @default(0) @db.Decimal(18, 3)
   // Authorized with the §16.6 buffer; captured at the real execution price.
-  authorizedFiat Decimal          @default(0) @db.Decimal(18, 2)
-  amountFiat     Decimal          @default(0) @db.Decimal(18, 2)
-  status         PaymentStatus    @default(INITIATED)
-  failureReason  String?
-  cardId         String?
-  marketOrderId  String?          @unique
-  marketOrder    Order?           @relation("PaymentOrder", fields: [marketOrderId], references: [id], onDelete: SetNull)
-  idempotencyKey String?          @unique
-  createdAt      DateTime         @default(now())
-  authorizedAt   DateTime?
-  capturedAt     DateTime?
+  authorizedFiat       Decimal          @default(0) @db.Decimal(18, 2)
+  amountFiat           Decimal          @default(0) @db.Decimal(18, 2)
+  status               PaymentStatus    @default(INITIATED)
+  failureReason        String?
+  cardId               String?
+  marketOrderId        String?          @unique
+  marketOrder          Order?           @relation("PaymentOrder", fields: [marketOrderId], references: [id], onDelete: SetNull)
+  idempotencyKey       String?          @unique
+  createdAt            DateTime         @default(now())
+  authorizedAt         DateTime?
+  capturedAt           DateTime?
+  // §45 US-41 "начисление в течение минуты после завершения зарядки". Set
+  // once the campaigns of this session's network have been looked at; the
+  // worker sweeps whatever the inline attempt missed.
+  campaignsEvaluatedAt DateTime?
 
   receipt Receipt?
 
@@ -2198,4 +2206,127 @@ enum MarketingStatus {
   REVIEW
   APPROVED
   REJECTED
+}
+
+// ---------------------------------------------------------------------------
+// §42 "Конструктор подарков" / §43 "Подарочные кВт·ч" / US-41, US-42, US-43.
+//
+// A gift is not tokens in the driver's wallet. It is a right to take N kWh in
+// one partner's network, and §43's three prohibitions ("нельзя перевести
+// другому пользователю, продать на бирже или вывести в деньги") hold by
+// construction: a grant is not in `Wallet.kwhBalance` and no batch stands
+// behind it.
+//
+// The energy still comes from somewhere, and it comes from the partner: when a
+// grant is spent, batches are burned out of the wallet that funds the campaign
+// — the partner gives away their own generation and the driver pays nothing.
+// ---------------------------------------------------------------------------
+
+model Campaign {
+  id         String          @id @default(cuid())
+  operatorId String
+  operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  name       String
+
+  // §42 "Триггер".
+  trigger           CampaignTrigger
+  // The N of "N-ная зарядка", or the kWh of "объём зарядки за период".
+  triggerN          Int?
+  triggerPeriodDays Int?
+
+  // §42 "Подарок". Only the kWh gift is built; a percentage discount and a
+  // free reservation are a separate story, and dead columns would not make
+  // them any more real.
+  giftKwh Decimal @db.Decimal(18, 3)
+
+  // §42 "Где действует" — empty means the whole network.
+  scopePointIds String[] @default([])
+
+  // §42 "Срок действия" and "Ограничения".
+  validityDays     Int
+  oncePerClient    Boolean  @default(true)
+  minNextChargeKwh Decimal? @db.Decimal(18, 3)
+
+  // §42 "Бюджет кампании" — in kWh. A budget in money needs the partner's
+  // settlement account, which the EMI has not issued (see `gates.ts`).
+  budgetKwh Decimal @db.Decimal(18, 3)
+  // Issued and not yet expired. Burning a grant's unused remainder gives it
+  // back, which is §43's "сгоревший объём возвращается в бюджет кампании".
+  issuedKwh Decimal @default(0) @db.Decimal(18, 3)
+
+  // §42 "Источник финансирования". TOKENS burns the partner's own batches;
+  // FIAT waits for the EMI.
+  fundingSource CampaignFunding @default(TOKENS)
+  // The wallet the energy comes out of: the claiming user's, in this zone.
+  zoneId        String
+  zone          GridZone        @relation(fields: [zoneId], references: [id])
+
+  status      CampaignStatus @default(DRAFT)
+  pauseReason String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  grants PromoGrant[]
+
+  @@index([operatorId, status])
+  @@index([status, startsAt, endsAt])
+}
+
+model PromoGrant {
+  id         String          @id @default(cuid())
+  campaignId String
+  campaign   Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User            @relation("PromoGrantHolder", fields: [userId], references: [id], onDelete: Cascade)
+  // §43 "привязан к сети партнёра (network_id)". Denormalised from the
+  // campaign on purpose: every spend checks it, on the hot path of a charge.
+  operatorId String
+  operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  amountKwh Decimal @db.Decimal(18, 3)
+  usedKwh   Decimal @default(0) @db.Decimal(18, 3)
+
+  expiresAt DateTime
+  status    PromoGrantStatus @default(ACTIVE)
+
+  issuedAt   DateTime  @default(now())
+  lastUsedAt DateTime?
+  // US-41 "push клиенту" — when the client was actually told. Null means the
+  // worker sweep still owes them a letter.
+  notifiedAt DateTime?
+
+  // §42 "Один раз на клиента", as a rule of the database rather than a check
+  // that two simultaneous charges can both pass.
+  @@unique([campaignId, userId])
+  @@index([userId, status, expiresAt])
+  @@index([status, expiresAt])
+}
+
+enum CampaignTrigger {
+  FIRST_CHARGE
+  NTH_CHARGE
+  VOLUME_PERIOD
+}
+
+enum CampaignFunding {
+  TOKENS
+  FIAT
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  EXHAUSTED
+  ENDED
+}
+
+enum PromoGrantStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  REVOKED
 }

@@ -70,3 +70,26 @@ export function assertPushOpen(): void {
     throw new FeatureClosedError("Push notifications are not configured yet");
   }
 }
+
+/**
+ * §42 "Источник финансирования: резерв с расчётного счёта партнёра или из его
+ * выработки (токенов)" — and §42's "Бюджет … в деньгах".
+ *
+ * The money half needs the partner's settlement account, which only the EMI
+ * can issue (§19), and a way to put money on it, which does not exist either
+ * (US-07). A campaign funded with money we cannot hold would be a promise to
+ * a driver nobody is paying for, so it stays shut. Closed never means "no
+ * campaigns": a campaign funded by the partner's own generation works
+ * end-to-end today.
+ */
+export function campaignFiatFundingOpen(env: Env = process.env): boolean {
+  return env.CAMPAIGN_FIAT_FUNDING === "true";
+}
+
+export function assertCampaignFiatFundingOpen(): void {
+  if (!campaignFiatFundingOpen()) {
+    throw new FeatureClosedError(
+      "Campaigns funded with money are not available yet; fund from your own generation",
+    );
+  }
+}
