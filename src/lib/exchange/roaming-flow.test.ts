@@ -10,7 +10,9 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll } from "vitest";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
+  netRoamingPeriod,
   quoteRoaming,
+  readRoamingPositions,
   resolveRoamingLeg,
   upsertRoamingAgreement,
 } from "./roaming-service";
@@ -476,5 +478,104 @@ describe("chargeSession abroad — the debit of US-11", () => {
     expect(plan.kwhFromRoaming).toBe(0);
     expect(plan.kwhFromBalance).toBe(10);
     expect(plan.roaming).toBeNull();
+  });
+});
+
+describe("clearing positions and netting — §8 'взаимозачёт с партнёрами'", () => {
+  async function claim(agreementId: string, delivered: number, debited: number, createdAt?: Date) {
+    return prisma.roamingSettlement.create({
+      data: {
+        agreementId,
+        userId: driverId,
+        deliveredKwh: new Prisma.Decimal(delivered),
+        debitedKwh: new Prisma.Decimal(debited),
+        feeKwh: new Prisma.Decimal(1),
+        conversionRate: new Prisma.Decimal(2),
+        ...(createdAt ? { createdAt } : {}),
+      },
+    });
+  }
+
+  it("adds up the open claims of each corridor", async () => {
+    const home = await corridor(HOME, 5);
+    const other = await corridor(OTHER, 5);
+    await claim(home.id, 10, 21);
+    await claim(home.id, 5, 10.5);
+    await claim(other.id, 2, 8.4);
+
+    const positions = await readRoamingPositions();
+    const mine = positions.filter((p) => p.visitedZoneCode === VISIT);
+    const homePos = mine.find((p) => p.homeZoneCode === HOME)!;
+    expect(homePos.partnerName).toBe("Test Clearing");
+    expect(homePos.openSessions).toBe(2);
+    expect(homePos.deliveredKwh).toBe(15);
+    expect(homePos.debitedKwh).toBe(31.5);
+    expect(homePos.feeKwh).toBe(2);
+
+    const otherPos = mine.find((p) => p.homeZoneCode === OTHER)!;
+    expect(otherPos.openSessions).toBe(1);
+    expect(otherPos.deliveredKwh).toBe(2);
+  });
+
+  it("closes a period with the document the operator names, and leaves later claims open", async () => {
+    const home = await corridor(HOME, 5);
+    const old = await claim(home.id, 10, 21, new Date("2026-11-01T10:00:00.000Z"));
+    const recent = await claim(home.id, 4, 8.4, new Date("2026-11-20T10:00:00.000Z"));
+
+    const result = await netRoamingPeriod({
+      agreementId: home.id,
+      upTo: new Date("2026-11-10T00:00:00.000Z"),
+      reference: "SEPA ref 77-2026",
+      actorUserId: operatorId,
+    });
+    expect(result.closedSessions).toBe(1);
+    expect(result.deliveredKwh).toBe(10);
+    expect(result.debitedKwh).toBe(21);
+
+    const closed = await prisma.roamingSettlement.findUniqueOrThrow({ where: { id: old.id } });
+    expect(closed.status).toBe("NETTED");
+    expect(closed.nettedRef).toBe("SEPA ref 77-2026");
+    expect(closed.nettedAt).not.toBeNull();
+
+    const stillOpen = await prisma.roamingSettlement.findUniqueOrThrow({ where: { id: recent.id } });
+    expect(stillOpen.status).toBe("OPEN");
+
+    const audit = await prisma.auditLog.findFirst({
+      where: { entity: "RoamingAgreement", entityId: home.id, action: "roaming.netted" },
+      orderBy: { at: "desc" },
+    });
+    expect(audit).not.toBeNull();
+  });
+
+  it("refuses to close a period without a document to point at", async () => {
+    const home = await corridor(HOME, 5);
+    await claim(home.id, 10, 21);
+    await expect(
+      netRoamingPeriod({
+        agreementId: home.id,
+        upTo: new Date(),
+        reference: "  ",
+        actorUserId: operatorId,
+      }),
+    ).rejects.toThrow(/reference/i);
+  });
+
+  it("closes nothing twice", async () => {
+    const home = await corridor(HOME, 5);
+    await claim(home.id, 10, 21);
+    const first = await netRoamingPeriod({
+      agreementId: home.id,
+      upTo: new Date(Date.now() + 1000),
+      reference: "ref-1",
+      actorUserId: operatorId,
+    });
+    const second = await netRoamingPeriod({
+      agreementId: home.id,
+      upTo: new Date(Date.now() + 1000),
+      reference: "ref-2",
+      actorUserId: operatorId,
+    });
+    expect(first.closedSessions).toBe(1);
+    expect(second.closedSessions).toBe(0);
   });
 });

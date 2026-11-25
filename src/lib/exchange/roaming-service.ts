@@ -305,3 +305,157 @@ export async function quoteRoaming(
     quote,
   };
 }
+
+export interface RoamingPosition {
+  agreementId: string;
+  partnerName: string;
+  homeZoneCode: string;
+  visitedZoneCode: string;
+  feePct: number;
+  dailyLimitKwh: number | null;
+  enabled: boolean;
+  openSessions: number;
+  /** Visited-zone kWh the partner has delivered and not yet been netted for. */
+  deliveredKwh: number;
+  /** Home-zone kWh burned against them. */
+  debitedKwh: number;
+  feeKwh: number;
+  oldestAt: Date | null;
+  lastNettedAt: Date | null;
+  lastNettedRef: string | null;
+}
+
+/**
+ * §8 "клиринговый сервис закрывает разницу между зонами через взаимозачёт с
+ * партнёрами" — what every corridor owes and is owed right now. Every
+ * corridor is listed, including the quiet ones: an operator has to be able to
+ * see that a corridor carried nothing.
+ */
+export async function readRoamingPositions(db: Db = prisma): Promise<RoamingPosition[]> {
+  const agreements = await db.roamingAgreement.findMany({
+    include: { homeZone: { select: { code: true } }, visitedZone: { select: { code: true } } },
+    orderBy: [{ partnerName: "asc" }, { createdAt: "asc" }],
+  });
+  if (agreements.length === 0) return [];
+
+  const ids = agreements.map((a) => a.id);
+  const open = await db.roamingSettlement.groupBy({
+    by: ["agreementId"],
+    where: { agreementId: { in: ids }, status: "OPEN" },
+    _count: { _all: true },
+    _sum: { deliveredKwh: true, debitedKwh: true, feeKwh: true },
+    _min: { createdAt: true },
+  });
+  const netted = await db.roamingSettlement.findMany({
+    where: { agreementId: { in: ids }, status: "NETTED" },
+    orderBy: { nettedAt: "desc" },
+    distinct: ["agreementId"],
+    select: { agreementId: true, nettedAt: true, nettedRef: true },
+  });
+
+  const openBy = new Map(open.map((row) => [row.agreementId, row]));
+  const nettedBy = new Map(netted.map((row) => [row.agreementId, row]));
+
+  return agreements.map((a) => {
+    const o = openBy.get(a.id);
+    const n = nettedBy.get(a.id);
+    return {
+      agreementId: a.id,
+      partnerName: a.partnerName,
+      homeZoneCode: a.homeZone.code,
+      visitedZoneCode: a.visitedZone.code,
+      feePct: num(a.feePct),
+      dailyLimitKwh: numOrNull(a.dailyLimitKwh),
+      enabled: a.enabled,
+      openSessions: o?._count._all ?? 0,
+      deliveredKwh: roundKwh(num(o?._sum.deliveredKwh ?? 0)),
+      debitedKwh: roundKwh(num(o?._sum.debitedKwh ?? 0)),
+      feeKwh: roundKwh(num(o?._sum.feeKwh ?? 0)),
+      oldestAt: o?._min.createdAt ?? null,
+      lastNettedAt: n?.nettedAt ?? null,
+      lastNettedRef: n?.nettedRef ?? null,
+    };
+  });
+}
+
+export interface NetRoamingPeriodInput {
+  agreementId: string;
+  /** Claims created at or before this moment are closed. */
+  upTo: Date;
+  /** What closed them outside the system: a payment or invoice reference. */
+  reference: string;
+  actorUserId: string;
+}
+
+export interface NetRoamingPeriodResult {
+  closedSessions: number;
+  deliveredKwh: number;
+  debitedKwh: number;
+  feeKwh: number;
+}
+
+/**
+ * Close a period of claims against one corridor.
+ *
+ * The money leaves Poolwatt elsewhere — there is no EMI account to pay a
+ * clearing partner from — so what this records is the operator's own
+ * statement that a period was settled, and by which document. It never
+ * invents a transfer, and it never closes a claim twice.
+ */
+export async function netRoamingPeriod(
+  input: NetRoamingPeriodInput,
+  db: Db = prisma,
+): Promise<NetRoamingPeriodResult> {
+  const reference = input.reference.trim();
+  if (reference.length === 0) {
+    throw new Error("A netted period needs the reference of the document that closed it");
+  }
+
+  const agreement = await db.roamingAgreement.findUnique({
+    where: { id: input.agreementId },
+    include: { homeZone: { select: { code: true } }, visitedZone: { select: { code: true } } },
+  });
+  if (!agreement) throw new Error("No such roaming agreement");
+
+  const claims = await db.roamingSettlement.findMany({
+    where: { agreementId: agreement.id, status: "OPEN", createdAt: { lte: input.upTo } },
+    select: { id: true, deliveredKwh: true, debitedKwh: true, feeKwh: true },
+  });
+  if (claims.length === 0) {
+    return { closedSessions: 0, deliveredKwh: 0, debitedKwh: 0, feeKwh: 0 };
+  }
+
+  const totals = claims.reduce(
+    (acc, c) => ({
+      deliveredKwh: acc.deliveredKwh + num(c.deliveredKwh),
+      debitedKwh: acc.debitedKwh + num(c.debitedKwh),
+      feeKwh: acc.feeKwh + num(c.feeKwh),
+    }),
+    { deliveredKwh: 0, debitedKwh: 0, feeKwh: 0 },
+  );
+  const result: NetRoamingPeriodResult = {
+    closedSessions: claims.length,
+    deliveredKwh: roundKwh(totals.deliveredKwh),
+    debitedKwh: roundKwh(totals.debitedKwh),
+    feeKwh: roundKwh(totals.feeKwh),
+  };
+
+  await db.roamingSettlement.updateMany({
+    where: { id: { in: claims.map((c) => c.id) }, status: "OPEN" },
+    data: { status: "NETTED", nettedAt: new Date(), nettedRef: reference },
+  });
+  await writeAudit(db, {
+    actor: input.actorUserId,
+    entity: "RoamingAgreement",
+    entityId: agreement.id,
+    action: "roaming.netted",
+    after: {
+      corridor: `${agreement.homeZone.code}→${agreement.visitedZone.code}`,
+      partnerName: agreement.partnerName,
+      upTo: input.upTo.toISOString(),
+      reference,
+      ...result,
+    },
+  });
+  return result;
+}
