@@ -80,8 +80,8 @@ export default async function AdminReconciliationPage({
                               {check.drifts.slice(0, 10).map((drift) => (
                                 <li key={`${check.name}-${drift.subject}`} className="text-red-400">
                                   <code className="num">{drift.subject}</code>: {t("expected")}{" "}
-                                  <span className="num">{drift.expectedKwh}</span>, {t("found")}{" "}
-                                  <span className="num">{drift.actualKwh}</span>
+                                  <span className="num">{drift.expected}</span>, {t("found")}{" "}
+                                  <span className="num">{drift.actual}</span>
                                   {drift.note ? ` — ${drift.note}` : ""}
                                 </li>
                               ))}

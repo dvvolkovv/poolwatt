@@ -36,13 +36,14 @@ export type CheckName =
   | "wallet-balances"
   | "readings-minted"
   | "orphan-batches"
-  | "asset-daily-totals";
+  | "asset-daily-totals"
+  | "tariff-journal";
 
 export interface Drift {
   /** What disagreed: a wallet id, a reading id, a batch id, an asset id. */
   subject: string;
-  expectedKwh: number;
-  actualKwh: number;
+  expected: number;
+  actual: number;
   note?: string;
 }
 
@@ -75,6 +76,8 @@ export interface ReconcileOptions {
   assetIds?: string[];
   /** Same idea for the wallet check, which is otherwise platform-wide. */
   walletIds?: string[];
+  /** And for the tariff journal check, which is otherwise every network. */
+  operatorIds?: string[];
   /**
    * Who to tell about drift. Injectable so tests do not send mail, and so a
    * later channel (Telegram, a pager) can be added without touching the
@@ -98,8 +101,8 @@ async function checkWalletBalances(walletIds?: string[]): Promise<CheckOutcome> 
   });
   const drifts = (await reconcileWalletBalances(walletIds)).map((d) => ({
     subject: d.walletId,
-    expectedKwh: d.registryKwh,
-    actualKwh: d.cachedKwh,
+    expected: d.registryKwh,
+    actual: d.cachedKwh,
     note: "cached wallet balance disagrees with the batches it holds",
   }));
   return { name: "wallet-balances", checked, drifts };
@@ -131,8 +134,8 @@ async function checkReadingsMinted(
     if (!reading.token) {
       drifts.push({
         subject: reading.id,
-        expectedKwh: expected,
-        actualKwh: 0,
+        expected: expected,
+        actual: 0,
         note: "valid reading has no batch: nothing was issued for it",
       });
       continue;
@@ -141,8 +144,8 @@ async function checkReadingsMinted(
     if (differs(expected, actual)) {
       drifts.push({
         subject: reading.id,
-        expectedKwh: expected,
-        actualKwh: actual,
+        expected: expected,
+        actual: actual,
         note: `batch ${reading.token.id} does not match the reading it was issued from`,
       });
     }
@@ -168,8 +171,8 @@ async function checkOrphanBatches(
     .filter((b) => b.readingId === null && b.parentId === null)
     .map((b) => ({
       subject: b.id,
-      expectedKwh: 0,
-      actualKwh: num(b.amountKwh),
+      expected: 0,
+      actual: num(b.amountKwh),
       note: `batch of asset ${b.assetId} has neither a reading nor a parent batch`,
     }));
 
@@ -213,14 +216,69 @@ async function checkAssetDailyTotals(
     if (differs(row.meterKwh, row.issuedKwh)) {
       drifts.push({
         subject: assetId,
-        expectedKwh: row.meterKwh,
-        actualKwh: row.issuedKwh,
+        expected: row.meterKwh,
+        actual: row.issuedKwh,
         note: "the asset's metered day and its issued day disagree",
       });
     }
   }
   return { name: "asset-daily-totals", checked: byAsset.size, drifts };
 }
+
+/**
+ * 5. §54 — the live tariff against the journal that is supposed to be its only
+ * writer.
+ *
+ * `PricingRule` is what a receipt is rebuilt from, so a price that reached the
+ * table without a version makes that reconstruction wrong. A disagreement here
+ * is a bug in the code — a stray update somewhere — and like every other check
+ * it is reported, never repaired.
+ */
+async function checkTariffJournal(operatorIds?: string[]): Promise<CheckOutcome> {
+  const operators = await prisma.chargerOperator.findMany({
+    where: {
+      pricePerKwh: { not: null },
+      ...(operatorIds ? { id: { in: operatorIds } } : {}),
+    },
+    select: { id: true, displayName: true, pricePerKwh: true },
+  });
+
+  const drifts: Drift[] = [];
+  for (const operator of operators) {
+    const live = num(operator.pricePerKwh);
+    const rule = await prisma.pricingRule.findFirst({
+      where: { scope: "NETWORK_PRICE", scopeId: operator.id },
+      orderBy: { version: "desc" },
+      select: { version: true, params: true },
+    });
+
+    if (!rule) {
+      drifts.push({
+        subject: operator.id,
+        expected: 0,
+        actual: live,
+        note: `${operator.displayName}: price set with no version in the journal`,
+      });
+      continue;
+    }
+
+    const params = rule.params as { pricePerKwh?: number | null } | null;
+    const journal = params?.pricePerKwh ?? 0;
+    if (differsPrice(journal, live)) {
+      drifts.push({
+        subject: operator.id,
+        expected: journal,
+        actual: live,
+        note: `${operator.displayName}: live price per kWh differs from version ${rule.version}`,
+      });
+    }
+  }
+
+  return { name: "tariff-journal", checked: operators.length, drifts };
+}
+
+/** Prices carry four decimals (§16), so the tolerance is finer than a token. */
+const differsPrice = (a: number, b: number) => Math.abs(a - b) > 0.00005;
 
 export async function reconcileRegistry(
   options: ReconcileOptions = {},
@@ -238,6 +296,7 @@ export async function reconcileRegistry(
     await checkReadingsMinted(from, to, options.assetIds),
     await checkOrphanBatches(from, to, options.assetIds),
     await checkAssetDailyTotals(from, to, options.assetIds),
+    await checkTariffJournal(options.operatorIds),
   ];
 
   const driftCount = checks.reduce((sum, c) => sum + c.drifts.length, 0);

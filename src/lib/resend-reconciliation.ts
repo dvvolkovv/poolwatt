@@ -14,7 +14,7 @@ export interface DriftSummary {
   driftCount: number;
   windowFrom: string;
   windowTo: string;
-  checks: { name: string; checked: number; drifts: { subject: string; expectedKwh: number; actualKwh: number; note?: string }[] }[];
+  checks: { name: string; checked: number; drifts: { subject: string; expected: number; actual: number; note?: string }[] }[];
 }
 
 export async function sendReconciliationDrift(summary: DriftSummary): Promise<void> {
@@ -31,8 +31,8 @@ export async function sendReconciliationDrift(summary: DriftSummary): Promise<vo
         .slice(0, 20)
         .map(
           (d) =>
-            `<li><code>${d.subject}</code>: expected <b>${d.expectedKwh}</b> kWh, ` +
-            `found <b>${d.actualKwh}</b> kWh${d.note ? ` — ${d.note}` : ""}</li>`,
+            `<li><code>${d.subject}</code>: expected <b>${d.expected}</b>, ` +
+            `found <b>${d.actual}</b>${d.note ? ` — ${d.note}` : ""}</li>`,
         )
         .join("");
       const more = c.drifts.length > 20 ? `<p>…and ${c.drifts.length - 20} more.</p>` : "";

@@ -138,6 +138,7 @@ const run = (over: Record<string, unknown> = {}) =>
     // files side by side against the same database.
     assetIds: [assetId],
     walletIds: [walletId],
+    operatorIds: [],
     // Injected, so a test never sends mail through the live Resend key.
     notify: async (outcome) => {
       notified.push({ driftCount: outcome.driftCount, runId: outcome.runId });
@@ -158,6 +159,7 @@ describe("reconcileRegistry — a clean registry", () => {
       "readings-minted",
       "orphan-batches",
       "asset-daily-totals",
+      "tariff-journal",
     ]);
 
     const stored = await prisma.reconciliationRun.findUniqueOrThrow({
@@ -191,8 +193,8 @@ describe("reconcileRegistry — wallet balances", () => {
     expect(check?.drifts).toHaveLength(1);
     expect(check?.drifts[0]).toMatchObject({
       subject: walletId,
-      expectedKwh: 4.125,
-      actualKwh: 99,
+      expected: 4.125,
+      actual: 99,
     });
   });
 });
@@ -221,11 +223,11 @@ describe("reconcileRegistry — readings against batches (§16.2)", () => {
     const totals = outcome.checks.find((c) => c.name === "asset-daily-totals");
 
     expect(readings?.drifts).toHaveLength(1);
-    expect(readings?.drifts[0]).toMatchObject({ expectedKwh: 4.125, actualKwh: 41.25 });
+    expect(readings?.drifts[0]).toMatchObject({ expected: 4.125, actual: 41.25 });
     // The per-asset total is the number an operator compares with the grid
     // operator's statement, so it must disagree too.
     expect(totals?.drifts).toHaveLength(1);
-    expect(totals?.drifts[0]).toMatchObject({ subject: assetId, expectedKwh: 4.125, actualKwh: 41.25 });
+    expect(totals?.drifts[0]).toMatchObject({ subject: assetId, expected: 4.125, actual: 41.25 });
   });
 
   it("ignores readings the validator rejected: they must not mint", async () => {
@@ -284,7 +286,7 @@ describe("reconcileRegistry — orphan batches", () => {
 
     expect(outcome.ok).toBe(false);
     expect(check?.drifts).toHaveLength(1);
-    expect(check?.drifts[0]).toMatchObject({ actualKwh: 7 });
+    expect(check?.drifts[0]).toMatchObject({ actual: 7 });
   });
 
   it("accepts a split child, which legitimately has no reading of its own", async () => {
