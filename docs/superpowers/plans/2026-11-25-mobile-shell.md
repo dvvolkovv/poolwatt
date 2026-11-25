@@ -1605,3 +1605,33 @@ do not commit it.
   deliberately absent here.
 - `visibleTabs`, `moreSections`, `TAB_HREF` and `SECTION_HREF` are used in
   Tasks 5, 7 and 8 under exactly the names Task 1 defines.
+
+---
+
+## What was done differently
+
+Recorded so the ticks above are not read as "exactly as written".
+
+- **Task 1** — implementation and test were written in one go, so the failing
+  run was never observed. The eight cases are real and pass.
+- **Task 1, again** — the rule itself changed after the e2e run in Task 9
+  failed: `visibleTabs` now takes "is this account signed in", not the §20
+  tier. §20 calls an account without KYC a guest, and there is no KYC provider
+  (§26), so tying the wallet tab to the tier left a signed-in person with
+  three working screens. The tier still drives the badge and the hub.
+- **Task 6** — the service worker takes the locale as a query parameter on its
+  script URL (`/sw.js?locale=ru`), which gives one registration per language
+  and lets it cache that language's offline screen. The plan hard-coded `/en`.
+- **Task 8** — no `onboarding` placeholder. It belongs to M6 and nothing links
+  to it; an unreachable page is not honesty, it is litter.
+- **Task 10** — `android-build` never ran `cap sync`, so the published APK was
+  the previous shell with every gradle task `UP-TO-DATE`. Build 3 went out with
+  the old URL; the script now syncs first and build 4 carries `/app`.
+- **Task 11** — the SwiftUI app is kept in the repo's history on `main` rather
+  than copied to `poolwatt-ios-swiftui-archive`; the shell lives on
+  `capacitor-shell`. Capacitor 7 resolves its dependencies through SPM, so
+  there is no workspace and no CocoaPods step, and the lane builds
+  `ios/App/App.xcodeproj` with scheme `App`. The pipeline also turned out to be
+  dead before this work started: `bash -lc` on the Mac resolves Apple's system
+  Ruby 2.6, which cannot run a modern bundler, so `bin/build` now pins Homebrew
+  Ruby.
