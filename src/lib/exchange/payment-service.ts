@@ -23,6 +23,7 @@ import { placeOrder, quoteMarketOrder } from "./order-service";
 import { burnTokens } from "./token-registry";
 import { availableFiat, getOrCreateWallet } from "./wallet-service";
 import { availableGiftKwh, spendGrants } from "@/lib/marketing/grant-spend";
+import { pricingAt } from "@/lib/pricing/pricing-service";
 import { receiptStamp } from "@/lib/receipts/receipt-number";
 import { deliverReceipt } from "@/lib/receipts/receipt-delivery";
 
@@ -205,12 +206,22 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
     authBufferPct: input.authBufferPct,
   });
 
+  // §54 — the tariff version this session is priced under, taken once and
+  // stamped on the payment. Everything that reads the price afterwards (the
+  // receipt, the accounting export) reads that version, not whatever the
+  // partner has set since.
+  const tariffVersion = session.pointId
+    ? (await pricingAt("POINT_TARIFF", session.pointId, session.startedAt ?? new Date()))?.version ??
+      null
+    : null;
+
   const payment = await prisma.payment.create({
     data: {
       walletId: wallet.id,
       zoneId: zone.id,
       chargePointId: input.chargePointId ?? null,
       pointId: session.pointId,
+      tariffVersion,
       connectorId: session.connectorId,
       startedAt: session.startedAt,
       endedAt: session.endedAt,

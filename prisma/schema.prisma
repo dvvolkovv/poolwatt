@@ -1764,6 +1764,9 @@ model Payment {
   // once the campaigns of this session's network have been looked at; the
   // worker sweeps whatever the inline attempt missed.
   campaignsEvaluatedAt DateTime?
+  // §54 — the version of the point's tariff this session was priced under, so
+  // an issued receipt does not change when the partner edits the price.
+  tariffVersion        Int?
 
   receipt Receipt?
 

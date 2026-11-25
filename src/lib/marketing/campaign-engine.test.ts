@@ -181,7 +181,7 @@ describe("awardAfterCharge — US-41's first charge in the network", () => {
 
     const second = await charge({ pointId: pointB });
     expect(await awardAfterCharge(second.id)).toHaveLength(0);
-    expect(await prisma.promoGrant.count()).toBe(1);
+    expect(await prisma.promoGrant.count({ where: { operatorId } })).toBe(1);
   });
 
   it("gives nothing twice to one client, even on two campaigns' worth of charges", async () => {
@@ -202,7 +202,7 @@ describe("awardAfterCharge — US-41's first charge in the network", () => {
     const [ra, rb] = await Promise.all([awardAfterCharge(a.id), awardAfterCharge(b.id)]);
 
     expect(ra.length + rb.length).toBe(1);
-    expect(await prisma.promoGrant.count()).toBe(1);
+    expect(await prisma.promoGrant.count({ where: { operatorId } })).toBe(1);
   });
 
   it("gives the N-th charge gift only on the N-th", async () => {
@@ -223,11 +223,11 @@ describe("awardAfterCharge — US-41's first charge in the network", () => {
       at: new Date(Date.now() - 60 * 86_400_000),
     });
     await awardAfterCharge(old.id);
-    expect(await prisma.promoGrant.count()).toBe(0);
+    expect(await prisma.promoGrant.count({ where: { operatorId } })).toBe(0);
 
     const recent = await charge({ pointId: pointA, kwh: 30 });
     await awardAfterCharge(recent.id);
-    expect(await prisma.promoGrant.count()).toBe(0);
+    expect(await prisma.promoGrant.count({ where: { operatorId } })).toBe(0);
 
     const more = await charge({ pointId: pointA, kwh: 25 });
     expect(await awardAfterCharge(more.id)).toHaveLength(1);
@@ -294,7 +294,7 @@ describe("awardAfterCharge — US-41's first charge in the network", () => {
     const payment = await charge({ pointId: pointA });
     await awardAfterCharge(payment.id);
     expect(await awardAfterCharge(payment.id)).toHaveLength(0);
-    expect(await prisma.promoGrant.count()).toBe(1);
+    expect(await prisma.promoGrant.count({ where: { operatorId } })).toBe(1);
   });
 
   it("writes what it did to the audit log", async () => {
@@ -324,7 +324,7 @@ describe("sweepPendingAwards — US-41's 'within a minute'", () => {
 
     expect(touched).toContain(pending.id);
     expect(touched).not.toContain(done.id);
-    expect(await prisma.promoGrant.count()).toBe(1);
+    expect(await prisma.promoGrant.count({ where: { operatorId } })).toBe(1);
   });
 });
 

@@ -264,6 +264,12 @@ describe("one price for the whole network (§52)", () => {
         currency: "EUR",
       }),
     ).rejects.toThrow();
-    expect(await prisma.pricingRule.count({ where: { scope: "NETWORK_PRICE" } })).toBe(0);
+    // Scoped to the id that was asked for: other suites have networks of
+    // their own in this database.
+    expect(
+      await prisma.pricingRule.count({
+        where: { scope: "NETWORK_PRICE", scopeId: "no-such-operator" },
+      }),
+    ).toBe(0);
   });
 });

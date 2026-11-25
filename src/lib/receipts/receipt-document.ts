@@ -10,7 +10,8 @@
 // VAT rate from the partner means the tax line says so; no point behind the
 // payment means no branding. The row holds what happened; this maps it.
 
-import type { AssetKind } from "@prisma/client";
+import type { AssetKind, Prisma } from "@prisma/client";
+import { pricingVersion } from "@/lib/pricing/pricing-service";
 import { prisma } from "@/lib/prisma";
 import { num, numOrNull } from "@/lib/exchange/decimal";
 import { roundKwh, roundMoney } from "@/lib/exchange/precision";
@@ -134,6 +135,45 @@ function tokenPrice(
   return null;
 }
 
+/**
+ * §54 — the tariff this receipt was issued under.
+ *
+ * A payment stamped with a version gets that version's snapshot, so an issued
+ * document never changes when the partner edits the price. A payment from
+ * before versions existed, or one at a point that never had a tariff, falls
+ * back to the live rows: that is the best the data allows, and it is what the
+ * receipt already did.
+ */
+async function tariffForReceipt(args: {
+  pointId: string | null;
+  tariffVersion: number | null;
+  liveTariffs: TariffShape[];
+  at: Date | null;
+}): Promise<TariffShape | null> {
+  if (args.pointId && args.tariffVersion != null) {
+    const rule = await pricingVersion("POINT_TARIFF", args.pointId, args.tariffVersion);
+    const params = rule?.params as { tariffs?: TariffShape[] } | null;
+    if (params?.tariffs && params.tariffs.length > 0) {
+      return tariffAt(params.tariffs, args.at);
+    }
+  }
+  return tariffAt(args.liveTariffs, args.at);
+}
+
+/**
+ * What a tariff row looks like, live or as a stored snapshot. The live rows
+ * carry `Prisma.Decimal`; the snapshot in `PricingRule.params` carries plain
+ * numbers, because that is what JSON holds.
+ */
+interface TariffShape {
+  fromMinute: number;
+  toMinute: number;
+  priceFiat?: Prisma.Decimal | number | string | null;
+  priceTokens?: Prisma.Decimal | number | string | null;
+  idleFeePerMin?: Prisma.Decimal | number | string | null;
+  coopDiscount?: number | null;
+}
+
 /** The tariff row covering a given moment, or the point's only row. */
 function tariffAt<T extends { fromMinute: number; toMinute: number }>(
   tariffs: T[],
@@ -214,7 +254,12 @@ export async function buildReceiptDocument(
   const boughtFiat = numberFrom(b, "energyCost") ?? (kind === "charge" ? totalFiat : 0);
   const fromGiftKwh = numberFrom(b, "kwhFromGift") ?? 0;
 
-  const tariff = tariffAt(point?.tariffs ?? [], session?.startedAt ?? null);
+  const tariff = await tariffForReceipt({
+    pointId: point?.id ?? null,
+    tariffVersion: receipt.payment?.tariffVersion ?? null,
+    liveTariffs: point?.tariffs ?? [],
+    at: session?.startedAt ?? null,
+  });
   const burnedKwh = fromBalanceKwh + fromGiftKwh;
 
   const pricePerKwhFiat =
