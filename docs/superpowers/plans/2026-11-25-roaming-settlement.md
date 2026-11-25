@@ -8,7 +8,7 @@
 - [x] 2. Водопад. Ступень роуминга в `planCharge` (`src/lib/exchange/charge.ts`):
       новый вход `roaming`, выходы `kwhFromRoaming`, `roamingDebitKwh`,
       `roamingFeeKwh`, источник `"roaming"`; тесты в `charge.test.ts`.
-- [ ] 3. Схема. Модель `RoamingSettlement` и перечисление статуса, миграция.
+- [x] 3. Схема. Модель `RoamingSettlement` и перечисление статуса, миграция.
 - [ ] 4. Коридор для сессии. `resolveRoamingLeg` в `roaming-service.ts`:
       домашняя зона, коридор, курс, остаток суточного предела из сеансов за
       сутки; `quoteRoaming` считает предел накопленным за сутки. Тесты.

@@ -65,6 +65,7 @@ model User {
   settlementAccount SettlementAccount?   @relation("UserSettlementAccount")
   coopMemberships   CoopMember[]         @relation("CoopMembership")
   promoGrants       PromoGrant[]         @relation("PromoGrantHolder")
+  roamingSessions   RoamingSettlement[]  @relation("RoamingDriver")
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -1790,7 +1791,8 @@ model Payment {
   // an issued receipt does not change when the partner edits the price.
   tariffVersion        Int?
 
-  receipt Receipt?
+  receipt           Receipt?
+  roamingSettlement RoamingSettlement?
 
   @@index([walletId, createdAt])
   @@index([status])
@@ -2095,8 +2097,48 @@ model RoamingAgreement {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  settlements RoamingSettlement[]
+
   @@unique([homeZoneId, visitedZoneId])
   @@index([visitedZoneId])
+}
+
+// §8 "клиринговый сервис закрывает разницу между зонами через взаимозачёт с
+// партнёрами", US-11. One row per roaming session: what the partner delivered
+// abroad, what was burned at home for it, and the rate it was converted at.
+// This is the ledger the netting is done from — nothing else records that a
+// session crossed a border.
+model RoamingSettlement {
+  id             String                  @id @default(cuid())
+  agreementId    String
+  agreement      RoamingAgreement        @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                    @relation("RoamingDriver", fields: [userId], references: [id], onDelete: Cascade)
+  // Unique: a replayed Idempotency-Key must not produce a second claim.
+  paymentId      String?                 @unique
+  payment        Payment?                @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  // Visited-zone kWh the clearing partner delivered.
+  deliveredKwh   Decimal                 @db.Decimal(18, 3)
+  // Home-zone kWh burned for them, the corridor fee included.
+  debitedKwh     Decimal                 @db.Decimal(18, 3)
+  feeKwh         Decimal                 @default(0) @db.Decimal(18, 3)
+  // The rate of this session, kept so a later price move cannot rewrite it.
+  conversionRate Decimal                 @db.Decimal(12, 4)
+  burnedTokenIds String[]
+  status         RoamingSettlementStatus @default(OPEN)
+  nettedAt       DateTime?
+  // Whatever closed the period outside the system: a payment reference, an
+  // invoice number. The operator writes it; we never invent it.
+  nettedRef      String?
+  createdAt      DateTime                @default(now())
+
+  @@index([agreementId, status])
+  @@index([userId, agreementId, createdAt])
+}
+
+enum RoamingSettlementStatus {
+  OPEN
+  NETTED
 }
 
 // §15 — "Все POST-запросы с ключом идемпотентности". One row per
