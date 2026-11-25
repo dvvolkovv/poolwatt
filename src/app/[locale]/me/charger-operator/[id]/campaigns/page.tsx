@@ -81,6 +81,7 @@ export default async function CampaignsPage({
             triggerVolume: t("field.triggerVolume"),
             triggerPeriodDays: t("field.triggerPeriodDays"),
             giftKwh: t("field.giftKwh"),
+            cashbackPct: t("field.cashbackPct"),
             scope: t("field.scope"),
             scopeAll: t("field.scopeAll"),
             validityDays: t("field.validityDays"),
@@ -94,7 +95,10 @@ export default async function CampaignsPage({
             from: t("field.from"),
             to: t("field.to"),
             create: t("create"),
-            triggerNames: names(["FIRST_CHARGE", "NTH_CHARGE", "VOLUME_PERIOD"], "trigger"),
+            triggerNames: names(
+              ["FIRST_CHARGE", "NTH_CHARGE", "VOLUME_PERIOD", "TOKEN_PAYMENT"],
+              "trigger",
+            ),
           }}
         />
       </section>
@@ -112,7 +116,17 @@ export default async function CampaignsPage({
                   <span className="text-[12px] text-muted">
                     {t(`status.${c.status}`)} · {t(`trigger.${c.trigger}`)}
                     {c.triggerN != null ? ` (${c.triggerN})` : ""} ·{" "}
-                    <span className="num">{c.giftKwh}</span> {t("kwh")} ·{" "}
+                    {/* US-12 — a cashback campaign has a share, not a gift. */}
+                    {c.cashbackPct != null ? (
+                      <>
+                        <span className="num">{c.cashbackPct}</span> %
+                      </>
+                    ) : (
+                      <>
+                        <span className="num">{c.giftKwh}</span> {t("kwh")}
+                      </>
+                    )}{" "}
+                    ·{" "}
                     {c.scopePointIds.length === 0
                       ? t("wholeNetwork")
                       : `${c.scopePointIds.length} ${t("pointCount")}`}

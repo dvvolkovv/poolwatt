@@ -1767,7 +1767,8 @@
     "roamingRate": "Prepočítavací kurz",
     "roamingDebit": "Odpísané v domácej zóne",
     "roamingFee": "Provízia koridoru",
-    "roamingPartner": "Zúčtovací partner"
+    "roamingPartner": "Zúčtovací partner",
+    "cashbackKwh": "Priznaný cashback"
   },
   "accounting": {
     "eyebrow": "Účtovníctvo",
@@ -1924,12 +1925,14 @@
       "funding": "Zdroj",
       "zone": "Zóna",
       "from": "Od",
-      "to": "Do"
+      "to": "Do",
+      "cashbackPct": "Cashback, %"
     },
     "trigger": {
       "FIRST_CHARGE": "Prvé nabíjanie v sieti",
       "NTH_CHARGE": "N-té nabíjanie",
-      "VOLUME_PERIOD": "kWh za obdobie"
+      "VOLUME_PERIOD": "kWh za obdobie",
+      "TOKEN_PAYMENT": "Platba tokenmi"
     },
     "funding": {
       "TOKENS": "Vlastná výroba",
@@ -1955,7 +1958,10 @@
     "of": "z",
     "onlyHere": "Len na staniciach {network}.",
     "showStations": "Zobraziť stanice",
-    "walletLink": "Darčeky"
+    "walletLink": "Darčeky",
+    "cashback": "cashback",
+    "cashbackPct": "cashback {pct} %",
+    "fromCharge": "Doklad o nabíjaní"
   },
   "pricing": {
     "eyebrow": "Vaša ekonomika",

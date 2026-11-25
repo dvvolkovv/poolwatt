@@ -53,7 +53,20 @@ export default async function GiftsPage({
             {gifts.map((g) => (
               <li key={g.id} className="space-y-1.5 py-4">
                 <div className="flex flex-wrap items-baseline justify-between gap-3">
-                  <span className="text-[15px] font-medium">{g.networkName}</span>
+                  <span className="text-[15px] font-medium">
+                    {g.networkName}
+                    {/* US-12 — cashback and a gift are not the same thing. */}
+                    {g.kind === "cashback" && (
+                      <span
+                        className="ml-2 rounded border border-hairline px-1.5 py-0.5 text-[11px] text-muted"
+                        data-testid="gift-cashback-badge"
+                      >
+                        {g.cashbackPct == null
+                          ? t("cashback")
+                          : t("cashbackPct", { pct: g.cashbackPct })}
+                      </span>
+                    )}
+                  </span>
                   <span className="text-[15px]">
                     <span className="num font-semibold">{g.remainingKwh}</span> {t("kwh")}
                   </span>
@@ -70,6 +83,17 @@ export default async function GiftsPage({
                   )}
                 </div>
                 <p className="text-[12px] text-muted">{t("onlyHere", { network: g.networkName })}</p>
+                {/* US-12 "отображение в истории" — the charge it came from. */}
+                {g.receiptId && (
+                  <Link
+                    href={`/${locale}/me/wallet/receipts/${g.receiptId}`}
+                    prefetch={false}
+                    data-testid="gift-receipt-link"
+                    className="inline-block text-[12px] underline hover:text-accent"
+                  >
+                    {t("fromCharge")} →
+                  </Link>
+                )}
                 <Link
                   href={`/${locale}/navigator?q=${encodeURIComponent(g.networkName)}`}
                   prefetch={false}

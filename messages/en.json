@@ -1767,7 +1767,8 @@
     "roamingRate": "Conversion rate",
     "roamingDebit": "Debited in the home zone",
     "roamingFee": "Corridor fee",
-    "roamingPartner": "Clearing partner"
+    "roamingPartner": "Clearing partner",
+    "cashbackKwh": "Cashback earned"
   },
   "accounting": {
     "eyebrow": "Accounting",
@@ -1924,12 +1925,14 @@
       "funding": "Funded from",
       "zone": "Zone",
       "from": "From",
-      "to": "To"
+      "to": "To",
+      "cashbackPct": "Cashback, %"
     },
     "trigger": {
       "FIRST_CHARGE": "First charge in the network",
       "NTH_CHARGE": "N-th charge",
-      "VOLUME_PERIOD": "kWh charged over a period"
+      "VOLUME_PERIOD": "kWh charged over a period",
+      "TOKEN_PAYMENT": "Payment in tokens"
     },
     "funding": {
       "TOKENS": "Your own generation",
@@ -1955,7 +1958,10 @@
     "of": "of",
     "onlyHere": "Only at {network} stations.",
     "showStations": "Show stations",
-    "walletLink": "Gifts"
+    "walletLink": "Gifts",
+    "cashback": "cashback",
+    "cashbackPct": "cashback {pct} %",
+    "fromCharge": "The charge's receipt"
   },
   "pricing": {
     "eyebrow": "Your economy",

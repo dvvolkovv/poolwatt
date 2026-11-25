@@ -1767,7 +1767,8 @@
     "roamingRate": "Курс пересчёта",
     "roamingDebit": "Списано в домашней зоне",
     "roamingFee": "Комиссия коридора",
-    "roamingPartner": "Партнёр по взаимозачёту"
+    "roamingPartner": "Партнёр по взаимозачёту",
+    "cashbackKwh": "Начислено кэшбэка"
   },
   "accounting": {
     "eyebrow": "Бухгалтерия",
@@ -1924,12 +1925,14 @@
       "funding": "Источник",
       "zone": "Зона",
       "from": "С",
-      "to": "По"
+      "to": "По",
+      "cashbackPct": "Кэшбэк, %"
     },
     "trigger": {
       "FIRST_CHARGE": "Первая зарядка в сети",
       "NTH_CHARGE": "N-ная зарядка",
-      "VOLUME_PERIOD": "Объём зарядки за период"
+      "VOLUME_PERIOD": "Объём зарядки за период",
+      "TOKEN_PAYMENT": "Оплата токенами"
     },
     "funding": {
       "TOKENS": "Своя выработка",
@@ -1955,7 +1958,10 @@
     "of": "из",
     "onlyHere": "Только на станциях {network}.",
     "showStations": "Показать станции",
-    "walletLink": "Подарки"
+    "walletLink": "Подарки",
+    "cashback": "кэшбэк",
+    "cashbackPct": "кэшбэк {pct} %",
+    "fromCharge": "Чек зарядки"
   },
   "pricing": {
     "eyebrow": "Ваша экономика",

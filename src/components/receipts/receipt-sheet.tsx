@@ -157,8 +157,18 @@ export async function ReceiptSheet({ doc }: { doc: ReceiptDocument }) {
       )}
 
       {/* §46.6 — cashback and bonuses, when there are any. */}
-      {(doc.cashbackFiat != null || doc.bonusKwh != null) && (
+      {(doc.cashbackKwh != null || doc.cashbackFiat != null || doc.bonusKwh != null) && (
         <Section title={t("rewards")}>
+          {doc.cashbackKwh != null && (
+            <Row
+              label={
+                doc.cashbackPct == null
+                  ? t("cashbackKwh")
+                  : `${t("cashbackKwh")} ${doc.cashbackPct} %`
+              }
+              value={`${doc.cashbackKwh.toFixed(3)} kWh`}
+            />
+          )}
           {doc.cashbackFiat != null && (
             <Row label={t("cashback")} value={`${doc.cashbackFiat.toFixed(2)} ${cur}`} />
           )}

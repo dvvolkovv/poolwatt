@@ -6,7 +6,7 @@
 import { useState, useTransition } from "react";
 import { createCampaignAction } from "@/app/[locale]/me/charger-operator/[id]/campaigns/actions";
 
-const TRIGGERS = ["FIRST_CHARGE", "NTH_CHARGE", "VOLUME_PERIOD"] as const;
+const TRIGGERS = ["FIRST_CHARGE", "NTH_CHARGE", "VOLUME_PERIOD", "TOKEN_PAYMENT"] as const;
 type Trigger = (typeof TRIGGERS)[number];
 
 export interface CampaignFormLabels {
@@ -17,6 +17,7 @@ export interface CampaignFormLabels {
   triggerVolume: string;
   triggerPeriodDays: string;
   giftKwh: string;
+  cashbackPct: string;
   scope: string;
   scopeAll: string;
   validityDays: string;
@@ -49,6 +50,7 @@ export function CampaignForm({
   const [triggerN, setTriggerN] = useState("");
   const [triggerPeriodDays, setTriggerPeriodDays] = useState("30");
   const [giftKwh, setGiftKwh] = useState("10");
+  const [cashbackPct, setCashbackPct] = useState("5");
   const [scopePointIds, setScopePointIds] = useState<string[]>([]);
   const [validityDays, setValidityDays] = useState("30");
   const [oncePerClient, setOncePerClient] = useState(true);
@@ -78,10 +80,12 @@ export function CampaignForm({
             triggerN: trigger === "FIRST_CHARGE" ? null : numberOrNull(triggerN),
             triggerPeriodDays:
               trigger === "VOLUME_PERIOD" ? numberOrNull(triggerPeriodDays) : null,
-            giftKwh: Number(giftKwh),
+            // US-12 — a cashback campaign is priced in percent, not in kWh.
+            giftKwh: trigger === "TOKEN_PAYMENT" ? 0 : Number(giftKwh),
+            cashbackPct: trigger === "TOKEN_PAYMENT" ? Number(cashbackPct) : null,
             scopePointIds,
             validityDays: Number(validityDays),
-            oncePerClient,
+            oncePerClient: trigger === "TOKEN_PAYMENT" ? false : oncePerClient,
             minNextChargeKwh: numberOrNull(minNextChargeKwh),
             budgetKwh: Number(budgetKwh),
             fundingSource,
@@ -144,7 +148,7 @@ export function CampaignForm({
           </select>
         </label>
 
-        {trigger !== "FIRST_CHARGE" && (
+        {trigger !== "FIRST_CHARGE" && trigger !== "TOKEN_PAYMENT" && (
           <label className="block text-sm">
             <span className="mb-1 block text-[11px] uppercase tracking-[0.14em] text-muted">
               {trigger === "NTH_CHARGE" ? labels.triggerNth : labels.triggerVolume}
@@ -178,20 +182,39 @@ export function CampaignForm({
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
-        <label className="block text-sm">
-          <span className="mb-1 block text-[11px] uppercase tracking-[0.14em] text-muted">
-            {labels.giftKwh}
-          </span>
-          <input
-            type="number"
-            min={0.001}
-            step={0.001}
-            value={giftKwh}
-            onChange={(e) => setGiftKwh(e.target.value)}
-            aria-label={labels.giftKwh}
-            className="num w-28 rounded border border-hairline bg-bg px-3 py-1.5 text-sm"
-          />
-        </label>
+        {trigger === "TOKEN_PAYMENT" ? (
+          <label className="block text-sm">
+            <span className="mb-1 block text-[11px] uppercase tracking-[0.14em] text-muted">
+              {labels.cashbackPct}
+            </span>
+            <input
+              type="number"
+              min={0.01}
+              max={100}
+              step={0.01}
+              value={cashbackPct}
+              onChange={(e) => setCashbackPct(e.target.value)}
+              aria-label={labels.cashbackPct}
+              data-testid="campaign-cashback-pct"
+              className="num w-28 rounded border border-hairline bg-bg px-3 py-1.5 text-sm"
+            />
+          </label>
+        ) : (
+          <label className="block text-sm">
+            <span className="mb-1 block text-[11px] uppercase tracking-[0.14em] text-muted">
+              {labels.giftKwh}
+            </span>
+            <input
+              type="number"
+              min={0.001}
+              step={0.001}
+              value={giftKwh}
+              onChange={(e) => setGiftKwh(e.target.value)}
+              aria-label={labels.giftKwh}
+              className="num w-28 rounded border border-hairline bg-bg px-3 py-1.5 text-sm"
+            />
+          </label>
+        )}
         <label className="block text-sm">
           <span className="mb-1 block text-[11px] uppercase tracking-[0.14em] text-muted">
             {labels.validityDays}
@@ -273,14 +296,18 @@ export function CampaignForm({
           <span className="mt-1 block text-[12px] text-muted">{labels.scopeAll}</span>
         </label>
 
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={oncePerClient}
-            onChange={(e) => setOncePerClient(e.target.checked)}
-          />
-          {labels.oncePerClient}
-        </label>
+        {/* US-12 — cashback is earned by every token payment, so the
+            once-per-client limit does not apply to it. */}
+        {trigger !== "TOKEN_PAYMENT" && (
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={oncePerClient}
+              onChange={(e) => setOncePerClient(e.target.checked)}
+            />
+            {labels.oncePerClient}
+          </label>
+        )}
       </div>
 
       <div className="flex flex-wrap items-end gap-3">

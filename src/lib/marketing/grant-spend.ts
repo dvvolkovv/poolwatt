@@ -17,7 +17,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { type Db, writeAudit } from "@/lib/exchange/audit";
-import { num } from "@/lib/exchange/decimal";
+import { num, numOrNull } from "@/lib/exchange/decimal";
 import { isKwhDust, roundKwh } from "@/lib/exchange/precision";
 import { burnTokens } from "@/lib/exchange/token-registry";
 
@@ -228,6 +228,12 @@ export interface MyGift {
   remainingKwh: number;
   expiresAt: Date;
   campaignName: string;
+  /** US-12 — a gift of §42 or cashback for paying in tokens. */
+  kind: "gift" | "cashback";
+  /** The share that earned it, for a cashback. */
+  cashbackPct: number | null;
+  /** The charge that earned it, so its receipt can be opened from history. */
+  receiptId: string | null;
   /** How many stations this gift is good at, for the "show me" button. */
   pointCount: number;
   /** Null when the gift is good across the whole network. */
@@ -249,7 +255,10 @@ export async function readMyGifts(userId: string): Promise<MyGift[]> {
     orderBy: [{ expiresAt: "asc" }, { issuedAt: "asc" }],
     include: {
       operator: { select: { id: true, slug: true, displayName: true } },
-      campaign: { select: { name: true, scopePointIds: true } },
+      campaign: {
+        select: { name: true, scopePointIds: true, trigger: true, cashbackPct: true },
+      },
+      payment: { select: { receipt: { select: { id: true } } } },
     },
   });
 
@@ -273,6 +282,9 @@ export async function readMyGifts(userId: string): Promise<MyGift[]> {
         remainingKwh: roundKwh(Math.max(0, num(g.amountKwh) - num(g.usedKwh))),
         expiresAt: g.expiresAt,
         campaignName: g.campaign.name,
+        kind: g.campaign.trigger === "TOKEN_PAYMENT" ? ("cashback" as const) : ("gift" as const),
+        cashbackPct: numOrNull(g.campaign.cashbackPct),
+        receiptId: g.payment?.receipt?.id ?? null,
         pointCount,
         scopePointIds: g.campaign.scopePointIds,
       };
