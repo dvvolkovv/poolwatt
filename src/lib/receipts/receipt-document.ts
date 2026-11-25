@@ -104,7 +104,13 @@ export interface ReceiptDocument {
    */
   roaming: ReceiptRoaming | null;
 
-  /** §46 item 6. Null while US-12 has not landed. */
+  /**
+   * §46 item 6 "Начисленный кэшбэк". US-12 pays it back in promo kWh out of
+   * the partner's own generation; the money half waits for the EMI, and
+   * `cashbackFiat` is where it will go.
+   */
+  cashbackKwh: number | null;
+  cashbackPct: number | null;
   cashbackFiat: number | null;
   bonusKwh: number | null;
 
@@ -327,6 +333,8 @@ export async function buildReceiptDocument(
       cardFiat: roundMoney(kind === "charge" ? boughtFiat : totalFiat),
     },
     roaming,
+    cashbackKwh: numberFrom(b, "cashbackKwh"),
+    cashbackPct: numberFrom(b, "cashbackPct"),
     cashbackFiat: numberFrom(b, "cashbackFiat"),
     bonusKwh: numberFrom(b, "bonusKwh"),
     vat: splitVat(totalFiat, numOrNull(accounting?.vatRatePct ?? null)),

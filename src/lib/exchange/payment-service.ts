@@ -29,6 +29,7 @@ import {
 import { burnTokens } from "./token-registry";
 import { availableFiat, getOrCreateWallet } from "./wallet-service";
 import { availableGiftKwh, spendGrants } from "@/lib/marketing/grant-spend";
+import { awardCashback } from "@/lib/marketing/campaign-engine";
 import { splitSessionRevenue, subpartnerFeePctFor } from "@/lib/pricing/subpartner-service";
 import { pricingAt } from "@/lib/pricing/pricing-service";
 import { receiptStamp } from "@/lib/receipts/receipt-number";
@@ -109,6 +110,8 @@ export interface ChargeResult {
   /** §8, US-11 — kWh the clearing partner delivered against the home balance. */
   kwhFromRoaming: number;
   kwhBought: number;
+  /** §8, US-12 — promo kWh this session earned back for paying in tokens. */
+  cashbackKwh: number;
   unservedKwh: number;
   authorizedFiat: number;
   amountFiat: number;
@@ -207,6 +210,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
         kwhFromBalance: num(existing.kwhFromBalance),
         kwhFromRoaming: num(existing.kwhFromRoaming),
         kwhBought: num(existing.kwhBought),
+        cashbackKwh: cashbackOf(existing.receipt),
         unservedKwh: roundKwh(
           num(existing.requestedKwh) -
             num(existing.kwhFromBalance) -
@@ -284,6 +288,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       kwhFromBalance: 0,
       kwhFromRoaming: 0,
       kwhBought: 0,
+      cashbackKwh: 0,
       unservedKwh: requested,
       authorizedFiat: plan.authorizedFiat,
       amountFiat: 0,
@@ -352,6 +357,8 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
 
   let giftSpent = 0;
   let giftNetwork: string | null = null;
+  let cashbackKwh = 0;
+  let cashbackPct = 0;
   let roamingKwh = 0;
   let roamingDebitKwh = 0;
   let roamingFeeKwh = 0;
@@ -367,6 +374,8 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
     roamingKwh = 0;
     roamingDebitKwh = 0;
     roamingFeeKwh = 0;
+    cashbackKwh = 0;
+    cashbackPct = 0;
 
     // §43 — the gift is spent first, out of the partner's own batches. What
     // it could not cover the driver pays for out of their own balance, which
@@ -457,6 +466,30 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       subpartnerFeePct: subpartner.pct,
     });
 
+    // §8, US-12 — what the driver paid for with their own tokens, wherever
+    // those tokens lived. The gift is not a payment and bought kWh were paid
+    // for with money, so neither earns anything back.
+    const paidInTokensKwh = roundKwh(
+      Math.max(0, fromOwnCovered - kwhBought) + roamingKwh,
+    );
+    if (session.pointId && !isKwhDust(paidInTokensKwh)) {
+      const point = await tx.acceptancePoint.findUnique({
+        where: { id: session.pointId },
+        select: { operatorId: true },
+      });
+      if (point) {
+        const accruals = await awardCashback(tx, {
+          userId: input.userId,
+          paymentId: payment.id,
+          operatorId: point.operatorId,
+          pointId: session.pointId,
+          paidInTokensKwh,
+        });
+        cashbackKwh = roundKwh(accruals.reduce((sum, a) => sum + a.kwh, 0));
+        cashbackPct = accruals.reduce((max, a) => Math.max(max, a.pct), 0);
+      }
+    }
+
     const receipt = await tx.receipt.create({
       data: {
         ...(await receiptStamp(tx)),
@@ -491,6 +524,10 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
           roamingRate: roamingKwh > 0 ? (plan.roaming?.conversionRate ?? null) : null,
           roamingDebitKwh,
           roamingFeeKwh,
+          // §46.6 "Начисленный кэшбэк" — written onto the document, so a
+          // partner who changes the share later cannot change a closed one.
+          cashbackKwh,
+          cashbackPct: cashbackKwh > 0 ? cashbackPct : null,
           unservedKwh: roundKwh(requested - deliveredKwh),
           energyCost,
           marketOrderId,
@@ -526,6 +563,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
         kwhFromBalance: roundKwh(deliveredKwh - giftSpent - roamingKwh - kwhBought),
         kwhFromRoaming: roamingKwh,
         roamingDebitKwh,
+        cashbackKwh,
         kwhBought,
         amountFiat: energyCost,
         authorizedFiat: plan.authorizedFiat,
@@ -557,6 +595,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
     kwhFromBalance: roundKwh(deliveredKwh - giftSpent - roamingKwh - kwhBought),
     kwhFromRoaming: roamingKwh,
     kwhBought,
+    cashbackKwh,
     unservedKwh: roundKwh(requested - deliveredKwh),
     authorizedFiat: plan.authorizedFiat,
     amountFiat: energyCost,
@@ -699,6 +738,13 @@ async function awardGiftsAfterCharge(paymentId: string): Promise<void> {
  * an idempotent replay, where the plan is long gone and the receipt's own
  * breakdown is the record (§46 "Состав чека").
  */
+function cashbackOf(receipt: { breakdown: unknown } | null | undefined): number {
+  if (!receipt) return 0;
+  const b = receipt.breakdown as Record<string, unknown> | null;
+  const value = b?.cashbackKwh;
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
 function giftOf(receipt: { breakdown: unknown } | null | undefined): number {
   if (!receipt) return 0;
   const b = receipt.breakdown as Record<string, unknown> | null;
