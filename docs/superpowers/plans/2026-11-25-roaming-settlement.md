@@ -12,7 +12,7 @@
 - [x] 4. Коридор для сессии. `resolveRoamingLeg` в `roaming-service.ts`:
       домашняя зона, коридор, курс, остаток суточного предела из сеансов за
       сутки; `quoteRoaming` считает предел накопленным за сутки. Тесты.
-- [ ] 5. Списание. `quoteCharge` и `chargeSession` в `payment-service.ts`
+- [x] 5. Списание. `quoteCharge` и `chargeSession` в `payment-service.ts`
       сжигают домашние партии, пишут `RoamingSettlement` и строки роуминга в
       чек в той же транзакции. Интеграционные тесты, включая повтор ключа и
       две одновременные сессии.

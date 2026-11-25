@@ -1770,6 +1770,9 @@ model Payment {
   endedAt              DateTime?
   requestedKwh         Decimal          @db.Decimal(18, 3)
   kwhFromBalance       Decimal          @default(0) @db.Decimal(18, 3)
+  // §8, US-11 — kWh a clearing partner delivered in this zone against the
+  // driver's balance in another one.
+  kwhFromRoaming       Decimal          @default(0) @db.Decimal(18, 3)
   kwhBought            Decimal          @default(0) @db.Decimal(18, 3)
   // Authorized with the §16.6 buffer; captured at the real execution price.
   authorizedFiat       Decimal          @default(0) @db.Decimal(18, 2)

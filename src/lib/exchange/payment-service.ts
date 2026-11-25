@@ -20,6 +20,12 @@ import type { MatchResult } from "./matching";
 import { isKwhDust, roundKwh, roundMoney } from "./precision";
 import { notifyWallets } from "./realtime-notify";
 import { placeOrder, quoteMarketOrder } from "./order-service";
+import { roamingAffordableKwh, roamingDebit } from "./roaming";
+import {
+  resolveRoamingLeg,
+  roamingUsedTodayKwh,
+  type RoamingLegView,
+} from "./roaming-service";
 import { burnTokens } from "./token-registry";
 import { availableFiat, getOrCreateWallet } from "./wallet-service";
 import { availableGiftKwh, spendGrants } from "@/lib/marketing/grant-spend";
@@ -100,6 +106,8 @@ export interface ChargeResult {
   /** §43 promo kWh spent on this session; the driver pays nothing for them. */
   kwhFromGift: number;
   kwhFromBalance: number;
+  /** §8, US-11 — kWh the clearing partner delivered against the home balance. */
+  kwhFromRoaming: number;
   kwhBought: number;
   unservedKwh: number;
   authorizedFiat: number;
@@ -129,7 +137,7 @@ function quoteToMatch(q: { filledKwh: number; notional: number; avgPrice: number
  */
 export async function quoteCharge(
   input: Omit<ChargeInput, "idempotencyKey">,
-): Promise<ChargePlan & { currency: string }> {
+): Promise<ChargePlan & { currency: string; roaming: RoamingLegView | null }> {
   const zone = await prisma.gridZone.findUniqueOrThrow({ where: { id: input.zoneId } });
   const wallet = await getOrCreateWallet(input.userId, zone.id);
   const requested = roundKwh(input.requestedKwh);
@@ -140,7 +148,14 @@ export async function quoteCharge(
   const giftKwh = await availableGiftKwh(input.userId, input.pointId ?? null);
 
   const afterGift = roundKwh(Math.max(0, requested - Math.min(giftKwh, requested)));
-  const shortfall = roundKwh(Math.max(0, afterGift - Math.min(balance, afterGift)));
+  const afterBalance = roundKwh(Math.max(0, afterGift - Math.min(balance, afterGift)));
+
+  // §8, US-11 — the kWh the driver bought in another zone come before any
+  // purchase for money, so the book is only asked about what is left after
+  // the corridor has taken its part.
+  const leg = afterBalance > 0 ? await resolveRoamingLeg({ userId: input.userId, visitedZoneId: zone.id }) : null;
+  const fromRoaming = leg ? Math.min(leg.maxKwh, afterBalance) : 0;
+  const shortfall = roundKwh(Math.max(0, afterBalance - fromRoaming));
 
   const quote =
     shortfall > 0
@@ -156,13 +171,16 @@ export async function quoteCharge(
     requestedKwh: requested,
     giftKwh,
     walletKwhBalance: balance,
+    roaming: leg
+      ? { maxKwh: leg.maxKwh, conversionRate: leg.conversionRate, feePct: leg.feePct }
+      : null,
     market: quoteToMatch(quote),
     aggregatorPrice: numOrNull(zone.spotPrice),
     authBufferPct: input.authBufferPct,
     chargeFeePct,
   });
 
-  return { ...plan, currency: zone.currency };
+  return { ...plan, currency: zone.currency, roaming: leg };
 }
 
 /** POST /v1/payments/charge — US-08. */
@@ -180,13 +198,20 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
         paymentId: existing.id,
         status: existing.status,
         deliveredKwh: roundKwh(
-          num(existing.kwhFromBalance) + num(existing.kwhBought) + giftOf(existing.receipt),
+          num(existing.kwhFromBalance) +
+            num(existing.kwhFromRoaming) +
+            num(existing.kwhBought) +
+            giftOf(existing.receipt),
         ),
         kwhFromGift: giftOf(existing.receipt),
         kwhFromBalance: num(existing.kwhFromBalance),
+        kwhFromRoaming: num(existing.kwhFromRoaming),
         kwhBought: num(existing.kwhBought),
         unservedKwh: roundKwh(
-          num(existing.requestedKwh) - num(existing.kwhFromBalance) - num(existing.kwhBought),
+          num(existing.requestedKwh) -
+            num(existing.kwhFromBalance) -
+            num(existing.kwhFromRoaming) -
+            num(existing.kwhBought),
         ),
         authorizedFiat: num(existing.authorizedFiat),
         amountFiat: num(existing.amountFiat),
@@ -257,6 +282,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       deliveredKwh: 0,
       kwhFromGift: 0,
       kwhFromBalance: 0,
+      kwhFromRoaming: 0,
       kwhBought: 0,
       unservedKwh: requested,
       authorizedFiat: plan.authorizedFiat,
@@ -293,7 +319,9 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
   let marketFee = 0;
   let marketOrderId: string | null = null;
 
-  const shortfall = roundKwh(requested - plan.kwhFromGift - plan.kwhFromBalance);
+  const shortfall = roundKwh(
+    requested - plan.kwhFromGift - plan.kwhFromBalance - plan.kwhFromRoaming,
+  );
   if (!isKwhDust(shortfall)) {
     const order = await placeOrder({
       userId: input.userId,
@@ -308,7 +336,12 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
     marketFee = roundMoney(order.fee);
     energyCost = roundMoney(order.notional + order.fee);
 
-    if (isKwhDust(kwhBought) && isKwhDust(plan.kwhFromBalance) && isKwhDust(plan.kwhFromGift)) {
+    if (
+      isKwhDust(kwhBought) &&
+      isKwhDust(plan.kwhFromBalance) &&
+      isKwhDust(plan.kwhFromGift) &&
+      isKwhDust(plan.kwhFromRoaming)
+    ) {
       return fail(order.rejectReason ?? "Market order could not be filled");
     }
   }
@@ -319,11 +352,22 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
 
   let giftSpent = 0;
   let giftNetwork: string | null = null;
-  let deliveredKwh = roundKwh(plan.kwhFromGift + plan.kwhFromBalance + kwhBought);
+  let roamingKwh = 0;
+  let roamingDebitKwh = 0;
+  let roamingFeeKwh = 0;
+  let deliveredKwh = roundKwh(
+    plan.kwhFromGift + plan.kwhFromBalance + plan.kwhFromRoaming + kwhBought,
+  );
   let burnedTokenIds: string[] = [];
   let receiptId: string | null = null;
 
   await prisma.$transaction(async (tx) => {
+    // Nothing from an earlier attempt: the whole leg below is retried whole.
+    burnedTokenIds = [];
+    roamingKwh = 0;
+    roamingDebitKwh = 0;
+    roamingFeeKwh = 0;
+
     // §43 — the gift is spent first, out of the partner's own batches. What
     // it could not cover the driver pays for out of their own balance, which
     // is already on it: the gift only ever shrinks.
@@ -335,14 +379,70 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
     giftSpent = gift.spentKwh;
     giftNetwork = gift.networkName;
 
+    // §8, US-11 — the roaming leg, settled against the *home* wallet. The
+    // corridor is priced again inside the transaction and under a lock on the
+    // home wallet: between the quote and here the balance may have moved and
+    // another session of the same driver may have eaten the §24.2 allowance.
+    const leg = plan.roaming;
+    if (leg && !isKwhDust(plan.kwhFromRoaming)) {
+      await tx.$queryRaw`SELECT id FROM "Wallet" WHERE id = ${leg.homeWalletId} FOR UPDATE`;
+      const homeWallet = await tx.wallet.findUniqueOrThrow({ where: { id: leg.homeWalletId } });
+      const agreement = await tx.roamingAgreement.findUnique({
+        where: { id: leg.agreementId },
+        select: { dailyLimitKwh: true, enabled: true },
+      });
+
+      let servable = plan.kwhFromRoaming;
+      if (!agreement?.enabled) {
+        servable = 0;
+      } else {
+        const affordable = roamingAffordableKwh(
+          num(homeWallet.kwhBalance),
+          leg.conversionRate,
+          leg.feePct,
+        );
+        servable = Math.min(servable, affordable);
+        const limitKwh = numOrNull(agreement.dailyLimitKwh);
+        if (limitKwh != null) {
+          const used = await roamingUsedTodayKwh(input.userId, leg.agreementId, new Date(), tx);
+          servable = Math.min(servable, Math.max(0, roundKwh(limitKwh - used)));
+        }
+      }
+      servable = roundKwh(Math.max(0, servable));
+
+      if (!isKwhDust(servable)) {
+        const debit = roamingDebit(servable, leg.conversionRate, leg.feePct);
+        roamingKwh = servable;
+        roamingDebitKwh = debit.totalKwh;
+        roamingFeeKwh = debit.feeKwh;
+        const roamingBurned = await burnTokens(tx, {
+          walletId: leg.homeWalletId,
+          amountKwh: debit.totalKwh,
+        });
+        await tx.roamingSettlement.create({
+          data: {
+            agreementId: leg.agreementId,
+            userId: input.userId,
+            paymentId: payment.id,
+            deliveredKwh: new Prisma.Decimal(servable),
+            debitedKwh: new Prisma.Decimal(debit.totalKwh),
+            feeKwh: new Prisma.Decimal(debit.feeKwh),
+            conversionRate: new Prisma.Decimal(leg.conversionRate),
+            burnedTokenIds: roamingBurned,
+          },
+        });
+        burnedTokenIds.push(...roamingBurned);
+      }
+    }
+
     const fromOwn = roundKwh(plan.kwhFromBalance + kwhBought + (plan.kwhFromGift - giftSpent));
     const ownBalance = num(
       (await tx.wallet.findUniqueOrThrow({ where: { id: wallet.id } })).kwhBalance,
     );
     const fromOwnCovered = roundKwh(Math.min(fromOwn, Math.max(0, ownBalance)));
-    deliveredKwh = roundKwh(giftSpent + fromOwnCovered);
+    deliveredKwh = roundKwh(giftSpent + roamingKwh + fromOwnCovered);
 
-    burnedTokenIds = [...gift.burnedTokenIds];
+    burnedTokenIds.unshift(...gift.burnedTokenIds);
     if (!isKwhDust(fromOwnCovered)) {
       burnedTokenIds.push(
         ...(await burnTokens(tx, { walletId: wallet.id, amountKwh: fromOwnCovered })),
@@ -381,8 +481,16 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
           subpartnerFee: revenue.subpartnerFee,
           subpartnerHeadId: subpartner.headId,
           partnerNet: revenue.partnerNet,
-          kwhFromBalance: roundKwh(deliveredKwh - giftSpent - kwhBought),
+          kwhFromBalance: roundKwh(deliveredKwh - giftSpent - roamingKwh - kwhBought),
           kwhBought,
+          // §8, US-11 — the corridor this session leaned on, written onto the
+          // document: the driver has to see the rate they were debited at.
+          kwhFromRoaming: roamingKwh,
+          roamingHomeZone: roamingKwh > 0 ? (plan.roaming?.homeZoneCode ?? null) : null,
+          roamingPartner: roamingKwh > 0 ? (plan.roaming?.partnerName ?? null) : null,
+          roamingRate: roamingKwh > 0 ? (plan.roaming?.conversionRate ?? null) : null,
+          roamingDebitKwh,
+          roamingFeeKwh,
           unservedKwh: roundKwh(requested - deliveredKwh),
           energyCost,
           marketOrderId,
@@ -396,7 +504,10 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       where: { id: payment.id },
       data: {
         status: PaymentStatus.CAPTURED,
-        kwhFromBalance: new Prisma.Decimal(roundKwh(deliveredKwh - giftSpent - kwhBought)),
+        kwhFromBalance: new Prisma.Decimal(
+          roundKwh(deliveredKwh - giftSpent - roamingKwh - kwhBought),
+        ),
+        kwhFromRoaming: new Prisma.Decimal(roamingKwh),
         kwhBought: new Prisma.Decimal(kwhBought),
         amountFiat: new Prisma.Decimal(energyCost),
         marketOrderId,
@@ -412,7 +523,9 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       after: {
         deliveredKwh,
         kwhFromGift: giftSpent,
-        kwhFromBalance: roundKwh(deliveredKwh - giftSpent - kwhBought),
+        kwhFromBalance: roundKwh(deliveredKwh - giftSpent - roamingKwh - kwhBought),
+        kwhFromRoaming: roamingKwh,
+        roamingDebitKwh,
         kwhBought,
         amountFiat: energyCost,
         authorizedFiat: plan.authorizedFiat,
@@ -441,7 +554,8 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
     status: PaymentStatus.CAPTURED,
     deliveredKwh,
     kwhFromGift: giftSpent,
-    kwhFromBalance: roundKwh(deliveredKwh - giftSpent - kwhBought),
+    kwhFromBalance: roundKwh(deliveredKwh - giftSpent - roamingKwh - kwhBought),
+    kwhFromRoaming: roamingKwh,
     kwhBought,
     unservedKwh: roundKwh(requested - deliveredKwh),
     authorizedFiat: plan.authorizedFiat,
