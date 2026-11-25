@@ -31,11 +31,63 @@ export interface ChargeInput {
   userId: string;
   zoneId: string;
   requestedKwh: number;
+  /** Whatever the equipment calls itself. Free-form, not an identity. */
   chargePointId?: string | null;
+  /**
+   * §46 "Пункт, разъём, дата и время начала и конца зарядки" — the point in
+   * our own database this session ran at. Null for a charge somewhere else:
+   * the receipt is still issued, just without a network behind it.
+   */
+  pointId?: string | null;
+  connectorId?: string | null;
+  startedAt?: Date | null;
+  endedAt?: Date | null;
   cardId?: string | null;
   idempotencyKey?: string | null;
   /** Override the §16.6 Y% authorization buffer. */
   authBufferPct?: number;
+}
+
+/**
+ * The session's own point, checked before anything moves.
+ *
+ * A point id that is not ours would quietly produce a receipt with no network
+ * and a gift that cannot be judged, so it is refused rather than ignored.
+ */
+async function resolveSession(input: ChargeInput): Promise<{
+  pointId: string | null;
+  connectorId: string | null;
+  startedAt: Date | null;
+  endedAt: Date | null;
+}> {
+  const startedAt = input.startedAt ?? null;
+  const endedAt = input.endedAt ?? null;
+  if (startedAt && endedAt && endedAt < startedAt) {
+    throw new PaymentError("The session ends before it starts");
+  }
+
+  if (!input.pointId) {
+    if (input.connectorId) throw new PaymentError("A connector without a point is not a session");
+    return { pointId: null, connectorId: null, startedAt, endedAt };
+  }
+
+  const point = await prisma.acceptancePoint.findUnique({
+    where: { id: input.pointId },
+    select: { id: true },
+  });
+  if (!point) throw new PaymentError(`No such point: ${input.pointId}`);
+
+  if (input.connectorId) {
+    const connector = await prisma.pointConnector.findUnique({
+      where: { id: input.connectorId },
+      select: { pointId: true },
+    });
+    if (!connector || connector.pointId !== point.id) {
+      throw new PaymentError("That connector belongs to a different point");
+    }
+  }
+
+  return { pointId: point.id, connectorId: input.connectorId ?? null, startedAt, endedAt };
 }
 
 export interface ChargeResult {
@@ -129,6 +181,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
 
   const zone = await prisma.gridZone.findUniqueOrThrow({ where: { id: input.zoneId } });
   const wallet = await getOrCreateWallet(input.userId, zone.id);
+  const session = await resolveSession(input);
 
   // ── 1. Plan and authorize, before anything moves ────────────────────────
   const plan = await quoteCharge({
@@ -143,6 +196,10 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       walletId: wallet.id,
       zoneId: zone.id,
       chargePointId: input.chargePointId ?? null,
+      pointId: session.pointId,
+      connectorId: session.connectorId,
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
       cardId: input.cardId ?? null,
       requestedKwh: new Prisma.Decimal(requested),
       authorizedFiat: new Prisma.Decimal(plan.authorizedFiat),
@@ -241,6 +298,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
           kind: "charge",
           zone: zone.code,
           chargePointId: input.chargePointId ?? null,
+          pointId: session.pointId,
           requestedKwh: requested,
           kwhFromBalance: plan.kwhFromBalance,
           kwhBought,

@@ -16,6 +16,13 @@ const bodySchema = z.object({
   zoneId: z.string().min(1),
   requestedKwh: z.number().positive().max(1_000_000),
   chargePointId: z.string().max(100).optional().nullable(),
+  // §46 — the point and connector of our own that the session ran at, and
+  // when it ran. Without them the receipt has no network and §45's gifts
+  // cannot tell whose network a charge happened in.
+  pointId: z.string().max(40).optional().nullable(),
+  connectorId: z.string().max(40).optional().nullable(),
+  startedAt: z.string().datetime().optional().nullable(),
+  endedAt: z.string().datetime().optional().nullable(),
   cardId: z.string().max(100).optional().nullable(),
 });
 
@@ -40,6 +47,10 @@ export async function POST(req: NextRequest) {
           zoneId: zone.id,
           requestedKwh: parsed.data.requestedKwh,
           chargePointId: parsed.data.chargePointId ?? null,
+          pointId: parsed.data.pointId ?? null,
+          connectorId: parsed.data.connectorId ?? null,
+          startedAt: parsed.data.startedAt ? new Date(parsed.data.startedAt) : null,
+          endedAt: parsed.data.endedAt ? new Date(parsed.data.endedAt) : null,
           cardId: parsed.data.cardId ?? null,
           idempotencyKey: key,
         });

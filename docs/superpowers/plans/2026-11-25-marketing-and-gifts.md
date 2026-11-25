@@ -141,12 +141,12 @@
 **Файлы:** изменить `src/lib/exchange/payment-service.ts`,
 `src/app/api/v1/payments/charge/route.ts`, тест `src/lib/exchange/exchange-flow.test.ts`.
 
-- [ ] Тест: зарядка с `pointId` и `connectorId` пишет их в `Payment`, и чек
+- [x] Тест: зарядка с `pointId` и `connectorId` пишет их в `Payment`, и чек
       печатает бренд сети; чужой `pointId` (пункт другой сети) принимается,
       но пункт не из нашей базы — отказ.
-- [ ] Реализация: поля в `ChargeInput`, в `payment.create`, в схему тела
+- [x] Реализация: поля в `ChargeInput`, в `payment.create`, в схему тела
       маршрута; проверка, что пункт существует.
-- [ ] Зелено. Коммит.
+- [x] Зелено. Коммит.
 
 ### Задача 11. Схема кампаний
 
