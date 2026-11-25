@@ -39,13 +39,13 @@
 
 **Файлы:** создать `src/lib/marketing/media-storage.ts`, `src/lib/marketing/media-storage.test.ts`
 
-- [ ] Тесты: `sniffMediaMime` узнаёт JPEG, PNG, WebP, MP4 и отвергает чужое;
+- [x] Тесты: `sniffMediaMime` узнаёт JPEG, PNG, WebP, MP4 и отвергает чужое;
       картинка больше 5 МБ отвергается; видео больше 50 МБ отвергается;
       MP4 длиннее 60 с отвергается; MP4 без `mvhd` отвергается;
       `saveMedia` → `readMedia` возвращает те же байты; `deleteMedia` убирает.
-- [ ] Прогнать — падают. Реализация по образцу `listing-docs.ts`
+- [x] Прогнать — падают. Реализация по образцу `listing-docs.ts`
       (`MARKETING_MEDIA_DIR`, по умолчанию `var/marketing-media`).
-- [ ] Зелено. Коммит.
+- [x] Зелено. Коммит.
 
 ### Задача 3. Схема
 
