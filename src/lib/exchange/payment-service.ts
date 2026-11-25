@@ -348,6 +348,12 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
   // fails here the worker retries within the minute.
   if (receiptId) void deliverReceipt(receiptId);
 
+  // §45, US-41 — "начисление в течение минуты после завершения зарядки".
+  // Not awaited for the same reason: the charge has happened, and whatever
+  // fails here the worker picks up within the minute from
+  // `Payment.campaignsEvaluatedAt`.
+  void awardGiftsAfterCharge(payment.id);
+
   return {
     paymentId: payment.id,
     status: PaymentStatus.CAPTURED,
@@ -468,4 +474,25 @@ export async function buyAhead(args: {
     limitPrice: args.limitPrice ?? null,
     idempotencyKey: args.idempotencyKey ?? null,
   });
+}
+
+/**
+ * §45, US-41 — look at the campaigns of the network this session ran in and
+ * tell the driver about whatever they earned.
+ *
+ * Imported lazily: `payment-service` is the charging path, and the marketing
+ * module imports back into it through the gift spend. A static cycle would
+ * work, but a lazy edge keeps the direction of the dependency honest — the
+ * exchange does not need marketing to charge a car.
+ */
+async function awardGiftsAfterCharge(paymentId: string): Promise<void> {
+  try {
+    const { awardAfterCharge } = await import("@/lib/marketing/campaign-engine");
+    const { tellClientAboutGift } = await import("@/lib/marketing/gift-mail");
+    for (const grantId of await awardAfterCharge(paymentId)) {
+      await tellClientAboutGift(grantId);
+    }
+  } catch (err) {
+    console.error("[payments] campaign award failed for", paymentId, err);
+  }
 }

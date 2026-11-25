@@ -26,6 +26,8 @@ import {
 } from "@/lib/reservations/reservation-service";
 import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
+import { expireGrants, sweepPendingAwards } from "@/lib/marketing/campaign-engine";
+import { notifyPendingGrants } from "@/lib/marketing/gift-mail";
 import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/spot-service";
 import { intervalStartFor } from "@/lib/exchange/zone-service";
 import { startTelemetrySubscriber } from "./mqtt";
@@ -173,6 +175,22 @@ export async function runAlertSweep(now = new Date()): Promise<void> {
     console.error("[worker] receipt delivery failed:", err);
   }
 
+  // §45 / US-41 — "начисление в течение минуты после завершения зарядки".
+  // The inline attempt runs in the payment path; this is what makes the
+  // minute hold when it failed, and what tells the driver about the gift.
+  try {
+    const looked = await sweepPendingAwards();
+    if (looked.length > 0) log(`campaigns: ${looked.length} charge(s) evaluated`);
+  } catch (err) {
+    console.error("[worker] campaign award sweep failed:", err);
+  }
+  try {
+    const told = await notifyPendingGrants();
+    if (told > 0) log(`campaigns: ${told} gift notification(s) sent`);
+  } catch (err) {
+    console.error("[worker] gift notification failed:", err);
+  }
+
   // §35 / US-33 — a booking whose window has closed with nobody there.
   try {
     const closed = await closeExpiredReservations(now);
@@ -186,6 +204,16 @@ export async function runAlertSweep(now = new Date()): Promise<void> {
   } catch (err) {
     console.error("[worker] reservation notification failed:", err);
   }
+}
+
+/**
+ * §43 — "Сгорает по истечении срока; сгоревший объём возвращается в бюджет
+ * кампании партнёра." Hourly is enough: a grant's life is counted in days,
+ * and an hour of grace costs the partner nothing.
+ */
+export async function runGrantExpiry(): Promise<void> {
+  const expired = await expireGrants();
+  if (expired.length > 0) log(`campaigns: ${expired.length} gift(s) expired`);
 }
 
 /** §15 — the replay log is a log, not a financial record: 30 days is plenty. */
@@ -216,6 +244,11 @@ async function main() {
     void runSpotRefresh();
   });
 
+  // §43 — gifts burn on their own schedule, checked every hour.
+  cron.schedule("20 * * * *", () => {
+    void runGrantExpiry();
+  });
+
   // Daily registry reconciliation (§16.11), at 03:15 local time.
   cron.schedule("15 3 * * *", () => {
     void runReconciliation();
@@ -233,7 +266,7 @@ async function main() {
   await runIntervalClose();
   await runSpotRefresh();
   log(
-    "schedules registered: interval close + spot apply */5 min, alerts, work orders, receipts + reservations every min, spot refresh :10, reconciliation 03:15, idempotency purge 03:40",
+    "schedules registered: interval close + spot apply */5 min, alerts, work orders, receipts + reservations + campaign gifts every min, spot refresh :10, gift expiry :20, reconciliation 03:15, idempotency purge 03:40",
   );
 }
 

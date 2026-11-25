@@ -1410,6 +1410,11 @@
       "vatNotStated": "sieť neuviedla sadzbu",
       "vatNumber": "DIČ",
       "qrHint": "Skontrolovať doklad"
+    },
+    "gift": {
+      "subject": "{kwh} kWh od {network} je vašich",
+      "body": "{network} vám darovala {kwh} kWh. Môžete ich využiť na stanicách tejto siete do {expires}.",
+      "cta": "Otvoriť darčeky"
     }
   },
   "points": {

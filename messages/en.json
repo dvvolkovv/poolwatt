@@ -1410,6 +1410,11 @@
       "vatNotStated": "not stated by the network",
       "vatNumber": "VAT no.",
       "qrHint": "Check this receipt"
+    },
+    "gift": {
+      "subject": "{kwh} kWh from {network} are yours",
+      "body": "{network} has given you {kwh} gift kWh. They can be spent at that network's stations until {expires}.",
+      "cta": "Open your gifts"
     }
   },
   "points": {
