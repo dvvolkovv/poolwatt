@@ -232,6 +232,11 @@ Downloads land at:
 Builds keep on disk the newest 20 versioned APKs (~80 MB ceiling since
 each APK is ~4 MB).
 
+The script runs `npx cap sync android` before gradle. Until 2026-11-25 it did
+not, so a changed `capacitor.config.json` or `www/` never reached the APK:
+gradle reported every task `UP-TO-DATE` and published the previous shell. If an
+APK ever behaves like an older build, check that the sync step is still there.
+
 Source of truth: `~/poolwatt-android/` (its own git repo on this server).
 Spec + plan in this repo at `docs/superpowers/specs/2026-05-25-android-build-pipeline-design.md`
 and `docs/superpowers/plans/2026-05-25-android-build-pipeline.md`.
