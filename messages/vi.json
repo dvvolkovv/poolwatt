@@ -318,5 +318,52 @@
       "body": "Có yêu cầu nhận quyền sở hữu hồ sơ {name} trên Poolwatt bằng email này. Mã xác minh của bạn:",
       "expires": "Mã có hiệu lực trong 30 phút."
     }
+  },
+  "app": {
+    "tabs": {
+      "home": "Home",
+      "wallet": "Wallet",
+      "charge": "Charge",
+      "more": "More",
+      "profile": "Profile"
+    },
+    "status": {
+      "GUEST": "Guest",
+      "CONSUMER": "Consumer",
+      "PROSUMER": "Prosumer",
+      "COOP_MEMBER": "Cooperative member"
+    },
+    "home": {
+      "balance": "Energy balance",
+      "money": "Money",
+      "zonePrice": "Price in {zone}",
+      "buy": "Buy",
+      "transfer": "Transfer",
+      "charge": "Charge",
+      "topUp": "Top up",
+      "guestTitle": "Charge anywhere",
+      "guestBody": "See the stations and prices around you. Sign up to pay with kWh.",
+      "signUp": "Sign up",
+      "signIn": "Sign in"
+    },
+    "sections": {
+      "station": "My station",
+      "coop": "Cooperative",
+      "account": "Account",
+      "card": "Card",
+      "contacts": "Contacts and transfers",
+      "roaming": "Roaming"
+    },
+    "soon": {
+      "title": "Not here yet",
+      "body": "This screen arrives in stage {stage}.",
+      "back": "Back"
+    },
+    "offline": {
+      "title": "No connection",
+      "body": "This is the last balance this phone saw, at {at}.",
+      "retry": "Try again",
+      "stale": "The figure may be out of date."
+    }
   }
 }
