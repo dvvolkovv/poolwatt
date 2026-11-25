@@ -580,3 +580,183 @@ export async function notifyClosedReservations(
   }
   return notified;
 }
+
+/**
+ * §32.4 / US-31 — "при опоздании предлагает продлить или перенести бронь".
+ *
+ * Two extensions and no more: a connector held open indefinitely is a
+ * connector taken away from everybody who turns up, and §33's walk-up reserve
+ * exists for exactly that reason.
+ */
+export const MAX_EXTENSIONS = 2;
+
+/** US-31 — "push за 10 минут до конца окна с кнопкой «Продлить»". */
+export const EXTEND_REMINDER_MINUTES = 10;
+
+export async function extendReservation(args: {
+  reservationId: string;
+  userId: string;
+}): Promise<Reservation> {
+  const reservation = await prisma.reservation.findUnique({
+    where: { id: args.reservationId },
+  });
+  if (!reservation) throw new ReservationError("Booking not found");
+  if (reservation.userId !== args.userId) throw new ReservationError("Not your booking");
+  if (!LIVE.includes(reservation.status)) {
+    throw new ReservationError(`This booking is already ${reservation.status}`);
+  }
+  if (reservation.windowEnd.getTime() <= Date.now()) {
+    // Past the window there is nothing to extend: the worker is about to close
+    // it as a no-show, and pretending otherwise would take the penalty twice.
+    throw new ReservationError("The booking window has already closed");
+  }
+  if (reservation.extendCount >= MAX_EXTENSIONS) {
+    throw new ReservationError(
+      `A booking can be extended ${MAX_EXTENSIONS} times; this one already has been`,
+    );
+  }
+
+  const policy = await readPolicy(reservation.pointId);
+  if (!policy.extendAllowed) {
+    throw new ReservationError("The owner of this point does not allow extending a booking");
+  }
+
+  const fee = roundMoney(policy.extendFeeFiat);
+  const addMinutes = policy.waitMinutes;
+
+  return prisma.$transaction(async (tx) => {
+    // Re-read under the transaction: the worker closes expired bookings every
+    // minute, and the two must not cross.
+    const fresh = await tx.reservation.findUniqueOrThrow({
+      where: { id: reservation.id },
+    });
+    if (!LIVE.includes(fresh.status)) {
+      throw new ReservationError(`This booking is already ${fresh.status}`);
+    }
+
+    if (fee > 0) {
+      const wallet = await tx.wallet.findUniqueOrThrow({ where: { id: fresh.walletId } });
+      const available = roundMoney(num(wallet.fiatBalance) - num(wallet.reservedFiat));
+      if (available < fee) {
+        throw new ReservationError("Not enough funds for the extension fee");
+      }
+      await tx.wallet.update({
+        where: { id: wallet.id },
+        data: { fiatBalance: { decrement: new Prisma.Decimal(fee) } },
+      });
+    }
+
+    const windowEnd = new Date(fresh.windowEnd.getTime() + addMinutes * 60_000);
+    const extended = await tx.reservation.update({
+      where: { id: fresh.id },
+      data: {
+        windowEnd,
+        extendCount: { increment: 1 },
+        // The driver has been told once already; a new window earns a new
+        // reminder of its own.
+        extendRemindedAt: null,
+      },
+    });
+
+    await writeAudit(tx, {
+      actor: args.userId,
+      entity: "Reservation",
+      entityId: fresh.id,
+      action: "reservation.extended",
+      before: { windowEnd: fresh.windowEnd, extendCount: fresh.extendCount },
+      after: { windowEnd, extendCount: extended.extendCount, feeFiat: fee },
+    });
+
+    return extended;
+  });
+}
+
+/**
+ * US-31 — the bookings whose window closes within ten minutes and whose
+ * driver has not been told yet. The worker sweeps these; push is behind
+ * `pushOpen()`, so today the driver gets a letter.
+ */
+export async function dueForExtendReminder(now = new Date()): Promise<Reservation[]> {
+  return prisma.reservation.findMany({
+    where: {
+      status: { in: LIVE },
+      extendRemindedAt: null,
+      windowEnd: {
+        gt: now,
+        lte: new Date(now.getTime() + EXTEND_REMINDER_MINUTES * 60_000),
+      },
+    },
+    orderBy: { windowEnd: "asc" },
+    take: 200,
+  });
+}
+
+export async function markExtendReminded(reservationId: string): Promise<void> {
+  await prisma.reservation.update({
+    where: { id: reservationId },
+    data: { extendRemindedAt: new Date() },
+  });
+}
+
+/**
+ * US-31 — "Push за 10 минут до конца окна с кнопкой «Продлить»".
+ *
+ * Push needs APNs and FCM keys, which are the owner's to obtain, so what
+ * reaches the driver today is a letter with the same button. The gate being
+ * closed costs nothing: the booking page carries the button either way.
+ */
+export async function remindAboutClosingWindow(
+  options: NotifyReservationOptions = {},
+): Promise<number> {
+  const { sendEmail } = await import("@/lib/email");
+  const { emailLink, emailText } = await import("@/lib/email-i18n");
+  const send =
+    options.sendTo ??
+    ((to: string, subject: string, html: string) => sendEmail({ to, subject, html }));
+
+  const base = process.env.NEXTAUTH_URL ?? "https://poolwatt.com";
+  const due = await dueForExtendReminder();
+
+  let told = 0;
+  for (const reservation of due) {
+    const full = await prisma.reservation.findUnique({
+      where: { id: reservation.id },
+      include: {
+        user: { select: { email: true, emailVerified: true, preferredLocale: true } },
+        point: { select: { name: true, city: true } },
+      },
+    });
+    if (!full) continue;
+
+    const to = full.user.emailVerified ? full.user.email : null;
+    if (!to) {
+      // Nothing to retry.
+      await markExtendReminded(reservation.id);
+      continue;
+    }
+
+    try {
+      const t = await emailText(full.user.preferredLocale);
+      const minutes = Math.max(
+        1,
+        Math.round((reservation.windowEnd.getTime() - Date.now()) / 60_000),
+      );
+      const subject = t.text("reservationClosing.subject", { point: full.point.name });
+      const html = t.layout(
+        t.html("reservationClosing.body", {
+          point: full.point.name,
+          city: full.point.city ?? "",
+          minutes: String(minutes),
+        }),
+        ...emailLink(`${base}/${t.locale}/me/bookings`, t.html("reservationClosing.cta")),
+      );
+      await send(to, subject, html);
+      await markExtendReminded(reservation.id);
+      told += 1;
+    } catch (err) {
+      // Left owing: the sweep comes round again in a minute.
+      console.error("[reservations] closing reminder failed for", reservation.id, err);
+    }
+  }
+  return told;
+}

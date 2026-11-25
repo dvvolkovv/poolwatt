@@ -1415,6 +1415,11 @@
       "subject": "{kwh} kWh from {network} are yours",
       "body": "{network} has given you {kwh} gift kWh. They can be spent at that network's stations until {expires}.",
       "cta": "Open your gifts"
+    },
+    "reservationClosing": {
+      "subject": "Your booking at {point} is about to end",
+      "body": "The booking window at {point} closes in {minutes} min. If you are running late, you can extend it.",
+      "cta": "Extend the booking"
     }
   },
   "points": {
@@ -1694,7 +1699,8 @@
       "coopFree": "Free for cooperative members",
       "save": "Save terms",
       "saved": "Saved"
-    }
+    },
+    "extend": "Extend"
   },
   "receipt": {
     "eyebrow": "Receipt",

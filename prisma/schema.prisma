@@ -645,6 +645,12 @@ model Reservation {
   // §54 — which version of §33 the copied numbers above came from.
   pricingVersion Int?
 
+  // §32.4 / US-31 — "при опоздании предлагает продлить или перенести бронь".
+  // How many times the window has been pushed back, and when the driver was
+  // told it was about to close.
+  extendCount      Int       @default(0)
+  extendRemindedAt DateTime?
+
   status      ReservationStatus @default(CREATED)
   penaltyFiat Decimal?          @db.Decimal(10, 2)
   refundFiat  Decimal?          @db.Decimal(10, 2)

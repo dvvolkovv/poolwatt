@@ -7,6 +7,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import {
   cancelReservation,
+  extendReservation,
   createReservation,
 } from "@/lib/reservations/reservation-service";
 
@@ -57,5 +58,20 @@ export async function dropBooking(
     return { ok: true };
   } catch (err) {
     return { ok: false, formError: err instanceof Error ? err.message : "Could not cancel." };
+  }
+}
+
+/** §32.4 / US-31 — the driver is running late and pushes the window back. */
+export async function extendBooking(
+  reservationId: string,
+): Promise<{ ok: boolean; formError?: string }> {
+  const session = await auth();
+  if (!session?.user) return { ok: false, formError: "Not authenticated." };
+  try {
+    await extendReservation({ reservationId, userId: session.user.id });
+    revalidatePath("/[locale]/me/bookings", "page");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, formError: err instanceof Error ? err.message : "Could not extend." };
   }
 }

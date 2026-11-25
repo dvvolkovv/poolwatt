@@ -1415,6 +1415,11 @@
       "subject": "{kwh} kWh od {network} je vašich",
       "body": "{network} vám darovala {kwh} kWh. Môžete ich využiť na stanicách tejto siete do {expires}.",
       "cta": "Otvoriť darčeky"
+    },
+    "reservationClosing": {
+      "subject": "Vaša rezervácia na {point} sa chýli ku koncu",
+      "body": "Okno rezervácie na {point} sa zatvára za {minutes} min. Ak nestíhate, môžete ju predĺžiť.",
+      "cta": "Predĺžiť rezerváciu"
     }
   },
   "points": {
@@ -1694,7 +1699,8 @@
       "coopFree": "Zadarmo pre členov družstva",
       "save": "Uložiť podmienky",
       "saved": "Uložené"
-    }
+    },
+    "extend": "Predĺžiť"
   },
   "receipt": {
     "eyebrow": "Doklad",

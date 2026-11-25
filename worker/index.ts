@@ -23,6 +23,7 @@ import {
 import {
   closeExpiredReservations,
   notifyClosedReservations,
+  remindAboutClosingWindow,
 } from "@/lib/reservations/reservation-service";
 import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
@@ -203,6 +204,14 @@ export async function runAlertSweep(now = new Date()): Promise<void> {
     if (told > 0) log(`reservations: ${told} notification(s) sent`);
   } catch (err) {
     console.error("[worker] reservation notification failed:", err);
+  }
+
+  // §32.4 / US-31 — ten minutes before the window closes, offer to extend.
+  try {
+    const told = await remindAboutClosingWindow();
+    if (told > 0) log(`reservations: ${told} closing reminder(s) sent`);
+  } catch (err) {
+    console.error("[worker] closing reminder failed:", err);
   }
 }
 

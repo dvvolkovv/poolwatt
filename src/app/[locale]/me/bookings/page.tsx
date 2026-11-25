@@ -7,6 +7,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
 import { CancelBookingButton } from "@/components/reservations/cancel-booking-button";
+import { ExtendBookingButton } from "@/components/reservations/extend-booking-button";
+import { MAX_EXTENSIONS, readPolicy } from "@/lib/reservations/reservation-service";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +34,21 @@ export default async function BookingsPage({
       connector: { select: { type: true } },
     },
   });
+
+  // US-31 — whether the button is offered at all is the owner's policy.
+  const extendable = new Set(
+    (
+      await Promise.all(
+        bookings
+          .filter((b) => b.status === "ACTIVE" || b.status === "CREATED")
+          .map(async (b) =>
+            (await readPolicy(b.pointId)).extendAllowed && b.extendCount < MAX_EXTENSIONS
+              ? b.id
+              : null,
+          ),
+      )
+    ).filter((id): id is string => id !== null),
+  );
 
   return (
     <div>
@@ -73,7 +90,12 @@ export default async function BookingsPage({
                   </p>
                 </div>
                 {live && (
-                  <CancelBookingButton reservationId={b.id} label={t("cancel")} />
+                  <span className="flex flex-wrap items-center gap-2">
+                    {extendable.has(b.id) && (
+                      <ExtendBookingButton reservationId={b.id} label={t("extend")} />
+                    )}
+                    <CancelBookingButton reservationId={b.id} label={t("cancel")} />
+                  </span>
                 )}
               </li>
             );
