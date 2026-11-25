@@ -276,3 +276,58 @@ describe("§53 card tariffs", () => {
     ).rejects.toThrow(/card/i);
   });
 });
+
+describe("the older Company.feePlan still decides, where it was set", () => {
+  it("is preferred over a type-wide or default plan", async () => {
+    await basic();
+    await savePlan({ name: `${PREFIX}producers`, participantType: "PRODUCER", tradeFeePct: 0.5 });
+
+    const legacy = await prisma.feePlan.create({
+      data: {
+        name: `${PREFIX}legacy`,
+        tradeFeePct: new Prisma.Decimal(0.7),
+        chargeFeePct: new Prisma.Decimal(1.4),
+      },
+    });
+    await prisma.company.update({
+      where: { id: producerCompanyId },
+      data: { feePlanId: legacy.id },
+    });
+
+    const rates = await resolveFeeRates({ companyId: producerCompanyId });
+    expect(rates.tradeFeePct).toBe(0.7);
+    expect(rates.chargeFeePct).toBe(1.4);
+    expect(rates.source).toBe("company-fee-plan");
+
+    await prisma.company.update({ where: { id: producerCompanyId }, data: { feePlanId: null } });
+    await prisma.feePlan.delete({ where: { id: legacy.id } });
+  });
+
+  it("gives way to a plan the partner was explicitly put on", async () => {
+    const corporate = await savePlan({
+      name: `${PREFIX}corp`,
+      tier: "CORPORATE",
+      tradeFeePct: 0.25,
+      chargeFeePct: 0.5,
+    });
+    const legacy = await prisma.feePlan.create({
+      data: {
+        name: `${PREFIX}legacy2`,
+        tradeFeePct: new Prisma.Decimal(0.7),
+        chargeFeePct: new Prisma.Decimal(1.4),
+      },
+    });
+    await prisma.company.update({
+      where: { id: producerCompanyId },
+      data: { feePlanId: legacy.id },
+    });
+    await assignPartnerPlan({ companyId: producerCompanyId, planId: corporate.id });
+
+    const rates = await resolveFeeRates({ companyId: producerCompanyId });
+    expect(rates.tradeFeePct).toBe(0.25);
+    expect(rates.source).toBe("assigned");
+
+    await prisma.company.update({ where: { id: producerCompanyId }, data: { feePlanId: null } });
+    await prisma.feePlan.delete({ where: { id: legacy.id } });
+  });
+});

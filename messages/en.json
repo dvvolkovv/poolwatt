@@ -1968,5 +1968,63 @@
       "SALE_RULES": "Sale rules",
       "SUBPARTNER_FEE": "Subpartner commission"
     }
+  },
+  "feePlans": {
+    "eyebrow": "Platform",
+    "title": "Fee plans",
+    "intro": "Commission on trades, charging and bookings, by partner type and plan. A partner on no plan pays the default; a partner with individual terms pays those.",
+    "cardsClosed": "Card tariffs — issuing, servicing, interchange — are set by the card scheme and the EMI. There is no contract yet, so they are not here: an invented interchange rate would be a wrong number on a real invoice.",
+    "plans": "Plans",
+    "newPlan": "New plan",
+    "noPlans": "No plans yet. Until one is created, the platform charges the built-in 1 % on trades and 2 % on charging.",
+    "assignments": "Who is on what",
+    "noAssignments": "Nobody has been put on a plan yet.",
+    "assignHelp": "Leave an override empty to keep the plan's own rate. A partner is either a listed company or a charging network, not both.",
+    "assign": "Put on this plan",
+    "save": "Save",
+    "partners": "partners",
+    "overridden": "overridden",
+    "inactive": "switched off",
+    "field": {
+      "name": "Name",
+      "tier": "Tier",
+      "participantType": "Partner type",
+      "anyType": "any type",
+      "tradeFeePct": "Trade %",
+      "chargeFeePct": "Charging %",
+      "bookingFeePct": "Booking %",
+      "subscriptionFiat": "Subscription",
+      "subscriptionPeriod": "per",
+      "currency": "Currency",
+      "includedInvoices": "Invoices included",
+      "includedCampaigns": "Campaigns included",
+      "isDefault": "default",
+      "active": "active",
+      "plan": "Plan",
+      "company": "Company",
+      "network": "Network",
+      "none": "—",
+      "overrideTrade": "Trade % override",
+      "overrideCharge": "Charging % override",
+      "overrideBooking": "Booking % override",
+      "note": "Note"
+    },
+    "tier": {
+      "BASIC": "Basic",
+      "EXTENDED": "Extended",
+      "CORPORATE": "Corporate"
+    },
+    "type": {
+      "PRODUCER": "Producer",
+      "WHOLESALE": "Wholesale buyer",
+      "COOPERATIVE": "Cooperative",
+      "OPERATOR": "Operator"
+    },
+    "period": {
+      "month": "month",
+      "quarter": "quarter",
+      "year": "year"
+    },
+    "nav": "Fee plans"
   }
 }

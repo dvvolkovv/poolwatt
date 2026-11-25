@@ -18,6 +18,7 @@ export default async function AdminLayout({
   if (session.user.role !== "ADMIN") notFound();
 
   const tNav = await getTranslations("admin");
+  const tFeePlans = await getTranslations("feePlans");
 
   return (
     <main className="bg-bg min-h-[calc(100vh-4rem)]">
@@ -70,6 +71,13 @@ export default async function AdminLayout({
                 className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
               >
                 📣 {tNav("navMarketing")}
+              </Link>
+              <Link
+                href={`/${locale}/admin/fee-plans`}
+                prefetch={false}
+                className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
+              >
+                💶 {tFeePlans("nav")}
               </Link>
               <Link
                 href={`/${locale}/admin/reconciliation`}

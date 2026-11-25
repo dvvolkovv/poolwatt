@@ -146,6 +146,11 @@ export async function quoteCharge(
       ? await quoteMarketOrder(zone.id, OrderSide.BUY, shortfall)
       : { filledKwh: 0, notional: 0, avgPrice: null, unavailableKwh: 0 };
 
+  // §53 — the commission on a charging session comes from the plan of the
+  // network the session ran in. Before this it was always the built-in 2 %:
+  // the plans existed and nothing read them.
+  const chargeFeePct = await chargeFeePctFor(input.pointId ?? null);
+
   const plan = planCharge({
     requestedKwh: requested,
     giftKwh,
@@ -153,7 +158,7 @@ export async function quoteCharge(
     market: quoteToMatch(quote),
     aggregatorPrice: numOrNull(zone.spotPrice),
     authBufferPct: input.authBufferPct,
-    chargeFeePct: DEFAULT_FEE_RATES.chargeFeePct,
+    chargeFeePct,
   });
 
   return { ...plan, currency: zone.currency };
@@ -562,4 +567,22 @@ function giftOf(receipt: { breakdown: unknown } | null | undefined): number {
   const b = receipt.breakdown as Record<string, unknown> | null;
   const value = b?.kwhFromGift;
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+/**
+ * §53 — the platform's commission on a charging session, from the plan of the
+ * network whose point it ran at. A session with no point of ours (a charge
+ * somewhere else) falls back to the platform default.
+ */
+async function chargeFeePctFor(pointId: string | null): Promise<number> {
+  if (!pointId) return DEFAULT_FEE_RATES.chargeFeePct;
+  const point = await prisma.acceptancePoint.findUnique({
+    where: { id: pointId },
+    select: { operatorId: true },
+  });
+  if (!point) return DEFAULT_FEE_RATES.chargeFeePct;
+
+  const { resolveFeeRates } = await import("@/lib/pricing/fee-plan-service");
+  const rates = await resolveFeeRates({ operatorId: point.operatorId }).catch(() => null);
+  return rates?.chargeFeePct ?? DEFAULT_FEE_RATES.chargeFeePct;
 }

@@ -149,7 +149,14 @@ export async function assignPartnerPlan(input: AssignInput) {
   });
 }
 
-export type RateSource = "builtin" | "default" | "participant-type" | "assigned" | "override";
+export type RateSource =
+  | "builtin"
+  | "default"
+  | "participant-type"
+  /** The older `Company.feePlan`, still what existing rows point at. */
+  | "company-fee-plan"
+  | "assigned"
+  | "override";
 
 export interface ResolvedRates {
   tradeFeePct: number;
@@ -194,7 +201,25 @@ export async function resolveFeeRates(args: {
   let plan = assigned?.plan ?? null;
   let source: RateSource = assigned ? "assigned" : "builtin";
 
-  if (!plan) {
+  // The older arrangement: §16.8's two percentages hung off `Company.feePlan`.
+  // Those rows are real and still assigned, so they rank where they always
+  // did — above a type-wide or default plan, below the new per-partner one.
+  let legacy: { tradeFeePct: number; chargeFeePct: number; name: string } | null = null;
+  if (!plan && args.companyId) {
+    const company = await prisma.company.findUnique({
+      where: { id: args.companyId },
+      include: { feePlan: true },
+    });
+    if (company?.feePlan) {
+      legacy = {
+        tradeFeePct: num(company.feePlan.tradeFeePct),
+        chargeFeePct: num(company.feePlan.chargeFeePct),
+        name: company.feePlan.name,
+      };
+    }
+  }
+
+  if (!plan && !legacy) {
     // §53 "по типу партнёра" — only a company has a participant type; a
     // charging network is not one of the listing types.
     const participantType = args.companyId
@@ -215,12 +240,21 @@ export async function resolveFeeRates(args: {
     }
   }
 
-  if (!plan) {
+  if (!plan && !legacy) {
     plan = await prisma.platformFeePlan.findFirst({ where: { isDefault: true, active: true } });
     if (plan) source = "default";
   }
 
-  if (!plan) return BUILTIN;
+  if (!plan) {
+    if (!legacy) return BUILTIN;
+    return {
+      ...BUILTIN,
+      tradeFeePct: legacy.tradeFeePct,
+      chargeFeePct: legacy.chargeFeePct,
+      planName: legacy.name,
+      source: "company-fee-plan",
+    };
+  }
 
   const rates: ResolvedRates = {
     tradeFeePct: num(plan.tradeFeePct),

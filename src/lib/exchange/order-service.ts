@@ -20,6 +20,7 @@ import { type Db, writeAudit } from "./audit";
 import { corridorRejectReason } from "./corridor";
 import { num, numOrNull } from "./decimal";
 import { DEFAULT_FEE_RATES, splitTradeFees, tradeFee } from "./fees";
+import { resolveFeeRates } from "@/lib/pricing/fee-plan-service";
 import {
   type Fill,
   type RestingOrder,
@@ -163,7 +164,12 @@ async function loadBook(
     .filter((r) => r.remainingKwh > 0 && !isKwhDust(r.remainingKwh));
 }
 
-/** Commission rates for the wallet owner, from their company's fee plan (§16.8). */
+/**
+ * Commission rates for the wallet owner (§16.8, §53).
+ *
+ * The order of precedence is `fee-plan-service`'s, so the book and a charging
+ * session cannot disagree about what a partner pays.
+ */
 async function feeRatesFor(db: Db, walletId: string) {
   const wallet = await db.wallet.findUnique({
     where: { id: walletId },
@@ -173,18 +179,14 @@ async function feeRatesFor(db: Db, walletId: string) {
 
   const company = await db.company.findFirst({
     where: { ownerUserId: wallet.ownerUserId },
-    include: { feePlan: true },
+    select: { id: true },
   });
-  if (company?.feePlan) {
-    return {
-      tradeFeePct: num(company.feePlan.tradeFeePct),
-      chargeFeePct: num(company.feePlan.chargeFeePct),
-    };
-  }
-  const fallback = await db.feePlan.findFirst({ where: { isDefault: true } });
-  return fallback
-    ? { tradeFeePct: num(fallback.tradeFeePct), chargeFeePct: num(fallback.chargeFeePct) }
-    : DEFAULT_FEE_RATES;
+  // A retail user trades without a company; §53's plans are about partners,
+  // so they fall back to the platform default.
+  const rates = await resolveFeeRates(
+    company ? { companyId: company.id } : { companyId: undefined, operatorId: undefined },
+  ).catch(() => null);
+  return rates ?? DEFAULT_FEE_RATES;
 }
 
 /**

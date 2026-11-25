@@ -1968,5 +1968,63 @@
       "SALE_RULES": "Pravidlá predaja",
       "SUBPARTNER_FEE": "Provízia subpartnerovi"
     }
+  },
+  "feePlans": {
+    "eyebrow": "Platforma",
+    "title": "Tarifné plány",
+    "intro": "Provízia z obchodu, nabíjania a rezervácie — podľa typu partnera a plánu. Partner bez plánu platí podľa predvoleného; partner s individuálnymi podmienkami podľa nich.",
+    "cardsClosed": "Kartové tarify — vydanie, správa, interchange — určuje kartová schéma a EMI. Zmluva ešte nie je, takže tu nie sú: vymyslená sadzba interchange by bola nesprávne číslo na skutočnej faktúre.",
+    "plans": "Plány",
+    "newPlan": "Nový plán",
+    "noPlans": "Zatiaľ žiadne plány. Kým nejaký nevznikne, platforma si berie zabudované 1 % z obchodu a 2 % z nabíjania.",
+    "assignments": "Kto je na čom",
+    "noAssignments": "Zatiaľ nikto nebol zaradený do plánu.",
+    "assignHelp": "Nechajte prepis prázdny, aby zostala sadzba plánu. Partner je buď spoločnosť alebo nabíjacia sieť, nie oboje.",
+    "assign": "Zaradiť do plánu",
+    "save": "Uložiť",
+    "partners": "partnerov",
+    "overridden": "prepísané",
+    "inactive": "vypnutý",
+    "field": {
+      "name": "Názov",
+      "tier": "Úroveň",
+      "participantType": "Typ partnera",
+      "anyType": "akýkoľvek typ",
+      "tradeFeePct": "Obchod, %",
+      "chargeFeePct": "Nabíjanie, %",
+      "bookingFeePct": "Rezervácia, %",
+      "subscriptionFiat": "Predplatné",
+      "subscriptionPeriod": "za",
+      "currency": "Valuta",
+      "includedInvoices": "Faktúr v cene",
+      "includedCampaigns": "Kampaní v cene",
+      "isDefault": "predvolený",
+      "active": "aktívny",
+      "plan": "Plán",
+      "company": "Spoločnosť",
+      "network": "Sieť",
+      "none": "—",
+      "overrideTrade": "Obchod, % — vlastné",
+      "overrideCharge": "Nabíjanie, % — vlastné",
+      "overrideBooking": "Rezervácia, % — vlastné",
+      "note": "Poznámka"
+    },
+    "tier": {
+      "BASIC": "Základný",
+      "EXTENDED": "Rozšírený",
+      "CORPORATE": "Korporátny"
+    },
+    "type": {
+      "PRODUCER": "Výrobca",
+      "WHOLESALE": "Veľkoodberateľ",
+      "COOPERATIVE": "Kooperatíva",
+      "OPERATOR": "Operátor"
+    },
+    "period": {
+      "month": "mesiac",
+      "quarter": "kvartál",
+      "year": "rok"
+    },
+    "nav": "Tarifné plány"
   }
 }
