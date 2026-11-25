@@ -200,9 +200,20 @@ the reverse tunnel is down. Ask the user to check
 `~/Library/Logs/poolwatt-tunnel-powerbank.log` on the Mac.
 
 Source of truth: the iOS project lives in `/Users/aleksandrswiss/poolwatt-ios/`
-on the Mac (separate repo). Spec + plan are in this repo at
-`docs/superpowers/specs/2026-05-25-ios-build-pipeline-design.md` and
-`docs/superpowers/plans/2026-05-25-ios-build-pipeline.md`.
+on the Mac (separate repo). Since 2026-11-25 it is a **Capacitor shell** over
+`https://poolwatt.com/app`, not a SwiftUI app — the old single-screen SwiftUI
+producer list is still in that repo's history on `main`, the shell lives on
+`capacitor-shell`. Consequences:
+
+- `ios/App/App.xcodeproj` is committed source now (it carries the build
+  settings and the build number fastlane increments); the xcodegen
+  `project.yml` flow is gone.
+- Both lanes run `npx cap sync ios` first. A change to the web app needs no
+  iOS build at all — the shell loads the live site.
+- `bin/build` on the Mac pins `/opt/homebrew/opt/ruby/bin` onto PATH. `bash
+  -lc`, which `mac-ios` uses, otherwise resolves Apple's system Ruby 2.6,
+  which cannot run a modern bundler — the whole pipeline was dead from a
+  Homebrew Ruby upgrade until this was pinned.
 
 
 ## Android builds (on this server)
