@@ -218,3 +218,64 @@ async function pauseCampaign(tx: Db, campaignId: string, reason: string): Promis
     after: { reason },
   });
 }
+
+export interface MyGift {
+  id: string;
+  networkName: string;
+  operatorId: string;
+  operatorSlug: string;
+  amountKwh: number;
+  remainingKwh: number;
+  expiresAt: Date;
+  campaignName: string;
+  /** How many stations this gift is good at, for the "show me" button. */
+  pointCount: number;
+  /** Null when the gift is good across the whole network. */
+  scopePointIds: string[];
+}
+
+/**
+ * US-42 — "Раздел «Подарки» с партнёром, суммой, сроком и кнопкой «Показать
+ * станции»". Soonest to burn first: that is the one worth using.
+ */
+export async function readMyGifts(userId: string): Promise<MyGift[]> {
+  const grants = await prisma.promoGrant.findMany({
+    where: {
+      userId,
+      status: "ACTIVE",
+      expiresAt: { gt: new Date() },
+      campaign: { status: { in: ["ACTIVE", "PAUSED", "EXHAUSTED"] } },
+    },
+    orderBy: [{ expiresAt: "asc" }, { issuedAt: "asc" }],
+    include: {
+      operator: { select: { id: true, slug: true, displayName: true } },
+      campaign: { select: { name: true, scopePointIds: true } },
+    },
+  });
+
+  return Promise.all(
+    grants.map(async (g) => {
+      // Where it can be spent: the campaign's own points, or every published
+      // point of the network.
+      const pointCount =
+        g.campaign.scopePointIds.length > 0
+          ? await prisma.acceptancePoint.count({
+              where: { id: { in: g.campaign.scopePointIds } },
+            })
+          : await prisma.acceptancePoint.count({ where: { operatorId: g.operatorId } });
+
+      return {
+        id: g.id,
+        networkName: g.operator.displayName,
+        operatorId: g.operator.id,
+        operatorSlug: g.operator.slug,
+        amountKwh: num(g.amountKwh),
+        remainingKwh: roundKwh(Math.max(0, num(g.amountKwh) - num(g.usedKwh))),
+        expiresAt: g.expiresAt,
+        campaignName: g.campaign.name,
+        pointCount,
+        scopePointIds: g.campaign.scopePointIds,
+      };
+    }),
+  );
+}

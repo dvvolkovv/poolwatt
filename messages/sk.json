@@ -1867,5 +1867,76 @@
     },
     "cabinetLink": "Marketing",
     "sectionHeading": "Od siete"
+  },
+  "campaigns": {
+    "eyebrow": "Darčeky",
+    "title": "Kampane",
+    "intro": "Darujte klientovi kWh za nabíjanie vo vašej sieti. Darčekové kWh sa na vašich stanicách čerpajú ako prvé — a len tam.",
+    "fiatClosed": "Kampane sú financované z vašej vlastnej výroby: keď klient darček použije, spálené sú vaše kWh. Financovanie z bankového účtu potrebuje banku, ktorá ešte nie je pripojená.",
+    "new": "Nová kampaň",
+    "list": "Vaše kampane",
+    "empty": "Zatiaľ žiadne kampane.",
+    "create": "Vytvoriť ako koncept",
+    "start": "Spustiť",
+    "pause": "Pozastaviť",
+    "end": "Ukončiť",
+    "topUp": "Uložiť rozpočet",
+    "kwh": "kWh",
+    "budget": "Rozpočet využitý",
+    "given": "Rozdané",
+    "used": "Využité klientmi",
+    "expired": "Prepadlo",
+    "grants": "darčekov",
+    "wholeNetwork": "celá sieť",
+    "pointCount": "miest",
+    "field": {
+      "name": "Názov",
+      "trigger": "Spúšťač",
+      "triggerN": "Počet",
+      "triggerNth": "Ktoré nabíjanie",
+      "triggerVolume": "kWh za obdobie",
+      "triggerPeriodDays": "Obdobie, dní",
+      "giftKwh": "Darček, kWh",
+      "scope": "Kde platí",
+      "scopeAll": "Nič nevybrané znamená celú sieť.",
+      "validityDays": "Platnosť, dní",
+      "oncePerClient": "Raz na klienta",
+      "minNextChargeKwh": "Min. ďalšie nabíjanie, kWh",
+      "budgetKwh": "Rozpočet, kWh",
+      "funding": "Zdroj",
+      "zone": "Zóna",
+      "from": "Od",
+      "to": "Do"
+    },
+    "trigger": {
+      "FIRST_CHARGE": "Prvé nabíjanie v sieti",
+      "NTH_CHARGE": "N-té nabíjanie",
+      "VOLUME_PERIOD": "kWh za obdobie"
+    },
+    "funding": {
+      "TOKENS": "Vlastná výroba",
+      "FIAT": "Bankový účet (zatiaľ nie)"
+    },
+    "status": {
+      "DRAFT": "Koncept",
+      "ACTIVE": "Beží",
+      "PAUSED": "Pozastavená",
+      "EXHAUSTED": "Rozpočet vyčerpaný",
+      "ENDED": "Ukončená"
+    }
+  },
+  "gifts": {
+    "eyebrow": "Darčeky",
+    "title": "Vaše darčeky",
+    "backToWallet": "Peňaženka",
+    "intro": "Darčekové kWh sú bonus partnera, nie váš zostatok: dajú sa využiť len na staniciach toho partnera a vždy sa čerpajú ako prvé.",
+    "empty": "Zatiaľ žiadne darčeky. Prídu po nabíjaní v sieti, ktorá má kampaň.",
+    "total": "K dispozícii",
+    "kwh": "kWh",
+    "until": "do",
+    "of": "z",
+    "onlyHere": "Len na staniciach {network}.",
+    "showStations": "Zobraziť stanice",
+    "walletLink": "Darčeky"
   }
 }

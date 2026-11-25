@@ -6,7 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
-import { availableGiftKwh, spendGrants } from "./grant-spend";
+import { availableGiftKwh, readMyGifts, spendGrants } from "./grant-spend";
 
 const PREFIX = "test_spend_";
 const ZONE_CODE = "TESTSPEND";
@@ -380,5 +380,76 @@ describe("spendGrants — the partner's own batches pay for the gift", () => {
     const after = await prisma.promoGrant.findUniqueOrThrow({ where: { id: g.id } });
     expect(num(after.usedKwh)).toBe(10);
     expect(after.status).toBe("USED");
+  });
+});
+
+describe("readMyGifts — US-42 'раздел Подарки с партнёром, суммой и сроком'", () => {
+  it("lists the live gifts with what is left and where to spend them", async () => {
+    await grant();
+
+    const gifts = await readMyGifts(driverUserId);
+
+    expect(gifts).toHaveLength(1);
+    expect(gifts[0].networkName).toBe("Grant spend network");
+    expect(gifts[0].remainingKwh).toBe(10);
+    expect(gifts[0].operatorSlug).toBe(`${PREFIX}net`);
+    expect(gifts[0].pointCount).toBe(2);
+  });
+
+  it("counts only the campaign's own points when it is scoped", async () => {
+    await prisma.campaign.update({
+      where: { id: campaignId },
+      data: { scopePointIds: [pointB] },
+    });
+    await grant();
+
+    const gifts = await readMyGifts(driverUserId);
+    expect(gifts[0].pointCount).toBe(1);
+  });
+
+  it("subtracts what has been spent", async () => {
+    await grant({ usedKwh: new Prisma.Decimal(3.5) });
+    const gifts = await readMyGifts(driverUserId);
+    expect(gifts[0].remainingKwh).toBe(6.5);
+  });
+
+  it("hides expired, used and revoked gifts", async () => {
+    await grant({ expiresAt: new Date(Date.now() - 1000) });
+    expect(await readMyGifts(driverUserId)).toHaveLength(0);
+
+    await prisma.promoGrant.deleteMany({ where: { operatorId } });
+    await grant({ status: "USED", usedKwh: new Prisma.Decimal(10) });
+    expect(await readMyGifts(driverUserId)).toHaveLength(0);
+  });
+
+  it("shows nobody else's gifts", async () => {
+    await grant();
+    expect(await readMyGifts(partnerUserId)).toHaveLength(0);
+  });
+
+  it("puts the gift that burns soonest first", async () => {
+    const later = await grant({ expiresAt: new Date(Date.now() + 40 * 86_400_000) });
+    const second = await prisma.campaign.create({
+      data: {
+        operatorId,
+        zoneId,
+        name: "Sooner",
+        trigger: "NTH_CHARGE",
+        triggerN: 7,
+        giftKwh: new Prisma.Decimal(2),
+        validityDays: 1,
+        budgetKwh: new Prisma.Decimal(10),
+        status: "ACTIVE",
+      },
+    });
+    const sooner = await grant({
+      campaignId: second.id,
+      amountKwh: new Prisma.Decimal(2),
+      expiresAt: new Date(Date.now() + 86_400_000),
+    });
+
+    const gifts = await readMyGifts(driverUserId);
+    expect(gifts.map((g) => g.id)).toEqual([sooner.id, later.id]);
+    await prisma.campaign.delete({ where: { id: second.id } });
   });
 });

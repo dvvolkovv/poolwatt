@@ -1867,5 +1867,76 @@
     },
     "cabinetLink": "Marketing",
     "sectionHeading": "From the network"
+  },
+  "campaigns": {
+    "eyebrow": "Gifts",
+    "title": "Campaigns",
+    "intro": "Give a client kWh for charging in your network. Gift kWh are spent at your stations before anything else, and only there.",
+    "fiatClosed": "Campaigns are funded from your own generation: the gift burns your own kWh when a client uses it. Funding from a settlement account needs a bank, which is not connected yet.",
+    "new": "New campaign",
+    "list": "Your campaigns",
+    "empty": "No campaigns yet.",
+    "create": "Create as draft",
+    "start": "Start",
+    "pause": "Pause",
+    "end": "End",
+    "topUp": "Save budget",
+    "kwh": "kWh",
+    "budget": "Budget used",
+    "given": "Given out",
+    "used": "Spent by clients",
+    "expired": "Burned unused",
+    "grants": "gifts",
+    "wholeNetwork": "whole network",
+    "pointCount": "points",
+    "field": {
+      "name": "Name",
+      "trigger": "Trigger",
+      "triggerN": "Number",
+      "triggerNth": "Which charge",
+      "triggerVolume": "kWh over the period",
+      "triggerPeriodDays": "Period, days",
+      "giftKwh": "Gift, kWh",
+      "scope": "Where it works",
+      "scopeAll": "Nothing selected means the whole network.",
+      "validityDays": "Valid, days",
+      "oncePerClient": "Once per client",
+      "minNextChargeKwh": "Min. next charge, kWh",
+      "budgetKwh": "Budget, kWh",
+      "funding": "Funded from",
+      "zone": "Zone",
+      "from": "From",
+      "to": "To"
+    },
+    "trigger": {
+      "FIRST_CHARGE": "First charge in the network",
+      "NTH_CHARGE": "N-th charge",
+      "VOLUME_PERIOD": "kWh charged over a period"
+    },
+    "funding": {
+      "TOKENS": "Your own generation",
+      "FIAT": "Settlement account (not yet)"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Running",
+      "PAUSED": "Paused",
+      "EXHAUSTED": "Budget spent",
+      "ENDED": "Ended"
+    }
+  },
+  "gifts": {
+    "eyebrow": "Gifts",
+    "title": "Your gifts",
+    "backToWallet": "Wallet",
+    "intro": "Gift kWh are a partner's bonus, not your balance: they can only be spent at that partner's stations, and they are always spent first.",
+    "empty": "No gifts yet. They arrive after a charge in a network that runs a campaign.",
+    "total": "Available",
+    "kwh": "kWh",
+    "until": "until",
+    "of": "of",
+    "onlyHere": "Only at {network} stations.",
+    "showStations": "Show stations",
+    "walletLink": "Gifts"
   }
 }

@@ -14,6 +14,7 @@ import { quoteMarketOrder } from "@/lib/exchange/order-service";
 import { BuyAheadForm } from "@/components/exchange/buy-ahead-form";
 import { LiveWallets } from "@/components/exchange/live-wallets";
 import { walletChannel } from "@/lib/exchange/realtime";
+import { readMyGifts } from "@/lib/marketing/grant-spend";
 
 export const dynamic = "force-dynamic";
 
@@ -33,8 +34,9 @@ export default async function WalletPage({
   const userId = session.user.id;
 
   const t = await getTranslations("exchange.wallet");
+  const tGifts = await getTranslations("gifts");
 
-  const [wallets, zones, account, buys, receipts] = await Promise.all([
+  const [wallets, zones, account, buys, receipts, gifts] = await Promise.all([
     readWallets(userId),
     prisma.gridZone.findMany({ orderBy: { code: "asc" } }),
     prisma.settlementAccount.findUnique({ where: { userId } }),
@@ -61,6 +63,8 @@ export default async function WalletPage({
         tradeId: true,
       },
     }),
+    // §43 — "В приложении показывается отдельно от основного баланса".
+    readMyGifts(userId),
   ]);
 
   // §7 "средняя цена покупки" — volume-weighted across every buy fill.
@@ -113,6 +117,32 @@ export default async function WalletPage({
             offline: t("offline"),
           }}
         />
+      )}
+
+      {gifts.length > 0 && (
+        <section className="mb-10" data-testid="wallet-gifts">
+          <h2 className="text-[13px] uppercase tracking-[0.14em] text-muted mb-3">
+            {tGifts("title")}
+          </h2>
+          <ul className="divide-y divide-hairline text-sm mb-3">
+            {gifts.slice(0, 3).map((g) => (
+              <li key={g.id} className="flex flex-wrap items-baseline justify-between gap-3 py-2">
+                <span>{g.networkName}</span>
+                <span className="text-[12px] text-muted">
+                  <span className="num">{g.remainingKwh}</span> {tGifts("kwh")} ·{" "}
+                  {tGifts("until")} {g.expiresAt.toISOString().slice(0, 10)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <Link
+            href={`/${locale}/me/gifts`}
+            prefetch={false}
+            className="text-[13px] underline hover:text-accent"
+          >
+            {tGifts("walletLink")} →
+          </Link>
+        </section>
       )}
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
