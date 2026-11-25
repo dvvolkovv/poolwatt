@@ -215,7 +215,8 @@
       "listing": "Listing",
       "home": "Domov",
       "workOrders": "Príkazy",
-      "bookings": "Rezervácie"
+      "bookings": "Rezervácie",
+      "roaming": "Roaming"
     },
     "favorites": {
       "title": "Obľúbené",
@@ -1760,7 +1761,13 @@
       "STORAGE": "zásobník",
       "MIXED": "zmiešaný"
     },
-    "zone": "Zóna"
+    "zone": "Zóna",
+    "roaming": "Roaming",
+    "roamingFrom": "Z inej zóny",
+    "roamingRate": "Prepočítavací kurz",
+    "roamingDebit": "Odpísané v domácej zóne",
+    "roamingFee": "Provízia koridoru",
+    "roamingPartner": "Zúčtovací partner"
   },
   "accounting": {
     "eyebrow": "Účtovníctvo",
@@ -2263,5 +2270,40 @@
       "currency": "Valuta",
       "serialTracked": "Podľa sériového čísla"
     }
+  },
+  "roaming": {
+    "eyebrow": "Roaming",
+    "title": "Nabíjanie v inej krajine",
+    "intro": "Kilowatthodiny kúpené v jednej zóne môžete použiť v inej. Kurz je pomer spotových cien oboch zón plus provízia zúčtovacieho partnera. Kurz aj odpis vidíte pred potvrdením.",
+    "myBalances": "Vaše zostatky",
+    "noWallet": "Peňaženka zatiaľ nie je — kúpte kWh vo svojej zóne.",
+    "kwh": "kWh",
+    "corridors": "Koridory",
+    "noCorridors": "Z vašich zón nie je otvorený žiadny koridor.",
+    "corridor": "Koridor",
+    "partner": "Partner",
+    "rate": "Kurz",
+    "fee": "Provízia",
+    "allowance": "Zostáva dnes",
+    "servable": "Pokryje",
+    "noRate": "bez ceny",
+    "noLimit": "bez limitu",
+    "sessionTitle": "Sedenie",
+    "sessionHelp": "Vyberte zónu a množstvo, stlačte Vypočítať — a potvrďte až potom.",
+    "zone": "Zóna",
+    "amount": "kWh",
+    "calculate": "Vypočítať",
+    "confirm": "Potvrdiť",
+    "noCorridor": "Pre túto zónu koridor nefunguje: chýba dohoda, cena alebo je zostatok nulový.",
+    "fromHome": "Z domácej zóny",
+    "debit": "Odpis doma",
+    "clearingFee": "Provízia koridoru",
+    "fromLocal": "Zo zostatku tejto zóny",
+    "toBuy": "Dokúpi sa",
+    "money": "Na zaplatenie",
+    "unserved": "Nepokryté",
+    "done": "Hotovo",
+    "receipt": "Doklad",
+    "backToWallet": "Peňaženka"
   }
 }

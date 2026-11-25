@@ -459,3 +459,79 @@ export async function netRoamingPeriod(
   });
   return result;
 }
+
+export interface MyRoamingCorridor {
+  agreementId: string;
+  partnerName: string;
+  homeZoneId: string;
+  homeZoneCode: string;
+  visitedZoneId: string;
+  visitedZoneCode: string;
+  feePct: number;
+  /** Null when either zone has no spot reference and nothing can be priced. */
+  conversionRate: number | null;
+  homeBalanceKwh: number;
+  allowanceKwh: number | null;
+  /** Visited-zone kWh this corridor can serve right now. */
+  maxKwh: number;
+}
+
+/**
+ * The corridors open to one driver — ТЗ §9.10 "Роуминг". Listed from the
+ * zones where the driver actually holds kWh, because a corridor out of an
+ * empty wallet tells them nothing.
+ */
+export async function readMyRoamingCorridors(
+  userId: string,
+  db: Db = prisma,
+): Promise<MyRoamingCorridor[]> {
+  const wallets = await db.wallet.findMany({
+    where: { ownerUserId: userId },
+    include: { zone: true },
+  });
+  if (wallets.length === 0) return [];
+
+  const agreements = await db.roamingAgreement.findMany({
+    where: { enabled: true, homeZoneId: { in: wallets.map((w) => w.zoneId) } },
+    include: { visitedZone: true, homeZone: { select: { code: true } } },
+    orderBy: [{ visitedZone: { code: "asc" } }],
+  });
+
+  const now = new Date();
+  const rows: MyRoamingCorridor[] = [];
+  for (const a of agreements) {
+    const wallet = wallets.find((w) => w.zoneId === a.homeZoneId);
+    if (!wallet) continue;
+    const homeSpot = numOrNull(wallet.zone.spotPrice);
+    const visitedSpot = numOrNull(a.visitedZone.spotPrice);
+    const conversionRate =
+      homeSpot != null && visitedSpot != null && homeSpot > 0 && visitedSpot > 0
+        ? roundPrice(visitedSpot / homeSpot)
+        : null;
+
+    const feePct = num(a.feePct);
+    const homeBalanceKwh = num(wallet.kwhBalance);
+    const limitKwh = numOrNull(a.dailyLimitKwh);
+    const allowanceKwh =
+      limitKwh == null
+        ? null
+        : Math.max(0, roundKwh(limitKwh - (await roamingUsedTodayKwh(userId, a.id, now, db))));
+
+    const affordable =
+      conversionRate == null ? 0 : roamingAffordableKwh(homeBalanceKwh, conversionRate, feePct);
+    rows.push({
+      agreementId: a.id,
+      partnerName: a.partnerName,
+      homeZoneId: a.homeZoneId,
+      homeZoneCode: a.homeZone.code,
+      visitedZoneId: a.visitedZoneId,
+      visitedZoneCode: a.visitedZone.code,
+      feePct,
+      conversionRate,
+      homeBalanceKwh,
+      allowanceKwh,
+      maxKwh: allowanceKwh == null ? affordable : roundKwh(Math.min(affordable, allowanceKwh)),
+    });
+  }
+  return rows;
+}

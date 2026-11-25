@@ -215,7 +215,8 @@
       "listing": "Listing",
       "home": "Home",
       "workOrders": "Work orders",
-      "bookings": "Bookings"
+      "bookings": "Bookings",
+      "roaming": "Roaming"
     },
     "favorites": {
       "title": "Favorites",
@@ -1760,7 +1761,13 @@
       "STORAGE": "storage",
       "MIXED": "mixed"
     },
-    "zone": "Zone"
+    "zone": "Zone",
+    "roaming": "Roaming",
+    "roamingFrom": "From another zone",
+    "roamingRate": "Conversion rate",
+    "roamingDebit": "Debited in the home zone",
+    "roamingFee": "Corridor fee",
+    "roamingPartner": "Clearing partner"
   },
   "accounting": {
     "eyebrow": "Accounting",
@@ -2263,5 +2270,40 @@
       "currency": "Currency",
       "serialTracked": "Tracked by serial"
     }
+  },
+  "roaming": {
+    "eyebrow": "Roaming",
+    "title": "Charging in another country",
+    "intro": "kWh bought in one zone can be spent in another. The rate is the ratio of the two zones' spot references plus the clearing partner's fee. Both the rate and the debit are shown before you confirm.",
+    "myBalances": "Your balances",
+    "noWallet": "No wallet yet — buy kWh in your own zone first.",
+    "kwh": "kWh",
+    "corridors": "Corridors",
+    "noCorridors": "No open corridor out of your zones.",
+    "corridor": "Corridor",
+    "partner": "Partner",
+    "rate": "Rate",
+    "fee": "Fee",
+    "allowance": "Left today",
+    "servable": "Covers",
+    "noRate": "no price",
+    "noLimit": "no cap",
+    "sessionTitle": "Session",
+    "sessionHelp": "Pick a zone and an amount, press Calculate — and confirm only after that.",
+    "zone": "Zone",
+    "amount": "kWh",
+    "calculate": "Calculate",
+    "confirm": "Confirm",
+    "noCorridor": "No corridor works for this zone: no agreement, no price, or an empty balance.",
+    "fromHome": "From the home zone",
+    "debit": "Debited at home",
+    "clearingFee": "Corridor fee",
+    "fromLocal": "From this zone's balance",
+    "toBuy": "Bought",
+    "money": "To pay",
+    "unserved": "Not covered",
+    "done": "Done",
+    "receipt": "Receipt",
+    "backToWallet": "Wallet"
   }
 }

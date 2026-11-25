@@ -11,6 +11,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   netRoamingPeriod,
+  readMyRoamingCorridors,
   quoteRoaming,
   readRoamingPositions,
   resolveRoamingLeg,
@@ -577,5 +578,43 @@ describe("clearing positions and netting — §8 'взаимозачёт с па
     });
     expect(first.closedSessions).toBe(1);
     expect(second.closedSessions).toBe(0);
+  });
+});
+
+describe("readMyRoamingCorridors — what the driver's page lists (§9.10)", () => {
+  it("lists only corridors out of a zone the driver actually holds kWh in", async () => {
+    await setHomeBalance(21);
+    await corridor(HOME, 5, 50);
+    await corridor(OTHER, 5);
+
+    const rows = (await readMyRoamingCorridors(driverId)).filter(
+      (r) => r.visitedZoneCode === VISIT,
+    );
+    const home = rows.find((r) => r.homeZoneCode === HOME)!;
+    expect(home.conversionRate).toBe(2);
+    expect(home.homeBalanceKwh).toBe(21);
+    expect(home.maxKwh).toBe(10);
+    expect(home.allowanceKwh).toBe(50);
+
+    // The other wallet is empty, so the corridor out of it can serve nothing.
+    const other = rows.find((r) => r.homeZoneCode === OTHER)!;
+    expect(other.maxKwh).toBe(0);
+  });
+
+  it("leaves the rate empty when a zone has no spot reference to price it with", async () => {
+    await setHomeBalance(21);
+    await corridor(HOME, 5);
+    await prisma.gridZone.update({ where: { id: visitZoneId }, data: { spotPrice: null } });
+
+    const row = (await readMyRoamingCorridors(driverId)).find(
+      (r) => r.visitedZoneCode === VISIT && r.homeZoneCode === HOME,
+    )!;
+    expect(row.conversionRate).toBeNull();
+    expect(row.maxKwh).toBe(0);
+
+    await prisma.gridZone.update({
+      where: { id: visitZoneId },
+      data: { spotPrice: new Prisma.Decimal(0.2) },
+    });
   });
 });

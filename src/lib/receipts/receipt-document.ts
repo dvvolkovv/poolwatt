@@ -56,6 +56,19 @@ export interface ReceiptPaymentSplit {
   cardFiat: number;
 }
 
+export interface ReceiptRoaming {
+  /** The zone whose balance paid for this session. */
+  homeZone: string | null;
+  partnerName: string | null;
+  /** Home-zone kWh per 1 kWh delivered here. */
+  conversionRate: number | null;
+  /** kWh the clearing partner delivered. */
+  kwh: number;
+  /** Home-zone kWh burned for them, the corridor fee included. */
+  debitedKwh: number;
+  feeKwh: number;
+}
+
 export interface ReceiptDocument {
   id: string;
   number: string | null;
@@ -85,6 +98,11 @@ export interface ReceiptDocument {
   reservationCredit: number | null;
 
   payment: ReceiptPaymentSplit;
+  /**
+   * §8 "Роуминг", US-11 — the corridor a session abroad leaned on. Null for a
+   * session that stayed in one zone, which is almost all of them.
+   */
+  roaming: ReceiptRoaming | null;
 
   /** §46 item 6. Null while US-12 has not landed. */
   cashbackFiat: number | null;
@@ -253,6 +271,19 @@ export async function buildReceiptDocument(
     numberFrom(b, "kwhBought") ?? (receipt.payment ? num(receipt.payment.kwhBought) : 0);
   const boughtFiat = numberFrom(b, "energyCost") ?? (kind === "charge" ? totalFiat : 0);
   const fromGiftKwh = numberFrom(b, "kwhFromGift") ?? 0;
+  const roamingKwh =
+    numberFrom(b, "kwhFromRoaming") ?? (receipt.payment ? num(receipt.payment.kwhFromRoaming) : 0);
+  const roaming: ReceiptRoaming | null =
+    roamingKwh > 0
+      ? {
+          homeZone: typeof b.roamingHomeZone === "string" ? b.roamingHomeZone : null,
+          partnerName: typeof b.roamingPartner === "string" ? b.roamingPartner : null,
+          conversionRate: numberFrom(b, "roamingRate"),
+          kwh: roundKwh(roamingKwh),
+          debitedKwh: roundKwh(numberFrom(b, "roamingDebitKwh") ?? 0),
+          feeKwh: roundKwh(numberFrom(b, "roamingFeeKwh") ?? 0),
+        }
+      : null;
 
   const tariff = await tariffForReceipt({
     pointId: point?.id ?? null,
@@ -260,7 +291,9 @@ export async function buildReceiptDocument(
     liveTariffs: point?.tariffs ?? [],
     at: session?.startedAt ?? null,
   });
-  const burnedKwh = fromBalanceKwh + fromGiftKwh;
+  // What the driver's own tokens covered, wherever they lived: the token
+  // price of §46.4 counts roaming kWh too — they were paid for in tokens.
+  const burnedKwh = fromBalanceKwh + fromGiftKwh + roamingKwh;
 
   const pricePerKwhFiat =
     numberFrom(b, "price") ??
@@ -293,6 +326,7 @@ export async function buildReceiptDocument(
       boughtFiat: roundMoney(boughtFiat),
       cardFiat: roundMoney(kind === "charge" ? boughtFiat : totalFiat),
     },
+    roaming,
     cashbackFiat: numberFrom(b, "cashbackFiat"),
     bonusKwh: numberFrom(b, "bonusKwh"),
     vat: splitVat(totalFiat, numOrNull(accounting?.vatRatePct ?? null)),

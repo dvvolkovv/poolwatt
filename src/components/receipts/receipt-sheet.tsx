@@ -133,6 +133,29 @@ export async function ReceiptSheet({ doc }: { doc: ReceiptDocument }) {
         )}
       </Section>
 
+      {/* §8 "Роуминг", US-11 — at which rate another zone's balance paid. */}
+      {doc.roaming && (
+        <Section title={t("roaming")}>
+          <Row
+            label={t("roamingFrom")}
+            value={`${doc.roaming.kwh.toFixed(3)} kWh · ${doc.roaming.homeZone ?? "—"}`}
+          />
+          {doc.roaming.conversionRate != null && (
+            <Row label={t("roamingRate")} value={doc.roaming.conversionRate.toFixed(4)} />
+          )}
+          <Row
+            label={t("roamingDebit")}
+            value={`${doc.roaming.debitedKwh.toFixed(3)} kWh`}
+          />
+          {doc.roaming.feeKwh > 0 && (
+            <Row label={t("roamingFee")} value={`${doc.roaming.feeKwh.toFixed(3)} kWh`} />
+          )}
+          {doc.roaming.partnerName && (
+            <Row label={t("roamingPartner")} value={doc.roaming.partnerName} />
+          )}
+        </Section>
+      )}
+
       {/* §46.6 — cashback and bonuses, when there are any. */}
       {(doc.cashbackFiat != null || doc.bonusKwh != null) && (
         <Section title={t("rewards")}>

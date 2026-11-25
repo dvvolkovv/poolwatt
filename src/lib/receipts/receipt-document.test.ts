@@ -191,6 +191,40 @@ async function chargeReceipt(
   });
 }
 
+describe("buildReceiptDocument — the roaming lines of US-11", () => {
+  it("prints the corridor, the rate and the home-zone debit", async () => {
+    const receipt = await chargeReceipt(
+      {},
+      { kwhFromRoaming: new Prisma.Decimal(10), kwhFromBalance: new Prisma.Decimal(0), kwhBought: new Prisma.Decimal(0) },
+      {
+        kwhFromBalance: 0,
+        kwhBought: 0,
+        kwhFromRoaming: 10,
+        roamingHomeZone: "SK",
+        roamingPartner: "poolwatt-clearing-eu",
+        roamingRate: 2,
+        roamingDebitKwh: 21,
+        roamingFeeKwh: 1,
+      },
+    );
+    const doc = await buildReceiptDocument(receipt.id);
+    expect(doc!.roaming).toEqual({
+      homeZone: "SK",
+      partnerName: "poolwatt-clearing-eu",
+      conversionRate: 2,
+      kwh: 10,
+      debitedKwh: 21,
+      feeKwh: 1,
+    });
+  });
+
+  it("has no roaming block on a session that stayed in one zone", async () => {
+    const receipt = await chargeReceipt();
+    const doc = await buildReceiptDocument(receipt.id);
+    expect(doc!.roaming).toBeNull();
+  });
+});
+
 describe("buildReceiptDocument — §46 состав чека", () => {
   it("prints the network's logo and requisites, not only Poolwatt's", async () => {
     const receipt = await chargeReceipt();
