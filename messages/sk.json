@@ -1742,7 +1742,8 @@
       "HYDRO": "voda",
       "STORAGE": "zásobník",
       "MIXED": "zmiešaný"
-    }
+    },
+    "zone": "Zóna"
   },
   "accounting": {
     "eyebrow": "Účtovníctvo",

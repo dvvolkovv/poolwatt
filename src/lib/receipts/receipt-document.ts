@@ -64,6 +64,12 @@ export interface ReceiptDocument {
 
   network: ReceiptNetwork | null;
   session: ReceiptSession | null;
+  /**
+   * §46 lists the point, which an exchange purchase does not have. The zone
+   * is then the only honest answer to "where": a trade receipt without it
+   * says nothing about where those kWh live.
+   */
+  zone: string | null;
 
   totalKwh: number;
   totalFiat: number;
@@ -151,9 +157,10 @@ export async function buildReceiptDocument(
         include: {
           point: { include: { tariffs: true, operator: { include: { accounting: true } } } },
           connector: true,
+          zone: { select: { code: true } },
         },
       },
-      trade: true,
+      trade: { include: { zone: { select: { code: true } } } },
       reservation: {
         include: {
           point: { include: { tariffs: true, operator: { include: { accounting: true } } } },
@@ -222,6 +229,11 @@ export async function buildReceiptDocument(
     currency: receipt.currency,
     network,
     session,
+    zone:
+      (typeof b.zone === "string" ? b.zone : null) ??
+      receipt.payment?.zone.code ??
+      receipt.trade?.zone.code ??
+      null,
     totalKwh,
     totalFiat,
     energySources,

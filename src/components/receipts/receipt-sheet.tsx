@@ -82,6 +82,8 @@ export async function ReceiptSheet({ doc }: { doc: ReceiptDocument }) {
 
       {/* §46.3–§46.4 — volume, source, prices. */}
       <Section title={t("energy")}>
+        {/* A purchase on the exchange has no point; the zone is its "where". */}
+        {!doc.session?.pointName && doc.zone && <Row label={t("zone")} value={doc.zone} />}
         <Row label={t("kwh")} value={`${doc.totalKwh.toFixed(3)} kWh`} />
         {doc.energySources.length > 0 && (
           <Row

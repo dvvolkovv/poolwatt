@@ -264,12 +264,19 @@ describe("reconcileRegistry — readings against batches (§16.2)", () => {
 
 describe("reconcileRegistry — orphan batches", () => {
   it("reports a batch that came from no reading and no split", async () => {
-    await mintToken(prisma, {
+    const orphan = await mintToken(prisma, {
       assetId,
       zoneId,
       intervalStart: INTERVAL,
       amountKwh: 7,
       ownerWalletId: walletId,
+    });
+    // This check windows on mintedAt, which defaults to the real clock. The
+    // window here is a fixed day, so the batch has to be dated into it —
+    // otherwise the test passes or fails depending on today's date.
+    await prisma.energyToken.update({
+      where: { id: orphan.id },
+      data: { mintedAt: INTERVAL },
     });
 
     const outcome = await run();
@@ -290,7 +297,14 @@ describe("reconcileRegistry — orphan batches", () => {
         amountKwh: new Prisma.Decimal(4),
         parentId: token!.id,
         ownerWalletId: walletId,
+        mintedAt: INTERVAL,
       },
+    });
+    // Dated into the window for the same reason as above: a child outside it
+    // would make this case prove nothing.
+    await prisma.energyToken.update({
+      where: { id: token!.id },
+      data: { mintedAt: INTERVAL },
     });
     await prisma.energyToken.update({
       where: { id: token!.id },

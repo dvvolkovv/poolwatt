@@ -1742,7 +1742,8 @@
       "HYDRO": "hydro",
       "STORAGE": "storage",
       "MIXED": "mixed"
-    }
+    },
+    "zone": "Zone"
   },
   "accounting": {
     "eyebrow": "Accounting",

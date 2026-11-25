@@ -314,6 +314,15 @@ describe("buildReceiptDocument — §46 состав чека", () => {
     expect(doc!.totalKwh).toBe(20);
   });
 
+  it("names the zone, so a receipt with no point still says where", async () => {
+    // A purchase on the exchange happens in a zone, not at a station. The
+    // first version of this page printed the zone and the §46 rewrite dropped
+    // it, which left a trade receipt with no "where" at all.
+    const receipt = await chargeReceipt({}, { pointId: null, connectorId: null });
+    const doc = await buildReceiptDocument(receipt.id);
+    expect(doc!.zone).toBe(ZONE);
+  });
+
   it("is null for a receipt that does not exist", async () => {
     expect(await buildReceiptDocument("nope")).toBeNull();
   });
