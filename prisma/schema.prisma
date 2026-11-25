@@ -26,6 +26,10 @@ model User {
   preferredLocale   String    @default("en")
   preferredCurrency String    @default("USD")
   preferredTheme    String    @default("system")
+  // §46 "Клиент выбирает способ в настройках; по умолчанию только
+  // электронный" — both on, paper happens on demand at the terminal.
+  receiptEmail      Boolean   @default(true)
+  receiptPush       Boolean   @default(true)
   emailVerified     DateTime?
   createdAt         DateTime  @default(now())
 
@@ -210,6 +214,7 @@ model ChargerOperator {
   claimedAt   DateTime?
 
   apiKeys    ChargerOperatorApiKey[]
+  accounting OperatorAccounting?
   points     AcceptancePoint[]
   roles      StaffRole[]
   employees  Employee[]
@@ -297,6 +302,7 @@ model AcceptancePoint {
   workOrders   WorkOrder[]
   tickets      Ticket[]
   reservations Reservation[]
+  payments     Payment[]
   policy       ReservationPolicy?
 
   @@index([operatorId, status])
@@ -317,6 +323,7 @@ model PointConnector {
 
   tickets      Ticket[]
   reservations Reservation[]
+  payments     Payment[]
 
   @@index([pointId])
   @@index([type, status])
@@ -1719,7 +1726,17 @@ model Payment {
   wallet         Wallet        @relation(fields: [walletId], references: [id], onDelete: Cascade)
   zoneId         String
   zone           GridZone      @relation(fields: [zoneId], references: [id])
+  // Free-form equipment identifier the station reports.
   chargePointId  String?
+  // §46 "Пункт, разъём, дата и время начала и конца зарядки" — the real
+  // session, when it happened at one of our points. Null for a charge
+  // somewhere else: the receipt is still issued, just without branding.
+  pointId        String?
+  point          AcceptancePoint? @relation(fields: [pointId], references: [id], onDelete: SetNull)
+  connectorId    String?
+  connector      PointConnector?  @relation(fields: [connectorId], references: [id], onDelete: SetNull)
+  startedAt      DateTime?
+  endedAt        DateTime?
   requestedKwh   Decimal       @db.Decimal(18, 3)
   kwhFromBalance Decimal       @default(0) @db.Decimal(18, 3)
   kwhBought      Decimal       @default(0) @db.Decimal(18, 3)
@@ -1740,11 +1757,19 @@ model Payment {
 
   @@index([walletId, createdAt])
   @@index([status])
+  @@index([pointId, capturedAt])
 }
 
 // §13 / §46 Receipt — issued for a payment or a trade; lists the burned batches.
 model Receipt {
   id             String       @id @default(cuid())
+  // Poolwatt's own document number, PW-<year>-<6 digits>, from
+  // receipt_number_seq. Not a tax invoice number: numbering under the law of
+  // the point's country is part of the tax opinion the owner still owes.
+  number         String?      @unique
+  // §46 "QR-код для проверки чека" — what the QR carries. Unguessable,
+  // because anyone can photograph a printed receipt.
+  verifyCode     String?      @unique
   paymentId      String?      @unique
   payment        Payment?     @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   tradeId        String?      @unique
@@ -1759,8 +1784,49 @@ model Receipt {
   // §46 "Состав чека" — per-line detail kept verbatim for accounting export.
   breakdown      Json     @default("{}")
   issuedAt       DateTime @default(now())
+  // §46 "Доставка чека". Null means nobody has been told yet, and the worker
+  // sweep will pick it up — that is what makes "within a minute" true even
+  // when the inline attempt fails.
+  deliveredAt      DateTime?
+  deliveryChannels String[]  @default([])
+  deliveryError    String?
 
   @@index([issuedAt])
+  @@index([deliveredAt])
+}
+
+// §46 "Бухгалтерия партнёра" — what a charging network says about itself on
+// its own receipts, and the account numbers its accountant's software needs.
+//
+// None of this is ours to invent: a VAT rate or a Sachkonto we made up is a
+// wrong tax document. Empty means the receipt prints "VAT not stated" and the
+// DATEV / BMD export refuses to run.
+model OperatorAccounting {
+  id         String          @id @default(cuid())
+  operatorId String          @unique
+  operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  // §46 item 1 — the requisites printed under the network's logo.
+  legalName   String?
+  regNumber   String?
+  vatNumber   String?
+  addressLine String?
+  city        String?
+  country     String? // ISO-3166 alpha-2
+  // §46 item 7. Percent, VAT-inclusive prices (EU retail convention).
+  vatRatePct  Decimal? @db.Decimal(5, 2)
+  taxNote     String?  @db.Text
+
+  // DATEV EXTF Buchungsstapel and BMD NTCS need these; no defaults.
+  datevConsultantNo String?
+  datevClientNo     String?
+  revenueAccount    String?
+  counterAccount    String?
+  fiscalYearStart   Int?    @default(1) // month, 1–12
+  bmdClientNo       String?
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 }
 
 // §19 US-13 — personal IBAN opened after listing approval. Named

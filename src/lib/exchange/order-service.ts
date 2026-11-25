@@ -32,6 +32,7 @@ import { notifyOrder, notifyWallets } from "./realtime-notify";
 import { InsufficientTokensError, spendableTokens, transferTokens } from "./token-registry";
 import { getOrCreateWallet } from "./wallet-service";
 import { zoneCorridor } from "./zone-service";
+import { receiptStamp } from "@/lib/receipts/receipt-number";
 
 export interface PlaceOrderInput {
   userId: string;
@@ -336,6 +337,7 @@ async function settleFill(
   // §46: a trade gets its own receipt, separate from a charging receipt.
   await db.receipt.create({
     data: {
+      ...(await receiptStamp(db)),
       tradeId: trade.id,
       burnedTokenIds: [],
       totalKwh: new Prisma.Decimal(fill.amountKwh),

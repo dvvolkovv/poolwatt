@@ -22,6 +22,7 @@ import { notifyWallets } from "./realtime-notify";
 import { placeOrder, quoteMarketOrder } from "./order-service";
 import { burnTokens } from "./token-registry";
 import { availableFiat, getOrCreateWallet } from "./wallet-service";
+import { receiptStamp } from "@/lib/receipts/receipt-number";
 
 export class PaymentError extends Error {}
 
@@ -228,6 +229,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
 
     const receipt = await tx.receipt.create({
       data: {
+        ...(await receiptStamp(tx)),
         paymentId: payment.id,
         burnedTokenIds,
         totalKwh: new Prisma.Decimal(deliveredKwh),

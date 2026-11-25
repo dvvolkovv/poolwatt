@@ -20,6 +20,7 @@ import { hasVerifiedKyc } from "@/lib/exchange/membership";
 import { roundMoney } from "@/lib/exchange/precision";
 import { getOrCreateWallet } from "@/lib/exchange/wallet-service";
 import { nearestWorkingPoints } from "@/lib/points/point-search";
+import { receiptStamp } from "@/lib/receipts/receipt-number";
 
 export class ReservationError extends Error {}
 
@@ -442,6 +443,7 @@ async function closeReservation(
     if (args.receipt && penalty > 0) {
       await tx.receipt.create({
         data: {
+          ...(await receiptStamp(tx)),
           reservationId,
           burnedTokenIds: [],
           totalKwh: new Prisma.Decimal(0),
