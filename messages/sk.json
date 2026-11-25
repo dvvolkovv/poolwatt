@@ -853,6 +853,43 @@
           "LINK_LOST": "Zariadenie nekomunikuje",
           "SUSPENDED": "Objekt zastavený"
         }
+      },
+      "widget": {
+        "nowKw": "Teraz",
+        "today": "Za deň",
+        "week": "Za týždeň",
+        "month": "Za mesiac",
+        "year": "Za rok",
+        "efficiency": "Faktor využitia",
+        "revenue": "Príjem",
+        "avgPrice": "Priemerná cena",
+        "minted": "Vydané",
+        "sold": "Predané",
+        "unsold": "Nepredané",
+        "stored": "V batérii",
+        "routed": "Agregátorovi",
+        "storageSoc": "Stav nabitia",
+        "zonePrice": "Cena v zóne",
+        "priceForecast": "Predpoveď ceny",
+        "generationChart": "Graf výroby",
+        "alerts": "Poruchy",
+        "equipment": "Zariadenia"
+      },
+      "noForecast": "Krivka cien na deň dopredu ešte nebola zverejnená.",
+      "panel": {
+        "title": "Vlastný panel",
+        "help": "Vyberte widgety, nastavte poradie a veľkosť a uložte rozloženie pod menom. Môže ich byť viac — „Ráno“, „Finance“, „Technika“. Kým žiadne nie je, panel zobrazuje všetko.",
+        "name": "Názov rozloženia",
+        "newName": "Napríklad Finance",
+        "add": "Pridať:",
+        "remove": "Odobrať",
+        "up": "Vyššie",
+        "down": "Nižšie",
+        "size": "Veľkosť",
+        "save": "Uložiť rozloženie",
+        "saved": "Uložené",
+        "delete": "Zmazať rozloženie",
+        "makeDefault": "Otvárať toto"
       }
     }
   },

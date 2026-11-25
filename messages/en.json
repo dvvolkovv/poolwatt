@@ -853,6 +853,43 @@
           "LINK_LOST": "Equipment offline",
           "SUSPENDED": "Asset suspended"
         }
+      },
+      "widget": {
+        "nowKw": "Now",
+        "today": "Today",
+        "week": "This week",
+        "month": "This month",
+        "year": "This year",
+        "efficiency": "Capacity factor",
+        "revenue": "Revenue",
+        "avgPrice": "Average price",
+        "minted": "Minted",
+        "sold": "Sold",
+        "unsold": "Unsold",
+        "stored": "Stored",
+        "routed": "To aggregator",
+        "storageSoc": "State of charge",
+        "zonePrice": "Zone price",
+        "priceForecast": "Price forecast",
+        "generationChart": "Generation chart",
+        "alerts": "Alarms",
+        "equipment": "Equipment"
+      },
+      "noForecast": "No day-ahead curve has been published yet.",
+      "panel": {
+        "title": "Your own panel",
+        "help": "Pick the widgets, set their order and size, and save the layout under a name. There can be several — “Morning”, “Finances”, “Tech”. Until there is one, the panel shows everything.",
+        "name": "Layout name",
+        "newName": "For example, Finances",
+        "add": "Add:",
+        "remove": "Remove",
+        "up": "Up",
+        "down": "Down",
+        "size": "Size",
+        "save": "Save layout",
+        "saved": "Saved",
+        "delete": "Delete layout",
+        "makeDefault": "Open with this one"
       }
     }
   },

@@ -183,6 +183,28 @@ export async function applyCurrentSpotToAllZones(now = new Date()): Promise<numb
   return moved;
 }
 
+/**
+ * §30 "Текущая цена в зоне и прогноз на 24 часа" — the part of the published
+ * curve that has not happened yet. Empty when the feed has never run; the
+ * widget says so rather than drawing a flat line.
+ */
+export async function readSpotForecast(
+  zoneId: string,
+  hours = 24,
+  now = new Date(),
+): Promise<{ intervalStart: string; price: number; currency: string }[]> {
+  const rows = await prisma.zoneSpotPrice.findMany({
+    where: { zoneId, intervalStart: { gte: now } },
+    orderBy: { intervalStart: "asc" },
+    take: Math.min(Math.max(hours, 1), 96),
+  });
+  return rows.map((r) => ({
+    intervalStart: r.intervalStart.toISOString(),
+    price: num(r.price),
+    currency: r.currency,
+  }));
+}
+
 export interface SpotHistoryRow {
   intervalStart: string;
   price: number;
