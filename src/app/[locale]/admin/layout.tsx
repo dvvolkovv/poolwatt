@@ -19,6 +19,7 @@ export default async function AdminLayout({
 
   const tNav = await getTranslations("admin");
   const tFeePlans = await getTranslations("feePlans");
+  const tRoaming = await getTranslations("adminRoaming");
 
   return (
     <main className="bg-bg min-h-[calc(100vh-4rem)]">
@@ -64,6 +65,13 @@ export default async function AdminLayout({
                 className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
               >
                 ⚡ {tNav("navZones")}
+              </Link>
+              <Link
+                href={`/${locale}/admin/roaming`}
+                prefetch={false}
+                className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
+              >
+                ✈ {tRoaming("nav")}
               </Link>
               <Link
                 href={`/${locale}/admin/marketing`}
