@@ -24,8 +24,8 @@ function mvhd0(timescale: number, duration: number): Buffer {
 function mvhd1(timescale: number, duration: number): Buffer {
   const p = Buffer.alloc(112);
   p.writeUInt8(1, 0);
-  p.writeBigUInt64BE(0n, 4); // creation
-  p.writeBigUInt64BE(0n, 12); // modification
+  p.writeBigUInt64BE(BigInt(0), 4); // creation
+  p.writeBigUInt64BE(BigInt(0), 12); // modification
   p.writeUInt32BE(timescale, 20);
   p.writeBigUInt64BE(BigInt(duration), 24);
   return box("mvhd", p);
