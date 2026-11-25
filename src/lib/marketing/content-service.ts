@@ -6,12 +6,13 @@
 
 import type { MarketingAudience, MarketingContentType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { deleteMedia, isVideo, saveMedia } from "./media-storage";
+import { deleteMedia, isVideo, readMedia, saveMedia } from "./media-storage";
 import {
   type ContentForDisplay,
   PLACEMENTS,
   type Placement,
   type ViewerFacts,
+  isContentLive,
   selectForPlacement,
 } from "./visibility";
 
@@ -432,4 +433,39 @@ export async function readLiveContent(
   ]);
 
   return selectForPlacement(rows.map(forDisplay), placement, now, viewer, point.id);
+}
+
+export type FetchAssetResult =
+  | { status: "ok"; bytes: Buffer; mime: string; isPublic: boolean }
+  | { status: "not-found" };
+
+/**
+ * The bytes of one file, if this viewer may have them.
+ *
+ * Approved content inside its schedule is public: it is printed on a point
+ * card anybody can open. Everything else is visible only to the partner who
+ * uploaded it — that is US-40's "предпросмотр" — and to the Poolwatt operator
+ * who has to look at it before approving.
+ */
+export async function fetchAsset(args: {
+  assetId: string;
+  userId: string | null;
+  isAdmin: boolean;
+  now?: Date;
+}): Promise<FetchAssetResult> {
+  const asset = await prisma.marketingAsset.findUnique({
+    where: { id: args.assetId },
+    include: { content: { select: { ...DISPLAY_SELECT, operator: { select: { claimedById: true } } } } },
+  });
+  if (!asset) return { status: "not-found" };
+
+  const live = isContentLive(forDisplay(asset.content), args.now ?? new Date());
+  const isOwner = args.userId != null && asset.content.operator.claimedById === args.userId;
+  if (!live && !isOwner && !args.isAdmin) return { status: "not-found" };
+
+  const file = await readMedia(asset.storageKey);
+  if (!file) return { status: "not-found" };
+  // The stored type is what the bytes were when they arrived; re-sniffing on
+  // the way out means a file swapped on disk cannot change its own type.
+  return { status: "ok", bytes: file.bytes, mime: asset.contentType, isPublic: live };
 }

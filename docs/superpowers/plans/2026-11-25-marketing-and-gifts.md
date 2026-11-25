@@ -91,12 +91,12 @@
 **Файлы:** создать `src/app/api/v1/marketing/media/[assetId]/route.ts`,
 `src/app/api/v1/partners/[id]/content/route.ts`
 
-- [ ] Тест интеграцией (vitest, вызов обработчика): одобренный живой контент
+- [x] Тест интеграцией (vitest, вызов обработчика): одобренный живой контент
       отдаётся гостю; черновик гостю — 404, владельцу — 200.
-- [ ] Реализация: `GET` по `assetId`, `Content-Type` из строки,
+- [x] Реализация: `GET` по `assetId`, `Content-Type` из строки,
       `Cache-Control: private, max-age=60`. `POST /v1/partners/{id}/content` —
       multipart, `Idempotency-Key` не нужен: денег и энергии не двигает.
-- [ ] Зелено. Коммит.
+- [x] Зелено. Коммит.
 
 ### Задача 7. Кабинет партнёра
 

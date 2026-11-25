@@ -16,6 +16,7 @@ import {
   createContent,
   decideContent,
   deleteContent,
+  fetchAsset,
   readLiveContent,
   readNetworkContent,
   readViewerFacts,
@@ -450,5 +451,52 @@ describe("readNetworkContent / deleteContent — the cabinet list", () => {
     const c = await createContent(operatorId, ownerUserId, { type: "NEWS", title: "n" });
     await expect(readNetworkContent(operatorId, strangerUserId)).rejects.toThrow(ContentError);
     await expect(deleteContent(c.id, strangerUserId)).rejects.toThrow(ContentError);
+  });
+});
+
+describe("fetchAsset — who may see the bytes", () => {
+  async function bannerWith(status: "DRAFT" | "REVIEW" | "APPROVED", endsAt: Date | null = null) {
+    const c = await createContent(operatorId, ownerUserId, {
+      type: "BANNER",
+      title: "b",
+      placements: ["FULL_CARD"],
+    });
+    const asset = await attachAsset(c.id, ownerUserId, JPEG);
+    await prisma.marketingContent.update({ where: { id: c.id }, data: { status, endsAt } });
+    return asset.id;
+  }
+
+  it("hands an approved, in-schedule banner to anyone — the point card is public", async () => {
+    const assetId = await bannerWith("APPROVED");
+    const res = await fetchAsset({ assetId, userId: null, isAdmin: false });
+
+    expect(res.status).toBe("ok");
+    if (res.status !== "ok") return;
+    expect(res.mime).toBe("image/jpeg");
+    expect(res.bytes.equals(JPEG)).toBe(true);
+  });
+
+  it("hides a draft from the public but shows it to its owner — that is the preview", async () => {
+    const assetId = await bannerWith("DRAFT");
+
+    expect((await fetchAsset({ assetId, userId: null, isAdmin: false })).status).toBe("not-found");
+    expect((await fetchAsset({ assetId, userId: strangerUserId, isAdmin: false })).status).toBe("not-found");
+    expect((await fetchAsset({ assetId, userId: ownerUserId, isAdmin: false })).status).toBe("ok");
+  });
+
+  it("shows what is waiting in the queue to the moderator deciding it", async () => {
+    const assetId = await bannerWith("REVIEW");
+    expect((await fetchAsset({ assetId, userId: adminUserId, isAdmin: true })).status).toBe("ok");
+  });
+
+  it("hides an approved banner whose schedule has run out", async () => {
+    const assetId = await bannerWith("APPROVED", new Date("2026-01-01T00:00:00Z"));
+    expect((await fetchAsset({ assetId, userId: null, isAdmin: false })).status).toBe("not-found");
+    // Its owner still sees it: they are about to fix the dates.
+    expect((await fetchAsset({ assetId, userId: ownerUserId, isAdmin: false })).status).toBe("ok");
+  });
+
+  it("says not-found for a file that does not exist", async () => {
+    expect((await fetchAsset({ assetId: "nope", userId: null, isAdmin: false })).status).toBe("not-found");
   });
 });
