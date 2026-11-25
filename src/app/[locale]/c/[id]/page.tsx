@@ -10,6 +10,8 @@ import { readFavoriteChargerIds } from "@/lib/favorites";
 import { FavoriteButton } from "@/components/favorite-button";
 import { MapsDeepLink } from "@/components/maps-deep-link";
 import { prisma } from "@/lib/prisma";
+import { readLiveContent } from "@/lib/marketing/content-service";
+import { ContentSection } from "@/components/marketing/content-block";
 
 const STATUS_COLOR: Record<string, string> = {
   operational: "bg-up",
@@ -67,6 +69,12 @@ export default async function ChargerDetailPage({
   const tOp = await getTranslations("charger.operatorSection");
   const tReport = await getTranslations("report");
   const session = await auth();
+  // §41 — the partner's own marketing in the card of their own point. A card
+  // that is not ours (an OpenStreetMap pin) has no partner and no content.
+  const marketing = charger.poolwattPointId
+    ? await readLiveContent(charger.poolwattPointId, "FULL_CARD", session?.user?.id ?? null)
+    : [];
+  const tMarketing = await getTranslations("marketing");
   const isFavorite = session?.user
     ? (await readFavoriteChargerIds(session.user.id)).has(charger.id)
     : false;
@@ -137,6 +145,8 @@ export default async function ChargerDetailPage({
           </div>
           <p className="mt-2 text-[11px] text-muted">{t("buildRouteHint")}</p>
         </div>
+
+        <ContentSection contents={marketing} heading={tMarketing("sectionHeading")} />
 
         {policy?.enabled && bookable.length > 0 && (
           <section className="mb-10 max-w-[420px] rounded-lg border border-hairline p-4">

@@ -1002,7 +1002,8 @@
       "lastRun": "Latest run",
       "externalFeed": "«Данные сети» here means the readings signed by the assets themselves. Comparing against the grid operator's own statement needs a contract and a feed from them — the per-asset daily total is shaped so that feed can be dropped in beside it."
     },
-    "navPoints": "Point cards"
+    "navPoints": "Point cards",
+    "navMarketing": "Partner content"
   },
   "claim": {
     "title": "Claim {name}",
@@ -1780,5 +1781,86 @@
     "bmdClientNo": "BMD client no.",
     "save": "Save",
     "saved": "Saved"
+  },
+  "marketing": {
+    "eyebrow": "Partner marketing",
+    "title": "Content in your cards",
+    "intro": "A banner, a video up to 60 seconds, a gallery, a promotion, a news line or a link. The Poolwatt operator looks at it before it goes public, and it shows only inside its schedule.",
+    "new": "New content",
+    "list": "Your content",
+    "empty": "Nothing uploaded yet.",
+    "preview": "Preview",
+    "save": "Save as draft",
+    "saveAndSubmit": "Save and submit for review",
+    "submit": "Submit for review",
+    "remove": "Delete",
+    "dropFile": "Drop last file",
+    "fileCount": "files",
+    "pointCount": "points",
+    "wholeNetwork": "whole network",
+    "nowhere": "shown nowhere yet",
+    "rejected": "Not approved",
+    "adminTitle": "Partner content to moderate",
+    "adminEmpty": "Nothing is waiting for a decision.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "note": "Note for the partner",
+    "field": {
+      "type": "Type",
+      "title": "Title",
+      "body": "Text and conditions",
+      "linkUrl": "Link",
+      "files": "Files",
+      "filesHintImage": "JPEG, PNG or WebP, up to 5 MB each.",
+      "filesHintVideo": "MP4, up to 60 seconds and 50 MB.",
+      "placements": "Where it shows",
+      "audience": "Audience",
+      "points": "Points",
+      "pointsAll": "Nothing selected means the whole network.",
+      "schedule": "Schedule",
+      "from": "From",
+      "to": "To",
+      "weekdays": "Days",
+      "hours": "Hours",
+      "hoursUtc": "Dates and hours are in UTC."
+    },
+    "type": {
+      "BANNER": "Banner",
+      "VIDEO": "Video",
+      "GALLERY": "Gallery",
+      "PROMO": "Promotion",
+      "NEWS": "News",
+      "LINK": "Link"
+    },
+    "placement": {
+      "FULL_CARD": "Full point card",
+      "NAVIGATOR_MINI": "Navigator mini-card",
+      "CHARGE_COMPLETE": "End of charging screen",
+      "PUSH": "Push to clients"
+    },
+    "audience": {
+      "ALL": "Everyone",
+      "NEWCOMERS": "Newcomers",
+      "REGULARS": "Regulars of the network",
+      "COOP_MEMBERS": "Cooperative members",
+      "CARD_HOLDERS": "Card holders (no cards yet)"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "REVIEW": "In review",
+      "APPROVED": "Published",
+      "REJECTED": "Not approved"
+    },
+    "weekday": {
+      "0": "Sun",
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat"
+    },
+    "cabinetLink": "Marketing",
+    "sectionHeading": "From the network"
   }
 }

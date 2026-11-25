@@ -8,6 +8,8 @@ import { auth } from "@/lib/auth";
 import { readReceiptForUser } from "@/lib/exchange/payment-service";
 import { buildReceiptDocument } from "@/lib/receipts/receipt-document";
 import { ReceiptSheet } from "@/components/receipts/receipt-sheet";
+import { readLiveContent } from "@/lib/marketing/content-service";
+import { ContentSection } from "@/components/marketing/content-block";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +35,14 @@ export default async function ReceiptPage({
   if (!doc) notFound();
 
   const t = await getTranslations("receipt");
+  const tMarketing = await getTranslations("marketing");
+
+  // §41 "экран завершения зарядки" — this page is what a driver sees once the
+  // session is paid for, so it is where that placement lives. A trade receipt
+  // has no point and therefore no network to advertise.
+  const marketing = doc.session?.pointId
+    ? await readLiveContent(doc.session.pointId, "CHARGE_COMPLETE", session.user.id)
+    : [];
 
   return (
     <div>
@@ -53,6 +63,10 @@ export default async function ReceiptPage({
         </Link>
       </div>
       <ReceiptSheet doc={doc} />
+
+      <div className="mt-10" data-print-hide>
+        <ContentSection contents={marketing} heading={tMarketing("sectionHeading")} />
+      </div>
     </div>
   );
 }

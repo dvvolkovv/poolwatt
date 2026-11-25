@@ -18,6 +18,7 @@ import {
   deleteContent,
   fetchAsset,
   readLiveContent,
+  readMiniBanners,
   readNetworkContent,
   readViewerFacts,
   submitForReview,
@@ -498,5 +499,43 @@ describe("fetchAsset — who may see the bytes", () => {
 
   it("says not-found for a file that does not exist", async () => {
     expect((await fetchAsset({ assetId: "nope", userId: null, isAdmin: false })).status).toBe("not-found");
+  });
+});
+
+describe("readMiniBanners — one query for a whole map viewport", () => {
+  async function approvedBanner(pointIds: string[] = []) {
+    const c = await createContent(operatorId, ownerUserId, {
+      type: "BANNER",
+      title: "Mini",
+      placements: ["NAVIGATOR_MINI"],
+      pointIds,
+    });
+    const asset = await attachAsset(c.id, ownerUserId, JPEG);
+    await prisma.marketingContent.update({ where: { id: c.id }, data: { status: "APPROVED" } });
+    return asset.id;
+  }
+
+  it("gives every point of the network the network's banner", async () => {
+    const assetId = await approvedBanner();
+    const map = await readMiniBanners([pointA, pointB], null);
+
+    expect(map.get(pointA)).toBe(assetId);
+    expect(map.get(pointB)).toBe(assetId);
+  });
+
+  it("gives a point-scoped banner only to its own point", async () => {
+    const assetId = await approvedBanner([pointB]);
+    const map = await readMiniBanners([pointA, pointB], null);
+
+    expect(map.has(pointA)).toBe(false);
+    expect(map.get(pointB)).toBe(assetId);
+  });
+
+  it("says nothing when there is nothing approved", async () => {
+    expect((await readMiniBanners([pointA], null)).size).toBe(0);
+  });
+
+  it("asks for nothing when given nothing", async () => {
+    expect((await readMiniBanners([], null)).size).toBe(0);
   });
 });

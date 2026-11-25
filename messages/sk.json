@@ -1002,7 +1002,8 @@
       "lastRun": "Posledné spustenie",
       "externalFeed": "«Dáta siete» tu znamenajú merania podpísané samotnými objektmi. Porovnanie s výkazom prevádzkovateľa siete si vyžaduje zmluvu a prístup k ich dátam; denný súčet za objekt je navrhnutý tak, aby sa tento výkaz dal postaviť vedľa."
     },
-    "navPoints": "Karty bodov"
+    "navPoints": "Karty bodov",
+    "navMarketing": "Obsah partnerov"
   },
   "claim": {
     "title": "Prevziať {name}",
@@ -1780,5 +1781,86 @@
     "bmdClientNo": "Číslo klienta BMD",
     "save": "Uložiť",
     "saved": "Uložené"
+  },
+  "marketing": {
+    "eyebrow": "Marketing partnera",
+    "title": "Obsah vo vašich kartách",
+    "intro": "Baner, video do 60 sekúnd, galéria, akcia, novinka alebo odkaz. Operátor Poolwatt obsah pred zverejnením skontroluje a zobrazuje sa len v rámci svojho rozvrhu.",
+    "new": "Nový obsah",
+    "list": "Váš obsah",
+    "empty": "Zatiaľ nič nie je nahraté.",
+    "preview": "Náhľad",
+    "save": "Uložiť ako koncept",
+    "saveAndSubmit": "Uložiť a poslať na schválenie",
+    "submit": "Poslať na schválenie",
+    "remove": "Zmazať",
+    "dropFile": "Odobrať posledný súbor",
+    "fileCount": "súborov",
+    "pointCount": "miest",
+    "wholeNetwork": "celá sieť",
+    "nowhere": "zatiaľ sa nikde nezobrazuje",
+    "rejected": "Neschválené",
+    "adminTitle": "Obsah partnerov na schválenie",
+    "adminEmpty": "Nič nečaká na rozhodnutie.",
+    "approve": "Schváliť",
+    "reject": "Zamietnuť",
+    "note": "Poznámka pre partnera",
+    "field": {
+      "type": "Typ",
+      "title": "Názov",
+      "body": "Text a podmienky",
+      "linkUrl": "Odkaz",
+      "files": "Súbory",
+      "filesHintImage": "JPEG, PNG alebo WebP, do 5 MB každý.",
+      "filesHintVideo": "MP4, do 60 sekúnd a 50 MB.",
+      "placements": "Kde sa zobrazuje",
+      "audience": "Publikum",
+      "points": "Miesta",
+      "pointsAll": "Nič nevybrané znamená celú sieť.",
+      "schedule": "Rozvrh",
+      "from": "Od",
+      "to": "Do",
+      "weekdays": "Dni",
+      "hours": "Hodiny",
+      "hoursUtc": "Dátumy a hodiny sú v UTC."
+    },
+    "type": {
+      "BANNER": "Baner",
+      "VIDEO": "Video",
+      "GALLERY": "Galéria",
+      "PROMO": "Akcia",
+      "NEWS": "Novinka",
+      "LINK": "Odkaz"
+    },
+    "placement": {
+      "FULL_CARD": "Celá karta miesta",
+      "NAVIGATOR_MINI": "Mini-karta v navigátore",
+      "CHARGE_COMPLETE": "Obrazovka po nabíjaní",
+      "PUSH": "Push klientom"
+    },
+    "audience": {
+      "ALL": "Všetci",
+      "NEWCOMERS": "Noví klienti",
+      "REGULARS": "Stáli klienti siete",
+      "COOP_MEMBERS": "Členovia kooperatívy",
+      "CARD_HOLDERS": "Držitelia kariet (karty zatiaľ nie sú)"
+    },
+    "status": {
+      "DRAFT": "Koncept",
+      "REVIEW": "Na schválení",
+      "APPROVED": "Zverejnené",
+      "REJECTED": "Neschválené"
+    },
+    "weekday": {
+      "0": "ne",
+      "1": "po",
+      "2": "ut",
+      "3": "st",
+      "4": "št",
+      "5": "pi",
+      "6": "so"
+    },
+    "cabinetLink": "Marketing",
+    "sectionHeading": "Od siete"
   }
 }

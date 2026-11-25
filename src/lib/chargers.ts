@@ -82,6 +82,12 @@ export type ChargerStation = {
    * moderated card and live occupancy, none of which an OSM node has.
    */
   poolwattPointId?: string;
+  /**
+   * §41 — the banner the point's network is currently showing in the
+   * navigator's mini-card, if any. The id of the file, not its bytes: the
+   * media route decides who may fetch it.
+   */
+  bannerAssetId?: string | null;
   priceTokens?: number | null;
   howToFind?: string | null;
 };

@@ -6,6 +6,8 @@ import {
   type BBox,
 } from "@/lib/overpass-chargers";
 import { MOCK_CHARGERS } from "@/lib/chargers-mock";
+import { readMiniBanners } from "@/lib/marketing/content-service";
+import { sessionUser } from "@/lib/exchange/api";
 import { searchPoints } from "@/lib/points/point-search";
 import { pointToStation } from "@/lib/points/point-to-station";
 import { prisma } from "@/lib/prisma";
@@ -108,9 +110,27 @@ export async function GET(req: NextRequest) {
         return match ? { ...s, operatorPrice: match } : s;
       });
 
+  // §41 — a banner in the mini-card, but only ours: an OpenStreetMap pin has
+  // no partner to advertise. A failure here must not take the map down.
+  const viewer = await sessionUser().catch(() => null);
+  const banners = await readMiniBanners(
+    ours.map((p) => p.id),
+    viewer?.id ?? null,
+  ).catch((err) => {
+    console.error("[chargers] banner lookup failed", err);
+    return new Map<string, string>();
+  });
+
   // Ours first: they are the ones a driver can actually be promised a free
   // connector at.
-  const merged = [...ours.map(pointToStation), ...stations];
+  const merged = [
+    ...ours.map((p) => {
+      const station = pointToStation(p);
+      const bannerAssetId = banners.get(p.id) ?? null;
+      return bannerAssetId ? { ...station, bannerAssetId } : station;
+    }),
+    ...stations,
+  ];
 
   const headers: Record<string, string> = {
     "X-Source": result.source,

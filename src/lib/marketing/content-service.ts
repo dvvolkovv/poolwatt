@@ -469,3 +469,48 @@ export async function fetchAsset(args: {
   // the way out means a file swapped on disk cannot change its own type.
   return { status: "ok", bytes: file.bytes, mime: asset.contentType, isPublic: live };
 }
+
+/**
+ * §41 — the navigator's mini-card carries a banner and nothing else. One
+ * query for a whole map viewport: the points come in, each gets at most the
+ * first live banner of its network.
+ */
+export async function readMiniBanners(
+  pointIds: string[],
+  userId: string | null,
+  now: Date = new Date(),
+): Promise<Map<string, string>> {
+  const result = new Map<string, string>();
+  if (pointIds.length === 0) return result;
+
+  const points = await prisma.acceptancePoint.findMany({
+    where: { id: { in: pointIds } },
+    select: { id: true, operatorId: true },
+  });
+  const operatorIds = [...new Set(points.map((p) => p.operatorId))];
+  if (operatorIds.length === 0) return result;
+
+  const rows = await prisma.marketingContent.findMany({
+    where: { operatorId: { in: operatorIds }, status: "APPROVED", type: "BANNER" },
+    select: { ...DISPLAY_SELECT, operatorId: true },
+  });
+  if (rows.length === 0) return result;
+
+  // Targeting needs facts per network, and there are few networks on a screen.
+  const facts = new Map<string, ViewerFacts>(
+    await Promise.all(
+      operatorIds.map(async (id) => [id, await readViewerFacts(userId, id)] as const),
+    ),
+  );
+
+  for (const point of points) {
+    const mine = rows.filter((r) => r.operatorId === point.operatorId).map(forDisplay);
+    const viewer = facts.get(point.operatorId);
+    if (!viewer) continue;
+    const chosen = selectForPlacement(mine, "NAVIGATOR_MINI", now, viewer, point.id);
+    const asset = chosen[0]?.assets.find((a) => a.contentType.startsWith("image/"));
+    if (asset) result.set(point.id, asset.id);
+  }
+
+  return result;
+}

@@ -65,6 +65,13 @@ export default async function AdminLayout({
                 ⚡ {tNav("navZones")}
               </Link>
               <Link
+                href={`/${locale}/admin/marketing`}
+                prefetch={false}
+                className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
+              >
+                📣 {tNav("navMarketing")}
+              </Link>
+              <Link
                 href={`/${locale}/admin/reconciliation`}
                 prefetch={false}
                 className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"

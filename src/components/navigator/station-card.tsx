@@ -78,6 +78,19 @@ export function StationCard({ station: s, onClose, labels }: Props) {
 
   return (
     <div className="bg-card border border-hairline rounded-lg overflow-hidden animate-in slide-in-from-right-4 duration-300">
+      {/* §41 — the mini-card has room for the network's banner and nothing
+          else. Only our own points have one; an OpenStreetMap pin has no
+          partner behind it. */}
+      {s.bannerAssetId && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`/api/v1/marketing/media/${s.bannerAssetId}`}
+          alt={s.operator}
+          data-testid="mini-banner"
+          className="h-20 w-full border-b border-hairline object-cover"
+        />
+      )}
+
       {/* Header */}
       <div className="p-4 border-b border-hairline">
         <div className="flex items-start justify-between gap-2">
