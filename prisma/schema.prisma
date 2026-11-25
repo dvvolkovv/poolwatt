@@ -1796,6 +1796,7 @@ model Payment {
 
   receipt           Receipt?
   roamingSettlement RoamingSettlement?
+  promoGrants       PromoGrant[]
 
   @@index([walletId, createdAt])
   @@index([status])
@@ -2312,7 +2313,10 @@ model Campaign {
   // §42 "Подарок". Only the kWh gift is built; a percentage discount and a
   // free reservation are a separate story, and dead columns would not make
   // them any more real.
-  giftKwh Decimal @db.Decimal(18, 3)
+  giftKwh     Decimal  @db.Decimal(18, 3)
+  // §8, US-12 — the share of a token-paid session that comes back, for a
+  // campaign whose trigger is TOKEN_PAYMENT. Null for a gift campaign.
+  cashbackPct Decimal? @db.Decimal(5, 2)
 
   // §42 "Где действует" — empty means the whole network.
   scopePointIds String[] @default([])
@@ -2361,6 +2365,11 @@ model PromoGrant {
   operatorId String
   operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
 
+  // US-12 — the charge that earned this, when one did. A gift of §42 is
+  // earned by a charge too, so it is filled in for both.
+  paymentId String?
+  payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
   amountKwh Decimal @db.Decimal(18, 3)
   usedKwh   Decimal @default(0) @db.Decimal(18, 3)
 
@@ -2374,8 +2383,15 @@ model PromoGrant {
   notifiedAt DateTime?
 
   // §42 "Один раз на клиента", as a rule of the database rather than a check
-  // that two simultaneous charges can both pass.
-  @@unique([campaignId, userId])
+  // that two simultaneous charges can both pass. "once" for a campaign that
+  // gives once, null for one that repeats (US-12's cashback) — Postgres
+  // treats nulls in a unique index as distinct, so the repeat is allowed and
+  // the once-per-client rule still cannot be broken by a race.
+  onceKey String?
+
+  @@unique([campaignId, userId, onceKey])
+  // US-12 — one accrual per campaign per charge, whatever retries happen.
+  @@unique([campaignId, paymentId])
   @@index([userId, status, expiresAt])
   @@index([status, expiresAt])
 }
@@ -2384,6 +2400,8 @@ enum CampaignTrigger {
   FIRST_CHARGE
   NTH_CHARGE
   VOLUME_PERIOD
+  // §8, US-12 — every session paid with tokens, not an n-th one.
+  TOKEN_PAYMENT
 }
 
 enum CampaignFunding {

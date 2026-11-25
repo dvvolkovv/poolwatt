@@ -138,6 +138,51 @@ describe("createCampaign", () => {
     expect(ok.triggerPeriodDays).toBe(30);
   });
 
+  it("takes a cashback campaign with a share instead of a gift (US-12)", async () => {
+    const c = await createCampaign(operatorId, ownerUserId, {
+      ...base,
+      name: "Token cashback",
+      trigger: "TOKEN_PAYMENT",
+      giftKwh: 0,
+      cashbackPct: 5,
+      oncePerClient: false,
+    });
+    expect(c.trigger).toBe("TOKEN_PAYMENT");
+    expect(Number(c.cashbackPct)).toBe(5);
+    expect(Number(c.giftKwh)).toBe(0);
+    expect(c.oncePerClient).toBe(false);
+  });
+
+  it("refuses a cashback campaign without a share, and a share that is not one", async () => {
+    await expect(
+      createCampaign(operatorId, ownerUserId, {
+        ...base,
+        trigger: "TOKEN_PAYMENT",
+        giftKwh: 0,
+      }),
+    ).rejects.toThrow(/share|процент|cashback/i);
+    await expect(
+      createCampaign(operatorId, ownerUserId, {
+        ...base,
+        trigger: "TOKEN_PAYMENT",
+        giftKwh: 0,
+        cashbackPct: 101,
+      }),
+    ).rejects.toThrow(/share|100/i);
+  });
+
+  it("refuses a cashback campaign that gives once per client", async () => {
+    await expect(
+      createCampaign(operatorId, ownerUserId, {
+        ...base,
+        trigger: "TOKEN_PAYMENT",
+        giftKwh: 0,
+        cashbackPct: 5,
+        oncePerClient: true,
+      }),
+    ).rejects.toThrow(/once|каждой/i);
+  });
+
   it("refuses a point outside the network", async () => {
     await expect(
       createCampaign(operatorId, ownerUserId, { ...base, scopePointIds: [foreignPoint] }),

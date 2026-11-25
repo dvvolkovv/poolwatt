@@ -76,7 +76,9 @@ async function fund(userId: string, amount: number) {
  */
 async function giveGift(amountKwh: number) {
   return prisma.promoGrant.upsert({
-    where: { campaignId_userId: { campaignId, userId: driverUserId } },
+    where: {
+      campaignId_userId_onceKey: { campaignId, userId: driverUserId, onceKey: "once" },
+    },
     update: {
       amountKwh: new Prisma.Decimal(amountKwh),
       usedKwh: new Prisma.Decimal(0),
@@ -87,6 +89,7 @@ async function giveGift(amountKwh: number) {
       campaignId,
       userId: driverUserId,
       operatorId,
+      onceKey: "once",
       amountKwh: new Prisma.Decimal(amountKwh),
       expiresAt: new Date(Date.now() + 30 * 86_400_000),
     },

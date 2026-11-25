@@ -2,13 +2,13 @@
 
 Спецификация: `docs/superpowers/specs/2026-11-25-token-cashback-design.md`.
 
-- [ ] 1. Арифметика `cashbackKwh` в `src/lib/marketing/cashback.ts` + тесты.
-- [ ] 2. Схема: `CampaignTrigger.TOKEN_PAYMENT`, `Campaign.cashbackPct`,
+- [x] 1. Арифметика `cashbackKwh` в `src/lib/marketing/cashback.ts` + тесты.
+- [x] 2. Схема: `CampaignTrigger.TOKEN_PAYMENT`, `Campaign.cashbackPct`,
       `PromoGrant.paymentId`, `PromoGrant.onceKey`, две уникальности, миграция
       с переносом правила «один раз на клиента» в `onceKey`.
-- [ ] 3. `campaign-service.ts`: проверки кампании кэшбэка, `cashbackPct` в
+- [x] 3. `campaign-service.ts`: проверки кампании кэшбэка, `cashbackPct` в
       создании, правке и списке. Тесты.
-- [ ] 4. `campaign-engine.ts`: `awardCashback` в транзакции платежа —
+- [x] 4. `campaign-engine.ts`: `awardCashback` в транзакции платежа —
       бюджет под блокировкой, право с `paymentId`, запись в `AuditLog`. Тесты.
 - [ ] 5. `payment-service.ts`: база из токенов, вызов начисления, строка
       `cashbackKwh` в разбивке чека. Интеграционные тесты, включая повтор

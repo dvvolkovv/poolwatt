@@ -5,11 +5,12 @@
 // schema. This file only decides *whether* a driver has earned one and what
 // happens when it runs out of time; spending it is `grant-spend.ts`.
 
-import { type Prisma, PrismaClient } from "@prisma/client";
+import { type CampaignTrigger, type Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { type Db, writeAudit } from "@/lib/exchange/audit";
-import { num } from "@/lib/exchange/decimal";
-import { roundKwh } from "@/lib/exchange/precision";
+import { num, numOrNull } from "@/lib/exchange/decimal";
+import { isKwhDust, roundKwh } from "@/lib/exchange/precision";
+import { cashbackKwh } from "./cashback";
 
 /** How many captured charges the worker looks at in one pass. */
 const SWEEP_BATCH = 200;
@@ -17,10 +18,11 @@ const SWEEP_BATCH = 200;
 type CampaignRow = {
   id: string;
   operatorId: string;
-  trigger: "FIRST_CHARGE" | "NTH_CHARGE" | "VOLUME_PERIOD";
+  trigger: CampaignTrigger;
   triggerN: number | null;
   triggerPeriodDays: number | null;
   giftKwh: Prisma.Decimal;
+  cashbackPct?: Prisma.Decimal | null;
   scopePointIds: string[];
   validityDays: number;
   oncePerClient: boolean;
@@ -48,6 +50,11 @@ async function triggerFired(
       ...(campaign.scopePointIds.length > 0 ? { id: { in: campaign.scopePointIds } } : {}),
     },
   };
+
+  // US-12 — cashback is a function of one payment, so it is accrued inside
+  // that payment's own transaction (see `awardCashback`). The history pass
+  // has nothing to count for it.
+  if (campaign.trigger === "TOKEN_PAYMENT") return false;
 
   if (campaign.trigger === "VOLUME_PERIOD") {
     const days = campaign.triggerPeriodDays ?? 30;
@@ -170,72 +177,190 @@ async function issueGrant(
   paymentId: string,
 ): Promise<string | null> {
   try {
-    return await prisma.$transaction(async (tx) => {
-      const [locked] = await tx.$queryRaw<{ id: string; issued: string; budget: string; status: string }[]>`
-        SELECT id, "issuedKwh"::text AS issued, "budgetKwh"::text AS budget, status::text AS status
-        FROM "Campaign" WHERE id = ${campaign.id} FOR UPDATE
-      `;
-      if (!locked || locked.status !== "ACTIVE") return null;
-
-      const gift = num(campaign.giftKwh);
-      const issued = Number(locked.issued);
-      const budget = Number(locked.budget);
-      if (roundKwh(issued + gift) > roundKwh(budget)) {
-        // Nothing left to promise. Say so once, so the partner sees why.
-        await tx.campaign.update({
-          where: { id: campaign.id },
-          data: { status: "EXHAUSTED" },
-        });
-        return null;
-      }
-
-      const expiresAt = new Date(Date.now() + campaign.validityDays * 86_400_000);
-      const grant = await tx.promoGrant.create({
-        data: {
-          campaignId: campaign.id,
-          userId,
-          operatorId: campaign.operatorId,
-          amountKwh: campaign.giftKwh,
-          expiresAt,
-        },
-      });
-
-      const nowIssued = roundKwh(issued + gift);
-      await tx.campaign.update({
-        where: { id: campaign.id },
-        data: {
-          issuedKwh: nowIssued,
-          // Exhausted the moment the next gift would not fit.
-          ...(roundKwh(nowIssued + gift) > roundKwh(budget)
-            ? { status: "EXHAUSTED" as const }
-            : {}),
-        },
-      });
-
-      await writeAudit(tx, {
-        actor: "system",
-        entity: "PromoGrant",
-        entityId: grant.id,
+    return await prisma.$transaction((tx) =>
+      issueGrantTx(tx, campaign, {
+        userId,
+        paymentId,
+        amountKwh: num(campaign.giftKwh),
         action: "promo.granted",
-        after: {
-          campaignId: campaign.id,
-          userId,
-          paymentId,
-          amountKwh: gift,
-          expiresAt: expiresAt.toISOString(),
-          issuedKwh: nowIssued,
-          budgetKwh: budget,
-        },
-      });
-
-      return grant.id;
-    });
+      }),
+    );
   } catch (err) {
     // §42 "Один раз на клиента" is the unique index; losing that race is the
     // rule working, not a failure.
     if (isUniqueViolation(err)) return null;
     throw err;
   }
+}
+
+/**
+ * One grant inside a transaction the caller owns: the budget is checked and
+ * incremented under a lock on the campaign row, so two drivers finishing at
+ * once cannot both fit into the last 5 kWh.
+ *
+ * The lock is also what makes the "already granted" checks below reliable —
+ * inside a transaction a unique-violation cannot be caught and walked away
+ * from, it kills the whole transaction, and for a cashback that transaction
+ * is a charging session.
+ */
+async function issueGrantTx(
+  tx: Db,
+  campaign: CampaignRow,
+  args: { userId: string; paymentId: string | null; amountKwh: number; action: string },
+): Promise<string | null> {
+  const amountKwh = roundKwh(args.amountKwh);
+  if (isKwhDust(amountKwh)) return null;
+
+  const [locked] = await tx.$queryRaw<{ id: string; issued: string; budget: string; status: string }[]>`
+    SELECT id, "issuedKwh"::text AS issued, "budgetKwh"::text AS budget, status::text AS status
+    FROM "Campaign" WHERE id = ${campaign.id} FOR UPDATE
+  `;
+  if (!locked || locked.status !== "ACTIVE") return null;
+
+  const issued = Number(locked.issued);
+  const budget = Number(locked.budget);
+  if (roundKwh(issued + amountKwh) > roundKwh(budget)) {
+    // Nothing left to promise. Say so once, so the partner sees why.
+    await tx.campaign.update({ where: { id: campaign.id }, data: { status: "EXHAUSTED" } });
+    return null;
+  }
+
+  // §42 "Один раз на клиента" for a campaign that gives once; null for one
+  // that repeats, which Postgres counts as distinct in the unique index.
+  const onceKey = campaign.oncePerClient ? "once" : null;
+  if (onceKey) {
+    const already = await tx.promoGrant.findFirst({
+      where: { campaignId: campaign.id, userId: args.userId, onceKey },
+      select: { id: true },
+    });
+    if (already) return null;
+  }
+  if (args.paymentId) {
+    const sameCharge = await tx.promoGrant.findFirst({
+      where: { campaignId: campaign.id, paymentId: args.paymentId },
+      select: { id: true },
+    });
+    if (sameCharge) return null;
+  }
+
+  const expiresAt = new Date(Date.now() + campaign.validityDays * 86_400_000);
+  const grant = await tx.promoGrant.create({
+    data: {
+      campaignId: campaign.id,
+      userId: args.userId,
+      operatorId: campaign.operatorId,
+      paymentId: args.paymentId,
+      onceKey,
+      amountKwh,
+      expiresAt,
+    },
+  });
+
+  const nowIssued = roundKwh(issued + amountKwh);
+  await tx.campaign.update({
+    where: { id: campaign.id },
+    data: {
+      issuedKwh: nowIssued,
+      // Exhausted the moment the next grant of this size would not fit.
+      ...(roundKwh(nowIssued + amountKwh) > roundKwh(budget)
+        ? { status: "EXHAUSTED" as const }
+        : {}),
+    },
+  });
+
+  await writeAudit(tx, {
+    actor: "system",
+    entity: "PromoGrant",
+    entityId: grant.id,
+    action: args.action,
+    after: {
+      campaignId: campaign.id,
+      userId: args.userId,
+      paymentId: args.paymentId,
+      amountKwh,
+      expiresAt: expiresAt.toISOString(),
+      issuedKwh: nowIssued,
+      budgetKwh: budget,
+    },
+  });
+
+  return grant.id;
+}
+
+export interface CashbackAccrual {
+  campaignId: string;
+  grantId: string;
+  kwh: number;
+  pct: number;
+  expiresAt: Date;
+}
+
+/**
+ * US-12 — "начисление по правилу программы после завершения платежа".
+ *
+ * Called from inside the charging payment's own transaction: the receipt of
+ * §46.6 has to print the cashback it earned, and the receipt is written in
+ * that transaction. A retried payment cannot accrue twice, because a payment
+ * has one id and a campaign gives one grant per id.
+ */
+export async function awardCashback(
+  tx: Db,
+  args: {
+    userId: string;
+    paymentId: string;
+    operatorId: string;
+    pointId: string;
+    paidInTokensKwh: number;
+    now?: Date;
+  },
+): Promise<CashbackAccrual[]> {
+  if (isKwhDust(roundKwh(args.paidInTokensKwh))) return [];
+
+  const now = args.now ?? new Date();
+  const campaigns = await tx.campaign.findMany({
+    where: {
+      operatorId: args.operatorId,
+      status: "ACTIVE",
+      trigger: "TOKEN_PAYMENT",
+      AND: [
+        { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+        { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+      ],
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const accruals: CashbackAccrual[] = [];
+  for (const campaign of campaigns) {
+    // §42 "Где действует" — the whole network, or named points.
+    if (campaign.scopePointIds.length > 0 && !campaign.scopePointIds.includes(args.pointId)) {
+      continue;
+    }
+    const pct = numOrNull(campaign.cashbackPct);
+    const amountKwh = cashbackKwh(args.paidInTokensKwh, pct);
+    if (isKwhDust(amountKwh)) continue;
+
+    const grantId = await issueGrantTx(tx, campaign, {
+      userId: args.userId,
+      paymentId: args.paymentId,
+      amountKwh,
+      action: "promo.cashback",
+    });
+    if (!grantId) continue;
+
+    const grant = await tx.promoGrant.findUniqueOrThrow({
+      where: { id: grantId },
+      select: { expiresAt: true },
+    });
+    accruals.push({
+      campaignId: campaign.id,
+      grantId,
+      kwh: amountKwh,
+      pct: pct ?? 0,
+      expiresAt: grant.expiresAt,
+    });
+  }
+  return accruals;
 }
 
 function isUniqueViolation(err: unknown): boolean {

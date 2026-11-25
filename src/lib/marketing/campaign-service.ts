@@ -7,7 +7,7 @@
 import type { CampaignStatus, CampaignTrigger, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { assertCampaignFiatFundingOpen } from "@/lib/exchange/gates";
-import { num } from "@/lib/exchange/decimal";
+import { num, numOrNull } from "@/lib/exchange/decimal";
 import { roundKwh } from "@/lib/exchange/precision";
 
 export class CampaignError extends Error {}
@@ -18,6 +18,8 @@ export interface CampaignInput {
   triggerN?: number | null;
   triggerPeriodDays?: number | null;
   giftKwh: number;
+  /** §8, US-12 — the share of a token-paid session a TOKEN_PAYMENT campaign returns. */
+  cashbackPct?: number | null;
   scopePointIds?: string[];
   validityDays: number;
   oncePerClient?: boolean;
@@ -56,7 +58,13 @@ async function requireOwnedCampaign(campaignId: string, userId: string) {
 async function validate(
   operatorId: string,
   input: Partial<CampaignInput>,
-  current?: { trigger: CampaignTrigger; giftKwh: Prisma.Decimal; budgetKwh: Prisma.Decimal },
+  current?: {
+    trigger: CampaignTrigger;
+    giftKwh: Prisma.Decimal;
+    budgetKwh: Prisma.Decimal;
+    cashbackPct: Prisma.Decimal | null;
+    oncePerClient: boolean;
+  },
 ): Promise<void> {
   if (input.fundingSource === "FIAT") {
     // §42's money half needs the EMI; the gate says so rather than us
@@ -66,18 +74,45 @@ async function validate(
 
   const gift = input.giftKwh ?? (current ? num(current.giftKwh) : undefined);
   const budget = input.budgetKwh ?? (current ? num(current.budgetKwh) : undefined);
+  const trigger = input.trigger ?? current?.trigger;
+  const cashback =
+    input.cashbackPct !== undefined
+      ? input.cashbackPct
+      : current
+        ? numOrNull(current.cashbackPct)
+        : undefined;
 
-  if (gift !== undefined && !(gift > 0)) {
+  // US-12 — a cashback campaign is priced in percent, a gift campaign in kWh.
+  // Each needs its own number and neither needs the other's.
+  if (trigger === "TOKEN_PAYMENT") {
+    if (!(cashback != null && cashback > 0)) {
+      throw new CampaignError("A cashback campaign needs a share bigger than zero");
+    }
+    if (cashback > 100) {
+      throw new CampaignError("A cashback share cannot be more than 100 %");
+    }
+    const once = input.oncePerClient ?? current?.oncePerClient ?? false;
+    if (once) {
+      throw new CampaignError(
+        "Cashback is earned by every token payment, so it cannot be once per client",
+      );
+    }
+  } else if (gift !== undefined && !(gift > 0)) {
     throw new CampaignError("The gift has to be more than zero kWh");
   }
-  if (budget !== undefined && gift !== undefined && roundKwh(budget) < roundKwh(gift)) {
+
+  if (
+    trigger !== "TOKEN_PAYMENT" &&
+    budget !== undefined &&
+    gift !== undefined &&
+    roundKwh(budget) < roundKwh(gift)
+  ) {
     throw new CampaignError("The budget is smaller than a single gift");
   }
   if (input.validityDays !== undefined && !(input.validityDays >= 1)) {
     throw new CampaignError("A gift has to be valid for at least a day");
   }
 
-  const trigger = input.trigger ?? current?.trigger;
   if (trigger === "NTH_CHARGE" && !(input.triggerN != null && input.triggerN >= 1)) {
     throw new CampaignError("Say which charge in a row earns the gift (N)");
   }
@@ -132,9 +167,12 @@ export async function createCampaign(
       triggerN: input.triggerN ?? null,
       triggerPeriodDays: input.triggerPeriodDays ?? null,
       giftKwh: input.giftKwh,
+      cashbackPct: input.cashbackPct ?? null,
       scopePointIds: input.scopePointIds ?? [],
       validityDays: input.validityDays,
-      oncePerClient: input.oncePerClient ?? true,
+      // Cashback repeats with every payment; a gift is once per client
+      // unless the partner says otherwise.
+      oncePerClient: input.oncePerClient ?? input.trigger !== "TOKEN_PAYMENT",
       minNextChargeKwh: input.minNextChargeKwh ?? null,
       budgetKwh: input.budgetKwh,
       fundingSource: input.fundingSource ?? "TOKENS",
@@ -164,6 +202,7 @@ export async function updateCampaign(
   if (input.triggerN !== undefined) data.triggerN = input.triggerN;
   if (input.triggerPeriodDays !== undefined) data.triggerPeriodDays = input.triggerPeriodDays;
   if (input.giftKwh !== undefined) data.giftKwh = input.giftKwh;
+  if (input.cashbackPct !== undefined) data.cashbackPct = input.cashbackPct;
   if (input.scopePointIds !== undefined) data.scopePointIds = input.scopePointIds;
   if (input.validityDays !== undefined) data.validityDays = input.validityDays;
   if (input.oncePerClient !== undefined) data.oncePerClient = input.oncePerClient;
@@ -191,7 +230,11 @@ export async function setCampaignStatus(
 
   if (status === "ACTIVE") {
     const left = roundKwh(num(campaign.budgetKwh) - num(campaign.issuedKwh));
-    if (left < roundKwh(num(campaign.giftKwh))) {
+    // A cashback campaign has no fixed gift to measure the remainder
+    // against; any budget at all is enough to pay somebody back.
+    const needed =
+      campaign.trigger === "TOKEN_PAYMENT" ? 0.001 : roundKwh(num(campaign.giftKwh));
+    if (left < needed) {
       throw new CampaignError("The budget is spent; raise it before running the campaign again");
     }
   }
@@ -213,6 +256,8 @@ export interface CampaignRow {
   status: CampaignStatus;
   pauseReason: string | null;
   giftKwh: number;
+  /** US-12 — null for a gift campaign. */
+  cashbackPct: number | null;
   budgetKwh: number;
   /** Budget consumed by live grants (§42). */
   issuedKwh: number;
@@ -269,6 +314,7 @@ export async function readCampaigns(
       status: c.status,
       pauseReason: c.pauseReason,
       giftKwh: num(c.giftKwh),
+      cashbackPct: numOrNull(c.cashbackPct),
       budgetKwh: num(c.budgetKwh),
       issuedKwh: num(c.issuedKwh),
       scopePointIds: c.scopePointIds,
