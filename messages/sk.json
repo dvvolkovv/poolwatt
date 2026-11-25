@@ -1938,5 +1938,35 @@
     "onlyHere": "Len na staniciach {network}.",
     "showStations": "Zobraziť stanice",
     "walletLink": "Darčeky"
+  },
+  "pricing": {
+    "eyebrow": "Vaša ekonomika",
+    "title": "Tarify",
+    "intro": "Všetko, čo si účtujete, na jednom mieste. Každé číslo má svoju verziu: zmena platí pre nové sedenia, už vytvorené rezervácie a vydané účtenky si nechávajú svoje čísla.",
+    "networkPrice": "Jedna cena pre celú sieť",
+    "pointTariffs": "Tarify podľa miesta",
+    "history": "História zmien",
+    "historyHelp": "Každá zmena tarify sa uchováva. Tu sa nič nedá upraviť — o to práve ide.",
+    "noHistory": "Zatiaľ žiadne zmeny.",
+    "noPoints": "Zatiaľ žiadne miesta.",
+    "noTariff": "Pre toto miesto nie je nastavená tarifa.",
+    "noVersion": "nastavené pred vedením histórie",
+    "notSet": "nenastavená",
+    "version": "v.",
+    "kwh": "kWh",
+    "tokensPerKwh": "tokenov/kWh",
+    "idleFee": "nečinnosť",
+    "coopDiscount": "koop.",
+    "booking": "Poplatok za rezerváciu",
+    "guarantee": "garancia",
+    "penalty": "neúčasť",
+    "cabinetLink": "Tarify",
+    "scope": {
+      "POINT_TARIFF": "Tarifa miesta",
+      "NETWORK_PRICE": "Cena siete",
+      "RESERVATION_POLICY": "Podmienky rezervácie",
+      "SALE_RULES": "Pravidlá predaja",
+      "SUBPARTNER_FEE": "Provízia subpartnerovi"
+    }
   }
 }

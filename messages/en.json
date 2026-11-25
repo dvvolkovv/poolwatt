@@ -1938,5 +1938,35 @@
     "onlyHere": "Only at {network} stations.",
     "showStations": "Show stations",
     "walletLink": "Gifts"
+  },
+  "pricing": {
+    "eyebrow": "Your economy",
+    "title": "Tariffs",
+    "intro": "Everything you charge, in one place. Each number carries the version it is at: a change applies to new sessions, while bookings and receipts already made keep the numbers they were made under.",
+    "networkPrice": "One price across the network",
+    "pointTariffs": "Per-point tariffs",
+    "history": "History of changes",
+    "historyHelp": "Every tariff change is kept. Nothing here can be edited — that is the point.",
+    "noHistory": "No changes recorded yet.",
+    "noPoints": "No points yet.",
+    "noTariff": "No tariff set for this point.",
+    "noVersion": "set before versions were kept",
+    "notSet": "not set",
+    "version": "v.",
+    "kwh": "kWh",
+    "tokensPerKwh": "tokens/kWh",
+    "idleFee": "idle fee",
+    "coopDiscount": "co-op",
+    "booking": "Booking fee",
+    "guarantee": "guarantee",
+    "penalty": "no-show",
+    "cabinetLink": "Tariffs",
+    "scope": {
+      "POINT_TARIFF": "Point tariff",
+      "NETWORK_PRICE": "Network price",
+      "RESERVATION_POLICY": "Booking terms",
+      "SALE_RULES": "Sale rules",
+      "SUBPARTNER_FEE": "Subpartner commission"
+    }
   }
 }
