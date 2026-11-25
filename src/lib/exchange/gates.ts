@@ -93,3 +93,24 @@ export function assertCampaignFiatFundingOpen(): void {
     );
   }
 }
+
+/**
+ * §53 "Карточные тарифы: выпуск и обслуживание white label карт,
+ * интерчейндж."
+ *
+ * Interchange is not a number anybody at Poolwatt gets to choose: the card
+ * scheme sets it and the EMI passes it on. Issuing and servicing fees come
+ * from the same contract. Until there is one, a card tariff in this system
+ * would be an invented price on a product that does not exist (§19).
+ */
+export function cardTariffsOpen(env: Env = process.env): boolean {
+  return env.CARD_TARIFFS_ENABLED === "true";
+}
+
+export function assertCardTariffsOpen(): void {
+  if (!cardTariffsOpen()) {
+    throw new FeatureClosedError(
+      "Card tariffs are set by the card scheme and the EMI, and there is no contract yet",
+    );
+  }
+}

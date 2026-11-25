@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   FeatureClosedError,
   assertCampaignFiatFundingOpen,
+  assertCardTariffsOpen,
   campaignFiatFundingOpen,
+  cardTariffsOpen,
   ibansOpen,
   publishableIban,
   transfersOpen,
@@ -48,5 +50,19 @@ describe("campaign money gate — ТЗ §42 'Источник финансиро
 
   it("refuses rather than invents a reserve on an account nobody issued", () => {
     expect(() => assertCampaignFiatFundingOpen()).toThrow(FeatureClosedError);
+  });
+});
+
+describe("card tariff gate — ТЗ §53", () => {
+  it("opens only on an explicit true", () => {
+    expect(cardTariffsOpen({})).toBe(false);
+    for (const v of ["", "1", "yes", "TRUE", "false"]) {
+      expect(cardTariffsOpen({ CARD_TARIFFS_ENABLED: v }), v).toBe(false);
+    }
+    expect(cardTariffsOpen({ CARD_TARIFFS_ENABLED: "true" })).toBe(true);
+  });
+
+  it("refuses rather than invents an interchange rate", () => {
+    expect(() => assertCardTariffsOpen()).toThrow(FeatureClosedError);
   });
 });

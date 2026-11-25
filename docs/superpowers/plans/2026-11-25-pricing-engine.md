@@ -100,12 +100,12 @@
 
 **Файлы:** изменить `prisma/schema.prisma`, миграция; `src/lib/exchange/gates.ts`.
 
-- [ ] `PlatformFeePlan` (`tier`, проценты со сделки, зарядки и брони,
+- [x] `PlatformFeePlan` (`tier`, проценты со сделки, зарядки и брони,
       подписка и период, бесплатный объём, `isDefault`), `PartnerPlan`
       (`companyId?`/`operatorId?`, `planId`, `overrides Json`, `activeFrom`),
       перечисление `PlanTier`.
-- [ ] `cardTariffsOpen()` + `assertCardTariffsOpen()`, тест в `gates.test.ts`.
-- [ ] Миграция, коммит.
+- [x] `cardTariffsOpen()` + `assertCardTariffsOpen()`, тест в `gates.test.ts`.
+- [x] Миграция, коммит.
 
 ### Задача 8. Разрешение ставок
 

@@ -228,6 +228,7 @@ model ChargerOperator {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   PricingRule PricingRule[]
+  PartnerPlan PartnerPlan?
 
   @@index([claimedById])
 }
@@ -1435,6 +1436,7 @@ model Company {
   feePlan           FeePlan?             @relation(fields: [feePlanId], references: [id], onDelete: SetNull)
   cooperative       Cooperative?
   pricingRules      PricingRule[]
+  partnerPlan       PartnerPlan?
 
   @@unique([country, regNumber])
   @@index([type, kybStatus])
@@ -2393,4 +2395,79 @@ enum PricingScope {
   SALE_RULES
   // §52 "Комиссия для своих субпартнёров".
   SUBPARTNER_FEE
+}
+
+// ---------------------------------------------------------------------------
+// §53 "Что настраивает оператор Poolwatt" — platform commission by partner
+// type and plan, partner plans with a subscription, and individual terms for
+// a particular partner.
+//
+// `FeePlan` above stays what it is: two percentages that `fees.ts` already
+// reads on the hot path of every fill. This is the layer §53 asks for on top
+// of it — a tier, a subscription, a booking commission, and overrides.
+// ---------------------------------------------------------------------------
+
+model PlatformFeePlan {
+  id              String       @id @default(cuid())
+  name            String       @unique
+  tier            PlanTier     @default(BASIC)
+  // §53 "по типу партнёра". Null means the plan fits any type.
+  participantType CompanyType?
+
+  // §53 "Комиссия платформы со сделки, зарядки, брони".
+  tradeFeePct   Decimal @default(1) @db.Decimal(5, 2)
+  chargeFeePct  Decimal @default(2) @db.Decimal(5, 2)
+  bookingFeePct Decimal @default(0) @db.Decimal(5, 2)
+
+  // §53 "подписка на облачную бухгалтерию, CRM, маркетинг сверх бесплатного
+  // объёма". The amount is the owner's commercial decision; zero means the
+  // tier is free, which is the honest default until they name a number.
+  subscriptionFiat   Decimal @default(0) @db.Decimal(10, 2)
+  subscriptionPeriod String  @default("month")
+  currency           String  @default("EUR")
+
+  // What the subscription includes before anything is charged on top.
+  includedInvoices  Int?
+  includedCampaigns Int?
+
+  isDefault Boolean  @default(false)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  partners PartnerPlan[]
+
+  @@index([participantType, active])
+}
+
+// Who is on which plan, and §53's "Индивидуальные условия для отдельных
+// партнёров": `overrides` holds only the fields that differ, so a change to
+// the plan still reaches a partner who overrode something else.
+model PartnerPlan {
+  id String @id @default(cuid())
+
+  companyId  String?
+  company    Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  operatorId String?
+  operator   ChargerOperator? @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  planId String
+  plan   PlatformFeePlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  overrides  Json     @default("{}")
+  activeFrom DateTime @default(now())
+  note       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId])
+  @@unique([operatorId])
+  @@index([planId])
+}
+
+enum PlanTier {
+  BASIC
+  EXTENDED
+  CORPORATE
 }
