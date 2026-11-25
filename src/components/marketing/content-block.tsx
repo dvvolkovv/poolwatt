@@ -8,18 +8,6 @@ function mediaUrl(assetId: string): string {
   return `/api/v1/marketing/media/${assetId}`;
 }
 
-/** The mini-card has room for a banner and nothing else (§41). */
-export function BannerStrip({ content }: { content: ContentForDisplay }) {
-  const image = content.assets.find((a) => a.contentType.startsWith("image/"));
-  if (!image) return null;
-  return (
-    <div className="overflow-hidden rounded border border-hairline" data-testid="marketing-banner">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={mediaUrl(image.id)} alt={content.title} className="h-16 w-full object-cover" />
-    </div>
-  );
-}
-
 export function ContentBlock({ content }: { content: ContentForDisplay }) {
   const images = content.assets.filter((a) => a.contentType.startsWith("image/"));
   const video = content.assets.find((a) => a.contentType.startsWith("video/"));
