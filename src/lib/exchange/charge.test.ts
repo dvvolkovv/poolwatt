@@ -275,3 +275,103 @@ describe("promo kWh — §43 'списывается первым, раньше 
     expect(plan.kwhFromGift).toBe(2);
   });
 });
+
+describe("roaming — §8, US-11 'баланс кВт·ч в другой стране'", () => {
+  const corridor = { conversionRate: 2, feePct: 5, maxKwh: 1000 };
+
+  it("serves the session from the home balance before buying anything", () => {
+    const plan = planCharge({
+      requestedKwh: 10,
+      walletKwhBalance: 0,
+      roaming: corridor,
+      market: match(10, 2),
+    });
+    expect(plan.kwhFromRoaming).toBe(10);
+    expect(plan.kwhFromMarket).toBe(0);
+    // 10 visited kWh at rate 2 plus 5 % — what leaves the home balance.
+    expect(plan.roamingDebitKwh).toBe(21);
+    expect(plan.roamingFeeKwh).toBe(1);
+    // Energy the clearing partner delivered: the driver pays no money for it.
+    expect(plan.energyCost).toBe(0);
+    expect(plan.total).toBe(0);
+    expect(plan.sources).toEqual(["roaming"]);
+    expect(plan.deliverableKwh).toBe(10);
+  });
+
+  it("comes after the visited-zone balance, which costs nothing to convert", () => {
+    const plan = planCharge({
+      requestedKwh: 10,
+      walletKwhBalance: 4,
+      roaming: corridor,
+      market: null,
+    });
+    expect(plan.kwhFromBalance).toBe(4);
+    expect(plan.kwhFromRoaming).toBe(6);
+    expect(plan.roamingDebitKwh).toBe(12.6);
+    expect(plan.sources).toEqual(["balance", "roaming"]);
+  });
+
+  it("comes after the partner's gift, which costs nothing at all", () => {
+    const plan = planCharge({
+      requestedKwh: 10,
+      giftKwh: 3,
+      walletKwhBalance: 0,
+      roaming: corridor,
+      market: null,
+    });
+    expect(plan.kwhFromGift).toBe(3);
+    expect(plan.kwhFromRoaming).toBe(7);
+    expect(plan.sources).toEqual(["gift", "roaming"]);
+  });
+
+  it("takes only what the corridor allows and buys the rest on the exchange", () => {
+    const plan = planCharge({
+      requestedKwh: 10,
+      walletKwhBalance: 0,
+      roaming: { ...corridor, maxKwh: 4 },
+      market: match(6, 1.5),
+    });
+    expect(plan.kwhFromRoaming).toBe(4);
+    expect(plan.roamingDebitKwh).toBe(8.4);
+    expect(plan.kwhFromMarket).toBe(6);
+    expect(plan.energyCost).toBe(1.5);
+    expect(plan.sources).toEqual(["roaming", "market"]);
+    expect(plan.deliverableKwh).toBe(10);
+  });
+
+  it("is skipped when the corridor can serve nothing", () => {
+    const plan = planCharge({
+      requestedKwh: 10,
+      walletKwhBalance: 0,
+      roaming: { ...corridor, maxKwh: 0 },
+      market: match(10, 2),
+    });
+    expect(plan.kwhFromRoaming).toBe(0);
+    expect(plan.roamingDebitKwh).toBe(0);
+    expect(plan.sources).toEqual(["market"]);
+  });
+
+  it("charges commission only on the money part of a mixed session (§16.9)", () => {
+    const plan = planCharge({
+      requestedKwh: 10,
+      walletKwhBalance: 0,
+      roaming: { ...corridor, maxKwh: 5 },
+      market: match(5, 2),
+      chargeFeePct: 10,
+    });
+    expect(plan.energyCost).toBe(2);
+    expect(plan.fee).toBe(0.2);
+    expect(plan.total).toBe(2.2);
+  });
+
+  it("leaves the session unserved when neither the corridor nor the market can help", () => {
+    const plan = planCharge({
+      requestedKwh: 10,
+      walletKwhBalance: 0,
+      roaming: { ...corridor, maxKwh: 0 },
+      market: null,
+    });
+    expect(plan.feasible).toBe(false);
+    expect(plan.unservedKwh).toBe(10);
+  });
+});

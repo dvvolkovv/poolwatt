@@ -11,6 +11,7 @@
 import { chargeFee } from "./fees";
 import type { MatchResult } from "./matching";
 import { ceilMoney, floorKwh, isKwhDust, roundKwh, roundMoney } from "./precision";
+import { roamingDebit } from "./roaming";
 
 /** §18 leaves Y open; 10 % covers a market order walking a few book levels. */
 export const DEFAULT_AUTH_BUFFER_PCT = 10;
@@ -30,19 +31,40 @@ export interface ChargeRequest {
    * be consulted at all.
    */
   market: MatchResult | null;
+  /**
+   * §8 "Роуминг", US-11 — the corridor from the zone that holds the driver's
+   * kWh to the zone the session runs in. The caller has already capped
+   * `maxKwh` by the home balance and by what §24.2 still allows today.
+   */
+  roaming?: RoamingLeg | null;
   /** External spot price from the aggregator, for the §16.7 fallback. */
   aggregatorPrice?: number | null;
   authBufferPct?: number;
   chargeFeePct?: number;
 }
 
-export type ChargeSource = "gift" | "balance" | "market" | "aggregator";
+export interface RoamingLeg {
+  /** Visited-zone kWh this corridor may serve in this session. */
+  maxKwh: number;
+  /** Home-zone kWh per 1 visited-zone kWh. */
+  conversionRate: number;
+  /** Clearing partner's fee, in percent of the converted amount. */
+  feePct: number;
+}
+
+export type ChargeSource = "gift" | "balance" | "roaming" | "market" | "aggregator";
 
 export interface ChargePlan {
   /** §43 promo kWh spent, which the driver pays nothing for. */
   kwhFromGift: number;
   /** kWh burned from the wallet's own tokens. */
   kwhFromBalance: number;
+  /** kWh the clearing partner delivered against the home-zone balance. */
+  kwhFromRoaming: number;
+  /** Home-zone kWh the roaming leg takes off the balance, fee included. */
+  roamingDebitKwh: number;
+  /** The clearing fee inside `roamingDebitKwh`. */
+  roamingFeeKwh: number;
   /** kWh bought on the exchange. */
   kwhFromMarket: number;
   /** kWh bought from the aggregator at the external spot price (§16.7). */
@@ -93,14 +115,42 @@ export function planCharge(req: ChargeRequest): ChargePlan {
 
   let shortfall = roundKwh(requested - kwhFromGift - kwhFromBalance);
 
-  // 2 — the exchange, at whatever the dry-run match managed to fill.
-  const kwhFromMarket = req.market ? roundKwh(req.market.filledKwh) : 0;
-  const marketCost = req.market ? roundMoney(req.market.notional) : 0;
+  // 2 — §8: the kWh the driver already owns, bought in another zone. They go
+  // before the exchange because §8 promises they are spendable abroad — a
+  // session that bought energy for money while the driver held some would
+  // make that promise worthless.
+  let kwhFromRoaming = 0;
+  let roamingDebitKwh = 0;
+  let roamingFeeKwh = 0;
+  const corridor = req.roaming ?? null;
+  if (corridor && !isKwhDust(shortfall) && corridor.conversionRate > 0) {
+    kwhFromRoaming = floorKwh(Math.min(Math.max(0, roundKwh(corridor.maxKwh)), shortfall));
+    if (!isKwhDust(kwhFromRoaming)) {
+      const debit = roamingDebit(kwhFromRoaming, corridor.conversionRate, corridor.feePct);
+      roamingDebitKwh = debit.totalKwh;
+      roamingFeeKwh = debit.feeKwh;
+      sources.push("roaming");
+      shortfall = roundKwh(shortfall - kwhFromRoaming);
+    } else {
+      kwhFromRoaming = 0;
+    }
+  }
+
+  // 3 — the exchange, at whatever the dry-run match managed to fill. Capped
+  // by what is still missing: the quote may have been taken for a larger
+  // shortfall than the roaming leg left behind, and the session must not buy
+  // energy it no longer needs.
+  const matchFilled = req.market ? roundKwh(req.market.filledKwh) : 0;
+  const kwhFromMarket = floorKwh(Math.min(matchFilled, shortfall));
+  const marketCost =
+    req.market && matchFilled > 0
+      ? roundMoney((req.market.notional * kwhFromMarket) / matchFilled)
+      : 0;
   if (!isKwhDust(kwhFromMarket)) sources.push("market");
   shortfall = roundKwh(shortfall - kwhFromMarket);
   if (shortfall < 0) shortfall = 0;
 
-  // 3 — §16.7 fallback: no liquidity on the exchange, buy through the
+  // 4 — §16.7 fallback: no liquidity on the exchange, buy through the
   // aggregator at the external spot price.
   let kwhFromAggregator = 0;
   let aggregatorCost = 0;
@@ -113,8 +163,10 @@ export function planCharge(req: ChargeRequest): ChargePlan {
   }
 
   const energyCost = roundMoney(marketCost + aggregatorCost);
+  // Roaming kWh cost no money: the clearing partner delivered the energy and
+  // the driver paid in home-zone kWh, so they carry no commission either.
   const deliverableKwh = roundKwh(
-    kwhFromGift + kwhFromBalance + kwhFromMarket + kwhFromAggregator,
+    kwhFromGift + kwhFromBalance + kwhFromRoaming + kwhFromMarket + kwhFromAggregator,
   );
   // §16.9 — paying with tokens already on the balance carries no energy cost,
   // so commission is charged on the money actually spent, not on the kWh.
@@ -124,6 +176,9 @@ export function planCharge(req: ChargeRequest): ChargePlan {
   return {
     kwhFromGift,
     kwhFromBalance,
+    kwhFromRoaming,
+    roamingDebitKwh,
+    roamingFeeKwh,
     kwhFromMarket,
     kwhFromAggregator,
     unservedKwh: isKwhDust(shortfall) ? 0 : shortfall,

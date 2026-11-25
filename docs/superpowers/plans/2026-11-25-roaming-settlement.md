@@ -5,7 +5,7 @@
 
 - [x] 1. Арифметика. `roamingDebit` и `roamingAffordableKwh` в
       `src/lib/exchange/roaming.ts`, тесты в `roaming.test.ts`.
-- [ ] 2. Водопад. Ступень роуминга в `planCharge` (`src/lib/exchange/charge.ts`):
+- [x] 2. Водопад. Ступень роуминга в `planCharge` (`src/lib/exchange/charge.ts`):
       новый вход `roaming`, выходы `kwhFromRoaming`, `roamingDebitKwh`,
       `roamingFeeKwh`, источник `"roaming"`; тесты в `charge.test.ts`.
 - [ ] 3. Схема. Модель `RoamingSettlement` и перечисление статуса, миграция.
