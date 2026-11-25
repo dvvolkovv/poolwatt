@@ -66,6 +66,7 @@ model User {
   coopMemberships   CoopMember[]         @relation("CoopMembership")
   promoGrants       PromoGrant[]         @relation("PromoGrantHolder")
   roamingSessions   RoamingSettlement[]  @relation("RoamingDriver")
+  dashboards        Dashboard[]          @relation("DashboardOwner")
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -2143,6 +2144,25 @@ model RoamingSettlement {
 enum RoamingSettlementStatus {
   OPEN
   NETTED
+}
+
+// §30, US-27 — "владелец сам выбирает, какие виджеты видеть … сохраняет
+// несколько раскладок". A layout belongs to the person, not to one asset:
+// §30 asks for "Утро", "Финансы", "Техника", not for the same work again on
+// every station. `widgets` is the §30 layout and widget list in one field —
+// an array of { key, size }, validated by src/lib/dashboard/widgets.ts.
+model Dashboard {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("DashboardOwner", fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  widgets   Json
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId, isDefault])
 }
 
 // §15 — "Все POST-запросы с ключом идемпотентности". One row per
