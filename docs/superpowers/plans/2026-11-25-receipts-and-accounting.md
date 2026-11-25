@@ -6,18 +6,18 @@
 
 ## Часть 1. Данные
 
-- [ ] Миграция: `Payment.pointId/connectorId/startedAt/endedAt`,
+- [x] Миграция: `Payment.pointId/connectorId/startedAt/endedAt`,
       `Receipt.number/verifyCode/deliveredAt/deliveryChannels/deliveryError`,
       модель `OperatorAccounting`, `User.receiptEmail/receiptPush`,
       последовательность `receipt_number_seq`.
-- [ ] Номер и код проверки выдаются при создании любого чека (зарядка,
+- [x] Номер и код проверки выдаются при создании любого чека (зарядка,
       сделка, неявка). Тест на три пути.
 
 ## Часть 2. US-45 — документ
 
-- [ ] `receipts/receipt-document.ts`: состав §46 из записи чека.
-- [ ] `receipts/vat.ts`: разбивка суммы на нетто и НДС по ставке партнёра.
-- [ ] Тесты `receipt-document.test.ts`.
+- [x] `receipts/receipt-document.ts`: состав §46 из записи чека.
+- [x] `receipts/vat.ts`: разбивка суммы на нетто и НДС по ставке партнёра.
+- [x] Тесты `receipt-document.test.ts`.
 - [ ] Страница чека переписана под §46: логотипы, реквизиты, пункт и разъём,
       источник, цены, разбивка, НДС, QR.
 - [ ] Страница печати `/me/wallet/receipts/[id]/print`.

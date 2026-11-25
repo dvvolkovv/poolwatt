@@ -307,6 +307,9 @@ export async function readReceipt(receiptId: string, db: Db = prisma) {
     include: {
       payment: { select: { id: true, walletId: true, chargePointId: true, status: true } },
       trade: { select: { id: true, zoneId: true, price: true, amountKwh: true } },
+      // §35 US-33 — a no-show leaves a receipt, and its driver is the one
+      // most likely to come looking for it.
+      reservation: { select: { id: true, userId: true, walletId: true } },
     },
   });
 }
@@ -315,6 +318,7 @@ export interface ReceiptView {
   id: string;
   paymentId: string | null;
   tradeId: string | null;
+  reservationId: string | null;
   burnedTokenIds: string[];
   totalKwh: number;
   totalFiat: number;
@@ -326,7 +330,8 @@ export interface ReceiptView {
 /**
  * The receipt as its owner may see it, or null — §46, and US-07's "чек в
  * истории". A receipt belongs to whoever stood on either leg: the payer of a
- * charge, or both sides of a trade. The operator sees every one.
+ * charge, both sides of a trade, or the driver of the booking that was not
+ * used. The operator sees every one.
  *
  * Both the page and GET /v1/receipts/{id} ask this, so the rule is written
  * once; a receipt is a financial document and "who may read it" is not a
@@ -361,6 +366,9 @@ export async function readReceiptForUser(
         trade && (mine.has(trade.buyOrder.walletId) || mine.has(trade.sellOrder.walletId)),
       );
     }
+    if (!owned && receipt.reservation) {
+      owned = receipt.reservation.userId === userId;
+    }
     if (!owned) return null;
   }
 
@@ -368,6 +376,7 @@ export async function readReceiptForUser(
     id: receipt.id,
     paymentId: receipt.paymentId,
     tradeId: receipt.tradeId,
+    reservationId: receipt.reservationId,
     burnedTokenIds: receipt.burnedTokenIds,
     totalKwh: num(receipt.totalKwh),
     totalFiat: num(receipt.totalFiat),

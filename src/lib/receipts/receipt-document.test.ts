@@ -355,3 +355,49 @@ describe("buildReceiptDocument — §46 состав чека", () => {
     expect(doc!.session?.pointName).toBe("Košice — Hlavná");
   });
 });
+
+// Found while building the document: a no-show receipt (§35, US-33) was
+// unreachable by the driver it belongs to. `readReceiptForUser` knew about
+// payments and trades only, so the one receipt a driver is most likely to
+// dispute answered 404 to them.
+describe("receipt access covers every leg a receipt can have", () => {
+  it("lets the driver open the receipt for their own no-show", async () => {
+    const { readReceiptForUser } = await import("@/lib/exchange/payment-service");
+    const wallet = await getOrCreateWallet(userId, zoneId);
+    const reservation = await prisma.reservation.create({
+      data: {
+        userId,
+        pointId,
+        connectorId,
+        walletId: wallet.id,
+        eta: new Date("2026-03-06T09:00:00Z"),
+        windowStart: new Date("2026-03-06T08:45:00Z"),
+        windowEnd: new Date("2026-03-06T09:15:00Z"),
+        feeFiat: new Prisma.Decimal(1),
+        guaranteeFiat: new Prisma.Decimal(5),
+        noShowPenaltyFiat: new Prisma.Decimal(3),
+        freeCancelMinutes: 30,
+        status: "NO_SHOW",
+      },
+    });
+    const receipt = await prisma.receipt.create({
+      data: {
+        ...(await receiptStamp(prisma)),
+        reservationId: reservation.id,
+        burnedTokenIds: [],
+        totalKwh: new Prisma.Decimal(0),
+        totalFiat: new Prisma.Decimal(3),
+        currency: "EUR",
+        breakdown: { kind: "reservation.no_show", penalty: 3 } as Prisma.InputJsonValue,
+      },
+    });
+
+    const mine = await readReceiptForUser(receipt.id, userId, false);
+    expect(mine?.id).toBe(receipt.id);
+
+    const stranger = await prisma.user.create({
+      data: { username: `${PREFIX}stranger`, passwordHash: "x" },
+    });
+    expect(await readReceiptForUser(receipt.id, stranger.id, false)).toBeNull();
+  });
+});

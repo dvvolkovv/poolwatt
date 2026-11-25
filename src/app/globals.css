@@ -135,3 +135,33 @@ html {
   outline-offset: 2px;
   border-radius: var(--radius-md);
 }
+
+/* §46 "печать на терминале станции": a receipt prints as a document, without
+   the site around it. Anything that is navigation carries data-print-hide. */
+@media print {
+  nav,
+  footer,
+  [data-print-hide] {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .receipt-sheet {
+    border: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+  .receipt-sheet .text-muted,
+  .receipt-sheet .text-accent {
+    color: #333 !important;
+  }
+  .receipt-sheet section,
+  .receipt-sheet header {
+    page-break-inside: avoid;
+  }
+}
