@@ -22,6 +22,7 @@ import { notifyWallets } from "./realtime-notify";
 import { placeOrder, quoteMarketOrder } from "./order-service";
 import { burnTokens } from "./token-registry";
 import { availableFiat, getOrCreateWallet } from "./wallet-service";
+import { availableGiftKwh, spendGrants } from "@/lib/marketing/grant-spend";
 import { receiptStamp } from "@/lib/receipts/receipt-number";
 import { deliverReceipt } from "@/lib/receipts/receipt-delivery";
 
@@ -94,6 +95,8 @@ export interface ChargeResult {
   paymentId: string;
   status: PaymentStatus;
   deliveredKwh: number;
+  /** §43 promo kWh spent on this session; the driver pays nothing for them. */
+  kwhFromGift: number;
   kwhFromBalance: number;
   kwhBought: number;
   unservedKwh: number;
@@ -129,7 +132,13 @@ export async function quoteCharge(
   const wallet = await getOrCreateWallet(input.userId, zone.id);
   const requested = roundKwh(input.requestedKwh);
   const balance = num(wallet.kwhBalance);
-  const shortfall = roundKwh(Math.max(0, requested - Math.min(balance, requested)));
+
+  // §43 — the partner's gift goes before the balance, and only in the network
+  // it belongs to. A session with no point of ours gets nothing (US-43).
+  const giftKwh = await availableGiftKwh(input.userId, input.pointId ?? null);
+
+  const afterGift = roundKwh(Math.max(0, requested - Math.min(giftKwh, requested)));
+  const shortfall = roundKwh(Math.max(0, afterGift - Math.min(balance, afterGift)));
 
   const quote =
     shortfall > 0
@@ -138,6 +147,7 @@ export async function quoteCharge(
 
   const plan = planCharge({
     requestedKwh: requested,
+    giftKwh,
     walletKwhBalance: balance,
     market: quoteToMatch(quote),
     aggregatorPrice: numOrNull(zone.spotPrice),
@@ -162,7 +172,10 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       return {
         paymentId: existing.id,
         status: existing.status,
-        deliveredKwh: roundKwh(num(existing.kwhFromBalance) + num(existing.kwhBought)),
+        deliveredKwh: roundKwh(
+          num(existing.kwhFromBalance) + num(existing.kwhBought) + giftOf(existing.receipt),
+        ),
+        kwhFromGift: giftOf(existing.receipt),
         kwhFromBalance: num(existing.kwhFromBalance),
         kwhBought: num(existing.kwhBought),
         unservedKwh: roundKwh(
@@ -188,6 +201,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
     userId: input.userId,
     zoneId: input.zoneId,
     requestedKwh: requested,
+    pointId: session.pointId,
     authBufferPct: input.authBufferPct,
   });
 
@@ -224,6 +238,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       paymentId: payment.id,
       status: PaymentStatus.FAILED,
       deliveredKwh: 0,
+      kwhFromGift: 0,
       kwhFromBalance: 0,
       kwhBought: 0,
       unservedKwh: requested,
@@ -258,7 +273,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
   let energyCost = 0;
   let marketOrderId: string | null = null;
 
-  const shortfall = roundKwh(requested - plan.kwhFromBalance);
+  const shortfall = roundKwh(requested - plan.kwhFromGift - plan.kwhFromBalance);
   if (!isKwhDust(shortfall)) {
     const order = await placeOrder({
       userId: input.userId,
@@ -272,18 +287,43 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
     kwhBought = order.filledKwh;
     energyCost = roundMoney(order.notional + order.fee);
 
-    if (isKwhDust(kwhBought) && isKwhDust(plan.kwhFromBalance)) {
+    if (isKwhDust(kwhBought) && isKwhDust(plan.kwhFromBalance) && isKwhDust(plan.kwhFromGift)) {
       return fail(order.rejectReason ?? "Market order could not be filled");
     }
   }
 
   // ── 3. Burn what is delivered and capture (§8.2, §14 → captured) ────────
-  const deliveredKwh = roundKwh(plan.kwhFromBalance + kwhBought);
+  let giftSpent = 0;
+  let giftNetwork: string | null = null;
+  let deliveredKwh = roundKwh(plan.kwhFromGift + plan.kwhFromBalance + kwhBought);
   let burnedTokenIds: string[] = [];
   let receiptId: string | null = null;
 
   await prisma.$transaction(async (tx) => {
-    burnedTokenIds = await burnTokens(tx, { walletId: wallet.id, amountKwh: deliveredKwh });
+    // §43 — the gift is spent first, out of the partner's own batches. What
+    // it could not cover the driver pays for out of their own balance, which
+    // is already on it: the gift only ever shrinks.
+    const gift = await spendGrants(tx, {
+      userId: input.userId,
+      pointId: session.pointId,
+      amountKwh: plan.kwhFromGift,
+    });
+    giftSpent = gift.spentKwh;
+    giftNetwork = gift.networkName;
+
+    const fromOwn = roundKwh(plan.kwhFromBalance + kwhBought + (plan.kwhFromGift - giftSpent));
+    const ownBalance = num(
+      (await tx.wallet.findUniqueOrThrow({ where: { id: wallet.id } })).kwhBalance,
+    );
+    const fromOwnCovered = roundKwh(Math.min(fromOwn, Math.max(0, ownBalance)));
+    deliveredKwh = roundKwh(giftSpent + fromOwnCovered);
+
+    burnedTokenIds = [...gift.burnedTokenIds];
+    if (!isKwhDust(fromOwnCovered)) {
+      burnedTokenIds.push(
+        ...(await burnTokens(tx, { walletId: wallet.id, amountKwh: fromOwnCovered })),
+      );
+    }
 
     const receipt = await tx.receipt.create({
       data: {
@@ -300,7 +340,9 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
           chargePointId: input.chargePointId ?? null,
           pointId: session.pointId,
           requestedKwh: requested,
-          kwhFromBalance: plan.kwhFromBalance,
+          kwhFromGift: giftSpent,
+          giftNetwork,
+          kwhFromBalance: roundKwh(deliveredKwh - giftSpent - kwhBought),
           kwhBought,
           unservedKwh: roundKwh(requested - deliveredKwh),
           energyCost,
@@ -315,7 +357,7 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       where: { id: payment.id },
       data: {
         status: PaymentStatus.CAPTURED,
-        kwhFromBalance: new Prisma.Decimal(plan.kwhFromBalance),
+        kwhFromBalance: new Prisma.Decimal(roundKwh(deliveredKwh - giftSpent - kwhBought)),
         kwhBought: new Prisma.Decimal(kwhBought),
         amountFiat: new Prisma.Decimal(energyCost),
         marketOrderId,
@@ -330,7 +372,8 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       action: "payment.captured",
       after: {
         deliveredKwh,
-        kwhFromBalance: plan.kwhFromBalance,
+        kwhFromGift: giftSpent,
+        kwhFromBalance: roundKwh(deliveredKwh - giftSpent - kwhBought),
         kwhBought,
         amountFiat: energyCost,
         authorizedFiat: plan.authorizedFiat,
@@ -358,7 +401,8 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
     paymentId: payment.id,
     status: PaymentStatus.CAPTURED,
     deliveredKwh,
-    kwhFromBalance: plan.kwhFromBalance,
+    kwhFromGift: giftSpent,
+    kwhFromBalance: roundKwh(deliveredKwh - giftSpent - kwhBought),
     kwhBought,
     unservedKwh: roundKwh(requested - deliveredKwh),
     authorizedFiat: plan.authorizedFiat,
@@ -495,4 +539,16 @@ async function awardGiftsAfterCharge(paymentId: string): Promise<void> {
   } catch (err) {
     console.error("[payments] campaign award failed for", paymentId, err);
   }
+}
+
+/**
+ * How many promo kWh a stored receipt says went into its session. Needed on
+ * an idempotent replay, where the plan is long gone and the receipt's own
+ * breakdown is the record (§46 "Состав чека").
+ */
+function giftOf(receipt: { breakdown: unknown } | null | undefined): number {
+  if (!receipt) return 0;
+  const b = receipt.breakdown as Record<string, unknown> | null;
+  const value = b?.kwhFromGift;
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
 }

@@ -17,6 +17,12 @@ export const DEFAULT_AUTH_BUFFER_PCT = 10;
 
 export interface ChargeRequest {
   requestedKwh: number;
+  /**
+   * §43 — "при оплате списывается первым, раньше обычного баланса кВт·ч".
+   * Promo kWh the driver may use *at this point*: the caller has already
+   * dropped grants belonging to other networks, which is US-43.
+   */
+  giftKwh?: number;
   walletKwhBalance: number;
   /**
    * Dry-run match of the shortfall against the live book, or null when there
@@ -30,9 +36,11 @@ export interface ChargeRequest {
   chargeFeePct?: number;
 }
 
-export type ChargeSource = "balance" | "market" | "aggregator";
+export type ChargeSource = "gift" | "balance" | "market" | "aggregator";
 
 export interface ChargePlan {
+  /** §43 promo kWh spent, which the driver pays nothing for. */
+  kwhFromGift: number;
   /** kWh burned from the wallet's own tokens. */
   kwhFromBalance: number;
   /** kWh bought on the exchange. */
@@ -58,9 +66,9 @@ export interface ChargePlan {
 /**
  * Build the plan for one charging session.
  *
- * Order of sourcing is fixed by §16.6 — balance, then exchange, then (§16.7)
- * the aggregator at the external spot price. Each step only ever covers what
- * the previous one left unserved.
+ * Order of sourcing is §43 first and then §16.6 — gift, balance, exchange,
+ * and finally (§16.7) the aggregator at the external spot price. Each step
+ * only ever covers what the previous one left unserved.
  */
 export function planCharge(req: ChargeRequest): ChargePlan {
   const requested = roundKwh(req.requestedKwh);
@@ -73,11 +81,17 @@ export function planCharge(req: ChargeRequest): ChargePlan {
 
   const sources: ChargeSource[] = [];
 
+  // 0 — §43: the partner's gift goes first, and costs the driver nothing.
+  // Floored like the balance, because spending is per 0.001 kWh.
+  const gift = Math.max(0, roundKwh(req.giftKwh ?? 0));
+  const kwhFromGift = floorKwh(Math.min(gift, requested));
+  if (!isKwhDust(kwhFromGift)) sources.push("gift");
+
   // 1 — the wallet's own tokens. Floored: burning is per 0.001 token.
-  const kwhFromBalance = floorKwh(Math.min(balance, requested));
+  const kwhFromBalance = floorKwh(Math.min(balance, roundKwh(requested - kwhFromGift)));
   if (!isKwhDust(kwhFromBalance)) sources.push("balance");
 
-  let shortfall = roundKwh(requested - kwhFromBalance);
+  let shortfall = roundKwh(requested - kwhFromGift - kwhFromBalance);
 
   // 2 — the exchange, at whatever the dry-run match managed to fill.
   const kwhFromMarket = req.market ? roundKwh(req.market.filledKwh) : 0;
@@ -99,13 +113,16 @@ export function planCharge(req: ChargeRequest): ChargePlan {
   }
 
   const energyCost = roundMoney(marketCost + aggregatorCost);
-  const deliverableKwh = roundKwh(kwhFromBalance + kwhFromMarket + kwhFromAggregator);
+  const deliverableKwh = roundKwh(
+    kwhFromGift + kwhFromBalance + kwhFromMarket + kwhFromAggregator,
+  );
   // §16.9 — paying with tokens already on the balance carries no energy cost,
   // so commission is charged on the money actually spent, not on the kWh.
   const fee = chargeFee(energyCost, feePct);
   const total = roundMoney(energyCost + fee);
 
   return {
+    kwhFromGift,
     kwhFromBalance,
     kwhFromMarket,
     kwhFromAggregator,

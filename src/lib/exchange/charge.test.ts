@@ -186,3 +186,92 @@ describe("canCoverFromFiat", () => {
     expect(canCoverFromFiat(plan, { fiatBalance: 5, reservedFiat: 4 })).toBe(false);
   });
 });
+
+describe("promo kWh — §43 'списывается первым, раньше обычного баланса'", () => {
+  it("spends the gift before the wallet's own kWh", () => {
+    const plan = planCharge({
+      requestedKwh: 10,
+      giftKwh: 4,
+      walletKwhBalance: 10,
+      market: null,
+    });
+
+    expect(plan.kwhFromGift).toBe(4);
+    expect(plan.kwhFromBalance).toBe(6);
+    expect(plan.kwhFromMarket).toBe(0);
+    expect(plan.deliverableKwh).toBe(10);
+    expect(plan.sources).toEqual(["gift", "balance"]);
+  });
+
+  it("costs the driver nothing for the gifted part", () => {
+    const plan = planCharge({
+      requestedKwh: 5,
+      giftKwh: 5,
+      walletKwhBalance: 0,
+      market: null,
+      chargeFeePct: 2,
+    });
+
+    expect(plan.kwhFromGift).toBe(5);
+    expect(plan.energyCost).toBe(0);
+    expect(plan.fee).toBe(0);
+    expect(plan.total).toBe(0);
+    expect(plan.authorizedFiat).toBe(0);
+    expect(plan.feasible).toBe(true);
+  });
+
+  it("spends only as much of the gift as the session needs", () => {
+    const plan = planCharge({
+      requestedKwh: 3,
+      giftKwh: 20,
+      walletKwhBalance: 10,
+      market: null,
+    });
+
+    expect(plan.kwhFromGift).toBe(3);
+    expect(plan.kwhFromBalance).toBe(0);
+    expect(plan.sources).toEqual(["gift"]);
+  });
+
+  it("buys the shortfall after the gift and the balance are exhausted", () => {
+    const plan = planCharge({
+      requestedKwh: 10,
+      giftKwh: 2,
+      walletKwhBalance: 3,
+      market: match(5, 1.1),
+    });
+
+    expect(plan.kwhFromGift).toBe(2);
+    expect(plan.kwhFromBalance).toBe(3);
+    expect(plan.kwhFromMarket).toBe(5);
+    expect(plan.energyCost).toBe(1.1);
+    expect(plan.sources).toEqual(["gift", "balance", "market"]);
+  });
+
+  it("changes nothing when there is no gift", () => {
+    const withZero = planCharge({ requestedKwh: 8, giftKwh: 0, walletKwhBalance: 8, market: null });
+    const without = planCharge({ requestedKwh: 8, walletKwhBalance: 8, market: null });
+    expect(withZero).toEqual(without);
+  });
+
+  it("ignores a negative gift rather than handing out energy for it", () => {
+    const plan = planCharge({
+      requestedKwh: 5,
+      giftKwh: -5,
+      walletKwhBalance: 5,
+      market: null,
+    });
+    expect(plan.kwhFromGift).toBe(0);
+    expect(plan.kwhFromBalance).toBe(5);
+  });
+
+  it("floors the gift to whole tokens, like the balance", () => {
+    const plan = planCharge({
+      requestedKwh: 5,
+      giftKwh: 2.00049,
+      walletKwhBalance: 5,
+      market: null,
+    });
+    expect(plan.kwhFromGift).toBe(2);
+  });
+});
