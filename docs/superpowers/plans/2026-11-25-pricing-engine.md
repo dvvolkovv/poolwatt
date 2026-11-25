@@ -24,11 +24,11 @@
 
 **Файлы:** изменить `prisma/schema.prisma`, миграция.
 
-- [ ] `PricingRule` (`scope`, `scopeId`, `operatorId?`, `companyId?`, `version`,
+- [x] `PricingRule` (`scope`, `scopeId`, `operatorId?`, `companyId?`, `version`,
       `params Json`, `activeFrom`, `createdById?`, `note?`,
       `@@unique([scope, scopeId, version])`), перечисление `PricingScope`.
-- [ ] `Payment.tariffVersion Int?`, `Reservation.pricingVersion Int?`.
-- [ ] `migrate dev` против `poolwatt_test`, затем `migrate deploy`. Коммит.
+- [x] `Payment.tariffVersion Int?`, `Reservation.pricingVersion Int?`.
+- [x] `migrate dev` против `poolwatt_test`, затем `migrate deploy`. Коммит.
 
 ### Задача 2. Сервис версий
 

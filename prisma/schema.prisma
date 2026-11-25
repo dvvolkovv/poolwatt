@@ -225,8 +225,9 @@ model ChargerOperator {
   campaigns   Campaign[]
   promoGrants PromoGrant[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  PricingRule PricingRule[]
 
   @@index([claimedById])
 }
@@ -635,6 +636,9 @@ model Reservation {
   noShowPenaltyFiat Decimal @db.Decimal(10, 2)
   freeCancelMinutes Int
   currency          String  @default("EUR")
+
+  // §54 — which version of §33 the copied numbers above came from.
+  pricingVersion Int?
 
   status      ReservationStatus @default(CREATED)
   penaltyFiat Decimal?          @db.Decimal(10, 2)
@@ -1430,6 +1434,7 @@ model Company {
   feePlanId         String?
   feePlan           FeePlan?             @relation(fields: [feePlanId], references: [id], onDelete: SetNull)
   cooperative       Cooperative?
+  pricingRules      PricingRule[]
 
   @@unique([country, regNumber])
   @@index([type, kybStatus])
@@ -2329,4 +2334,60 @@ enum PromoGrantStatus {
   USED
   EXPIRED
   REVOKED
+}
+
+// ---------------------------------------------------------------------------
+// §54 — "Любое изменение тарифа версионируется: новые сделки идут по новой
+// версии, текущие брони и заявки — по старой."
+//
+// An append-only journal of every tariff a partner has ever set. `params` is a
+// snapshot, not a reference: a point can be deleted and its `PointTariff` rows
+// with it, and a receipt issued last March must still print the price it was
+// issued at.
+//
+// Written only by `src/lib/pricing/pricing-service.ts`, in the same
+// transaction as the live table it mirrors — a version without a change and a
+// change without a version are equally useless.
+// ---------------------------------------------------------------------------
+
+model PricingRule {
+  id      String       @id @default(cuid())
+  scope   PricingScope
+  // The thing the rule is about: a point, a network, an asset.
+  scopeId String
+
+  // Who it belongs to, for the partner's own history page. One of the two.
+  operatorId String?
+  operator   ChargerOperator? @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  companyId  String?
+  company    Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  version     Int
+  params      Json
+  activeFrom  DateTime @default(now())
+  createdById String?
+  note        String?
+
+  createdAt DateTime @default(now())
+
+  // The version counter is a rule of the database: two partners saving at the
+  // same moment must not both become version 4.
+  @@unique([scope, scopeId, version])
+  @@index([scope, scopeId, activeFrom])
+  @@index([operatorId, activeFrom])
+  @@index([companyId, activeFrom])
+}
+
+enum PricingScope {
+  // §52 "Цены кВт·ч в деньгах и токенах, по времени суток" + "Плата за
+  // простой" + "Скидки для членов кооператива" — all of `PointTariff`.
+  POINT_TARIFF
+  // §52 one price across the whole network.
+  NETWORK_PRICE
+  // §33 / §52 "Плата за бронь, гарантия, штраф".
+  RESERVATION_POLICY
+  // §30 / §52 "Минимальная цена продажи и доли выработки".
+  SALE_RULES
+  // §52 "Комиссия для своих субпартнёров".
+  SUBPARTNER_FEE
 }
