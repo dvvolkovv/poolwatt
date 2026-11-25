@@ -43,7 +43,7 @@ export default async function MobileLayout({
 
   return (
     <div className="min-h-screen bg-bg">
-      <SwRegister />
+      <SwRegister locale={locale} />
       {children}
       <TabBar tabs={visibleTabs(status)} locale={locale} />
     </div>
