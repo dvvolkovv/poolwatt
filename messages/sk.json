@@ -2401,5 +2401,52 @@
     "enabledField": "Zapnutý",
     "save": "Uložiť",
     "saved": "Uložené"
+  },
+  "app": {
+    "tabs": {
+      "home": "Domov",
+      "wallet": "Peňaženka",
+      "charge": "Nabíjanie",
+      "more": "Moje",
+      "profile": "Profil"
+    },
+    "status": {
+      "GUEST": "Hosť",
+      "CONSUMER": "Spotrebiteľ",
+      "PROSUMER": "Prosumer",
+      "COOP_MEMBER": "Člen družstva"
+    },
+    "home": {
+      "balance": "Zostatok kWh",
+      "money": "Peniaze",
+      "zonePrice": "Cena v zóne {zone}",
+      "buy": "Kúpiť",
+      "transfer": "Poslať",
+      "charge": "Nabiť",
+      "topUp": "Dobiť",
+      "guestTitle": "Nabíjanie kdekoľvek",
+      "guestBody": "Pozrite si stanice a ceny okolo seba. Zaregistrujte sa a plaťte kilowatthodinami.",
+      "signUp": "Registrácia",
+      "signIn": "Prihlásenie"
+    },
+    "sections": {
+      "station": "Moja stanica",
+      "coop": "Družstvo",
+      "account": "Účet",
+      "card": "Karta",
+      "contacts": "Kontakty a prevody",
+      "roaming": "Roaming"
+    },
+    "soon": {
+      "title": "Obrazovka ešte nie je",
+      "body": "Príde vo fáze {stage}.",
+      "back": "Späť"
+    },
+    "offline": {
+      "title": "Bez pripojenia",
+      "body": "Toto je posledný zostatok, ktorý telefón videl, o {at}.",
+      "retry": "Skúsiť znova",
+      "stale": "Číslo môže byť neaktuálne."
+    }
   }
 }
