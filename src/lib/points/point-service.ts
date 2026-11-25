@@ -18,6 +18,7 @@ import {
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/exchange/audit";
+import { recordPricingChange } from "@/lib/pricing/pricing-service";
 
 export class PointError extends Error {}
 
@@ -233,6 +234,30 @@ export async function savePointStep(
           },
         });
       }
+    }
+
+    // §54 — "Любое изменение тарифа версионируется". The journal entry and
+    // the tariff rows are one transaction: a version nobody was charged under
+    // is as useless as a price change nobody recorded.
+    if (step === "tariffs" && payload.tariffs) {
+      await recordPricingChange(tx, {
+        scope: "POINT_TARIFF",
+        scopeId: pointId,
+        operatorId: before.operatorId,
+        params: {
+          tariffs: payload.tariffs.map((t) => ({
+            label: t.label ?? null,
+            fromMinute: t.fromMinute,
+            toMinute: t.toMinute,
+            priceFiat: t.priceFiat ?? null,
+            currency: t.currency ?? "EUR",
+            priceTokens: t.priceTokens ?? null,
+            idleFeePerMin: t.idleFeePerMin ?? null,
+            coopDiscount: t.coopDiscount ?? 0,
+          })),
+        },
+        actorId: userId,
+      });
     }
 
     await writeAudit(tx, {

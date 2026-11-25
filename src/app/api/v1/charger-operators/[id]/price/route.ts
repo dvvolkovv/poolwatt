@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { setNetworkPrice } from "@/lib/pricing/network-price";
 import { hashToken, looksLikeToken } from "@/lib/charger-operator-tokens";
 
 const bodySchema = z.object({
@@ -53,23 +54,28 @@ export async function POST(
     );
   }
 
-  // Apply price + bump lastUsedAt on the key.
+  // Apply price + bump lastUsedAt on the key. §54 — the change is versioned
+  // here too: a price pushed by the network's own system is still a change a
+  // receipt may have to be reconstructed against.
   const now = new Date();
-  const [updated] = await prisma.$transaction([
-    prisma.chargerOperator.update({
-      where: { id: operatorId },
-      data: {
+  const updated = await prisma.$transaction(async (tx) => {
+    const view = await setNetworkPrice(
+      {
+        operatorId,
         pricePerKwh: parsed.data.pricePerKwh,
-        priceCurrency: parsed.data.currency,
-        priceUpdatedAt: now,
+        currency: parsed.data.currency,
+        // The caller is a key this very network issued (checked above).
+        skipOwnerCheck: true,
+        note: `api key ${key.id}`,
       },
-      select: { id: true, priceUpdatedAt: true },
-    }),
-    prisma.chargerOperatorApiKey.update({
+      tx,
+    );
+    await tx.chargerOperatorApiKey.update({
       where: { id: key.id },
       data: { lastUsedAt: now },
-    }),
-  ]);
+    });
+    return { id: operatorId, priceUpdatedAt: view.priceUpdatedAt };
+  });
 
   return NextResponse.json({
     ok: true,

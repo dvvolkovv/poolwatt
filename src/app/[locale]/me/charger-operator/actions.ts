@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { setNetworkPrice } from "@/lib/pricing/network-price";
 import { generateToken } from "@/lib/charger-operator-tokens";
 
 export type ActionResult = {
@@ -108,13 +109,12 @@ export async function updateChargerOperatorPrice(input: UpdateChargerOperatorPri
   const owner = await assertOwner(operatorId);
   if (!owner.ok) return owner.result;
 
-  await prisma.chargerOperator.update({
-    where: { id: operatorId },
-    data: {
-      pricePerKwh,
-      priceCurrency: pricePerKwh === null ? null : currency,
-      priceUpdatedAt: pricePerKwh === null ? null : new Date(),
-    },
+  // §54 — the price and its version are written together.
+  await setNetworkPrice({
+    operatorId,
+    pricePerKwh,
+    currency,
+    actorId: owner.userId,
   });
 
   revalidatePath(`/[locale]/c`, "page");

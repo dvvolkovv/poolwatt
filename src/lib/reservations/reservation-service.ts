@@ -21,6 +21,7 @@ import { roundMoney } from "@/lib/exchange/precision";
 import { getOrCreateWallet } from "@/lib/exchange/wallet-service";
 import { nearestWorkingPoints } from "@/lib/points/point-search";
 import { receiptStamp } from "@/lib/receipts/receipt-number";
+import { recordPricingChange } from "@/lib/pricing/pricing-service";
 
 export class ReservationError extends Error {}
 
@@ -138,18 +139,33 @@ export async function savePolicy(
     ...(input.coopFree !== undefined ? { coopFree: input.coopFree } : {}),
   };
 
-  const row = await prisma.reservationPolicy.upsert({
-    where: { pointId },
-    update: data,
-    create: { pointId, ...data },
-  });
-  await writeAudit(prisma, {
-    actor: actorUserId,
-    entity: "ReservationPolicy",
-    entityId: row.id,
-    action: "reservation.policy.saved",
-    before: before ? toView(pointId, before) : null,
-    after: toView(pointId, row),
+  const row = await prisma.$transaction(async (tx) => {
+    const saved = await tx.reservationPolicy.upsert({
+      where: { pointId },
+      update: data,
+      create: { pointId, ...data },
+    });
+
+    // §54 — the booking terms a driver is quoted have to be reconstructible
+    // after the owner changes them.
+    await recordPricingChange(tx, {
+      scope: "RESERVATION_POLICY",
+      scopeId: pointId,
+      operatorId: point.operatorId,
+      params: toView(pointId, saved) as unknown as Prisma.InputJsonValue,
+      actorId: actorUserId,
+    });
+
+    await writeAudit(tx, {
+      actor: actorUserId,
+      entity: "ReservationPolicy",
+      entityId: saved.id,
+      action: "reservation.policy.saved",
+      before: before ? toView(pointId, before) : null,
+      after: toView(pointId, saved),
+    });
+
+    return saved;
   });
   return toView(pointId, row);
 }

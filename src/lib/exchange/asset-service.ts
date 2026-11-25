@@ -6,6 +6,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { encryptionKeyConfigured, open, seal } from "@/lib/crypto-box";
 import { prisma } from "@/lib/prisma";
 import { type Db, writeAudit } from "./audit";
+import { recordPricingChange } from "@/lib/pricing/pricing-service";
 import { raiseAlert } from "./asset-alerts";
 import { num } from "./decimal";
 import { probationComplete } from "./minting";
@@ -277,6 +278,22 @@ export async function updateSaleRules(
       ...(args.shareToSelfPct != null ? { shareToSelfPct: args.shareToSelfPct } : {}),
       ...(args.reserveSocPct != null ? { reserveSocPct: args.reserveSocPct } : {}),
     },
+  });
+
+  // §54 — "Любое изменение тарифа версионируется". The minimum sale price is
+  // a tariff: the dispatcher prices offers off it.
+  await recordPricingChange(db, {
+    scope: "SALE_RULES",
+    scopeId: asset.id,
+    companyId: asset.companyId,
+    params: {
+      minSalePrice: asset.minSalePrice ? num(asset.minSalePrice) : null,
+      reserveSocPct: asset.reserveSocPct,
+      shareToMarketPct: asset.shareToMarketPct,
+      shareToStoragePct: asset.shareToStoragePct,
+      shareToSelfPct: asset.shareToSelfPct,
+    },
+    actorId: args.actorUserId,
   });
 
   // §30 "изменение пишется в журнал" — the control panel shows this history.
