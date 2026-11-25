@@ -1420,6 +1420,11 @@
       "subject": "Your booking at {point} is about to end",
       "body": "The booking window at {point} closes in {minutes} min. If you are running late, you can extend it.",
       "cta": "Extend the booking"
+    },
+    "restock": {
+      "subject": "{part} is running low at {warehouse}",
+      "body": "{warehouse} has {qty} of {part} ({sku}) left, below the minimum of {min}. A request for {suggested} has been raised.",
+      "cta": "Open the store"
     }
   },
   "points": {
@@ -2193,6 +2198,70 @@
       "INSTALLATION": "Installation",
       "COMMISSIONING": "Commissioning and test",
       "PUBLISHED": "Published"
+    }
+  },
+  "warehouse": {
+    "eyebrow": "Spare parts",
+    "title": "Store",
+    "intro": "A level here is the sum of its movements — nothing is typed over it. Set a minimum and a request is raised the moment the level crosses it, and whoever keeps that store is told.",
+    "requests": "Running low",
+    "levels": "Levels",
+    "operations": "Operations",
+    "operationsHint": "Receipt, transfer, write-off, return of a faulty part and a stocktake. A write-off asks for a reason; a stocktake is recorded as the difference it found.",
+    "warehouses": "Stores",
+    "parts": "Parts",
+    "partsHint": "Compatible models, comma separated. A unit cost rides along with every issue, so the cost of servicing a point is real.",
+    "noStock": "Nothing on any shelf yet.",
+    "left": "left",
+    "minimum": "minimum",
+    "order": "order",
+    "notTold": "nobody told yet",
+    "markOrdered": "Ordered",
+    "markClosed": "Close",
+    "saveWarehouse": "Save store",
+    "savePart": "Save part",
+    "nobody": "nobody",
+    "cabinetLink": "Store",
+    "kind": {
+      "CENTRAL": "central",
+      "REGIONAL": "regional",
+      "VAN": "van"
+    },
+    "col": {
+      "warehouse": "Store",
+      "part": "Part",
+      "qty": "On the shelf",
+      "min": "Minimum",
+      "cost": "Unit cost"
+    },
+    "op": {
+      "receive": "Receipt",
+      "move": "Transfer",
+      "writeOff": "Write off",
+      "returnFaulty": "Return faulty",
+      "stocktake": "Record a count",
+      "setMin": "Set the minimum"
+    },
+    "field": {
+      "part": "Part",
+      "warehouse": "From store",
+      "toWarehouse": "To store",
+      "qty": "Quantity",
+      "note": "Note",
+      "counted": "Counted",
+      "minQty": "Minimum",
+      "serial": "Serial no.",
+      "warehouseName": "Name",
+      "kind": "Kind",
+      "city": "City",
+      "keeper": "Keeper",
+      "sku": "Code",
+      "partName": "Name",
+      "manufacturer": "Maker",
+      "models": "Fits",
+      "unitCost": "Unit cost",
+      "currency": "Currency",
+      "serialTracked": "Tracked by serial"
     }
   }
 }

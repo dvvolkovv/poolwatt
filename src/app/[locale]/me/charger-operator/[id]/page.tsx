@@ -42,6 +42,7 @@ export default async function ChargerOperatorCabinetPage({ params, searchParams 
   const tBookings = await getTranslations("bookingsReport");
   const tTemplates = await getTranslations("templates");
   const tPipeline = await getTranslations("pipeline");
+  const tWarehouse = await getTranslations("warehouse");
 
   return (
     <div className="max-w-3xl space-y-10">
@@ -129,6 +130,14 @@ export default async function ChargerOperatorCabinetPage({ params, searchParams 
             className="hover:underline"
           >
             {tPipeline("cabinetLink")} →
+          </Link>
+          {" · "}
+          <Link
+            href={`/${locale}/me/charger-operator/${op.id}/warehouse`}
+            prefetch={false}
+            className="hover:underline"
+          >
+            {tWarehouse("cabinetLink")} →
           </Link>
         </p>
         {claimed === "1" && (

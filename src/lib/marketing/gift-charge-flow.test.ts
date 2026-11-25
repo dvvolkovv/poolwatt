@@ -67,9 +67,23 @@ async function fund(userId: string, amount: number) {
   return wallet;
 }
 
+/**
+ * Upsert, not create: a charge in the previous test hands its payment to
+ * `awardAfterCharge` without awaiting it, so the campaign can issue a grant
+ * of its own a moment after this file's cleanup ran. "One gift per client" is
+ * a unique key, and losing that race is the rule working — not a reason for
+ * the next test to fail.
+ */
 async function giveGift(amountKwh: number) {
-  return prisma.promoGrant.create({
-    data: {
+  return prisma.promoGrant.upsert({
+    where: { campaignId_userId: { campaignId, userId: driverUserId } },
+    update: {
+      amountKwh: new Prisma.Decimal(amountKwh),
+      usedKwh: new Prisma.Decimal(0),
+      status: "ACTIVE",
+      expiresAt: new Date(Date.now() + 30 * 86_400_000),
+    },
+    create: {
       campaignId,
       userId: driverUserId,
       operatorId,

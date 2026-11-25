@@ -14,7 +14,7 @@ import {
   readMyCooperatives,
 } from "./coop-service";
 
-const PREFIX = "test_cooppg_";
+const PREFIX = "test_coopboard_";
 const ZONE_CODE = "TESTCOOPPG";
 
 let zoneId: string;
@@ -36,6 +36,10 @@ async function wipe() {
   await prisma.coopMember.deleteMany({ where: { coop: { name: { startsWith: PREFIX } } } });
   await prisma.cooperative.deleteMany({ where: { name: { startsWith: PREFIX } } });
   await prisma.company.deleteMany({ where: { regNumber: `${PREFIX}reg` } });
+}
+
+/** The zone outlives the per-test cooperatives; dropped once at the end. */
+async function dropZone() {
   await prisma.gridZone.deleteMany({ where: { code: ZONE_CODE } });
 }
 
@@ -61,10 +65,22 @@ beforeAll(async () => {
   strangerUserId = await user("stranger");
   adminUserId = await user("admin");
 
+});
+
+/**
+ * A fresh cooperative for every test.
+ *
+ * A fixture that lives for the whole file has to survive every other suite
+ * running beside it for twenty seconds; one that lives for a single test does
+ * not. Cheap, and it took a flake to learn.
+ */
+beforeEach(async () => {
+  await wipe();
+
   companyId = (
     await prisma.company.create({
       data: {
-        legalName: "Coop page company",
+        legalName: `${PREFIX}company`,
         country: "SK",
         regNumber: `${PREFIX}reg`,
         type: "COOPERATIVE",
@@ -101,15 +117,9 @@ beforeAll(async () => {
   });
 });
 
-beforeEach(async () => {
-  await prisma.coopBallot.deleteMany({ where: { vote: { coopId } } });
-  await prisma.coopVote.deleteMany({ where: { coopId } });
-  await prisma.coopPayoutAllocation.deleteMany({ where: { payout: { coopId } } });
-  await prisma.coopPayout.deleteMany({ where: { coopId } });
-});
-
 afterAll(async () => {
   await wipe();
+  await dropZone();
   await prisma.user.deleteMany({ where: { username: { startsWith: PREFIX } } });
 });
 

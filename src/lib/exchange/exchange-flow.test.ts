@@ -114,6 +114,7 @@ afterAll(async () => {
   await prisma.company.deleteMany({ where: { legalName: { startsWith: PREFIX } } });
   await prisma.auditLog.deleteMany({ where: { entity: "GridZone", entityId: zoneId } });
   await prisma.gridZone.delete({ where: { id: zoneId } });
+  await prisma.feePlan.deleteMany({ where: { name: { startsWith: PREFIX } } });
 });
 
 describe("listing — ТЗ §4, US-01, US-02, US-13", () => {
@@ -127,6 +128,20 @@ describe("listing — ТЗ §4, US-01, US-02, US-13", () => {
     });
     companyId = company.id;
     expect(company.kybStatus).toBe("PENDING");
+
+    // §53 — the commission this file asserts in money has to be this file's
+    // own, not whatever plan another suite left in the platform-wide table.
+    // Pinning it is the same isolation as `assetIds` elsewhere.
+    const plan = await prisma.feePlan.upsert({
+      where: { name: `${PREFIX}plan` },
+      update: { tradeFeePct: new Prisma.Decimal(1), chargeFeePct: new Prisma.Decimal(2) },
+      create: {
+        name: `${PREFIX}plan`,
+        tradeFeePct: new Prisma.Decimal(1),
+        chargeFeePct: new Prisma.Decimal(2),
+      },
+    });
+    await prisma.company.update({ where: { id: companyId }, data: { feePlanId: plan.id } });
 
     const application = await submitApplication({
       companyId,

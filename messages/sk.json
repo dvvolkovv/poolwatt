@@ -1420,6 +1420,11 @@
       "subject": "Vaša rezervácia na {point} sa chýli ku koncu",
       "body": "Okno rezervácie na {point} sa zatvára za {minutes} min. Ak nestíhate, môžete ju predĺžiť.",
       "cta": "Predĺžiť rezerváciu"
+    },
+    "restock": {
+      "subject": "{part} sa na sklade {warehouse} chýli ku koncu",
+      "body": "Na sklade {warehouse} zostalo {qty} ks {part} ({sku}) — pod minimom {min}. Vytvorená je žiadanka na {suggested} ks.",
+      "cta": "Otvoriť sklad"
     }
   },
   "points": {
@@ -2193,6 +2198,70 @@
       "INSTALLATION": "Montáž",
       "COMMISSIONING": "Pripojenie a test",
       "PUBLISHED": "Zverejnenie"
+    }
+  },
+  "warehouse": {
+    "eyebrow": "Náhradné diely",
+    "title": "Sklad",
+    "intro": "Zostatok je súčet pohybov — nič sa naň nezapisuje ručne. Nastavte minimum a žiadanka vznikne v okamihu, keď ho zostatok prekročí, a správca skladu dostane list.",
+    "requests": "Dochádza",
+    "levels": "Zostatky",
+    "operations": "Operácie",
+    "operationsHint": "Príjem, presun, odpis, vrátenie pokazeného dielu a inventúra. Odpis sa pýta na dôvod; inventúra sa zapisuje ako nájdený rozdiel.",
+    "warehouses": "Sklady",
+    "parts": "Sortiment",
+    "partsHint": "Kompatibilné modely oddelené čiarkou. Cena za jednotku ide s každým výdajom, aby bola cena servisu skutočná.",
+    "noStock": "Na poličkách zatiaľ nič nie je.",
+    "left": "zostáva",
+    "minimum": "minimum",
+    "order": "objednať",
+    "notTold": "zatiaľ nikomu oznámené",
+    "markOrdered": "Objednané",
+    "markClosed": "Zavrieť",
+    "saveWarehouse": "Uložiť sklad",
+    "savePart": "Uložiť diel",
+    "nobody": "nikto",
+    "cabinetLink": "Sklad",
+    "kind": {
+      "CENTRAL": "centrálny",
+      "REGIONAL": "regionálny",
+      "VAN": "vozidlo"
+    },
+    "col": {
+      "warehouse": "Sklad",
+      "part": "Diel",
+      "qty": "Na polici",
+      "min": "Minimum",
+      "cost": "Cena/ks"
+    },
+    "op": {
+      "receive": "Príjem",
+      "move": "Presunúť",
+      "writeOff": "Odpísať",
+      "returnFaulty": "Vrátiť pokazené",
+      "stocktake": "Zapísať inventúru",
+      "setMin": "Nastaviť minimum"
+    },
+    "field": {
+      "part": "Diel",
+      "warehouse": "Zo skladu",
+      "toWarehouse": "Na sklad",
+      "qty": "Množstvo",
+      "note": "Poznámka",
+      "counted": "Prepočítané",
+      "minQty": "Minimum",
+      "serial": "Sériové č.",
+      "warehouseName": "Názov",
+      "kind": "Typ",
+      "city": "Mesto",
+      "keeper": "Správca",
+      "sku": "Kód",
+      "partName": "Názov",
+      "manufacturer": "Výrobca",
+      "models": "Hodí sa k",
+      "unitCost": "Cena/ks",
+      "currency": "Valuta",
+      "serialTracked": "Podľa sériového čísla"
     }
   }
 }

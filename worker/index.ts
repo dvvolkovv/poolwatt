@@ -29,6 +29,7 @@ import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { expireGrants, sweepPendingAwards } from "@/lib/marketing/campaign-engine";
 import { notifyPendingGrants } from "@/lib/marketing/gift-mail";
+import { notifyPendingRestockRequests } from "@/lib/warehouse/restock-mail";
 import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/spot-service";
 import { intervalStartFor } from "@/lib/exchange/zone-service";
 import { startTelemetrySubscriber } from "./mqtt";
@@ -204,6 +205,16 @@ export async function runAlertSweep(now = new Date()): Promise<void> {
     if (told > 0) log(`reservations: ${told} notification(s) sent`);
   } catch (err) {
     console.error("[worker] reservation notification failed:", err);
+  }
+
+  // §49 / US-50 — a store below its minimum raised a request; tell whoever
+  // keeps it. The request itself was written in the same transaction as the
+  // movement that caused it, so nothing here can lose one.
+  try {
+    const told = await notifyPendingRestockRequests();
+    if (told > 0) log(`stock: ${told} restock notification(s) sent`);
+  } catch (err) {
+    console.error("[worker] restock notification failed:", err);
   }
 
   // §32.4 / US-31 — ten minutes before the window closes, offer to extend.
