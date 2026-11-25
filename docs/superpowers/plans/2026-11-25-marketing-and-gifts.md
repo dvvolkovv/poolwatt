@@ -51,12 +51,12 @@
 
 **Файлы:** изменить `prisma/schema.prisma`, миграция.
 
-- [ ] `MarketingContent`, `MarketingAsset`, перечисления
+- [x] `MarketingContent`, `MarketingAsset`, перечисления
       `MarketingContentType`, `MarketingAudience`, `MarketingStatus`;
       связи у `ChargerOperator` и `GridZone`.
-- [ ] `npx prisma migrate dev --name marketing_content` против `poolwatt_test`,
+- [x] `npx prisma migrate dev --name marketing_content` против `poolwatt_test`,
       затем `migrate deploy` против рабочей базы.
-- [ ] Коммит.
+- [x] Коммит.
 
 ### Задача 4. Видимость и выбор — чистые функции
 

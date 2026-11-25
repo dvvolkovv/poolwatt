@@ -220,13 +220,13 @@ model ChargerOperator {
   employees  Employee[]
   workOrders WorkOrder[]
   tickets    Ticket[]
+  marketing  MarketingContent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([claimedById])
 }
-
 
 // ---------------------------------------------------------------------------
 // §28 "Карточка пункта" / §29 lifecycle / §31 (AcceptancePoint, Connector,
@@ -262,11 +262,11 @@ model AcceptancePoint {
 
   // §28 "Режим работы". `openHours` is a per-weekday schedule kept as JSON:
   // seven rows of {from,to} or null for a closed day.
-  open24       Boolean   @default(false)
-  openHours    Json?
-  holidayNote  String?
-  closedFrom   DateTime?
-  closedUntil  DateTime?
+  open24      Boolean   @default(false)
+  openHours   Json?
+  holidayNote String?
+  closedFrom  DateTime?
+  closedUntil DateTime?
 
   // §28 "Способы оплаты" and "Удобства" — small closed vocabularies, kept as
   // string arrays rather than join tables: nothing ever queries one alone.
@@ -295,10 +295,10 @@ model AcceptancePoint {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  connectors PointConnector[]
-  tariffs    PointTariff[]
-  photos     PointPhoto[]
-  apiKeys    PointApiKey[]
+  connectors   PointConnector[]
+  tariffs      PointTariff[]
+  photos       PointPhoto[]
+  apiKeys      PointApiKey[]
   workOrders   WorkOrder[]
   tickets      Ticket[]
   reservations Reservation[]
@@ -310,15 +310,15 @@ model AcceptancePoint {
 }
 
 model PointConnector {
-  id        String           @id @default(cuid())
+  id        String          @id @default(cuid())
   pointId   String
-  point     AcceptancePoint  @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  point     AcceptancePoint @relation(fields: [pointId], references: [id], onDelete: Cascade)
   type      EvConnectorType
-  powerKw   Decimal          @db.Decimal(8, 2)
-  currentAc Boolean          @default(true)
-  quantity  Int              @default(1)
+  powerKw   Decimal         @db.Decimal(8, 2)
+  currentAc Boolean         @default(true)
+  quantity  Int             @default(1)
   // §27 "свободен, занят, не работает" — UNKNOWN until the equipment reports.
-  status    ConnectorStatus  @default(UNKNOWN)
+  status    ConnectorStatus @default(UNKNOWN)
   statusAt  DateTime?
 
   tickets      Ticket[]
@@ -419,7 +419,6 @@ enum ConnectorStatus {
   UNKNOWN
 }
 
-
 // ---------------------------------------------------------------------------
 // §47 "Сотрудники и роли" / US-47. Permissions are granted over a whole
 // network or over named points — "сотрудник видит только разрешённые пункты
@@ -427,16 +426,16 @@ enum ConnectorStatus {
 // ---------------------------------------------------------------------------
 
 model StaffRole {
-  id         String          @id @default(cuid())
-  operatorId String
-  operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  name       String
+  id          String          @id @default(cuid())
+  operatorId  String
+  operator    ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  name        String
   // Closed vocabulary; see PERMISSIONS in src/lib/staff/staff-service.ts.
   permissions String[]
   // True for the eight roles of §47, which a network gets for free and
   // cannot delete out from under its staff.
-  builtIn    Boolean         @default(false)
-  createdAt  DateTime        @default(now())
+  builtIn     Boolean         @default(false)
+  createdAt   DateTime        @default(now())
 
   employees Employee[]
 
@@ -465,38 +464,38 @@ model Employee {
 
 // §48 "Наряды и задачи" / US-48, US-54.
 model WorkOrder {
-  id String @id @default(cuid())
+  id             String            @id @default(cuid())
   // An order belongs to whoever answers for the equipment: a charging
   // network for a point, a producer company for a generation asset. Exactly
   // one of the two is set.
-  operatorId String?
-  operator   ChargerOperator? @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  companyId  String?
-  company    Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  pointId    String?
-  point      AcceptancePoint? @relation(fields: [pointId], references: [id], onDelete: SetNull)
-  assetId    String?
-  asset      Asset?           @relation(fields: [assetId], references: [id], onDelete: SetNull)
-  type        WorkOrderType
-  priority    WorkOrderPriority @default(NORMAL)
-  status      WorkOrderStatus   @default(NEW)
-  title       String
-  description String            @db.Text
+  operatorId     String?
+  operator       ChargerOperator?  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  companyId      String?
+  company        Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  pointId        String?
+  point          AcceptancePoint?  @relation(fields: [pointId], references: [id], onDelete: SetNull)
+  assetId        String?
+  asset          Asset?            @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  type           WorkOrderType
+  priority       WorkOrderPriority @default(NORMAL)
+  status         WorkOrderStatus   @default(NEW)
+  title          String
+  description    String            @db.Text
   // §48 — what the engineer should bring. Strings until the warehouse of
   // US-49/US-50 exists.
-  partsNeeded String[]
-  photos      String[]
-  assigneeId  String?
-  assignee    Employee?         @relation("WorkOrderAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  partsNeeded    String[]
+  photos         String[]
+  assigneeId     String?
+  assignee       Employee?         @relation("WorkOrderAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
   // What produced it, so the same fault never makes two orders.
-  sourceAlertId  String?     @unique
-  sourceAlert    AssetAlert? @relation("AlertWorkOrder", fields: [sourceAlertId], references: [id], onDelete: SetNull)
-  sourceTicketId String?     @unique
-  notifiedAt  DateTime?
-  report      String?           @db.Text
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  closedAt    DateTime?
+  sourceAlertId  String?           @unique
+  sourceAlert    AssetAlert?       @relation("AlertWorkOrder", fields: [sourceAlertId], references: [id], onDelete: SetNull)
+  sourceTicketId String?           @unique
+  notifiedAt     DateTime?
+  report         String?           @db.Text
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  closedAt       DateTime?
 
   ticket Ticket? @relation("TicketWorkOrder")
 
@@ -507,29 +506,29 @@ model WorkOrder {
 
 // §51 "Сообщение о поломке от клиента" / US-52, US-54.
 model Ticket {
-  id          String           @id @default(cuid())
-  operatorId  String
-  operator    ChargerOperator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  pointId     String?
-  point       AcceptancePoint? @relation(fields: [pointId], references: [id], onDelete: SetNull)
-  connectorId String?
-  connector   PointConnector?  @relation(fields: [connectorId], references: [id], onDelete: SetNull)
-  reporterId  String?
-  reporter    User?            @relation("TicketReporter", fields: [reporterId], references: [id], onDelete: SetNull)
-  source      String           @default("app")
-  problemType TicketProblemType
-  comment     String?          @db.Text
-  photos      String[]
-  priority    WorkOrderPriority @default(NORMAL)
-  status      TicketStatus     @default(OPEN)
+  id           String            @id @default(cuid())
+  operatorId   String
+  operator     ChargerOperator   @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  pointId      String?
+  point        AcceptancePoint?  @relation(fields: [pointId], references: [id], onDelete: SetNull)
+  connectorId  String?
+  connector    PointConnector?   @relation(fields: [connectorId], references: [id], onDelete: SetNull)
+  reporterId   String?
+  reporter     User?             @relation("TicketReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  source       String            @default("app")
+  problemType  TicketProblemType
+  comment      String?           @db.Text
+  photos       String[]
+  priority     WorkOrderPriority @default(NORMAL)
+  status       TicketStatus      @default(OPEN)
   // §48 "SLA по приоритету": when a first response is due.
-  respondBy   DateTime?
-  workOrderId String?          @unique
-  workOrder   WorkOrder?       @relation("TicketWorkOrder", fields: [workOrderId], references: [id], onDelete: SetNull)
+  respondBy    DateTime?
+  workOrderId  String?           @unique
+  workOrder    WorkOrder?        @relation("TicketWorkOrder", fields: [workOrderId], references: [id], onDelete: SetNull)
   compensation String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  closedAt    DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  closedAt     DateTime?
 
   @@index([operatorId, status])
   @@index([reporterId])
@@ -579,7 +578,6 @@ enum TicketStatus {
   CLOSED
 }
 
-
 // §33 "Настройки владельца станции" / US-32. One row per point; a booking
 // copies the numbers it was confirmed under, so a change here never moves a
 // booking that already exists.
@@ -588,24 +586,24 @@ model ReservationPolicy {
   pointId String          @unique
   point   AcceptancePoint @relation(fields: [pointId], references: [id], onDelete: Cascade)
 
-  enabled            Boolean  @default(false)
+  enabled              Boolean  @default(false)
   // Which connectors may be booked; empty means all of them.
   bookableConnectorIds String[]
   // §33 "Резерв без брони" — always free for whoever just turns up.
-  walkUpConnectors   Int      @default(1)
-  feeFiat            Decimal  @default(0) @db.Decimal(10, 2)
-  feeTokens          Decimal  @default(0) @db.Decimal(10, 3)
-  currency           String   @default("EUR")
+  walkUpConnectors     Int      @default(1)
+  feeFiat              Decimal  @default(0) @db.Decimal(10, 2)
+  feeTokens            Decimal  @default(0) @db.Decimal(10, 3)
+  currency             String   @default("EUR")
   // §33 "Зачёт платы" — does the booking fee count towards the charge.
-  feeCountsTowards   Boolean  @default(true)
-  guaranteeFiat      Decimal  @default(0) @db.Decimal(10, 2)
-  noShowPenaltyFiat  Decimal  @default(0) @db.Decimal(10, 2)
-  waitMinutes        Int      @default(15)
-  freeCancelMinutes  Int      @default(30)
-  maxAheadHours      Int      @default(24)
-  extendAllowed      Boolean  @default(true)
-  extendFeeFiat      Decimal  @default(0) @db.Decimal(10, 2)
-  coopFree           Boolean  @default(false)
+  feeCountsTowards     Boolean  @default(true)
+  guaranteeFiat        Decimal  @default(0) @db.Decimal(10, 2)
+  noShowPenaltyFiat    Decimal  @default(0) @db.Decimal(10, 2)
+  waitMinutes          Int      @default(15)
+  freeCancelMinutes    Int      @default(30)
+  maxAheadHours        Int      @default(24)
+  extendAllowed        Boolean  @default(true)
+  extendFeeFiat        Decimal  @default(0) @db.Decimal(10, 2)
+  coopFree             Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -614,15 +612,15 @@ model ReservationPolicy {
 // §35 Reservation. The policy numbers are copied in, not referenced: US-32
 // requires a change to leave existing bookings alone.
 model Reservation {
-  id          String            @id @default(cuid())
+  id          String          @id @default(cuid())
   userId      String
-  user        User              @relation("ReservationDriver", fields: [userId], references: [id], onDelete: Cascade)
+  user        User            @relation("ReservationDriver", fields: [userId], references: [id], onDelete: Cascade)
   pointId     String
-  point       AcceptancePoint   @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  point       AcceptancePoint @relation(fields: [pointId], references: [id], onDelete: Cascade)
   connectorId String
-  connector   PointConnector    @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+  connector   PointConnector  @relation(fields: [connectorId], references: [id], onDelete: Cascade)
   walletId    String
-  wallet      Wallet            @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  wallet      Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
 
   eta         DateTime
   windowStart DateTime
@@ -1378,6 +1376,7 @@ model GridZone {
   spotPrices           ZoneSpotPrice[]
   roamingAsHomeZone    RoamingAgreement[] @relation("RoamingHomeZone")
   roamingAsVisitedZone RoamingAgreement[] @relation("RoamingVisitedZone")
+  marketingContents    MarketingContent[]
 }
 
 // §6, §16.5 — the external spot reference per interval, kept as history.
@@ -1520,7 +1519,7 @@ model Asset {
   readings   MeterReading[]
   alerts     AssetAlert[]
   workOrders WorkOrder[]
-  tokens   EnergyToken[]
+  tokens     EnergyToken[]
 
   @@index([companyId, status])
   @@index([gridZoneId, status])
@@ -1529,20 +1528,20 @@ model Asset {
 // Telemetry credential for one asset. Mirrors ChargerOperatorApiKey: the
 // plaintext is shown once, only the SHA-256 is stored.
 model AssetApiKey {
-  id         String    @id @default(cuid())
-  assetId    String
-  asset      Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  label      String?
-  tokenHash  String    @unique
-  prefix     String // first chars of the plaintext, for display
+  id               String    @id @default(cuid())
+  assetId          String
+  asset            Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  label            String?
+  tokenHash        String    @unique
+  prefix           String // first chars of the plaintext, for display
   // §15 HMAC signing secret, sealed with API_KEY_ENC_KEY (src/lib/crypto-box.ts).
   // Null on keys issued before signing existed, or where no key is configured:
   // those keep working unsigned until they are rotated.
   signingSecretEnc String?
   signingSecretIv  String?
-  createdAt  DateTime  @default(now())
-  lastUsedAt DateTime?
-  revokedAt  DateTime?
+  createdAt        DateTime  @default(now())
+  lastUsedAt       DateTime?
+  revokedAt        DateTime?
 
   @@index([assetId])
 }
@@ -1551,12 +1550,12 @@ model AssetApiKey {
 // one row per unresolved condition, so a flapping link does not mail the
 // engineer every minute.
 model AssetAlert {
-  id             String          @id @default(cuid())
+  id             String         @id @default(cuid())
   assetId        String
-  asset          Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  asset          Asset          @relation(fields: [assetId], references: [id], onDelete: Cascade)
   kind           AssetAlertKind
   note           String
-  occurredAt     DateTime        @default(now())
+  occurredAt     DateTime       @default(now())
   // When the engineer was told. Null means the notification still owes.
   notifiedAt     DateTime?
   resolvedAt     DateTime?
@@ -1721,11 +1720,11 @@ model Trade {
 
 // §8 Payment — the charge waterfall: balance first, shortfall bought at market.
 model Payment {
-  id             String        @id @default(cuid())
+  id             String           @id @default(cuid())
   walletId       String
-  wallet         Wallet        @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  wallet         Wallet           @relation(fields: [walletId], references: [id], onDelete: Cascade)
   zoneId         String
-  zone           GridZone      @relation(fields: [zoneId], references: [id])
+  zone           GridZone         @relation(fields: [zoneId], references: [id])
   // Free-form equipment identifier the station reports.
   chargePointId  String?
   // §46 "Пункт, разъём, дата и время начала и конца зарядки" — the real
@@ -1737,19 +1736,19 @@ model Payment {
   connector      PointConnector?  @relation(fields: [connectorId], references: [id], onDelete: SetNull)
   startedAt      DateTime?
   endedAt        DateTime?
-  requestedKwh   Decimal       @db.Decimal(18, 3)
-  kwhFromBalance Decimal       @default(0) @db.Decimal(18, 3)
-  kwhBought      Decimal       @default(0) @db.Decimal(18, 3)
+  requestedKwh   Decimal          @db.Decimal(18, 3)
+  kwhFromBalance Decimal          @default(0) @db.Decimal(18, 3)
+  kwhBought      Decimal          @default(0) @db.Decimal(18, 3)
   // Authorized with the §16.6 buffer; captured at the real execution price.
-  authorizedFiat Decimal       @default(0) @db.Decimal(18, 2)
-  amountFiat     Decimal       @default(0) @db.Decimal(18, 2)
-  status         PaymentStatus @default(INITIATED)
+  authorizedFiat Decimal          @default(0) @db.Decimal(18, 2)
+  amountFiat     Decimal          @default(0) @db.Decimal(18, 2)
+  status         PaymentStatus    @default(INITIATED)
   failureReason  String?
   cardId         String?
-  marketOrderId  String?       @unique
-  marketOrder    Order?        @relation("PaymentOrder", fields: [marketOrderId], references: [id], onDelete: SetNull)
-  idempotencyKey String?       @unique
-  createdAt      DateTime      @default(now())
+  marketOrderId  String?          @unique
+  marketOrder    Order?           @relation("PaymentOrder", fields: [marketOrderId], references: [id], onDelete: SetNull)
+  idempotencyKey String?          @unique
+  createdAt      DateTime         @default(now())
   authorizedAt   DateTime?
   capturedAt     DateTime?
 
@@ -1762,33 +1761,33 @@ model Payment {
 
 // §13 / §46 Receipt — issued for a payment or a trade; lists the burned batches.
 model Receipt {
-  id             String       @id @default(cuid())
+  id               String       @id @default(cuid())
   // Poolwatt's own document number, PW-<year>-<6 digits>, from
   // receipt_number_seq. Not a tax invoice number: numbering under the law of
   // the point's country is part of the tax opinion the owner still owes.
-  number         String?      @unique
+  number           String?      @unique
   // §46 "QR-код для проверки чека" — what the QR carries. Unguessable,
   // because anyone can photograph a printed receipt.
-  verifyCode     String?      @unique
-  paymentId      String?      @unique
-  payment        Payment?     @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  tradeId        String?      @unique
-  trade          Trade?       @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  verifyCode       String?      @unique
+  paymentId        String?      @unique
+  payment          Payment?     @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  tradeId          String?      @unique
+  trade            Trade?       @relation(fields: [tradeId], references: [id], onDelete: Cascade)
   // §35 US-33 — a no-show leaves a receipt like any other charge.
-  reservationId  String?      @unique
-  reservation    Reservation? @relation(fields: [reservationId], references: [id], onDelete: Cascade)
-  burnedTokenIds String[]
-  totalKwh       Decimal  @default(0) @db.Decimal(18, 3)
-  totalFiat      Decimal  @default(0) @db.Decimal(18, 2)
-  currency       String   @default("EUR")
+  reservationId    String?      @unique
+  reservation      Reservation? @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  burnedTokenIds   String[]
+  totalKwh         Decimal      @default(0) @db.Decimal(18, 3)
+  totalFiat        Decimal      @default(0) @db.Decimal(18, 2)
+  currency         String       @default("EUR")
   // §46 "Состав чека" — per-line detail kept verbatim for accounting export.
-  breakdown      Json     @default("{}")
-  issuedAt       DateTime @default(now())
+  breakdown        Json         @default("{}")
+  issuedAt         DateTime     @default(now())
   // §46 "Доставка чека". Null means nobody has been told yet, and the worker
   // sweep will pick it up — that is what makes "within a minute" true even
   // when the inline attempt fails.
   deliveredAt      DateTime?
-  deliveryChannels String[]  @default([])
+  deliveryChannels String[]     @default([])
   deliveryError    String?
 
   @@index([issuedAt])
@@ -1863,21 +1862,21 @@ model SettlementEntry {
 
 // §24 — kWh handoff between members inside one zone.
 model TokenTransfer {
-  id           String              @id @default(cuid())
-  zoneId       String
-  zone         GridZone            @relation(fields: [zoneId], references: [id])
-  fromWalletId String
-  fromWallet   Wallet              @relation("TransferFrom", fields: [fromWalletId], references: [id], onDelete: Cascade)
-  toWalletId   String
-  toWallet     Wallet              @relation("TransferTo", fields: [toWalletId], references: [id], onDelete: Cascade)
-  amountKwh    Decimal             @db.Decimal(18, 3)
-  note         String?
-  status       TokenTransferStatus @default(CONFIRMED)
+  id             String              @id @default(cuid())
+  zoneId         String
+  zone           GridZone            @relation(fields: [zoneId], references: [id])
+  fromWalletId   String
+  fromWallet     Wallet              @relation("TransferFrom", fields: [fromWalletId], references: [id], onDelete: Cascade)
+  toWalletId     String
+  toWallet       Wallet              @relation("TransferTo", fields: [toWalletId], references: [id], onDelete: Cascade)
+  amountKwh      Decimal             @db.Decimal(18, 3)
+  note           String?
+  status         TokenTransferStatus @default(CONFIRMED)
   // §15, same second line of defence as Order and Payment carry.
-  idempotencyKey String?           @unique
-  createdAt    DateTime            @default(now())
-  confirmedAt  DateTime?
-  cancelledAt  DateTime?
+  idempotencyKey String?             @unique
+  createdAt      DateTime            @default(now())
+  confirmedAt    DateTime?
+  cancelledAt    DateTime?
 
   @@index([fromWalletId, createdAt])
   @@index([toWalletId, createdAt])
@@ -2067,15 +2066,15 @@ model RoamingAgreement {
 // retried payment or order cannot become a second one. `status = 0` marks a
 // request still in flight; see src/lib/exchange/idempotency.ts.
 model IdempotencyRecord {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   endpoint    String
   key         String
   // The caller: user id for session endpoints, api key id for equipment.
   userKey     String
   requestHash String
-  status      Int      @default(0)
-  response    Json     @default("{}")
-  createdAt   DateTime @default(now())
+  status      Int       @default(0)
+  response    Json      @default("{}")
+  createdAt   DateTime  @default(now())
   completedAt DateTime?
 
   @@unique([endpoint, userKey, key])
@@ -2098,4 +2097,105 @@ model ReconciliationRun {
   ok         Boolean   @default(true)
 
   @@index([startedAt])
+}
+
+// ---------------------------------------------------------------------------
+// §41 "Контент карточки и навигатора" / US-40. A partner's own marketing in
+// the cards of their own points: a banner, a video, a gallery, a promotion, a
+// news line, a link. Moderated by the Poolwatt operator before it is public,
+// and shown only inside its own schedule.
+// ---------------------------------------------------------------------------
+
+model MarketingContent {
+  id         String          @id @default(cuid())
+  operatorId String
+  operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  // §41 "в карточках своих пунктов" — empty means the whole network.
+  pointIds   String[]        @default([])
+
+  type    MarketingContentType
+  title   String
+  body    String?              @db.Text
+  linkUrl String?
+
+  // §41 "Где показывается". Free strings over a closed vocabulary, the same
+  // choice `AcceptancePoint.paymentMethods` makes: nothing ever queries one
+  // placement alone.
+  placements String[]          @default([])
+  audience   MarketingAudience @default(ALL)
+
+  // §41 "Таргетинг … по зоне и радиусу".
+  zoneId   String?
+  zone     GridZone? @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  radiusKm Int?
+
+  // §41 "Расписание: дата начала и конца, дни недели, часы показа".
+  // `weekdays` holds 0 (Sunday) … 6; empty means every day. The hour window
+  // is half-open and may cross midnight (22 → 6).
+  startsAt DateTime?
+  endsAt   DateTime?
+  weekdays Int[]     @default([])
+  hourFrom Int?
+  hourTo   Int?
+
+  // §41 "Модерация оператором Poolwatt перед публикацией" — the same trail a
+  // point card leaves.
+  status       MarketingStatus @default(DRAFT)
+  submittedAt  DateTime?
+  reviewedAt   DateTime?
+  reviewedById String?
+  reviewNote   String?         @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assets MarketingAsset[]
+
+  @@index([operatorId, status])
+  @@index([status, startsAt, endsAt])
+}
+
+// The files behind one piece of content — same shape as PointPhoto, for the
+// same reason: the bytes are on disk, the row says what they are.
+model MarketingAsset {
+  id          String           @id @default(cuid())
+  contentId   String
+  content     MarketingContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  storageKey  String           @unique
+  contentType String
+  sizeBytes   Int
+  // Milliseconds, for a video. §41 caps it at sixty seconds.
+  durationMs  Int?
+  position    Int              @default(0)
+  uploadedAt  DateTime         @default(now())
+
+  @@index([contentId, position])
+}
+
+enum MarketingContentType {
+  BANNER
+  VIDEO
+  GALLERY
+  PROMO
+  NEWS
+  LINK
+}
+
+// §41 "Таргетинг". CARD_HOLDERS never matches anybody: Poolwatt white label
+// cards do not exist yet (§19 waits for the EMI), and an offer aimed at
+// holders of a card nobody can have is an advertisement that misleads — the
+// one thing §41 forbids outright.
+enum MarketingAudience {
+  ALL
+  NEWCOMERS
+  REGULARS
+  COOP_MEMBERS
+  CARD_HOLDERS
+}
+
+enum MarketingStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  REJECTED
 }
