@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { roamingQuote } from "./roaming";
+import { roamingAffordableKwh, roamingDebit, roamingQuote } from "./roaming";
 
 const RATES = { homeSpotPrice: 0.1, visitedSpotPrice: 0.2, feePct: 0 };
 
@@ -58,5 +58,60 @@ describe("roamingQuote — ТЗ §8 'Роуминг', US-11", () => {
   it("has no quote for a non-positive amount", () => {
     expect(roamingQuote({ amountKwh: 0, ...RATES })).toBeNull();
     expect(roamingQuote({ amountKwh: -5, ...RATES })).toBeNull();
+  });
+});
+
+describe("roamingDebit — what a roaming session takes off the home balance", () => {
+  it("converts and adds the clearing fee, both rounded up", () => {
+    const debit = roamingDebit(10, 2, 5);
+    expect(debit.convertedKwh).toBe(20);
+    expect(debit.feeKwh).toBe(1);
+    expect(debit.totalKwh).toBe(21);
+  });
+
+  it("has no fee when the corridor charges none", () => {
+    expect(roamingDebit(10, 1.5, 0)).toEqual({ convertedKwh: 15, feeKwh: 0, totalKwh: 15 });
+  });
+
+  it("never under-debits on the 0.001 grid", () => {
+    // 1 kWh at 1.3333 is 1.3333 — a debit rounded down would hand out energy
+    // the clearing partner is never paid for, once per session.
+    expect(roamingDebit(1, 1.3333, 0).totalKwh).toBe(1.334);
+    // And the fee rounds up on its own, not together with the conversion.
+    expect(roamingDebit(1, 1, 1)).toEqual({ convertedKwh: 1, feeKwh: 0.01, totalKwh: 1.01 });
+  });
+
+  it("is zero for a non-positive amount or an unusable rate", () => {
+    expect(roamingDebit(0, 2, 5).totalKwh).toBe(0);
+    expect(roamingDebit(-3, 2, 5).totalKwh).toBe(0);
+    expect(roamingDebit(10, 0, 5).totalKwh).toBe(0);
+  });
+});
+
+describe("roamingAffordableKwh — visited kWh a home balance can serve", () => {
+  it("is the balance divided by the rate and the fee", () => {
+    expect(roamingAffordableKwh(21, 2, 5)).toBe(10);
+    expect(roamingAffordableKwh(30, 2, 5)).toBe(14.285);
+  });
+
+  it("is the balance itself in a one-to-one corridor without a fee", () => {
+    expect(roamingAffordableKwh(7.5, 1, 0)).toBe(7.5);
+  });
+
+  it("never names an amount whose rounded-up debit exceeds the balance", () => {
+    for (const balance of [0.001, 0.005, 1, 1.333, 7.777, 12.5, 100.004]) {
+      for (const rate of [0.5, 1, 1.3333, 2, 3.75]) {
+        for (const feePct of [0, 1, 5, 7.5]) {
+          const affordable = roamingAffordableKwh(balance, rate, feePct);
+          expect(roamingDebit(affordable, rate, feePct).totalKwh).toBeLessThanOrEqual(balance);
+        }
+      }
+    }
+  });
+
+  it("is zero without a balance or without a usable rate", () => {
+    expect(roamingAffordableKwh(0, 2, 5)).toBe(0);
+    expect(roamingAffordableKwh(-10, 2, 5)).toBe(0);
+    expect(roamingAffordableKwh(10, 0, 5)).toBe(0);
   });
 });

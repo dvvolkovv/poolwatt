@@ -9,7 +9,7 @@
 // Everything here is pure arithmetic — the quote the user confirms is computed
 // the same way the debit is later applied.
 
-import { ceilKwh, roundKwh, roundPrice } from "./precision";
+import { KWH_STEP, ceilKwh, floorKwh, roundKwh, roundPrice } from "./precision";
 
 export interface RoamingQuoteInput {
   /** kWh the user wants to consume in the visited zone. */
@@ -40,6 +40,62 @@ export interface RoamingQuote {
   shortfallKwh: number;
 }
 
+export interface RoamingDebit {
+  /** Home-zone kWh the conversion itself costs. */
+  convertedKwh: number;
+  /** Clearing partner's cut, also in home-zone kWh. */
+  feeKwh: number;
+  totalKwh: number;
+}
+
+/**
+ * What one roaming session takes off the home balance — the same arithmetic
+ * `roamingQuote` shows the user, with the zones and the balance left out, so
+ * the debit applied later cannot drift from the quote confirmed earlier.
+ *
+ * Both parts round *up* separately: rounding the sum would let a session
+ * whose conversion and fee each land mid-grid give away a thousandth the
+ * clearing partner is never paid for.
+ */
+export function roamingDebit(
+  amountKwh: number,
+  conversionRate: number,
+  feePct: number | null,
+): RoamingDebit {
+  const amount = roundKwh(amountKwh);
+  if (!(amount > 0) || !(conversionRate > 0)) {
+    return { convertedKwh: 0, feeKwh: 0, totalKwh: 0 };
+  }
+  const convertedKwh = ceilKwh(amount * conversionRate);
+  const feeKwh = feePct != null && feePct > 0 ? ceilKwh((convertedKwh * feePct) / 100) : 0;
+  return { convertedKwh, feeKwh, totalKwh: roundKwh(convertedKwh + feeKwh) };
+}
+
+/**
+ * The largest visited-zone amount a home balance can serve through the
+ * corridor — what the §16.6 waterfall may take from roaming before it starts
+ * buying energy for money.
+ *
+ * Division gives the answer, flooring keeps it on the grid, and the loop
+ * settles the last thousandth: `roamingDebit` rounds up twice, so the
+ * floored quotient can still cost one step more than the balance holds.
+ */
+export function roamingAffordableKwh(
+  balanceKwh: number,
+  conversionRate: number,
+  feePct: number | null,
+): number {
+  const balance = roundKwh(balanceKwh);
+  if (!(balance > 0) || !(conversionRate > 0)) return 0;
+
+  const fee = feePct != null && feePct > 0 ? feePct : 0;
+  let amount = floorKwh(balance / (conversionRate * (1 + fee / 100)));
+  while (amount > 0 && roamingDebit(amount, conversionRate, fee).totalKwh > balance) {
+    amount = roundKwh(amount - KWH_STEP);
+  }
+  return Math.max(0, amount);
+}
+
 /**
  * Price a roaming session, or return null when it cannot be priced: no spot
  * reference on either side (§16.7 sends the payment to the aggregator at the
@@ -57,9 +113,7 @@ export function roamingQuote(input: RoamingQuoteInput): RoamingQuote | null {
   if (!(homeSpotPrice > 0) || !(visitedSpotPrice > 0)) return null;
 
   const conversionRate = roundPrice(visitedSpotPrice / homeSpotPrice);
-  const convertedKwh = ceilKwh(amountKwh * conversionRate);
-  const feeKwh = feePct != null && feePct > 0 ? ceilKwh((convertedKwh * feePct) / 100) : 0;
-  const totalKwh = roundKwh(convertedKwh + feeKwh);
+  const { convertedKwh, feeKwh, totalKwh } = roamingDebit(amountKwh, conversionRate, feePct);
 
   const balanceKwh = Math.max(0, roundKwh(input.balanceKwh ?? 0));
   const coveredKwh = Math.min(totalKwh, balanceKwh);
