@@ -70,6 +70,8 @@ model User {
   contentViews      ContentEvent[]       @relation("ContentViewer")
   chargeSessions    ChargeSession[]      @relation("ChargeSessionDriver")
   pointReviews      PointReview[]
+  deviceKeys        DeviceKey[]
+  webauthnChallenges WebAuthnChallenge[]
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -2059,6 +2061,47 @@ model FeePlan {
   updatedAt       DateTime     @updatedAt
 
   companies Company[]
+}
+
+// §25 «Вход по биометрии, подтверждение платежей по SCA (PSD2)».
+//
+// Биометрия у нас — WebAuthn, а не плагин: плагин отдаёт веб-слою булево
+// «отпечаток совпал», и этому булеву нечем доверять — его выставляет тот же
+// код, который его и проверяет. SCA — это доказательство, которое проверяет
+// сторона, двигающая деньги, то есть сервер. Приватного ключа здесь нет и
+// быть не может: он не выходит из защищённого элемента телефона.
+model DeviceKey {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialId String    @unique
+  publicKey    Bytes
+  // Счётчик подписей аутентификатора: он идёт только вперёд, и это защита от
+  // повтора украденного ответа.
+  counter      BigInt    @default(0)
+  transports   String[]
+  name         String?
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+
+  @@index([userId])
+}
+
+// Одноразовый вызов. Живёт в базе, а не в сессии: сессия Auth.js — это
+// подписанная cookie, её нельзя «съесть» на сервере, а одноразовость вызова
+// и есть защита от повтора.
+model WebAuthnChallenge {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge String    @unique
+  // "register" | "transfer"
+  purpose   String
+  createdAt DateTime  @default(now())
+  usedAt    DateTime?
+
+  @@index([userId, purpose])
+  @@index([createdAt])
 }
 
 // §16.11 — generic audit trail for every balance and status change.
