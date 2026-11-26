@@ -97,3 +97,21 @@ export async function notifyTelemetry(args: {
   });
   if (args.ownerUserId && args.mintedKwh > 0) await notifyWallets([args.ownerUserId]);
 }
+
+/**
+ * §22.9, US-20 — ход зарядки на открытом экране. Вся цифра приходит в том же
+ * канале `wallet.{user}`, что и баланс: у телефона уже есть билет на него, и
+ * второй канал означал бы второй билет ради тех же данных.
+ */
+export async function notifyChargeSession(
+  userId: string,
+  type: "charge.started" | "charge.tick" | "charge.completed",
+  session: unknown,
+  extra: Record<string, unknown> = {},
+): Promise<void> {
+  try {
+    await publish(walletChannel(userId), type, { session, ...extra });
+  } catch {
+    // Экран, пропустивший событие, покажет верное на следующей загрузке.
+  }
+}
