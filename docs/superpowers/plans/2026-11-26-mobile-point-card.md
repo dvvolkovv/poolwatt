@@ -67,7 +67,7 @@ NODE_ENV=test DATABASE_URL="…poolwatt_test…" npx prisma migrate deploy
 - Create: `src/lib/points/connector-status.ts`, `src/lib/points/connector-status.test.ts`
 - Modify: четыре файла, которые пишут `pointConnector.status`
 
-- [ ] **Step 1: Add the table**
+- [x] **Step 1: Add the table**
 
 В `prisma/schema.prisma`, рядом с `PointConnector`:
 
@@ -95,7 +95,7 @@ model ConnectorStatusLog {
 
 и в `PointConnector` — `statusLog ConnectorStatusLog[]`.
 
-- [ ] **Step 2: Migrate**
+- [x] **Step 2: Migrate**
 
 ```bash
 npx prisma migrate dev --name connector_status_log --create-only
@@ -104,7 +104,7 @@ NODE_ENV=test DATABASE_URL="…poolwatt_test…" npx prisma migrate deploy
 npx prisma generate
 ```
 
-- [ ] **Step 3: Write the failing test**
+- [x] **Step 3: Write the failing test**
 
 `src/lib/points/connector-status.test.ts` проверяет:
 
@@ -114,7 +114,7 @@ npx prisma generate
 4. `purgeConnectorStatusLog` удаляет записи старше 30 дней и возвращает число;
 5. вызов внутри транзакции виден в ней же (функция принимает `Db`).
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
 
 `src/lib/points/connector-status.ts`:
 
@@ -171,7 +171,7 @@ export async function purgeConnectorStatusLog(now = new Date()): Promise<number>
 }
 ```
 
-- [ ] **Step 5: Move the five call sites onto it**
+- [x] **Step 5: Move the five call sites onto it**
 
 - `src/lib/exchange/charge-session.ts:271` → `await setConnectorStatus(tx, connector.id, ConnectorStatus.BUSY, "session-start")`
 - `src/lib/exchange/charge-session.ts:476` → `await setConnectorStatus(tx, session.connectorId, ConnectorStatus.FREE, "session-end", now)`
@@ -180,12 +180,12 @@ export async function purgeConnectorStatusLog(now = new Date()): Promise<number>
 - `src/lib/work/ticket-service.ts:134` → `"ticket"`, `OUT_OF_SERVICE`
 - `src/lib/points/point-availability.ts` — вместо `prisma.pointConnector.update` звать `setConnectorStatus(prisma, row.id, status, "equipment", now)`; счётчик `updated` считает только настоящие смены (функция возвращает `boolean`), и это ровно то, что должен означать «обновлено».
 
-- [ ] **Step 6: Run the touched suites**
+- [x] **Step 6: Run the touched suites**
 
 Run: `NODE_ENV=test DATABASE_URL="…poolwatt_test…" npx vitest run src/lib/points src/lib/reservations src/lib/exchange/charge-session src/lib/work`
 Expected: PASS. Случай `point-availability.test.ts`, который ждёт `updated: N` на повторный тот же статус, нужно поправить по существу: повтор ничего не обновляет.
 
-- [ ] **Step 7: Worker purge**
+- [x] **Step 7: Worker purge**
 
 В `worker/index.ts` — рядом с `runIdempotencyPurge`:
 
@@ -199,7 +199,7 @@ export async function runConnectorLogPurge(): Promise<void> {
 и в задании 03:40 вызвать её после чистки идемпотентности. Строку `log(...)`
 со списком расписаний дописать.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add prisma src/lib/points/connector-status.ts src/lib/points/connector-status.test.ts \
@@ -215,7 +215,7 @@ git commit -m "feat(points): one writer for a connector's occupancy, and a log o
 **Files:**
 - Create: `src/lib/points/availability-history.ts`, `src/lib/points/availability-history.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Случаи:
 
@@ -225,7 +225,7 @@ git commit -m "feat(points): one writer for a connector's occupancy, and a log o
 4. журнала нет вовсе — `null` за каждый день, а не ноль: «мы не знаем» это не «не был свободен»;
 5. семь дней подряд, последний — сегодняшний неполный, считается до «сейчас».
 
-- [ ] **Step 2: Implement**
+- [x] **Step 2: Implement**
 
 `src/lib/points/availability-history.ts`:
 
@@ -261,11 +261,11 @@ export async function readAvailabilityHistory(
 считается перебором отрезков. Нет ни входного состояния, ни записей — день
 получает `null`.
 
-- [ ] **Step 3: Run the test**
+- [x] **Step 3: Run the test**
 
 Expected: PASS, 5 cases.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/lib/points/availability-history.ts src/lib/points/availability-history.test.ts
@@ -280,7 +280,7 @@ git commit -m "feat(points): how much of each day a connector was actually free"
 - Modify: `prisma/schema.prisma`
 - Create: `src/lib/points/point-reviews.ts`, `src/lib/points/point-reviews.test.ts`
 
-- [ ] **Step 1: Add the table**
+- [x] **Step 1: Add the table**
 
 ```prisma
 // §27 «Полная карточка: … отзывы». Отзыв оставляет тот, кто там заряжался
@@ -306,7 +306,7 @@ model PointReview {
 и обратные связи в `AcceptancePoint` (`reviews PointReview[]`) и `User`
 (`pointReviews PointReview[]`).
 
-- [ ] **Step 2: Migrate**
+- [x] **Step 2: Migrate**
 
 ```bash
 npx prisma migrate dev --name point_review --create-only
@@ -315,7 +315,7 @@ NODE_ENV=test DATABASE_URL="…poolwatt_test…" npx prisma migrate deploy
 npx prisma generate
 ```
 
-- [ ] **Step 3: Write the failing test**
+- [x] **Step 3: Write the failing test**
 
 Случаи `point-reviews.test.ts`:
 
@@ -328,7 +328,7 @@ npx prisma generate
 7. средняя и число считаются по всем отзывам пункта;
 8. у пункта без отзывов средняя `null`, а не ноль.
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
 
 `src/lib/points/point-reviews.ts`:
 
@@ -362,11 +362,11 @@ export async function readMyReview(
 `upsert` по `[pointId, userId]`, текст обрезается до 1000 знаков; автор в
 `readReviews` — `user.name ?? user.username`.
 
-- [ ] **Step 5: Run the test**
+- [x] **Step 5: Run the test**
 
 Expected: PASS, 8 cases.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add prisma src/lib/points/point-reviews.ts src/lib/points/point-reviews.test.ts
@@ -383,7 +383,7 @@ git commit -m "feat(points): a review from the driver who actually charged there
 - Create: `src/app/api/v1/points/[id]/photos/[photoId]/route.ts`
 - Modify: `src/components/points/point-wizard.tsx`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Случаи `point-photos.test.ts` (по образцу `listing-docs.test.ts`):
 
@@ -394,7 +394,7 @@ git commit -m "feat(points): a review from the driver who actually charged there
 5. удаление убирает и строку, и файл;
 6. `photoPath` не выходит за корень при подставленном в имя `../`.
 
-- [ ] **Step 2: Implement the storage**
+- [x] **Step 2: Implement the storage**
 
 `src/lib/points/point-photos.ts` — тот же каркас, что `listing-docs.ts`:
 корень `process.env.POINT_PHOTOS_DIR || "var/point-photos"`, имя файла из
@@ -402,7 +402,7 @@ git commit -m "feat(points): a review from the driver who actually charged there
 `MAX_PHOTOS = 10`, функции `savePointPhoto`, `readPointPhoto`,
 `deletePointPhoto`, `listPointPhotos`.
 
-- [ ] **Step 3: The two routes**
+- [x] **Step 3: The two routes**
 
 - `POST /api/v1/points/[id]/photos` — `multipart/form-data`, только владелец
   сети пункта или его сотрудник с правом на этот пункт (та же проверка, что
@@ -413,21 +413,21 @@ git commit -m "feat(points): a review from the driver who actually charged there
   `OWN_CLIENTS` и неопубликованный — владельцу и сотрудникам. Иначе 404.
 - `DELETE /api/v1/points/[id]/photos/[photoId]` — владельцу.
 
-- [ ] **Step 4: The wizard**
+- [x] **Step 4: The wizard**
 
 На шаге «адрес и карта» (§29.1 просит фото там) — `input type=file multiple
 accept="image/*"`, список уже загруженных с кнопкой удаления, счётчик «N из
 10». Загрузка идёт сразу при выборе файла: черновик пункта уже существует,
 поэтому `id` есть.
 
-- [ ] **Step 5: Run the test and build**
+- [x] **Step 5: Run the test and build**
 
 Run: `NODE_ENV=test DATABASE_URL="…poolwatt_test…" npx vitest run src/lib/points/point-photos.test.ts`
 Expected: PASS, 6 cases.
 Run: `npm run build`
 Expected: no errors.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/points/point-photos.ts src/lib/points/point-photos.test.ts \
@@ -443,7 +443,7 @@ git commit -m "feat(points): the photos §28 asks for, filled at last"
 - Create: `src/lib/points/point-card.ts`, `src/lib/points/point-card.test.ts`
 - Modify: `src/app/[locale]/c/[id]/page.tsx`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Случаи `point-card.test.ts`:
 
@@ -458,13 +458,13 @@ git commit -m "feat(points): the photos §28 asks for, filled at last"
 5. фотографии приходят только как `photoId`, не как байты;
 6. средняя оценка и число отзывов приходят вместе с карточкой.
 
-- [ ] **Step 2: Implement**
+- [x] **Step 2: Implement**
 
 `readPointCard(pointId, viewerId)` → `PointCardView | null`. Один запрос с
 `include` по разъёмам, тарифам, фотографиям и оператору; отзывы и история —
 своими функциями, чтобы карточку можно было отрисовать и без них.
 
-- [ ] **Step 3: Switch the desktop card over**
+- [x] **Step 3: Switch the desktop card over**
 
 `/{locale}/c/[id]` оставляет свой нынешний каркас и получает блоки, которых
 у него не было, из `readPointCard`: часы по дням, праздники, временное
@@ -473,11 +473,11 @@ git commit -m "feat(points): the photos §28 asks for, filled at last"
 блоки живут в `src/components/points/point-card-blocks.tsx` и обе страницы
 зовут их.
 
-- [ ] **Step 4: Run the test and build**
+- [x] **Step 4: Run the test and build**
 
 Expected: PASS, 6 cases; сборка без ошибок; `/ru/c/<id>` отвечает 200.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/points/point-card.ts src/lib/points/point-card.test.ts \
@@ -495,7 +495,7 @@ git commit -m "feat(points): §28 has one reader, and both cards use it"
 - Modify: `src/components/mobile/point-mini-card.tsx` (ссылка «Подробнее» ведёт на мобильную карточку)
 - Modify: `messages/{en,ru,sk}.json`
 
-- [ ] **Step 1: The screen**
+- [x] **Step 1: The screen**
 
 Одна колонка: фото-лента, заголовок с типом и доступностью, адрес и «как
 найти», действия (маршрут, зарядиться, забронировать, сообщить о проблеме
@@ -503,25 +503,25 @@ git commit -m "feat(points): §28 has one reader, and both cards use it"
 владелец и контакты, отзывы, история доступности. Блоки — из
 `point-card-blocks.tsx`, те же, что на мониторе.
 
-- [ ] **Step 2: The review form**
+- [x] **Step 2: The review form**
 
 `review-form.tsx` — пять звёзд и текст. Видна только тому, у кого есть
 право (`mayReview`); у остальных вместо формы одна строка «отзыв оставляет
 тот, кто здесь заряжался». Свой отзыв подставлен в форму и переписывается.
 
-- [ ] **Step 3: The availability strip**
+- [x] **Step 3: The availability strip**
 
 `availability-strip.tsx` — семь столбиков на разъём: высота = доля времени
 «свободен», день без данных — пустой контур, не нулевой столбик. Подпись —
 последнее изменение с временем.
 
-- [ ] **Step 4: Build and check**
+- [x] **Step 4: Build and check**
 
 Run: `npm run build && pm2 restart poolwatt-web`
 Then: `curl -s -o /dev/null -w '%{http_code}\n' https://poolwatt.com/ru/app/c/<id>`
 Expected: `200`; чужой `COOP_MEMBERS`-пункт — `404`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/[locale]/app/c src/components/points messages src/components/mobile/point-mini-card.tsx
@@ -538,30 +538,30 @@ git commit -m "feat(mobile): the §28 card in one column, with photos, reviews a
 - Modify: `src/lib/mobile/tabs.ts` (раздел «брони» в хабе)
 - Modify: `messages/{en,ru,sk}.json`
 
-- [ ] **Step 1: The screen**
+- [x] **Step 1: The screen**
 
 Список моих броней: пункт, разъём, окно, статус, штраф за неявку, если был.
 Кнопки «Продлить» (когда политика пункта это разрешает и продлений не
 исчерпано) и «Отменить» — те же серверные действия, что в кабинете.
 
-- [ ] **Step 2: Revalidate the mobile paths too**
+- [x] **Step 2: Revalidate the mobile paths too**
 
 В `src/app/[locale]/c/[id]/book/actions.ts` добавить к каждому
 `revalidatePath` мобильный адрес: `/[locale]/app/bookings` и
 `/[locale]/app/c/[id]`.
 
-- [ ] **Step 3: Add the hub entry**
+- [x] **Step 3: Add the hub entry**
 
 `MobileSection` получает `"bookings"` первым после станции и кооператива;
 `SECTION_HREF` — `/bookings`. Поправить `tabs.test.ts`.
 
-- [ ] **Step 4: Build and check**
+- [x] **Step 4: Build and check**
 
 Run: `npm run build && pm2 restart poolwatt-web`
 Then: `curl -s -o /dev/null -w '%{http_code}\n' https://poolwatt.com/ru/app/bookings`
 Expected: `307` (гостя уводит на вход) или `200` для вошедшего.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/[locale]/app/bookings src/app/[locale]/c/[id]/book/actions.ts \
@@ -576,7 +576,7 @@ git commit -m "feat(mobile): a driver running late extends the booking from the 
 **Files:**
 - Create: `tests/e2e/mobile-point-card.mobile.spec.ts`
 
-- [ ] **Step 1: Write the e2e**
+- [x] **Step 1: Write the e2e**
 
 Случаи на Pixel 7 против живого домена:
 
@@ -590,7 +590,7 @@ git commit -m "feat(mobile): a driver running late extends the booking from the 
 6. бронь продлевается с `/ru/app/bookings`, окно сдвигается;
 7. карточка пункта «только для членов кооператива» для постороннего — 404.
 
-- [ ] **Step 2: The whole unit suite**
+- [x] **Step 2: The whole unit suite**
 
 Run:
 ```bash
@@ -598,13 +598,59 @@ NODE_ENV=test DATABASE_URL="…poolwatt_test…" npx vitest run
 ```
 Expected: зелено.
 
-- [ ] **Step 3: The whole e2e suite**
+- [x] **Step 3: The whole e2e suite**
 
 Run: `npm run test:e2e`
 Expected: зелено.
 
-- [ ] **Step 4: APK**
+- [x] **Step 4: APK**
 
 Run: `/home/dv/bin/android-build`
 
-- [ ] **Step 5: Tick this plan, update `inbox/TZ-STATUS.md`, commit**
+- [x] **Step 5: Tick this plan, update `inbox/TZ-STATUS.md`, commit**
+
+---
+
+## Где работа ушла от плана
+
+- **Правило видимости стало своим модулем.** План держал его внутри
+  `point-card.ts`, но маршрут отдачи фотографий нужен тому же правилу, а
+  карточка на тот момент ещё не существовала. Получился
+  `src/lib/points/point-visibility.ts`: три случая §28 плюс §29.3
+  (неопубликованную карточку видит только её сеть) и §47 (сотрудник — только
+  разрешённые пункты). Отказ выглядит как «нет такой карточки».
+  6 случаев `point-visibility.test.ts`.
+- **«Свой клиент» — это приезд, а не карта.** §28 называет третью видимость
+  «только для своих клиентов (white label)», но карты white label у нас нет
+  (§19 ждёт EMI). Признаком служит настоящий приезд в эту сеть: списанный
+  платёж или исполненная бронь.
+- **Подписи разделены на плоские и словари.** `Record<string, string> &
+  { weekday: Record<string, string> }` TypeScript считает несовместимым, и
+  правильно считает: `PointLabels` держит строки в `t`, словари рядом.
+- **Карточка на монитор переведена целиком.** План обещал дописать ей
+  «блоки, которых не было»; на деле у неё почти ничего из §28 и не было,
+  поэтому она рисует те же компоненты, что телефонная, а прежняя разметка
+  осталась только для пина OpenStreetMap, у которого §28 нет вовсе.
+- **`updated` в отчёте оборудования оставлен как был.** Он считает принятые
+  отчёты, а не смены состояния: оборудованию важно услышать, сколько его
+  слов мы взяли в расчёт. Журнал при этом молчит, когда разъём «всё так же
+  свободен», а `lastSeenAt` пункта обновляется — связь жива.
+- **Фотографию в e2e кладёт `fs`, а не служба.** Playwright грузит файл теста
+  как CommonJS и `await import` модуля из `src/` в нём падает; тест пишет
+  байты туда, где их ищет маршрут отдачи.
+- **Удобства на карточке по-прежнему чипами.** Отдельный компонент
+  `photo-gallery.tsx`, `availability-strip.tsx` из плана не появился: все
+  блоки §28 живут в одном `point-card-blocks.tsx`. Разносить их по файлам
+  смысла нет — они всегда рисуются вместе и не используются отдельно.
+
+## Доказательство
+
+- 1588 юнит-тестов и 142 e2e зелёные на живой сборке; из e2e семь новых на
+  Pixel 7 через настоящий домен (`tests/e2e/mobile-point-card.mobile.spec.ts`).
+- `https://poolwatt.com/ru/app/c/<id>` и `https://poolwatt.com/ru/c/<id>`
+  показывают одни и те же блоки §28 (`card-tariffs`, `card-equipment`,
+  `card-hours`, `card-payment`, `card-amenities`, `card-source`,
+  `card-history`, `card-reviews`, `card-owner`); чужая карточка — 404; пин
+  OpenStreetMap (`/ru/c/g1`) по-прежнему 200.
+- `/ru/app/bookings` уводит гостя на вход (307) и показывает брони вошедшему.
+- APK build 8: `https://poolwatt.com/downloads/poolwatt-build-8.apk`.
