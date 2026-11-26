@@ -195,6 +195,26 @@ success, `release_testflight` returns immediately after upload — TestFlight
 processing (5–15 min) happens server-side at Apple. The user sees the build
 in their TestFlight app once Apple finishes processing.
 
+**A processed build is not yet an installable one.** `upload_to_testflight`
+answers nothing about export compliance, so a build lands as
+`processingState=VALID` but `internalBuildState=MISSING_EXPORT_COMPLIANCE`,
+and then *no* tester can install it — the invitation endpoint refuses with
+`NO_INSTALLABLE_BUILDS` and TestFlight shows the tester an empty app list.
+Build 1.0 (4) sat like that from 2026-11-25 until 2026-11-26. `Info.plist` in
+the iOS repo now carries `ITSAppUsesNonExemptEncryption = false` (the shell
+only speaks HTTPS through the system stack), which answers it at upload time.
+After any upload, check the state rather than trusting `VALID`:
+
+```bash
+# on the Mac, with ~/.poolwatt-ios-secrets/credentials.env sourced
+bundle exec ruby -e 'require "spaceship"; …'   # GET /v1/builds?include=buildBetaDetail
+```
+
+Ready means `internalBuildState=IN_BETA_TESTING`. Testers live in the
+`Internal` group (`hasAccessToAllBuilds=true`, so every build reaches them);
+adding one is a POST to `v1/betaTesters` with a `betaGroups` relationship, and
+the invitation mail is a separate POST to `v1/betaTesterInvitations`.
+
 If `mac-ios` returns SSH-level errors (`Connection refused`, `timeout`),
 the reverse tunnel is down. Ask the user to check
 `~/Library/Logs/poolwatt-tunnel-powerbank.log` on the Mac.
