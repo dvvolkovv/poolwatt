@@ -8,8 +8,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
 import { publishableIban } from "@/lib/exchange/gates";
-import { roundMoney, roundPrice } from "@/lib/exchange/precision";
+import { roundMoney } from "@/lib/exchange/precision";
 import { readWallets } from "@/lib/exchange/wallet-service";
+import { readPurchaseStats } from "@/lib/exchange/wallet-history";
 import { quoteMarketOrder } from "@/lib/exchange/order-service";
 import { BuyAheadForm } from "@/components/exchange/buy-ahead-form";
 import { LiveWallets } from "@/components/exchange/live-wallets";
@@ -36,14 +37,12 @@ export default async function WalletPage({
   const t = await getTranslations("exchange.wallet");
   const tGifts = await getTranslations("gifts");
 
-  const [wallets, zones, account, buys, receipts, gifts] = await Promise.all([
+  const [wallets, zones, account, purchases, receipts, gifts] = await Promise.all([
     readWallets(userId),
     prisma.gridZone.findMany({ orderBy: { code: "asc" } }),
     prisma.settlementAccount.findUnique({ where: { userId } }),
-    prisma.trade.findMany({
-      where: { buyOrder: { wallet: { ownerUserId: userId } } },
-      select: { amountKwh: true, price: true },
-    }),
+    // §22.3 "средняя цена покупки" — тот же сервис, что в телефоне.
+    readPurchaseStats(userId),
     prisma.receipt.findMany({
       where: {
         OR: [
@@ -67,10 +66,7 @@ export default async function WalletPage({
     readMyGifts(userId),
   ]);
 
-  // §7 "средняя цена покупки" — volume-weighted across every buy fill.
-  const boughtKwh = buys.reduce((sum, b) => sum + num(b.amountKwh), 0);
-  const boughtValue = buys.reduce((sum, b) => sum + num(b.amountKwh) * num(b.price), 0);
-  const avgPrice = boughtKwh > 0 ? roundPrice(boughtValue / boughtKwh) : null;
+  const { avgPrice, boughtKwh } = purchases;
 
   const iban = publishableIban(account?.iban);
 
