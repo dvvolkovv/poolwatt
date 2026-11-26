@@ -117,6 +117,9 @@ export async function submitBuyAhead(input: unknown): Promise<OrderActionResult>
       idempotencyKey: parsed.data.idempotencyKey,
     });
     revalidatePath("/[locale]/me/wallet", "page");
+    // Те же цифры показывает телефон (§22.2, §22.3).
+    revalidatePath("/[locale]/app", "page");
+    revalidatePath("/[locale]/app/wallet", "page");
     return {
       ok: true,
       orderId: result.orderId,
