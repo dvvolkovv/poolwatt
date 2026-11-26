@@ -40,15 +40,15 @@
 
 ### Task 1: таблицы и сторона проверки
 
-- [ ] **Step 1:** добавить `DeviceKey` и `WebAuthnChallenge` в `prisma/schema.prisma`
+- [x] **Step 1:** добавить `DeviceKey` и `WebAuthnChallenge` в `prisma/schema.prisma`
       (поля — из спецификации), обратные связи в `User`.
-- [ ] **Step 2:** `npx prisma migrate dev --name device_key --create-only`,
+- [x] **Step 2:** `npx prisma migrate dev --name device_key --create-only`,
       `npx prisma migrate deploy`, то же для `poolwatt_test`, `npx prisma generate`.
-- [ ] **Step 3:** `src/lib/webauthn/relying-party.ts`: `rpId` из `NEXTAUTH_URL`
+- [x] **Step 3:** `src/lib/webauthn/relying-party.ts`: `rpId` из `NEXTAUTH_URL`
       (хост без порта), `rpName` «Poolwatt», `expectedOrigin` — массив из
       `NEXTAUTH_URL` плюс `capacitor://localhost` и `http://localhost` для
       оболочек; в тестах переопределяется через аргумент.
-- [ ] **Step 4:** `src/lib/webauthn/device-keys.ts`:
+- [x] **Step 4:** `src/lib/webauthn/device-keys.ts`:
       `newChallenge(userId, purpose)` — пишет строку и отдаёт параметры;
       `registerDevice(userId, response, name)` — `verifyRegistrationResponse`,
       съедает вызов, пишет `DeviceKey`;
@@ -57,45 +57,90 @@
       `lastUsedAt`, возвращает идентификатор ключа;
       `listDevices(userId)`, `forgetDevice(userId, id)`;
       `purgeWebAuthnChallenges(now)` — старше 120 секунд.
-- [ ] **Step 5:** тесты `device-keys.test.ts` — восемь случаев из спецификации;
+- [x] **Step 5:** тесты `device-keys.test.ts` — восемь случаев из спецификации;
       ответы аутентификатора берутся от программного ключа на `node:crypto`
       (ES256), чтобы подпись была настоящей.
-- [ ] **Step 6:** `git commit -m "feat(webauthn): a device key the server can check"`
+- [x] **Step 6:** `git commit -m "feat(webauthn): a device key the server can check"`
 
 ### Task 2: перевод требует подписи, когда устройство привязано
 
-- [ ] **Step 1:** в `TransferInput` добавить
+- [x] **Step 1:** в `TransferInput` добавить
       `sca?: { purpose: "transfer"; response: unknown } | null`.
-- [ ] **Step 2:** в начале `transferKwh` после `assertTransfersOpen()`:
+- [x] **Step 2:** в начале `transferKwh` после `assertTransfersOpen()`:
       если у `fromUserId` есть хоть один `DeviceKey` — требовать `sca` и
       проверить его `verifyAssertion`; нет устройств — идти без подписи.
-- [ ] **Step 3:** тесты `transfer-sca.test.ts` — три случая.
-- [ ] **Step 4:** метод API принимает `assertion` в теле и передаёт дальше.
-- [ ] **Step 5:** `git commit -m "feat(transfers): SCA for a transfer, when the account has a key"`
+- [x] **Step 3:** тесты `transfer-sca.test.ts` — три случая.
+- [x] **Step 4:** метод API принимает `assertion` в теле и передаёт дальше.
+- [x] **Step 5:** `git commit -m "feat(transfers): SCA for a transfer, when the account has a key"`
 
 ### Task 3: экран §22.8
 
-- [ ] **Step 1:** подписи `app.transfer` и `app.devices` в трёх локалях.
-- [ ] **Step 2:** `receive-qr.tsx` — `PWX:<ник>` через `qrcode`, значение
+- [x] **Step 1:** подписи `app.transfer` и `app.devices` в трёх локалях.
+- [x] **Step 2:** `receive-qr.tsx` — `PWX:<ник>` через `qrcode`, значение
       кладётся в `localStorage`, чтобы рисоваться без сети.
-- [ ] **Step 3:** `transfer-form.tsx` — получатель (ник или `QrScan`), сумма,
+- [x] **Step 3:** `transfer-form.tsx` — получатель (ник или `QrScan`), сумма,
       примечание, «получатель подтверждает», кнопка с подписью отпечатком
       через `@simplewebauthn/browser`.
-- [ ] **Step 4:** `actions.ts` — `sendTransfer`, `acceptTransfer`, `declineTransfer`.
-- [ ] **Step 5:** страница: мой QR, остаток по AML, входящие, форма (или
+- [x] **Step 4:** `actions.ts` — `sendTransfer`, `acceptTransfer`, `declineTransfer`.
+- [x] **Step 5:** страница: мой QR, остаток по AML, входящие, форма (или
       объяснение, чего не хватает, при закрытом переключателе).
-- [ ] **Step 6:** `device-key-button.tsx` и список устройств в профиле.
-- [ ] **Step 7:** сборка, `curl` на `/ru/app/contacts` → 307 для гостя.
-- [ ] **Step 8:** `git commit -m "feat(mobile): the §22.8 transfer screen"`
+- [x] **Step 6:** `device-key-button.tsx` и список устройств в профиле.
+- [x] **Step 7:** сборка, `curl` на `/ru/app/contacts` → 307 для гостя.
+- [x] **Step 8:** `git commit -m "feat(mobile): the §22.8 transfer screen"`
 
 ### Task 4: чистка вызовов, e2e, вся проверка, APK, реестр
 
-- [ ] **Step 1:** `worker/index.ts` — `purgeWebAuthnChallenges` в 03:40.
-- [ ] **Step 2:** `tests/e2e/mobile-transfer.mobile.spec.ts` на Pixel 7:
+- [x] **Step 1:** `worker/index.ts` — `purgeWebAuthnChallenges` в 03:40.
+- [x] **Step 2:** `tests/e2e/mobile-transfer.mobile.spec.ts` на Pixel 7:
       экран при закрытом переключателе; мой QR; ник из чужого QR;
       входящий перевод принимается; привязка устройства через
       `WebAuthn.addVirtualAuthenticator`; перевод с подписью, когда
       переключатель открыт в этом прогоне.
-- [ ] **Step 3:** весь юнит-набор и весь e2e.
-- [ ] **Step 4:** `/home/dv/bin/android-build`.
-- [ ] **Step 5:** отметить план, обновить `inbox/TZ-STATUS.md`, коммит.
+- [x] **Step 3:** весь юнит-набор и весь e2e.
+- [x] **Step 4:** `/home/dv/bin/android-build`.
+- [x] **Step 5:** отметить план, обновить `inbox/TZ-STATUS.md`, коммит.
+
+---
+
+## Где работа ушла от плана
+
+- **Библиотека оказалась девятой версии, не последней.** `npm install` принёс
+  `@simplewebauthn/server` 9, и у него прежний вид API: `credentialID` и
+  `credentialPublicKey` отдельными полями, `authenticator: {…}` в проверке
+  подписи, `userID` строкой. Код написан под неё; переход на 13-ю — отдельная
+  работа, которой ничего не требует.
+- **Подпись в юнит-тестах не подделывается.** Собрать настоящий ответ
+  аутентификатора в тесте значит собрать CBOR с attestation — то есть
+  переписать половину библиотеки. Юнит-тесты проверяют то, что написали мы:
+  жизнь одноразового вызова, кому принадлежит ключ, правило счётчика. Порядок
+  проверок в коде этому помогает: вызов съедается первым, поэтому ни один
+  такой случай до разбора подписи не доходит. Саму подпись проверяет e2e
+  виртуальным аутентификатором Chrome — тот же протокол и тот же ES256, что у
+  Face ID.
+- **Сканер QR стал общим по виду кода**, а не вторым компонентом рядом: на
+  зарядке он читает разъём, на переводе — ник. Разбор приходит снаружи,
+  потому что «это не код Poolwatt» зависит от того, какой код здесь ждут.
+- **QR без сети живёт на экране офлайна.** Экран перевода требует сессии и
+  из кэша служебного работника не отдаётся, поэтому ник кладётся в
+  `localStorage` (как баланс на M1), а рисует его экран офлайна — тот
+  единственный, который служебный работник отдаёт без сети.
+- **Устройства — в профиле, а не на экране перевода.** Привязка относится к
+  счёту, а не к одной операции; §22.11 — его место.
+- **Попутно исправлено пять замечаний линтера, из них три — свои.** Карта
+  трогала ref во время отрисовки; `receive-qr` и `device-key-button` ставили
+  состояние синхронно в теле эффекта. Счётчик ошибок в
+  `src/components/mobile` вернулся к тем двум, что были до этого прогона.
+
+## Доказательство
+
+- 1614 юнит-тестов и 148 e2e зелёные на живой сборке; из e2e шесть новых на
+  Pixel 7 через настоящий домен (`tests/e2e/mobile-transfer.mobile.spec.ts`),
+  включая настоящую церемонию WebAuthn: виртуальный аутентификатор подписал,
+  сервер проверил, `DeviceKey` появился и исчез по кнопке «Забыть».
+- `https://poolwatt.com/ru/app/contacts` уводит гостя на вход (307); вошедший
+  видит мой QR, пределы AML, входящие переводы и честную строку о §24.4.
+- `https://poolwatt.com/ru/app/profile` и `/ru/app/offline` отвечают 200;
+  экран офлайна рисует тот же QR из кэша.
+- Воркер объявил новое расписание: «idempotency + connector log + webauthn
+  challenge purge 03:40».
+- APK build 9: `https://poolwatt.com/downloads/poolwatt-build-9.apk`.
