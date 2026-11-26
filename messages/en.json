@@ -2475,6 +2475,7 @@
     "sections": {
       "station": "My station",
       "coop": "Cooperative",
+      "bookings": "Bookings",
       "account": "Account",
       "card": "Card",
       "contacts": "Contacts and transfers",

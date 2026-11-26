@@ -14,6 +14,7 @@ export type MobileTab = "home" | "wallet" | "charge" | "more" | "profile";
 export type MobileSection =
   | "station"
   | "coop"
+  | "bookings"
   | "account"
   | "card"
   | "contacts"
@@ -50,13 +51,16 @@ export function moreSections(caps: ShellCapabilities): MobileSection[] {
   const sections: MobileSection[] = [];
   if (caps.hasAsset) sections.push("station");
   if (caps.isCoopMember) sections.push("coop");
-  sections.push("account", "card", "contacts", "roaming");
+  // Брони идут до счёта и карты: ими пользуются сегодня, а счёт и карта
+  // ждут EMI.
+  sections.push("bookings", "account", "card", "contacts", "roaming");
   return sections;
 }
 
 export const SECTION_HREF: Record<MobileSection, string> = {
   station: "/station",
   coop: "/coop",
+  bookings: "/bookings",
   account: "/account",
   card: "/card",
   contacts: "/contacts",

@@ -29,10 +29,15 @@ describe("moreSections — §22", () => {
     ).toEqual([]);
   });
 
-  it("offers a plain account the account, the card, contacts and roaming", () => {
+  it("offers a plain account bookings, the account, the card, contacts and roaming", () => {
     expect(
       moreSections({ signedIn: true, hasAsset: false, isCoopMember: false }),
-    ).toEqual(["account", "card", "contacts", "roaming"]);
+    ).toEqual(["bookings", "account", "card", "contacts", "roaming"]);
+  });
+
+  it("puts bookings before the account and the card, which still wait for the EMI", () => {
+    const sections = moreSections({ signedIn: true, hasAsset: false, isCoopMember: false });
+    expect(sections.indexOf("bookings")).toBeLessThan(sections.indexOf("account"));
   });
 
   it("puts the station first for a prosumer", () => {

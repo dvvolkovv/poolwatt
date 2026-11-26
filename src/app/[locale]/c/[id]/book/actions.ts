@@ -37,6 +37,8 @@ export async function book(input: unknown): Promise<BookResult> {
       eta: new Date(Date.now() + parsed.data.inMinutes * 60_000),
     });
     revalidatePath("/[locale]/c/[id]", "page");
+    revalidatePath("/[locale]/app/c/[id]", "page");
+    revalidatePath("/[locale]/app/bookings", "page");
     return {
       ok: true,
       reservationId: reservation.id,
@@ -55,6 +57,7 @@ export async function dropBooking(
   try {
     await cancelReservation(reservationId, session.user.id);
     revalidatePath("/[locale]/me/bookings", "page");
+    revalidatePath("/[locale]/app/bookings", "page");
     return { ok: true };
   } catch (err) {
     return { ok: false, formError: err instanceof Error ? err.message : "Could not cancel." };
@@ -70,6 +73,7 @@ export async function extendBooking(
   try {
     await extendReservation({ reservationId, userId: session.user.id });
     revalidatePath("/[locale]/me/bookings", "page");
+    revalidatePath("/[locale]/app/bookings", "page");
     return { ok: true };
   } catch (err) {
     return { ok: false, formError: err instanceof Error ? err.message : "Could not extend." };
