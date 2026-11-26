@@ -27,6 +27,7 @@ import {
 } from "@/lib/reservations/reservation-service";
 import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
+import { expireStaleSessions } from "@/lib/exchange/charge-session";
 import { expireGrants, sweepPendingAwards } from "@/lib/marketing/campaign-engine";
 import { notifyPendingGrants } from "@/lib/marketing/gift-mail";
 import { notifyPendingRestockRequests } from "@/lib/warehouse/restock-mail";
@@ -224,6 +225,15 @@ export async function runAlertSweep(now = new Date()): Promise<void> {
   } catch (err) {
     console.error("[worker] closing reminder failed:", err);
   }
+
+  // §22.9 / US-20 — a session the equipment never reported holds a connector
+  // and the driver's money. The same minute window the bookings use.
+  try {
+    const swept = await expireStaleSessions(now);
+    if (swept > 0) log(`charging: ${swept} session(s) expired with nothing delivered`);
+  } catch (err) {
+    console.error("[worker] expiring charge sessions failed:", err);
+  }
 }
 
 /**
@@ -286,7 +296,7 @@ async function main() {
   await runIntervalClose();
   await runSpotRefresh();
   log(
-    "schedules registered: interval close + spot apply */5 min, alerts, work orders, receipts + reservations + campaign gifts every min, spot refresh :10, gift expiry :20, reconciliation 03:15, idempotency purge 03:40",
+    "schedules registered: interval close + spot apply */5 min, alerts, work orders, receipts + reservations + campaign gifts + charge sessions every min, spot refresh :10, gift expiry :20, reconciliation 03:15, idempotency purge 03:40",
   );
 }
 
