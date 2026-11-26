@@ -10,6 +10,7 @@ import { readMiniBanners } from "@/lib/marketing/content-service";
 import { sessionUser } from "@/lib/exchange/api";
 import { searchPoints } from "@/lib/points/point-search";
 import { pointToStation } from "@/lib/points/point-to-station";
+import { oursOnly, parseMapFilters } from "@/lib/mobile/map-filters";
 import { prisma } from "@/lib/prisma";
 import type { ChargerStation } from "@/lib/chargers";
 
@@ -46,6 +47,25 @@ async function fetchOperatorPriceIndex(): Promise<
 }
 
 const MAX_RADIUS_KM = 80;
+
+// §27 «мощность» — четыре ступени навигатора, в киловаттах снизу.
+const MIN_POWER_KW: Record<string, number> = {
+  ac_slow: 0,
+  ac_fast: 11,
+  dc_fast: 50,
+  dc_ultra: 150,
+};
+
+// В навигаторе разъёмы названы по-человечески, у нас в базе — enum.
+const CONNECTOR_ENUM: Record<string, string> = {
+  CCS2: "CCS2",
+  CHAdeMO: "CHAdeMO",
+  Type2: "TYPE2",
+  Type1: "TYPE1",
+  Tesla: "TESLA",
+  "GB/T": "GB_T",
+  Schuko: "SCHUKO",
+};
 
 // Accepts either ?lat=&lng=&radius= (legacy) or
 // ?south=&west=&north=&east= (preferred — matches what the map already
@@ -88,14 +108,45 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
+  const filters = parseMapFilters(req.nextUrl.searchParams);
+  // Семь фильтров §27 опираются на поля, которых у чужого пина нет: пустить
+  // его в такую выдачу — соврать о нём. Заодно экономится запрос к Overpass.
+  const onlyOurs = oursOnly(filters);
+  const minPowerKw = filters.power != null ? MIN_POWER_KW[filters.power] : null;
+
+  // Расстояния считает сервер, если водитель поделился местоположением.
+  const atLat = parseFloat(req.nextUrl.searchParams.get("atLat") ?? "");
+  const atLng = parseFloat(req.nextUrl.searchParams.get("atLng") ?? "");
+  const near =
+    Number.isFinite(atLat) && Number.isFinite(atLng) ? { lat: atLat, lng: atLng } : null;
+
   const [result, priceIndex, ours] = await Promise.all([
-    fetchChargersInBBox(parsed, {
-      mockFallback: () => filterMockByBBox(MOCK_CHARGERS, parsed),
-    }),
+    onlyOurs
+      ? Promise.resolve({
+          stations: [] as ChargerStation[],
+          source: "live" as const,
+          mirror: undefined,
+          error: undefined,
+        })
+      : fetchChargersInBBox(parsed, {
+          mockFallback: () => filterMockByBBox(MOCK_CHARGERS, parsed),
+        }),
     fetchOperatorPriceIndex().catch(() => new Map()),
     // Our own points (§28): moderated cards with live occupancy. A failure
     // here must not take the map down with it.
-    searchPoints({ bbox: parsed }).catch((err) => {
+    searchPoints({
+      bbox: parsed,
+      connector: filters.connector ? CONNECTOR_ENUM[filters.connector] : null,
+      minPowerKw,
+      freeOnly: filters.freeOnly,
+      type: filters.type,
+      maxPriceFiat: filters.maxPriceFiat,
+      maxPriceTokens: filters.maxPriceTokens,
+      open24: filters.open24,
+      paymentMethod: filters.paymentMethod,
+      greenOnly: filters.greenOnly,
+      near,
+    }).catch((err) => {
       console.error("[chargers] point search failed", err);
       return [];
     }),
@@ -137,6 +188,7 @@ export async function GET(req: NextRequest) {
     "X-Count": String(merged.length),
     "X-Points": String(ours.length),
   };
+  if (onlyOurs) headers["X-Ours-Only"] = "1";
   if (result.mirror) headers["X-Mirror"] = result.mirror;
   if (result.error) headers["X-Error"] = result.error.slice(0, 200);
 
