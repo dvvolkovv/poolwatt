@@ -16,6 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { num, numOrNull } from "@/lib/exchange/decimal";
 import { roundKwh, roundMoney } from "@/lib/exchange/precision";
 import { splitVat, type VatSplit } from "./vat";
+import { tariffAtDate } from "@/lib/points/point-tariff";
 
 const BASE = process.env.NEXTAUTH_URL ?? "https://poolwatt.com";
 
@@ -173,15 +174,17 @@ async function tariffForReceipt(args: {
   tariffVersion: number | null;
   liveTariffs: TariffShape[];
   at: Date | null;
+  /** Страна пункта: окно суток считается по его часам, а не по UTC. */
+  country: string | null;
 }): Promise<TariffShape | null> {
   if (args.pointId && args.tariffVersion != null) {
     const rule = await pricingVersion("POINT_TARIFF", args.pointId, args.tariffVersion);
     const params = rule?.params as { tariffs?: TariffShape[] } | null;
     if (params?.tariffs && params.tariffs.length > 0) {
-      return tariffAt(params.tariffs, args.at);
+      return tariffAtDate(params.tariffs, args.at, args.country);
     }
   }
-  return tariffAt(args.liveTariffs, args.at);
+  return tariffAtDate(args.liveTariffs, args.at, args.country);
 }
 
 /**
@@ -196,19 +199,6 @@ interface TariffShape {
   priceTokens?: Prisma.Decimal | number | string | null;
   idleFeePerMin?: Prisma.Decimal | number | string | null;
   coopDiscount?: number | null;
-}
-
-/** The tariff row covering a given moment, or the point's only row. */
-function tariffAt<T extends { fromMinute: number; toMinute: number }>(
-  tariffs: T[],
-  at: Date | null,
-): T | null {
-  if (tariffs.length === 0) return null;
-  if (tariffs.length === 1 || !at) return tariffs[0];
-  const minute = at.getUTCHours() * 60 + at.getUTCMinutes();
-  return (
-    tariffs.find((t) => minute >= t.fromMinute && minute < t.toMinute) ?? tariffs[0]
-  );
 }
 
 export async function buildReceiptDocument(
@@ -296,6 +286,7 @@ export async function buildReceiptDocument(
     tariffVersion: receipt.payment?.tariffVersion ?? null,
     liveTariffs: point?.tariffs ?? [],
     at: session?.startedAt ?? null,
+    country: point?.country ?? null,
   });
   // What the driver's own tokens covered, wherever they lived: the token
   // price of §46.4 counts roaming kWh too — they were paid for in tokens.
