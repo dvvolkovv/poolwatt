@@ -2713,6 +2713,82 @@
       "lastUsed": "last used",
       "never": "not used yet",
       "why": "§25 asks for payments to be confirmed under SCA. The signature is checked by the server, so the fingerprint protects the kWh, not just the screen. The private key never leaves your phone."
+    },
+    "station": {
+      "title": "My station",
+      "none": "You have no station listed yet.",
+      "noneHint": "A household with a powerbank applies through the listing in the cabinet.",
+      "live": "live",
+      "offline": "no live channel",
+      "stale": "The equipment has gone quiet. The last reading came at",
+      "lastReading": "last reading",
+      "never": "the equipment has not reported yet",
+      "nowKw": "Power now",
+      "today": "Today",
+      "chart": "Generation",
+      "chartEmpty": "No readings in this window.",
+      "range": {
+        "day": "Day",
+        "week": "Week",
+        "month": "Month"
+      },
+      "revenue": "Revenue",
+      "sold": "Sold",
+      "avgPrice": "Average price",
+      "panel": "Panel",
+      "panelHint": "The layouts are made in the cabinet: arranging tiles wants a mouse. Here you pick one and read it.",
+      "rules": "Sale rules",
+      "commands": "Remote commands to the equipment wait for a bridge to a charging network: a button that presses nothing is worse than no button.",
+      "widget": {
+        "nowKw": "Power now",
+        "today": "Today",
+        "week": "Week",
+        "month": "Month",
+        "year": "Year",
+        "efficiency": "Against the nameplate",
+        "revenue": "Revenue",
+        "avgPrice": "Average price",
+        "minted": "Issued",
+        "sold": "Sold",
+        "unsold": "Unsold",
+        "stored": "In the storage",
+        "routed": "To the aggregator",
+        "storageSoc": "Storage charge",
+        "zonePrice": "Price in the zone",
+        "priceForecast": "Price, next hours",
+        "generationChart": "Generation",
+        "alerts": "Alarms",
+        "equipment": "Equipment"
+      },
+      "noForecast": "No forecast for this zone yet.",
+      "equipmentKeys": "Equipment keys",
+      "noKeys": "No key has been issued.",
+      "revoked": "revoked",
+      "alerts": {
+        "title": "Alarms",
+        "none": "No open alarm.",
+        "notified": "reported",
+        "pending": "not reported yet",
+        "notePlaceholder": "What was done",
+        "clear": "Clear",
+        "kind": {
+          "TELEMETRY_ANOMALY": "Odd reading",
+          "LINK_LOST": "Equipment silent",
+          "SUSPENDED": "Stopped by the operator"
+        }
+      },
+      "saleRules": {
+        "rules": "Sale rules",
+        "rulesHelp": "The dispatcher follows these every settlement interval.",
+        "minSalePrice": "Lowest price",
+        "shareToMarket": "To the exchange, %",
+        "shareToStorage": "To the storage, %",
+        "shareToSelf": "Keep, %",
+        "reserveSoc": "Reserve charge, %",
+        "saveRules": "Save",
+        "saving": "Saving…",
+        "saved": "Saved"
+      }
     }
   },
   "route": {

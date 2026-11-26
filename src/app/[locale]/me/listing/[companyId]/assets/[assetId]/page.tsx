@@ -18,6 +18,7 @@ import { AssetAlerts } from "@/components/listing/asset-alerts";
 import { DashboardEditor } from "@/components/listing/dashboard-editor";
 import { GenerationChart } from "@/components/listing/generation-chart";
 import { StationLive } from "@/components/listing/station-live";
+import { figureValues } from "@/lib/dashboard/widget-values";
 
 export const dynamic = "force-dynamic";
 
@@ -112,63 +113,48 @@ export default async function StationConsole({
       : null;
   const spot = asset.gridZone.spotPrice == null ? null : num(asset.gridZone.spotPrice);
 
+  // §30 — числа плиток считает общий модуль: экран телефона показывает те же,
+  // и разойтись они теперь не могут.
+  const figures = figureValues({
+    overview,
+    tokens: {
+      mintedKwh: tokens.mintedKwh,
+      soldKwh: tokens.soldKwh,
+      availableKwh: tokens.availableKwh,
+      storedKwh: tokens.storedKwh,
+      routedKwh: tokens.routedKwh,
+    },
+    currency,
+    socPct: soc,
+    spotPrice: spot,
+  });
+
+  const figure = (key: WidgetKey, label: string, testId?: string, big = false) => (
+    <Figure
+      label={label}
+      value={figures[key]?.value ?? "—"}
+      unit={figures[key]?.unit ?? ""}
+      testId={testId}
+      big={big}
+    />
+  );
+
   const nodes: Record<WidgetKey, React.ReactNode> = {
-    nowKw: (
-      <Figure
-        label={t("nowKw")}
-        value={overview.nowKw == null ? "—" : overview.nowKw.toFixed(3)}
-        unit="kW"
-        testId="station-now-kw"
-        big
-      />
-    ),
-    today: <Figure label={t("today")} value={overview.todayKwh.toFixed(3)} unit="kWh" testId="station-today" />,
-    week: <Figure label={t("week")} value={overview.weekKwh.toFixed(3)} unit="kWh" />,
-    month: <Figure label={t("month")} value={overview.monthKwh.toFixed(3)} unit="kWh" />,
-    year: <Figure label={t("year")} value={overview.yearKwh.toFixed(3)} unit="kWh" />,
-    efficiency: (
-      <Figure
-        label={t("efficiency")}
-        value={overview.efficiency == null ? "—" : `${(overview.efficiency * 100).toFixed(1)}`}
-        unit="%"
-      />
-    ),
-    revenue: (
-      <Figure
-        label={t("revenue")}
-        value={overview.revenue.net.toFixed(2)}
-        unit={currency}
-        testId="station-revenue"
-      />
-    ),
-    avgPrice: (
-      <Figure
-        label={t("avgPrice")}
-        value={overview.revenue.avgPrice == null ? "—" : overview.revenue.avgPrice.toFixed(4)}
-        unit={`${currency}/kWh`}
-      />
-    ),
-    minted: <Figure label={t("minted")} value={tokens.mintedKwh.toFixed(3)} unit="kWh" />,
-    sold: <Figure label={t("sold")} value={tokens.soldKwh.toFixed(3)} unit="kWh" />,
-    unsold: <Figure label={t("unsold")} value={tokens.availableKwh.toFixed(3)} unit="kWh" />,
-    stored: <Figure label={t("stored")} value={tokens.storedKwh.toFixed(3)} unit="kWh" />,
-    routed: <Figure label={t("routed")} value={tokens.routedKwh.toFixed(3)} unit="kWh" />,
-    storageSoc: (
-      <Figure
-        label={t("widget.storageSoc")}
-        value={soc == null ? "—" : soc.toFixed(1)}
-        unit="%"
-        testId="station-soc"
-      />
-    ),
-    zonePrice: (
-      <Figure
-        label={t("widget.zonePrice")}
-        value={spot == null ? "—" : spot.toFixed(4)}
-        unit={`${currency}/kWh`}
-        testId="station-zone-price"
-      />
-    ),
+    nowKw: figure("nowKw", t("nowKw"), "station-now-kw", true),
+    today: figure("today", t("today"), "station-today"),
+    week: figure("week", t("week")),
+    month: figure("month", t("month")),
+    year: figure("year", t("year")),
+    efficiency: figure("efficiency", t("efficiency")),
+    revenue: figure("revenue", t("revenue"), "station-revenue"),
+    avgPrice: figure("avgPrice", t("avgPrice")),
+    minted: figure("minted", t("minted")),
+    sold: figure("sold", t("sold")),
+    unsold: figure("unsold", t("unsold")),
+    stored: figure("stored", t("stored")),
+    routed: figure("routed", t("routed")),
+    storageSoc: figure("storageSoc", t("widget.storageSoc"), "station-soc"),
+    zonePrice: figure("zonePrice", t("widget.zonePrice"), "station-zone-price"),
     priceForecast: (
       <div className="rounded border border-hairline p-3" data-testid="station-forecast">
         <div className="text-[11px] uppercase tracking-[0.14em] text-muted">

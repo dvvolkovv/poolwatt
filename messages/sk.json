@@ -2713,6 +2713,82 @@
       "lastUsed": "použité",
       "never": "ešte nepoužité",
       "why": "§25 žiada potvrdzovať platby podľa SCA. Podpis kontroluje server, takže odtlačok chráni kWh, nie len obrazovku. Privátny kľúč z telefónu neodchádza."
+    },
+    "station": {
+      "title": "Moja stanica",
+      "none": "Zatiaľ nemáte stanicu v listingu.",
+      "noneHint": "Domácnosť s powerbankou podáva žiadosť cez listing v kabinete.",
+      "live": "živý kanál",
+      "offline": "živý kanál nie je",
+      "stale": "Zariadenie zmlklo. Posledné meranie prišlo",
+      "lastReading": "posledné meranie",
+      "never": "zariadenie sa ešte nehlásilo",
+      "nowKw": "Výkon teraz",
+      "today": "Dnes",
+      "chart": "Výroba",
+      "chartEmpty": "V tomto okne nie sú merania.",
+      "range": {
+        "day": "Deň",
+        "week": "Týždeň",
+        "month": "Mesiac"
+      },
+      "revenue": "Príjem",
+      "sold": "Predané",
+      "avgPrice": "Priemerná cena",
+      "panel": "Panel",
+      "panelHint": "Rozloženia sa skladajú v kabinete: presúvanie dlaždíc potrebuje myš. Tu si rozloženie vyberiete a čítate ho.",
+      "rules": "Pravidlá predaja",
+      "commands": "Vzdialené príkazy pre zariadenie čakajú na most k nabíjacej sieti: tlačidlo, ktoré nič nestlačí, je horšie ako žiadne.",
+      "widget": {
+        "nowKw": "Výkon teraz",
+        "today": "Dnes",
+        "week": "Týždeň",
+        "month": "Mesiac",
+        "year": "Rok",
+        "efficiency": "K nominálu",
+        "revenue": "Príjem",
+        "avgPrice": "Priemerná cena",
+        "minted": "Vydané",
+        "sold": "Predané",
+        "unsold": "Nepredané",
+        "stored": "V zásobníku",
+        "routed": "Agregátorovi",
+        "storageSoc": "Nabitie zásobníka",
+        "zonePrice": "Cena v zóne",
+        "priceForecast": "Cena, najbližšie hodiny",
+        "generationChart": "Výroba",
+        "alerts": "Poruchy",
+        "equipment": "Zariadenie"
+      },
+      "noForecast": "Prognóza pre túto zónu zatiaľ nie je.",
+      "equipmentKeys": "Kľúče zariadenia",
+      "noKeys": "Kľúč nebol vydaný.",
+      "revoked": "zrušený",
+      "alerts": {
+        "title": "Poruchy",
+        "none": "Žiadna otvorená porucha.",
+        "notified": "nahlásené",
+        "pending": "ešte nenahlásené",
+        "notePlaceholder": "Čo sa urobilo",
+        "clear": "Uzavrieť",
+        "kind": {
+          "TELEMETRY_ANOMALY": "Zvláštne meranie",
+          "LINK_LOST": "Zariadenie mlčí",
+          "SUSPENDED": "Zastavené operátorom"
+        }
+      },
+      "saleRules": {
+        "rules": "Pravidlá predaja",
+        "rulesHelp": "Podľa nich pracuje dispečer v každom zúčtovacom intervale.",
+        "minSalePrice": "Minimálna cena",
+        "shareToMarket": "Na burzu, %",
+        "shareToStorage": "Do zásobníka, %",
+        "shareToSelf": "Sebe, %",
+        "reserveSoc": "Rezerva nabitia, %",
+        "saveRules": "Uložiť",
+        "saving": "Ukladáme…",
+        "saved": "Uložené"
+      }
     }
   },
   "route": {
