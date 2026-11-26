@@ -35,6 +35,7 @@ import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/
 import { intervalStartFor } from "@/lib/exchange/zone-service";
 import { startTelemetrySubscriber } from "./mqtt";
 import { notifyPendingReceipts } from "@/lib/receipts/receipt-delivery";
+import { purgeConnectorStatusLog } from "@/lib/points/connector-status";
 
 function log(...args: unknown[]) {
   console.log(`[worker]`, ...args);
@@ -252,6 +253,12 @@ export async function runIdempotencyPurge(): Promise<void> {
   if (removed > 0) log(`idempotency: purged ${removed} expired record(s)`);
 }
 
+// §27 — журнал занятости нужен карточке на семь дней; держим тридцать.
+export async function runConnectorLogPurge(): Promise<void> {
+  const removed = await purgeConnectorStatusLog();
+  if (removed > 0) log(`connector status log: purged ${removed} row(s)`);
+}
+
 async function main() {
   log(`starting. cwd=${process.cwd()}`);
 
@@ -286,7 +293,7 @@ async function main() {
 
   // Daily purge of the idempotency replay log (§15), at 03:40.
   cron.schedule("40 3 * * *", () => {
-    void runIdempotencyPurge();
+    void runIdempotencyPurge().then(() => runConnectorLogPurge());
   });
 
   // §4 / US-03 — MQTT intake, when a broker is configured.
@@ -296,7 +303,7 @@ async function main() {
   await runIntervalClose();
   await runSpotRefresh();
   log(
-    "schedules registered: interval close + spot apply */5 min, alerts, work orders, receipts + reservations + campaign gifts + charge sessions every min, spot refresh :10, gift expiry :20, reconciliation 03:15, idempotency purge 03:40",
+    "schedules registered: interval close + spot apply */5 min, alerts, work orders, receipts + reservations + campaign gifts + charge sessions every min, spot refresh :10, gift expiry :20, reconciliation 03:15, idempotency + connector log purge 03:40",
   );
 }
 

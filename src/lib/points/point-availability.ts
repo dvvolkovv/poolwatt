@@ -18,6 +18,7 @@ import {
 } from "@/lib/exchange/equipment-signature";
 import { cancelReservationsForConnector } from "@/lib/reservations/reservation-service";
 import { publishOnFirstReport } from "./point-service";
+import { setConnectorStatus } from "./connector-status";
 
 export class AvailabilityError extends Error {}
 
@@ -157,10 +158,11 @@ export async function reportAvailability(
       continue;
     }
 
-    await prisma.pointConnector.update({
-      where: { id: row.id },
-      data: { status, statusAt: now },
-    });
+    await setConnectorStatus(prisma, row.id, status, "equipment", now);
+    // Считаем принятые отчёты, а не смены состояния: оборудованию важно
+    // услышать, сколько его слов мы взяли в расчёт. Когда разъём «всё так же
+    // свободен», журнал об этом молчит, а `lastSeenAt` пункта всё равно
+    // обновляется — связь жива.
     updated += 1;
 
     // US-55 — a connector that just broke owes its bookings a refund.

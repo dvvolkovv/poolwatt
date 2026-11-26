@@ -17,6 +17,7 @@ import { writeAudit } from "@/lib/exchange/audit";
 import { nearestWorkingPoints, type FoundPoint } from "@/lib/points/point-search";
 import { cancelReservationsForConnector } from "@/lib/reservations/reservation-service";
 import { PARTS_BY_PROBLEM, createWorkOrder } from "./work-order-service";
+import { setConnectorStatus } from "@/lib/points/connector-status";
 
 export class TicketError extends Error {}
 
@@ -129,10 +130,7 @@ export async function reportProblem(
 
     // §51 — "пункт или разъём помечается в навигаторе как неработающий".
     if (connector) {
-      await prisma.pointConnector.update({
-        where: { id: connector.id },
-        data: { status: ConnectorStatus.OUT_OF_SERVICE, statusAt: new Date() },
-      });
+      await setConnectorStatus(prisma, connector.id, ConnectorStatus.OUT_OF_SERVICE, "ticket");
       // US-55 — a booking on a connector that just broke is cancelled with
       // the fee back and no penalty.
       await cancelReservationsForConnector(connector.id, `reported ${args.problemType}`);

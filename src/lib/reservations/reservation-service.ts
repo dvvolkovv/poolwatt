@@ -22,6 +22,7 @@ import { getOrCreateWallet } from "@/lib/exchange/wallet-service";
 import { nearestWorkingPoints } from "@/lib/points/point-search";
 import { receiptStamp } from "@/lib/receipts/receipt-number";
 import { recordPricingChange } from "@/lib/pricing/pricing-service";
+import { setConnectorStatus } from "@/lib/points/connector-status";
 
 export class ReservationError extends Error {}
 
@@ -285,10 +286,7 @@ export async function createReservation(
       },
     });
 
-    await tx.pointConnector.update({
-      where: { id: connector.id },
-      data: { status: ConnectorStatus.BOOKED, statusAt: new Date() },
-    });
+    await setConnectorStatus(tx, connector.id, ConnectorStatus.BOOKED, "booking");
 
     await writeAudit(tx, {
       actor: args.userId,
@@ -448,10 +446,12 @@ async function closeReservation(
         where: { id: reservation.connectorId },
       });
       if (connector.status === ConnectorStatus.BOOKED) {
-        await tx.pointConnector.update({
-          where: { id: reservation.connectorId },
-          data: { status: ConnectorStatus.FREE, statusAt: new Date() },
-        });
+        await setConnectorStatus(
+          tx,
+          reservation.connectorId,
+          ConnectorStatus.FREE,
+          "booking-release",
+        );
       }
     }
 

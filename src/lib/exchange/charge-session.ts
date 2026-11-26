@@ -27,6 +27,7 @@ import { writeAudit } from "./audit";
 import { restCanonicalString, verifySignature } from "./equipment-signature";
 import { notifyChargeSession, notifyWallets } from "./realtime-notify";
 import type { ChargePlan } from "./charge";
+import { setConnectorStatus } from "@/lib/points/connector-status";
 
 export class ChargeSessionError extends Error {}
 
@@ -266,10 +267,7 @@ export async function authorizeSession(args: AuthorizeArgs): Promise<SessionView
       });
     }
 
-    await tx.pointConnector.update({
-      where: { id: connector.id },
-      data: { status: ConnectorStatus.BUSY, statusAt: new Date() },
-    });
+    await setConnectorStatus(tx, connector.id, ConnectorStatus.BUSY, "session-start");
 
     if (booking) {
       await tx.reservation.update({
@@ -471,10 +469,7 @@ export async function finishSession(args: FinishArgs): Promise<SessionView> {
         data: { reservedFiat: { decrement: new Prisma.Decimal(hold) } },
       });
     }
-    await tx.pointConnector.update({
-      where: { id: session.connectorId },
-      data: { status: ConnectorStatus.FREE, statusAt: now },
-    });
+    await setConnectorStatus(tx, session.connectorId, ConnectorStatus.FREE, "session-end", now);
     // SETTLING-состояния нет: сеанс уходит сразу в своё окончание, а тот, кто
     // проиграл гонку, видит статус вне LIVE и возвращает готовое.
     return await tx.chargeSession.update({

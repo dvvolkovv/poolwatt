@@ -344,9 +344,31 @@ model PointConnector {
   reservations   Reservation[]
   payments       Payment[]
   chargeSessions ChargeSession[]
+  statusLog      ConnectorStatusLog[]
 
   @@index([pointId])
   @@index([type, status])
+}
+
+// §27 «история доступности», §29.7 «статус обновляется автоматически».
+// Занятость разъёма меняют пять мест — телеметрия оборудования, бронь, её
+// снятие, старт и конец сеанса, наряд по поломке. Все они идут через
+// `setConnectorStatus`, и запись появляется только когда состояние
+// действительно изменилось: иначе оборудование, которое отчитывается раз в
+// минуту, за сутки нарисует тысячу четыреста строк «всё так же свободно».
+model ConnectorStatusLog {
+  id          String          @id @default(cuid())
+  connectorId String
+  connector   PointConnector  @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+  // Денормализовано: карточка читает журнал по пункту, а не по разъёму.
+  pointId     String
+  status      ConnectorStatus
+  at          DateTime        @default(now())
+  // equipment | booking | booking-release | session-start | session-end | ticket
+  source      String
+
+  @@index([pointId, at])
+  @@index([connectorId, at])
 }
 
 // §28 "Тарифы". One row per time-of-day window; a point with a flat price has
