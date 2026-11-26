@@ -53,6 +53,7 @@ export default async function ChargeScreen({
     nearby: t("nearby"),
     nearbyHelp: t("nearbyHelp"),
     nearbyEmpty: t("nearbyEmpty"),
+    openMap: t("openMap"),
   };
 
   return (

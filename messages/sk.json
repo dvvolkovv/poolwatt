@@ -2527,7 +2527,64 @@
       "signIn": "Prihláste sa, aby ste mohli nabíjať",
       "qrTitle": "QR kódy konektorov",
       "qrHint": "Vytlačte a nalepte na konektor",
-      "print": "Tlač"
+      "print": "Tlač",
+      "openMap": "Otvoriť mapu"
+    },
+    "map": {
+      "title": "Mapa",
+      "filters": "Filtre",
+      "apply": "Použiť",
+      "reset": "Zrušiť filtre",
+      "oursOnly": "Len body Poolwatt: na takýto filter cudzí bod odpovedať nedokáže.",
+      "type": "Typ bodu",
+      "connector": "Konektor",
+      "power": "Výkon",
+      "free": "Voľný teraz",
+      "maxFiat": "Cena za kWh, najviac",
+      "maxTokens": "Cena v tokenoch za kWh, najviac",
+      "open24": "Nonstop",
+      "pay": "Spôsob platby",
+      "green": "Zelený zdroj",
+      "greenHint": "Slnko, vietor, biogáz, voda. Sieť a zmiešaný sa nepočítajú: v zmiešanom je sieť.",
+      "any": "Akýkoľvek",
+      "locate": "Kde som",
+      "locateDenied": "Polohu sme nedostali — vzdialenosti nezobrazujeme.",
+      "empty": "Tu nič nie je. Posuňte mapu alebo uvoľnite filtre.",
+      "loading": "Načítavame…",
+      "found": "nájdené",
+      "charge": "Nabiť",
+      "details": "Podrobnosti",
+      "book": "Rezervovať",
+      "freeOf": "voľné z",
+      "priceTokens": "v tokenoch",
+      "priceUtc": "Cena podľa času dňa sa počíta v UTC: hodiny tejto krajiny nepoznáme.",
+      "foreignPin": "Bod z OpenStreetMap: ani cenu, ani obsadenosť o ňom nevieme.",
+      "pointType": {
+        "CHARGING_STATION": "Nabíjacia stanica",
+        "POWERBANK": "Powerbank",
+        "GENERATION": "Výrobný objekt",
+        "MIXED": "Zmiešaný"
+      },
+      "availability": {
+        "FREE": "Voľný",
+        "BUSY": "Obsadený",
+        "OUT_OF_SERVICE": "Nefunguje",
+        "BOOKED": "Rezervovaný",
+        "UNKNOWN": "Neznáme"
+      },
+      "payMethod": {
+        "TOKEN": "Tokeny",
+        "POOLWATT_CARD": "Karta Poolwatt",
+        "WHITE_LABEL_CARD": "White label karty",
+        "BANK_CARD": "Bankové karty",
+        "QR": "QR"
+      },
+      "powerLevel": {
+        "ac_slow": "AC, do 11 kW",
+        "ac_fast": "AC, od 11 kW",
+        "dc_fast": "DC, od 50 kW",
+        "dc_ultra": "DC, od 150 kW"
+      }
     }
   },
   "route": {

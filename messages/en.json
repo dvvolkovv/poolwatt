@@ -2527,7 +2527,64 @@
       "signIn": "Sign in to start charging",
       "qrTitle": "Connector QR codes",
       "qrHint": "Print and stick on the connector",
-      "print": "Print"
+      "print": "Print",
+      "openMap": "Open the map"
+    },
+    "map": {
+      "title": "Map",
+      "filters": "Filters",
+      "apply": "Apply",
+      "reset": "Reset",
+      "oursOnly": "Only Poolwatt points: this filter is one a foreign pin cannot answer.",
+      "type": "Point type",
+      "connector": "Connector",
+      "power": "Power",
+      "free": "Free right now",
+      "maxFiat": "Price per kWh, up to",
+      "maxTokens": "Price in tokens per kWh, up to",
+      "open24": "Open 24/7",
+      "pay": "Payment method",
+      "green": "Green source",
+      "greenHint": "Sun, wind, biogas, hydro. Grid and mixed do not count: mixed contains grid.",
+      "any": "Any",
+      "locate": "Where am I",
+      "locateDenied": "No location — distances are hidden.",
+      "empty": "Nothing here. Move the map or loosen the filters.",
+      "loading": "Loading…",
+      "found": "found",
+      "charge": "Charge",
+      "details": "Details",
+      "book": "Book",
+      "freeOf": "free of",
+      "priceTokens": "in tokens",
+      "priceUtc": "The time-of-day price is counted in UTC: we do not know this country's hours.",
+      "foreignPin": "An OpenStreetMap pin: we know neither its price nor how busy it is.",
+      "pointType": {
+        "CHARGING_STATION": "Charging station",
+        "POWERBANK": "Powerbank",
+        "GENERATION": "Generation site",
+        "MIXED": "Mixed"
+      },
+      "availability": {
+        "FREE": "Free",
+        "BUSY": "Busy",
+        "OUT_OF_SERVICE": "Out of service",
+        "BOOKED": "Booked",
+        "UNKNOWN": "Unknown"
+      },
+      "payMethod": {
+        "TOKEN": "Tokens",
+        "POOLWATT_CARD": "Poolwatt card",
+        "WHITE_LABEL_CARD": "White label cards",
+        "BANK_CARD": "Bank cards",
+        "QR": "QR"
+      },
+      "powerLevel": {
+        "ac_slow": "AC, up to 11 kW",
+        "ac_fast": "AC, from 11 kW",
+        "dc_fast": "DC, from 50 kW",
+        "dc_ultra": "DC, from 150 kW"
+      }
     }
   },
   "route": {
