@@ -10,8 +10,9 @@ import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
 import { roundPrice } from "@/lib/exchange/precision";
 import { readShellContext } from "@/lib/mobile/shell-context";
+import { walletChannel } from "@/lib/exchange/realtime";
 import { QuickActions } from "@/components/mobile/quick-actions";
-import { BalanceCache } from "@/components/mobile/balance-cache";
+import { MobileBalance } from "@/components/mobile/mobile-balance";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function MobileHome({
   setRequestLocale(locale);
   const t = await getTranslations("app.home");
   const tStatus = await getTranslations("app.status");
+  const tWallet = await getTranslations("app.wallet");
 
   const session = await auth();
   const root = `/${locale}/app`;
@@ -64,13 +66,6 @@ export default async function MobileHome({
 
   return (
     <div className="px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-28">
-      <BalanceCache
-        kwh={ctx.totalKwh}
-        fiat={ctx.primary?.fiatBalance ?? 0}
-        currency={ctx.primary?.currency ?? "EUR"}
-        zoneCode={zoneCode}
-      />
-
       <div className="flex items-center justify-between">
         <span
           data-testid="status-badge"
@@ -84,22 +79,18 @@ export default async function MobileHome({
         </Link>
       </div>
 
-      <div className="mt-6">
-        <div className="text-[11px] uppercase tracking-[0.18em] text-muted">
-          {t("balance")}
-        </div>
-        <div
-          data-testid="kwh-balance"
-          className="num text-[52px] font-semibold leading-none mt-1"
-        >
-          {ctx.totalKwh.toFixed(2)}
-          <span className="text-[18px] text-muted ml-2">kWh</span>
-        </div>
-        <div className="num text-[16px] text-muted-strong mt-3">
-          {(ctx.primary?.fiatBalance ?? 0).toFixed(2)} {ctx.primary?.currency ?? "EUR"}
-          <span className="text-[13px] text-muted ml-2">{t("money")}</span>
-        </div>
-      </div>
+      <MobileBalance
+        initial={ctx.wallets}
+        channel={walletChannel(session.user.id)}
+        labels={{
+          money: t("money"),
+          reserved: tWallet("reserved"),
+          available: tWallet("available"),
+          live: tWallet("live"),
+          offline: tWallet("offline"),
+          empty: tWallet("noWallet"),
+        }}
+      />
 
       {spot != null && zone && (
         <div className="mt-5 rounded-lg bg-card border border-hairline px-4 py-3">
