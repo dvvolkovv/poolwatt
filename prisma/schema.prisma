@@ -68,6 +68,7 @@ model User {
   roamingSessions   RoamingSettlement[]  @relation("RoamingDriver")
   dashboards        Dashboard[]          @relation("DashboardOwner")
   contentViews      ContentEvent[]       @relation("ContentViewer")
+  chargeSessions    ChargeSession[]      @relation("ChargeSessionDriver")
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -311,16 +312,17 @@ model AcceptancePoint {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  connectors   PointConnector[]
-  tariffs      PointTariff[]
-  photos       PointPhoto[]
-  apiKeys      PointApiKey[]
-  workOrders   WorkOrder[]
-  tickets      Ticket[]
-  reservations Reservation[]
-  payments     Payment[]
-  policy       ReservationPolicy?
-  SiteLead     SiteLead?
+  connectors     PointConnector[]
+  tariffs        PointTariff[]
+  photos         PointPhoto[]
+  apiKeys        PointApiKey[]
+  workOrders     WorkOrder[]
+  tickets        Ticket[]
+  reservations   Reservation[]
+  payments       Payment[]
+  policy         ReservationPolicy?
+  SiteLead       SiteLead?
+  chargeSessions ChargeSession[]
 
   @@index([operatorId, status])
   @@index([status, latitude, longitude])
@@ -338,9 +340,10 @@ model PointConnector {
   status    ConnectorStatus @default(UNKNOWN)
   statusAt  DateTime?
 
-  tickets      Ticket[]
-  reservations Reservation[]
-  payments     Payment[]
+  tickets        Ticket[]
+  reservations   Reservation[]
+  payments       Payment[]
+  chargeSessions ChargeSession[]
 
   @@index([pointId])
   @@index([type, status])
@@ -673,7 +676,8 @@ model Reservation {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
-  receipt Receipt?
+  receipt       Receipt?
+  chargeSession ChargeSession?
 
   @@index([userId, status])
   @@index([connectorId, status])
@@ -1409,6 +1413,7 @@ model GridZone {
   roamingAsHomeZone    RoamingAgreement[] @relation("RoamingHomeZone")
   roamingAsVisitedZone RoamingAgreement[] @relation("RoamingVisitedZone")
   marketingContents    MarketingContent[]
+  chargeSessions       ChargeSession[]
 }
 
 // §6, §16.5 — the external spot reference per interval, kept as history.
@@ -1692,6 +1697,7 @@ model Wallet {
   reservations      Reservation[]
   outgoingTransfers TokenTransfer[] @relation("TransferFrom")
   incomingTransfers TokenTransfer[] @relation("TransferTo")
+  chargeSessions    ChargeSession[]
 
   @@unique([ownerUserId, zoneId])
   @@index([zoneId])
@@ -1799,10 +1805,80 @@ model Payment {
   receipt           Receipt?
   roamingSettlement RoamingSettlement?
   promoGrants       PromoGrant[]
+  chargeSession     ChargeSession?
 
   @@index([walletId, createdAt])
   @@index([status])
   @@index([pointId, capturedAt])
+}
+
+// §16.6 — у зарядки два момента: "сумма авторизуется с запасом Y %" в начале
+// и "списывается по факту" в конце. Между ними живёт сеанс, ход которого
+// водитель видит на экране (§22.9, US-20). Без этой записи зарядка была одним
+// неделимым вызовом, и показать её ход было нечем.
+enum ChargeSessionStatus {
+  AUTHORIZED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  EXPIRED
+  FAILED
+}
+
+model ChargeSession {
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation("ChargeSessionDriver", fields: [userId], references: [id], onDelete: Cascade)
+  walletId      String
+  wallet        Wallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  zoneId        String
+  zone          GridZone        @relation(fields: [zoneId], references: [id])
+  pointId       String
+  point         AcceptancePoint @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  connectorId   String
+  connector     PointConnector  @relation(fields: [connectorId], references: [id], onDelete: Cascade)
+  // §32.5 — какую бронь закрыл этот сеанс.
+  reservationId String?         @unique
+  reservation   Reservation?    @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+
+  status         ChargeSessionStatus @default(AUTHORIZED)
+  plannedKwh     Decimal             @db.Decimal(18, 3)
+  deliveredKwh   Decimal             @default(0) @db.Decimal(18, 3)
+  // Резерв под сеанс: тот же механизм, что держит средства под заявкой.
+  authorizedFiat Decimal             @default(0) @db.Decimal(18, 2)
+  currency       String              @default("EUR")
+  // Снимок ChargePlan на момент согласия водителя — чтобы спор "мне считали
+  // другое" разбирался по тому, что он видел.
+  quote          Json                @default("{}")
+  tariffVersion  Int?
+
+  paymentId      String?  @unique
+  payment        Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  idempotencyKey String?  @unique
+
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  lastMeterAt DateTime?
+  endedAt     DateTime?
+  closeReason String?
+
+  ticks ChargeSessionTick[]
+
+  @@index([userId, status])
+  @@index([connectorId, status])
+  @@index([status, lastMeterAt])
+}
+
+// Ход зарядки и доказательство в споре "списали больше, чем я взял".
+model ChargeSessionTick {
+  id        String        @id @default(cuid())
+  sessionId String
+  session   ChargeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  at        DateTime      @default(now())
+  kwhTotal  Decimal       @db.Decimal(18, 3)
+  powerKw   Decimal?      @db.Decimal(8, 2)
+
+  @@index([sessionId, at])
 }
 
 // §13 / §46 Receipt — issued for a payment or a trade; lists the burned batches.
