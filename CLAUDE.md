@@ -45,6 +45,13 @@ Every run:
 
 ## How to report to the owner
 
+**Everything you say to the owner is in Russian. Always, without exception.**
+The owner repeated this on 2026-11-26: never report in English — not a status
+line, not a summary, not a one-word answer, not a commit explanation in chat.
+Every message in the conversation and every Telegram reply is Russian text (plus
+the two audio files, RU + SK). Code, commit messages, file names and skill
+output stay as they are; the words addressed to the owner do not.
+
 The owner asked for this explicitly (2026-11-24): keep going through the queue
 one task at a time, and **report after every finished task**, not only at the
 end of the run.
@@ -55,8 +62,8 @@ end of the run.
 - Short. A few sentences per finished task is enough.
 - Always say what remains in the queue after this task, and what you need from
   the owner if anything.
-- Russian text plus the two audio files (RU + SK), as the bot-response rules
-  below require.
+- Russian text always, plus the two audio files (RU + SK), as the bot-response
+  rules below require. English is never acceptable.
 - Then move on to the next task without waiting for an answer, unless the task
   is blocked on the owner.
 
