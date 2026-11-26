@@ -12,6 +12,22 @@ import { MapsDeepLink } from "@/components/maps-deep-link";
 import { prisma } from "@/lib/prisma";
 import { readLiveContent } from "@/lib/marketing/content-service";
 import { ContentSection } from "@/components/marketing/content-block";
+import { readPointCard } from "@/lib/points/point-card";
+import { readAvailabilityHistory } from "@/lib/points/availability-history";
+import { mayReview, readMyReview, readReviews } from "@/lib/points/point-reviews";
+import { ReviewForm } from "@/components/points/review-form";
+import { submitReview } from "@/app/[locale]/app/c/[id]/actions";
+import {
+  AvailabilityStrip,
+  EquipmentBlock,
+  FactsBlock,
+  HoursBlock,
+  OwnerBlock,
+  PhotoGallery,
+  ReviewsBlock,
+  TariffsBlock,
+  type PointLabels,
+} from "@/components/points/point-card-blocks";
 
 const STATUS_COLOR: Record<string, string> = {
   operational: "bg-up",
@@ -32,6 +48,25 @@ export default async function ChargerDetailPage({
   // mock/OSM catalogue is the fallback.
   const charger = (await loadPointAsStation(id)) ?? getChargerById(id);
   if (!charger) notFound();
+
+  // §28 — те же блоки, что рисует мобильная карточка, от того же читателя.
+  // До этого карточка на монитор показывала меньше половины полей §28.
+  const sessionForCard = await auth();
+  const card = charger.poolwattPointId
+    ? await readPointCard(charger.poolwattPointId, sessionForCard?.user?.id ?? null)
+    : null;
+  const [history, reviews, myReview, canReview] = card
+    ? await Promise.all([
+        readAvailabilityHistory(card.id),
+        readReviews(card.id),
+        sessionForCard?.user?.id
+          ? readMyReview(sessionForCard.user.id, card.id)
+          : Promise.resolve(null),
+        sessionForCard?.user?.id
+          ? mayReview(sessionForCard.user.id, card.id)
+          : Promise.resolve(false),
+      ])
+    : [[], { average: null, count: 0, rows: [] }, null, false];
 
   const operator = charger.operator
     ? await prisma.chargerOperator.findFirst({
@@ -54,6 +89,51 @@ export default async function ChargerDetailPage({
       : null;
 
   const t = await getTranslations("charger");
+  const tPoint = await getTranslations("app.point");
+  const tMap = await getTranslations("app.map");
+  const cardLabels: PointLabels = {
+    t: {
+      ...(Object.fromEntries(
+        [
+          "title", "closedNow", "closedUntil", "notPublished", "coopOnly", "clientsOnly",
+          "owner", "verified", "legalName", "vatNumber", "vatRate", "vatMissing",
+          "address", "howToFind", "zone", "source", "goCertificate", "equipment",
+          "connectors", "points", "maxPower", "storage", "tariffs", "inForce", "idleFee",
+          "coopDiscount", "priceUtc", "hours", "open24", "closedDay", "holidays",
+          "payment", "amenities", "connection", "ocpp", "lastSeen", "neverSeen", "photos",
+          "reviews", "noReviews", "reviewRight", "myReview", "rating", "reviewText",
+          "send", "sending", "saved", "history", "historyHint", "lastChange", "noHistory",
+          "charge", "book", "report",
+        ].map((k) => [k, tPoint(k)]),
+      ) as Record<string, string>),
+      "payMethod.TOKEN": tMap("payMethod.TOKEN"),
+      "payMethod.POOLWATT_CARD": tMap("payMethod.POOLWATT_CARD"),
+      "payMethod.WHITE_LABEL_CARD": tMap("payMethod.WHITE_LABEL_CARD"),
+      "payMethod.BANK_CARD": tMap("payMethod.BANK_CARD"),
+      "payMethod.QR": tMap("payMethod.QR"),
+    },
+    weekday: Object.fromEntries(
+      ["0", "1", "2", "3", "4", "5", "6"].map((d) => [d, tPoint(`weekday.${d}`)]),
+    ),
+    amenity: Object.fromEntries(
+      ["PARKING", "CAFE", "TOILET", "WIFI", "ACCESSIBLE", "COVERED"].map((a) => [
+        a,
+        tPoint(`amenity.${a}`),
+      ]),
+    ),
+    source_: Object.fromEntries(
+      ["SOLAR", "WIND", "BIOGAS", "HYDRO", "GRID", "MIXED"].map((x) => [
+        x,
+        tPoint(`source_.${x}`),
+      ]),
+    ),
+    availability: Object.fromEntries(
+      ["FREE", "BUSY", "OUT_OF_SERVICE", "BOOKED", "UNKNOWN"].map((a) => [
+        a,
+        tMap(`availability.${a}`),
+      ]),
+    ),
+  };
   const tBook = await getTranslations("booking");
 
   // §35 — booking lives on the card of a Poolwatt point; an OpenStreetMap
@@ -188,63 +268,97 @@ export default async function ChargerDetailPage({
           </section>
         )}
 
-        <section className="mb-10">
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted mb-4">
-            {t("connectorsTitle")}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {charger.connections.map((c, i) => (
-              <div
-                key={i}
-                className="border border-hairline rounded-lg p-4 bg-card flex items-center justify-between"
-              >
-                <div>
-                  <div className="text-[15px] font-semibold">{c.connectorType}</div>
-                  <div className="text-[12px] text-muted">
-                    {c.currentType}
-                    {c.voltageV ? ` · ${c.voltageV} V` : ""}
-                    {c.ampereA ? ` · ${c.ampereA} A` : ""}
+        {card ? (
+          <>
+            <PhotoGallery photos={card.photos} labels={cardLabels} />
+            <TariffsBlock card={card} labels={cardLabels} />
+            <EquipmentBlock card={card} labels={cardLabels} />
+            <HoursBlock card={card} labels={cardLabels} />
+            <FactsBlock card={card} labels={cardLabels} />
+            <AvailabilityStrip history={history} labels={cardLabels} />
+            <ReviewsBlock reviews={reviews} labels={cardLabels} />
+            {canReview ? (
+              <ReviewForm
+                pointId={card.id}
+                mine={myReview}
+                labels={{
+                  myReview: cardLabels.t.myReview,
+                  rating: cardLabels.t.rating,
+                  reviewText: cardLabels.t.reviewText,
+                  send: cardLabels.t.send,
+                  sending: cardLabels.t.sending,
+                  saved: cardLabels.t.saved,
+                }}
+                submit={submitReview}
+              />
+            ) : (
+              <p className="mt-2 text-[12px] text-muted" data-testid="review-right">
+                {cardLabels.t.reviewRight}
+              </p>
+            )}
+            <OwnerBlock card={card} labels={cardLabels} />
+          </>
+        ) : (
+          <>
+            <section className="mb-10">
+              <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted mb-4">
+                {t("connectorsTitle")}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {charger.connections.map((c, i) => (
+                  <div
+                    key={i}
+                    className="border border-hairline rounded-lg p-4 bg-card flex items-center justify-between"
+                  >
+                    <div>
+                      <div className="text-[15px] font-semibold">{c.connectorType}</div>
+                      <div className="text-[12px] text-muted">
+                        {c.currentType}
+                        {c.voltageV ? ` · ${c.voltageV} V` : ""}
+                        {c.ampereA ? ` · ${c.ampereA} A` : ""}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[18px] font-bold num">{c.powerKw} kW</div>
+                      <div className="text-[11px] text-muted num">× {c.quantity}</div>
+                    </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[18px] font-bold num">{c.powerKw} kW</div>
-                  <div className="text-[11px] text-muted num">× {c.quantity}</div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
+            </section>
 
-        <section className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-[14px]">
-          <Field label={t("totalPoints")} value={String(charger.totalPoints)} />
-          <Field label={t("maxPower")} value={`${charger.maxPowerKw} kW`} />
-          <Field label={t("usageType")} value={t(`usage.${charger.usageType}`)} />
-          {charger.openHours && <Field label={t("openHours")} value={charger.openHours} />}
-          <Field
-            label={t("priceLabel")}
-            value={
-              livePrice
-                ? `${Number(livePrice.pricePerKwh).toFixed(Number(livePrice.pricePerKwh) < 1 ? 3 : 2)} ${livePrice.currency}/kWh`
-                : charger.costInfo ?? t("priceFallback")
-            }
-            badge={livePrice ? t("priceLive") : null}
-            hint={
-              livePrice
-                ? `${t("priceUpdated")} ${new Date(livePrice.updatedAt).toLocaleString(locale)}`
-                : null
-            }
-          />
-          {typeof charger.rating === "number" && (
-            <Field label={t("rating")} value={`★ ${charger.rating.toFixed(1)}`} />
-          )}
-        </section>
+            <section className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-[14px]">
+              <Field label={t("totalPoints")} value={String(charger.totalPoints)} />
+              <Field label={t("maxPower")} value={`${charger.maxPowerKw} kW`} />
+              <Field label={t("usageType")} value={t(`usage.${charger.usageType}`)} />
+              {charger.openHours && <Field label={t("openHours")} value={charger.openHours} />}
+              <Field
+                label={t("priceLabel")}
+                value={
+                  livePrice
+                    ? `${Number(livePrice.pricePerKwh).toFixed(Number(livePrice.pricePerKwh) < 1 ? 3 : 2)} ${livePrice.currency}/kWh`
+                    : charger.costInfo ?? t("priceFallback")
+                }
+                badge={livePrice ? t("priceLive") : null}
+                hint={
+                  livePrice
+                    ? `${t("priceUpdated")} ${new Date(livePrice.updatedAt).toLocaleString(locale)}`
+                    : null
+                }
+              />
+              {typeof charger.rating === "number" && (
+                <Field label={t("rating")} value={`★ ${charger.rating.toFixed(1)}`} />
+              )}
+            </section>
+          </>
+        )}
 
         <section className="border-t border-hairline pt-6 text-[12px] text-muted">
           <span>{t("lastVerified")}: </span>
           <span className="num text-muted-strong">{charger.lastVerified ?? "—"}</span>
         </section>
 
-        {operator && (
+        {!card && operator && (
           <section className="mt-8 p-5 bg-card border border-hairline rounded-xl">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted mb-3">{tOp("title", { name: operator.displayName })}</h2>
             {operator.description && <p className="text-sm text-muted-strong mb-3">{operator.description}</p>}

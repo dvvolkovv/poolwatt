@@ -142,7 +142,9 @@ export function PointMiniCard({
           </Link>
         )}
         <Link
-          href={`/${locale}/c/${station.id}`}
+          href={
+            ours ? `/${locale}/app/c/${station.poolwattPointId}` : `/${locale}/c/${station.id}`
+          }
           prefetch={false}
           data-testid="mini-details"
           className="rounded-full border border-hairline px-5 py-3 text-[13px] uppercase tracking-[0.18em] text-muted"
