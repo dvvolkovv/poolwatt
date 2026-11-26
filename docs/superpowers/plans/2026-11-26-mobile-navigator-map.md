@@ -53,7 +53,7 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 - Test: `src/lib/points/point-tariff.test.ts`
 - Modify: `src/lib/receipts/receipt-document.ts:193-212`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `src/lib/points/point-tariff.test.ts`:
 
@@ -120,12 +120,12 @@ describe("tariffAt", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local | tr -d '"' | sed 's|/poolwatt?|/poolwatt_test?|')" npx vitest run src/lib/points/point-tariff.test.ts`
 Expected: FAIL — `Failed to resolve import "./point-tariff"`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `src/lib/points/point-tariff.ts`:
 
@@ -213,12 +213,12 @@ export function tariffAt<T extends TariffWindow>(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: the same vitest command.
 Expected: PASS, 9 cases.
 
-- [ ] **Step 5: Make the receipt use it**
+- [x] **Step 5: Make the receipt use it**
 
 В `src/lib/receipts/receipt-document.ts` удалить локальную функцию `tariffAt`
 (строки 202–212) и её тип-параметр, добавить к импортам
@@ -227,12 +227,12 @@ Expected: PASS, 9 cases.
 `(tariffs, at)`, посчитать минуту через `localMinuteOfDay(at, point.country)`
 и передать её.
 
-- [ ] **Step 6: Run the receipt tests**
+- [x] **Step 6: Run the receipt tests**
 
 Run: `NODE_ENV=test DATABASE_URL="…poolwatt_test…" npx vitest run src/lib/receipts`
 Expected: PASS, как до правки.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/lib/points/point-tariff.ts src/lib/points/point-tariff.test.ts src/lib/receipts/receipt-document.ts
@@ -247,7 +247,7 @@ git commit -m "feat(points): one answer to what a point costs right now"
 - Modify: `src/lib/points/point-search.ts`
 - Test: `src/lib/points/point-search.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Дописать в `src/lib/points/point-search.test.ts` внутри существующего
 `describe`-блока (сев в `beforeAll` расширить: см. шаг 2):
@@ -297,7 +297,7 @@ git commit -m "feat(points): one answer to what a point costs right now"
   });
 ```
 
-- [ ] **Step 2: Extend the test seed**
+- [x] **Step 2: Extend the test seed**
 
 В `beforeAll` того же файла добавить пункты, которых требуют новые случаи.
 Функцию `seed` расширить необязательными полями:
@@ -418,12 +418,12 @@ async function seed(args: {
 сравнивает длину массива, заменить сравнение на проверку наличия нужных
 имён, потому что сев вырос.
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run: `NODE_ENV=test DATABASE_URL="…poolwatt_test…" npx vitest run src/lib/points/point-search.test.ts`
 Expected: FAIL — новые поля `SearchArgs` не существуют (ошибка типа), фильтры не применяются.
 
-- [ ] **Step 4: Implement the filters**
+- [x] **Step 4: Implement the filters**
 
 В `src/lib/points/point-search.ts`:
 
@@ -535,12 +535,12 @@ const GREEN = [
 
 (переменную `found` оставить как есть, вернуть `result`).
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: the same vitest command.
 Expected: PASS — все прежние случаи плюс семь новых.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/points/point-search.ts src/lib/points/point-search.test.ts
@@ -556,7 +556,7 @@ git commit -m "feat(points): the nine filters of §27 are applied by the server"
 - Modify: `src/lib/points/point-to-station.ts`
 - Test: `src/lib/points/point-to-station.test.ts` (создать)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `src/lib/points/point-to-station.test.ts`:
 
@@ -608,12 +608,12 @@ describe("pointToStation", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `NODE_ENV=test DATABASE_URL="…poolwatt_test…" npx vitest run src/lib/points/point-to-station.test.ts`
 Expected: FAIL — `pointType`, `paymentMethods`, `open24`, `distanceM` не существуют в типе.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 В `src/lib/chargers.ts`, в конец типа `ChargerStation`:
 
@@ -637,11 +637,11 @@ Expected: FAIL — `pointType`, `paymentMethods`, `open24`, `distanceM` не с�
     distanceM: point.distanceM,
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Expected: PASS, 2 cases.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/chargers.ts src/lib/points/point-to-station.ts src/lib/points/point-to-station.test.ts
@@ -656,7 +656,7 @@ git commit -m "feat(navigator): a pin knows the type of the point it stands for"
 - Create: `src/lib/mobile/map-filters.ts`
 - Test: `src/lib/mobile/map-filters.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `src/lib/mobile/map-filters.test.ts`:
 
@@ -753,11 +753,11 @@ describe("oursOnly", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Expected: FAIL — `Failed to resolve import "./map-filters"`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 `src/lib/mobile/map-filters.ts`:
 
@@ -884,11 +884,11 @@ export function oursOnly(f: MapFilters): boolean {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Expected: PASS, 11 cases.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/mobile/map-filters.ts src/lib/mobile/map-filters.test.ts
@@ -902,7 +902,7 @@ git commit -m "feat(mobile): the nine filters of §27 live in the address"
 **Files:**
 - Modify: `src/app/api/chargers/route.ts`
 
-- [ ] **Step 1: Pass the filters through**
+- [x] **Step 1: Pass the filters through**
 
 В `src/app/api/chargers/route.ts`:
 
@@ -987,12 +987,12 @@ const CONNECTOR_ENUM: Record<string, string> = {
   if (onlyOurs) headers["X-Ours-Only"] = "1";
 ```
 
-- [ ] **Step 2: Check the navigator on a monitor still works**
+- [x] **Step 2: Check the navigator on a monitor still works**
 
 Старый навигатор зовёт `/api/chargers` без фильтров: `oursOnly` ложно,
 поведение прежнее. Проверить на живой сборке после сборки (Task 9).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/app/api/chargers/route.ts
@@ -1007,7 +1007,7 @@ git commit -m "feat(navigator): the chargers endpoint applies the §27 filters"
 - Create: `src/components/route-sheet.tsx`
 - Modify: `messages/en.json`, `messages/ru.json`, `messages/sk.json`
 
-- [ ] **Step 1: Write the component**
+- [x] **Step 1: Write the component**
 
 `src/components/route-sheet.tsx`:
 
@@ -1128,7 +1128,7 @@ export function RouteSheet({ lat, lng, name, labels, className }: Props) {
 }
 ```
 
-- [ ] **Step 2: Add the labels**
+- [x] **Step 2: Add the labels**
 
 В `messages/en.json`, `messages/ru.json`, `messages/sk.json` добавить ветку
 верхнего уровня `route`:
@@ -1139,12 +1139,12 @@ ru: `{"route":{"route":"Маршрут","openIn":"Открыть в","system":"�
 
 sk: `{"route":{"route":"Trasa","openIn":"Otvoriť v","system":"Predvolená navigácia","google":"Google Maps","apple":"Apple Maps","waze":"Waze","cancel":"Zrušiť"}}`
 
-- [ ] **Step 3: Typecheck**
+- [x] **Step 3: Typecheck**
 
 Run: `npx tsc --noEmit`
 Expected: no errors in the new file.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/components/route-sheet.tsx messages/en.json messages/ru.json messages/sk.json
@@ -1162,7 +1162,7 @@ git commit -m "feat(navigator): a driver picks the navigator the route opens in"
 - Create: `src/components/mobile/point-mini-card.tsx`
 - Modify: `messages/en.json`, `messages/ru.json`, `messages/sk.json`
 
-- [ ] **Step 1: The server screen**
+- [x] **Step 1: The server screen**
 
 `src/app/[locale]/app/map/page.tsx` — серверный компонент: `setRequestLocale`,
 `getTranslations("app.map")`, разбор начальных фильтров из `searchParams`
@@ -1185,7 +1185,7 @@ git commit -m "feat(navigator): a driver picks the navigator the route opens in"
 `pay.TOKEN`, `pay.POOLWATT_CARD`, `pay.WHITE_LABEL_CARD`, `pay.BANK_CARD`,
 `pay.QR`, `power.ac_slow`, `power.ac_fast`, `power.dc_fast`, `power.dc_ultra`.
 
-- [ ] **Step 2: The map**
+- [x] **Step 2: The map**
 
 `src/components/mobile/point-map.tsx` — клиентский компонент. Что он делает:
 
@@ -1222,7 +1222,7 @@ git commit -m "feat(navigator): a driver picks the navigator the route opens in"
 - Контейнер карты `data-testid="point-map"`, число найденных —
   `data-testid="map-count"`.
 
-- [ ] **Step 3: The filter sheet**
+- [x] **Step 3: The filter sheet**
 
 `src/components/mobile/map-filter-sheet.tsx` — лист снизу с девятью
 фильтрами: четыре `select` (тип, разъём, мощность, способ оплаты), три
@@ -1233,7 +1233,7 @@ git commit -m "feat(navigator): a driver picks the navigator the route opens in"
 появляется. Под «зелёным источником» — подпись `labels.greenHint`
 («сеть и смешанный не считаются»).
 
-- [ ] **Step 4: The mini-card**
+- [x] **Step 4: The mini-card**
 
 `src/components/mobile/point-mini-card.tsx` — лист снизу
 (`data-testid="mini-card"`): название, оператор, расстояние (если есть),
@@ -1251,13 +1251,13 @@ git commit -m "feat(navigator): a driver picks the navigator the route opens in"
 Чужой пин (без `poolwattPointId`) получает только название, адрес и маршрут:
 цены и занятости у него нет, и придумывать их нельзя.
 
-- [ ] **Step 5: Build and look at it**
+- [x] **Step 5: Build and look at it**
 
 Run: `npm run build && pm2 restart poolwatt-web`
 Then: `curl -s -o /dev/null -w '%{http_code}\n' https://poolwatt.com/ru/app/map`
 Expected: `200`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/app/[locale]/app/map src/components/mobile/point-map.tsx \
@@ -1275,7 +1275,7 @@ git commit -m "feat(mobile): the §27 map — clustering, nine filters, a mini-c
 - Modify: `src/app/[locale]/app/charge/page.tsx`
 - Modify: `messages/en.json`, `messages/ru.json`, `messages/sk.json`
 
-- [ ] **Step 1: Add the link**
+- [x] **Step 1: Add the link**
 
 В `src/components/mobile/charge-entry.tsx` под `<QrScan>` и над
 `<NearbyPoints>` добавить ссылку на карту:
@@ -1296,12 +1296,12 @@ git commit -m "feat(mobile): the §27 map — clustering, nine filters, a mini-c
 `openMap: t("openMap")`, а в `messages/*.json` — ключ `app.charge.openMap`:
 en `"Open the map"`, ru `"Открыть карту"`, sk `"Otvoriť mapu"`.
 
-- [ ] **Step 2: Build and check**
+- [x] **Step 2: Build and check**
 
 Run: `npm run build && pm2 restart poolwatt-web && curl -s -o /dev/null -w '%{http_code}\n' https://poolwatt.com/ru/app/charge`
 Expected: `200`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/mobile/charge-entry.tsx src/app/[locale]/app/charge/page.tsx messages
@@ -1315,7 +1315,7 @@ git commit -m "feat(mobile): the charge tab opens the map"
 **Files:**
 - Create: `tests/e2e/mobile-navigator.mobile.spec.ts`
 
-- [ ] **Step 1: Write the test**
+- [x] **Step 1: Write the test**
 
 `tests/e2e/mobile-navigator.mobile.spec.ts` — проект `mobile` в
 `playwright.config.ts` (Pixel 7), против живого домена. Случаи:
@@ -1342,12 +1342,12 @@ canvas, а через `page.evaluate` — карта кладёт на `window._
 мини-карточку сразу. Это и тестируемо, и полезно само: ссылка на пункт с
 карты.
 
-- [ ] **Step 2: Run it**
+- [x] **Step 2: Run it**
 
 Run: `npm run test:e2e -- --project=mobile mobile-navigator`
 Expected: PASS, 6 cases. `pm2 status` перед запуском: `poolwatt-web` online.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add tests/e2e/mobile-navigator.mobile.spec.ts src/app/[locale]/app/map/page.tsx src/components/mobile/point-map.tsx
@@ -1358,7 +1358,7 @@ git commit -m "test(mobile): the §27 map on a Pixel 7"
 
 ### Task 10: вся проверка, сборка APK, реестр
 
-- [ ] **Step 1: The whole unit suite**
+- [x] **Step 1: The whole unit suite**
 
 Run:
 ```bash
@@ -1369,25 +1369,60 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local | tr -d '"
 Expected: зелено, кроме двух случаев `bot/__tests__/tts-bilingual.test.ts`,
 если нет `OPENAI_API_KEY`.
 
-- [ ] **Step 2: The whole e2e suite**
+- [x] **Step 2: The whole e2e suite**
 
 Run: `npm run test:e2e`
 Expected: зелено.
 
-- [ ] **Step 3: APK**
+- [x] **Step 3: APK**
 
 Run: `/home/dv/bin/android-build`
 Expected: печатает адрес `https://poolwatt.com/downloads/poolwatt-build-<N>.apk`.
 
-- [ ] **Step 4: Tick this plan and update the tracker**
+- [x] **Step 4: Tick this plan and update the tracker**
 
 Отметить шаги в этом файле. В `inbox/TZ-STATUS.md`: строка M3-б в таблице
 блока M делится на M3-б-1 (готово) и M3-б-2 (не начато), доказательство
 дописывается абзацем, как у M1 и M2.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add docs/superpowers/plans/2026-11-26-mobile-navigator-map.md
 git commit -m "docs(mobile): tick the M3-б-1 plan"
 ```
+
+---
+
+## Где работа ушла от плана
+
+- **Сев фильтров — в своём прямоугольнике.** План просил расширить общий сев
+  `point-search.test.ts`. Случаи US-23 в этом файле сравнивают выдачу
+  поимённо, и новые пункты в их коробке лишили бы эти сравнения смысла.
+  Девять фильтров §27 проверяются на отдельном прямоугольнике `WIDE`.
+- **`tariffAt` получил второй вид.** В чеке функция принимала момент, а не
+  минуту суток, поэтому рядом с `tariffAt(tariffs, minute)` появился
+  `tariffAtDate(tariffs, at, country)`. Заодно чек перестал считать окно
+  суток по UTC и считает его по часам страны пункта.
+- **`point-detail.ts` тоже исправлен.** Карточка `/c/[id]` брала первое окно
+  суток ровно так же, как поиск; раз причина одна, исправлено в обоих местах.
+- **Мини-карточка открывается адресом.** Чтобы тап по пину был проверяем из
+  Playwright (карта — это canvas), экран принимает `?open=<id>` и открывает
+  мини-карточку сразу. Это и нужно само: так на пункт можно дать ссылку с
+  карты. Начальный вид задаётся `?lat=&lng=&z=`.
+- **Попутно найдено и исправлено.** Случай `resolve-user.test.ts` «никогда не
+  создаёт аккаунт» сравнивал общее число пользователей базы, а соседние файлы
+  набора идут рядом и заводят своих: в полном прогоне он падал через раз.
+  Теперь считает только своих.
+- **Фильтр мощности — это минимум, а не ступень.** Навигатор на монитор
+  сравнивает ступень пункта с выбранной; водителю на телефоне полезнее
+  «не меньше такой», и `/api/chargers` переводит ступень в киловатты снизу.
+
+## Доказательство
+
+- 1528 юнит-тестов и 135 e2e зелёные на живой сборке; из e2e шесть новых на
+  Pixel 7 через настоящий домен (`tests/e2e/mobile-navigator.mobile.spec.ts`).
+- `https://poolwatt.com/ru/app/map` отвечает 200, с фильтром в адресе тоже.
+- `/api/chargers` без фильтров отдаёт прежнюю выдачу (`x-count: 187`,
+  `x-source: live`), с `free=1` — только наши пункты и `x-ours-only: 1`.
+- APK build 7: `https://poolwatt.com/downloads/poolwatt-build-7.apk`.
