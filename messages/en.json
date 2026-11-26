@@ -1602,7 +1602,12 @@
       "reject": "Send back",
       "note": "A note the owner can act on",
       "working": "…"
-    }
+    },
+    "field.photos": "Photos",
+    "photos.add": "Add photos",
+    "photos.remove": "Remove the photo",
+    "photos.counter": "photos",
+    "photos.hint": "JPEG, PNG or WebP, up to 5 MB each, up to ten per point."
   },
   "staff": {
     "eyebrow": "Staff",

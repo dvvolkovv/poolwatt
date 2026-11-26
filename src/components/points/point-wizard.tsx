@@ -16,6 +16,7 @@ import {
   submitPoint,
 } from "@/app/[locale]/me/charger-operator/[id]/points/actions";
 import { PointMiniCard, type MiniCardLabels, type MiniPoint } from "./point-mini-card";
+import { PhotoUploader } from "./photo-uploader";
 
 const STEPS = [
   "type",
@@ -273,6 +274,17 @@ export function PointWizard({
               <Field label={labels["field.howToFind"]}>
                 <textarea value={state.howToFind} onChange={(e) => set("howToFind", e.target.value)} aria-label={labels["field.howToFind"]} rows={3} className={input} />
               </Field>
+              {/* §28 просит фотографии в этом же блоке, §29.1 — на этом шаге. */}
+              <PhotoUploader
+                pointId={state.id}
+                labels={{
+                  photos: labels["field.photos"],
+                  add: labels["photos.add"],
+                  remove: labels["photos.remove"],
+                  counter: labels["photos.counter"],
+                  hint: labels["photos.hint"],
+                }}
+              />
             </>
           )}
 

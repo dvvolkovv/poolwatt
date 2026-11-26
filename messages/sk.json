@@ -1602,7 +1602,12 @@
       "reject": "Vrátiť",
       "note": "Poznámka, s ktorou vie majiteľ pracovať",
       "working": "…"
-    }
+    },
+    "field.photos": "Fotografie",
+    "photos.add": "Pridať fotografie",
+    "photos.remove": "Odstrániť fotografiu",
+    "photos.counter": "fotografií",
+    "photos.hint": "JPEG, PNG alebo WebP, do 5 MB každá, najviac desať na bod."
   },
   "staff": {
     "eyebrow": "Zamestnanci",
