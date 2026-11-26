@@ -69,6 +69,7 @@ model User {
   dashboards        Dashboard[]          @relation("DashboardOwner")
   contentViews      ContentEvent[]       @relation("ContentViewer")
   chargeSessions    ChargeSession[]      @relation("ChargeSessionDriver")
+  pointReviews      PointReview[]
 }
 
 // V1: user picked an email and we sent them a verification link. Token is
@@ -323,6 +324,7 @@ model AcceptancePoint {
   policy         ReservationPolicy?
   SiteLead       SiteLead?
   chargeSessions ChargeSession[]
+  reviews        PointReview[]
 
   @@index([operatorId, status])
   @@index([status, latitude, longitude])
@@ -401,6 +403,25 @@ model PointPhoto {
   uploadedAt  DateTime        @default(now())
 
   @@index([pointId, position])
+}
+
+// §27 «Полная карточка: … отзывы». Отзыв оставляет тот, кто здесь заряжался
+// или чья бронь была исполнена: отзыв, не привязанный ни к одному приезду, —
+// это способ испортить чужую карточку, а приезд у нас уже записан в базе.
+// Один отзыв на человека и пункт, свой можно переписать.
+model PointReview {
+  id        String          @id @default(cuid())
+  pointId   String
+  point     AcceptancePoint @relation(fields: [pointId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int
+  text      String?         @db.Text
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([pointId, userId])
+  @@index([pointId, createdAt])
 }
 
 // The equipment credential of one point — the same shape as AssetApiKey:
