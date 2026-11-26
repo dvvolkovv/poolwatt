@@ -9,6 +9,7 @@ import type { ChargerStation } from "@/lib/chargers";
 import { prisma } from "@/lib/prisma";
 import { num, numOrNull } from "@/lib/exchange/decimal";
 import { pointToStation } from "./point-to-station";
+import { localMinuteOfDay, tariffAt, zoneKnown } from "./point-tariff";
 
 export async function loadPointAsStation(id: string): Promise<ChargerStation | null> {
   const point = await prisma.acceptancePoint.findUnique({
@@ -16,13 +17,14 @@ export async function loadPointAsStation(id: string): Promise<ChargerStation | n
     include: {
       operator: { select: { displayName: true } },
       connectors: true,
-      tariffs: { orderBy: { fromMinute: "asc" }, take: 1 },
+      // Все окна суток: цена карточки — та, что действует сейчас.
+      tariffs: { orderBy: { fromMinute: "asc" } },
     },
   });
   if (!point || point.status !== PointStatus.PUBLISHED) return null;
   if (point.latitude == null || point.longitude == null) return null;
 
-  const tariff = point.tariffs[0];
+  const tariff = tariffAt(point.tariffs, localMinuteOfDay(new Date(), point.country));
   const station = pointToStation({
     id: point.id,
     name: point.name,
@@ -38,6 +40,9 @@ export async function loadPointAsStation(id: string): Promise<ChargerStation | n
     priceFiat: numOrNull(tariff?.priceFiat ?? null),
     priceTokens: numOrNull(tariff?.priceTokens ?? null),
     currency: tariff?.currency ?? "EUR",
+    idleFeePerMin: numOrNull(tariff?.idleFeePerMin ?? null),
+    paymentMethods: point.paymentMethods,
+    priceZoneKnown: zoneKnown(point.country),
     connectors: point.connectors.map((c) => ({
       type: c.type as string,
       powerKw: num(c.powerKw),
