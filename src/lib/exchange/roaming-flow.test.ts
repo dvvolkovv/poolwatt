@@ -19,6 +19,7 @@ import {
 } from "./roaming-service";
 import { chargeSession, quoteCharge } from "./payment-service";
 import { getOrCreateWallet } from "./wallet-service";
+import { placeOrder } from "./order-service";
 
 const PREFIX = "test_roam_";
 const HOME = "TESTROAMHOME";
@@ -49,6 +50,12 @@ async function cleanup() {
     where: { payment: { wallet: { owner: { username: { startsWith: PREFIX } } } } },
   });
   await prisma.payment.deleteMany({
+    where: { wallet: { owner: { username: { startsWith: PREFIX } } } },
+  });
+  await prisma.trade.deleteMany({
+    where: { buyOrder: { wallet: { owner: { username: { startsWith: PREFIX } } } } },
+  });
+  await prisma.order.deleteMany({
     where: { wallet: { owner: { username: { startsWith: PREFIX } } } },
   });
   await prisma.energyToken.deleteMany({ where: { asset: { company: { regNumber: `${PREFIX}reg` } } } });
@@ -90,6 +97,39 @@ async function setHomeBalance(kwh: number, zoneId = homeZoneId) {
     data: { kwhBalance: new Prisma.Decimal(kwh) },
   });
   return wallet.id;
+}
+
+/**
+ * Настоящая стоящая заявка в книге зоны, где идёт сеанс. Нужна там, где по
+ * §16.6 недостающее «докупается рыночной заявкой»: без книги купить не у
+ * кого, а ступень агрегатора §16.7 стоит за закрытым гейтом, потому что
+ * агрегатора у нас нет.
+ */
+async function putBookInVisited(amountKwh: number, price: number) {
+  const sellerId = await seedUser(`${PREFIX}seller`);
+  const wallet = await getOrCreateWallet(sellerId, visitZoneId);
+  await prisma.energyToken.create({
+    data: {
+      zoneId: visitZoneId,
+      assetId,
+      ownerWalletId: wallet.id,
+      amountKwh: new Prisma.Decimal(amountKwh),
+      intervalStart: new Date(),
+      status: "AVAILABLE",
+    },
+  });
+  await prisma.wallet.update({
+    where: { id: wallet.id },
+    data: { kwhBalance: new Prisma.Decimal(amountKwh) },
+  });
+  await placeOrder({
+    userId: sellerId,
+    zoneId: visitZoneId,
+    side: "SELL",
+    type: "LIMIT",
+    amountKwh,
+    limitPrice: price,
+  });
 }
 
 beforeAll(async () => {
@@ -424,10 +464,13 @@ describe("chargeSession abroad — the debit of US-11", () => {
     await setHomeBalance(1000);
     await setVisitedFiat(100);
     await corridor(HOME, 0, 4);
+    await putBookInVisited(20, 0.2);
 
     const plan = await quoteCharge({ userId: driverId, zoneId: visitZoneId, requestedKwh: 10 });
     expect(plan.kwhFromRoaming).toBe(4);
-    // The allowance stops the corridor at 4 kWh; the other 6 are paid for.
+    // The allowance stops the corridor at 4 kWh; the other 6 are bought in
+    // the visited zone's book.
+    expect(plan.kwhFromMarket).toBe(6);
     expect(plan.energyCost).toBeGreaterThan(0);
 
     const result = await chargeSession({

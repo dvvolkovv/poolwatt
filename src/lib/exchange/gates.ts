@@ -134,3 +134,24 @@ export function assertOcppOpen(env: Env = process.env): void {
     throw new FeatureClosedError("There is no bridge to a charging network yet");
   }
 }
+
+/**
+ * §16.7 — "нет ликвидности на бирже — платёж исполняется через агрегатора по
+ * внешней спотовой цене".
+ *
+ * Агрегатор — настоящая сторона с договором: кто-то продаёт нам кВт·ч вне
+ * книги и отвечает за поставку. Такой стороны нет. До этого гейта расчёт уже
+ * умел посчитать ступень агрегатора, а списание её не исполняло: водителю
+ * показывалась цена, а потом сеанс падал с «market order could not be
+ * filled». Закрыто означает, что ступени агрегатора в расчёте нет вовсе, и
+ * водителю честно говорят «столько кВт·ч сейчас не из чего дать».
+ */
+export function aggregatorOpen(env: Env = process.env): boolean {
+  return env.AGGREGATOR_FALLBACK === "true";
+}
+
+export function assertAggregatorOpen(env: Env = process.env): void {
+  if (!aggregatorOpen(env)) {
+    throw new FeatureClosedError("There is no aggregator to buy outside the book from");
+  }
+}

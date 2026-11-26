@@ -3,10 +3,12 @@ import {
   FeatureClosedError,
   assertCampaignFiatFundingOpen,
   assertCardTariffsOpen,
+  assertAggregatorOpen,
   assertOcppOpen,
   campaignFiatFundingOpen,
   cardTariffsOpen,
   ibansOpen,
+  aggregatorOpen,
   ocppOpen,
   publishableIban,
   transfersOpen,
@@ -81,5 +83,22 @@ describe("OCPP gate — ТЗ §34, §51, US-20", () => {
 
   it("refuses rather than pretends it pressed a button on a station", () => {
     expect(() => assertOcppOpen({})).toThrow(FeatureClosedError);
+  });
+});
+
+describe("aggregator gate — ТЗ §16.7", () => {
+  it("is shut by default, so no quote promises energy nobody sells", () => {
+    expect(aggregatorOpen({})).toBe(false);
+    for (const v of ["", "1", "yes", "TRUE", "false"]) {
+      expect(aggregatorOpen({ AGGREGATOR_FALLBACK: v }), v).toBe(false);
+    }
+  });
+
+  it("opens only on an explicit true", () => {
+    expect(aggregatorOpen({ AGGREGATOR_FALLBACK: "true" })).toBe(true);
+  });
+
+  it("refuses rather than invents a counterparty outside the book", () => {
+    expect(() => assertAggregatorOpen({})).toThrow(FeatureClosedError);
   });
 });

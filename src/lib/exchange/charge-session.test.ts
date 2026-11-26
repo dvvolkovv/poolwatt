@@ -10,9 +10,14 @@ import { prisma } from "@/lib/prisma";
 import {
   ChargeSessionError,
   authorizeSession,
+  expireStaleSessions,
+  finishSession,
   readActiveSession,
   reportMeter,
+  type SessionView,
 } from "./charge-session";
+import { issuePointKey } from "@/lib/points/point-availability";
+import { restCanonicalString, signCanonical } from "./equipment-signature";
 import {
   seedChargePoint,
   wipeChargePoint,
@@ -36,12 +41,49 @@ beforeEach(async () => {
     kwhBalance: 30,
     fiatBalance: 50,
     spotPrice: 0.2,
+    book: { amountKwh: 100, price: 0.2 },
   });
 });
 
 afterAll(async () => {
   await wipeChargePoint(PREFIX, ZONE_CODE);
 });
+
+/**
+ * Отчёт оборудования так, как он приходит по-настоящему: с подписью §15.
+ * Ключ без секрета подписи в этом окружении не выдаётся (`API_KEY_ENC_KEY`
+ * настроен), поэтому неподписанный отчёт здесь и должен отвергаться.
+ */
+async function signedMeter(args: {
+  sessionId: string;
+  token: string;
+  signingSecret: string | null;
+  kwhTotal: number;
+  powerKw?: number | null;
+}) {
+  const path = `/v1/charge-sessions/${args.sessionId}/meter`;
+  const body = { kwhTotal: args.kwhTotal, powerKw: args.powerKw ?? null };
+  const timestamp = String(Math.floor(Date.now() / 1000));
+  const signature = args.signingSecret
+    ? signCanonical(
+        args.signingSecret,
+        restCanonicalString({
+          timestamp,
+          method: "POST",
+          path,
+          body: JSON.stringify(body),
+        }),
+      )
+    : null;
+  return reportMeter({
+    sessionId: args.sessionId,
+    token: args.token,
+    body,
+    signature,
+    timestamp: args.signingSecret ? timestamp : null,
+    path,
+  });
+}
 
 function key(tag: string): string {
   return `${PREFIX}${tag}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -72,7 +114,7 @@ describe("authorizeSession", () => {
     expect(active?.id).toBe(session.id);
   });
 
-  it("reserves money with the §16.6 buffer when energy has to be bought", async () => {
+  it("reserves money with the §16.6 buffer when energy is bought on the market", async () => {
     await prisma.wallet.update({
       where: { id: fx.walletId },
       data: { kwhBalance: 0 },
@@ -222,6 +264,36 @@ describe("authorizeSession", () => {
     expect(await prisma.chargeSession.count({ where: { idempotencyKey: k } })).toBe(1);
   });
 
+  it("§16.7 — refuses what the book cannot serve instead of promising it", async () => {
+    // Раньше расчёт обещал ступень агрегатора, а списание её не исполняло:
+    // водитель видел цену, подтверждал, и сеанс падал с «market order could
+    // not be filled». Теперь ступень закрыта гейтом, и отказ приходит до
+    // того, как что-то занято.
+    await prisma.wallet.update({
+      where: { id: fx.walletId },
+      data: { kwhBalance: 0 },
+    });
+    await prisma.order.updateMany({
+      where: { zoneId: fx.zoneId, side: "SELL" },
+      data: { status: "CANCELLED" },
+    });
+
+    await expect(
+      authorizeSession({
+        userId: fx.driverUserId,
+        pointId: fx.pointId,
+        connectorId: fx.connectorId,
+        plannedKwh: 5,
+        idempotencyKey: key("agg"),
+      }),
+    ).rejects.toThrow(/can serve this session/i);
+
+    const connector = await prisma.pointConnector.findUniqueOrThrow({
+      where: { id: fx.connectorId },
+    });
+    expect(connector.status).toBe(ConnectorStatus.FREE);
+  });
+
   it("refuses more kWh than the driver can pay the hold for", async () => {
     await prisma.wallet.update({
       where: { id: fx.walletId },
@@ -236,6 +308,270 @@ describe("authorizeSession", () => {
         plannedKwh: 20,
         idempotencyKey: key("i"),
       }),
-    ).rejects.toThrow(ChargeSessionError);
+    ).rejects.toThrow(/money balance/i);
+  });
+});
+
+describe("reportMeter", () => {
+  let issued: Awaited<ReturnType<typeof issuePointKey>>;
+  let session: SessionView;
+
+  beforeEach(async () => {
+    issued = await issuePointKey(fx.pointId, fx.operatorUserId, "test");
+    session = await authorizeSession({
+      userId: fx.driverUserId,
+      pointId: fx.pointId,
+      connectorId: fx.connectorId,
+      plannedKwh: 10,
+      idempotencyKey: key("m"),
+    });
+  });
+
+  function meter(kwhTotal: number, powerKw?: number) {
+    return signedMeter({
+      sessionId: session.id,
+      token: issued.token,
+      signingSecret: issued.signingSecret,
+      kwhTotal,
+      powerKw: powerKw ?? null,
+    });
+  }
+
+  it("the first report starts the session", async () => {
+    const after = await meter(1.25, 48);
+
+    expect(after.status).toBe("ACTIVE");
+    expect(after.deliveredKwh).toBe(1.25);
+    expect(after.startedAt).not.toBeNull();
+
+    const ticks = await prisma.chargeSessionTick.findMany({
+      where: { sessionId: session.id },
+    });
+    expect(ticks).toHaveLength(1);
+    expect(Number(ticks[0]!.powerKw)).toBe(48);
+  });
+
+  it("the meter only goes up", async () => {
+    await meter(4);
+    await expect(meter(3.5)).rejects.toThrow(/cannot be lower/i);
+  });
+
+  it("the same reading twice is not news but not an error", async () => {
+    await meter(4);
+    const again = await meter(4);
+    expect(again.deliveredKwh).toBe(4);
+  });
+
+  it("refuses the key of another point", async () => {
+    const other = await prisma.chargerOperator.create({
+      data: {
+        slug: `${PREFIX}other`,
+        displayName: `${PREFIX} other`,
+        claimedById: fx.operatorUserId,
+        claimedAt: new Date(),
+      },
+    });
+    const otherPoint = await prisma.acceptancePoint.create({
+      data: { operatorId: other.id, type: "CHARGING_STATION", name: "Theirs" },
+    });
+    const otherKey = await issuePointKey(otherPoint.id, fx.operatorUserId, "test");
+
+    await expect(
+      signedMeter({
+        sessionId: session.id,
+        token: otherKey.token,
+        signingSecret: otherKey.signingSecret,
+        kwhTotal: 1,
+      }),
+    ).rejects.toThrow(/another point/i);
+  });
+
+  it("refuses an unknown key", async () => {
+    await expect(
+      signedMeter({
+        sessionId: session.id,
+        token: "pwp_nonsense",
+        signingSecret: issued.signingSecret,
+        kwhTotal: 1,
+      }),
+    ).rejects.toThrow(/unknown or revoked/i);
+  });
+
+  it("refuses the right key without a signature", async () => {
+    await expect(
+      reportMeter({
+        sessionId: session.id,
+        token: issued.token,
+        body: { kwhTotal: 1 },
+        signature: null,
+        timestamp: null,
+        path: `/v1/charge-sessions/${session.id}/meter`,
+      }),
+    ).rejects.toThrow(/signature/i);
+  });
+
+  it("refuses a session that is already settled", async () => {
+    await meter(2);
+    await finishSession({ sessionId: session.id, reason: "test" });
+    await expect(meter(9)).rejects.toThrow(/not running/i);
+  });
+});
+
+describe("finishSession", () => {
+
+  it("settles on what was delivered, not on what was planned", async () => {
+    const issued = await issuePointKey(fx.pointId, fx.operatorUserId, "test");
+    const session = await authorizeSession({
+      userId: fx.driverUserId,
+      pointId: fx.pointId,
+      connectorId: fx.connectorId,
+      plannedKwh: 20,
+      idempotencyKey: key("f1"),
+    });
+    await signedMeter({
+      sessionId: session.id,
+      token: issued.token,
+      signingSecret: issued.signingSecret,
+      kwhTotal: 7.5,
+    });
+
+    const done = await finishSession({
+      sessionId: session.id,
+      reason: "the equipment reported the end",
+    });
+
+    expect(done.status).toBe("COMPLETED");
+    expect(done.deliveredKwh).toBe(7.5);
+    expect(done.paymentId).not.toBeNull();
+
+    const payment = await prisma.payment.findUniqueOrThrow({
+      where: { id: done.paymentId! },
+      include: { receipt: true },
+    });
+    expect(Number(payment.requestedKwh)).toBe(7.5);
+    expect(payment.pointId).toBe(fx.pointId);
+    expect(payment.connectorId).toBe(fx.connectorId);
+    expect(payment.receipt).not.toBeNull();
+
+    const wallet = await prisma.wallet.findUniqueOrThrow({ where: { id: fx.walletId } });
+    expect(Number(wallet.reservedFiat)).toBe(0);
+    expect(Number(wallet.kwhBalance)).toBeCloseTo(22.5, 3);
+
+    const connector = await prisma.pointConnector.findUniqueOrThrow({
+      where: { id: fx.connectorId },
+    });
+    expect(connector.status).toBe(ConnectorStatus.FREE);
+  });
+
+  it("a session nobody charged costs nothing", async () => {
+    const session = await authorizeSession({
+      userId: fx.driverUserId,
+      pointId: fx.pointId,
+      connectorId: fx.connectorId,
+      plannedKwh: 10,
+      idempotencyKey: key("f2"),
+    });
+
+    const done = await finishSession({ sessionId: session.id, reason: "driver cancelled" });
+
+    expect(done.status).toBe("CANCELLED");
+    expect(done.paymentId).toBeNull();
+    const wallet = await prisma.wallet.findUniqueOrThrow({ where: { id: fx.walletId } });
+    expect(Number(wallet.kwhBalance)).toBe(30);
+    expect(await prisma.payment.count({ where: { walletId: fx.walletId } })).toBe(0);
+  });
+
+  it("settling twice settles once", async () => {
+    const issued = await issuePointKey(fx.pointId, fx.operatorUserId, "test");
+    const session = await authorizeSession({
+      userId: fx.driverUserId,
+      pointId: fx.pointId,
+      connectorId: fx.connectorId,
+      plannedKwh: 10,
+      idempotencyKey: key("f3"),
+    });
+    await signedMeter({
+      sessionId: session.id,
+      token: issued.token,
+      signingSecret: issued.signingSecret,
+      kwhTotal: 3,
+    });
+
+    const first = await finishSession({ sessionId: session.id, reason: "a" });
+    const again = await finishSession({ sessionId: session.id, reason: "b" });
+
+    expect(again.paymentId).toBe(first.paymentId);
+    expect(await prisma.payment.count({ where: { walletId: fx.walletId } })).toBe(1);
+  });
+
+  it("the balance that dropped mid-session is bought on the market instead", async () => {
+    const issued = await issuePointKey(fx.pointId, fx.operatorUserId, "test");
+    const session = await authorizeSession({
+      userId: fx.driverUserId,
+      pointId: fx.pointId,
+      connectorId: fx.connectorId,
+      plannedKwh: 10,
+      idempotencyKey: key("f4"),
+    });
+    await signedMeter({
+      sessionId: session.id,
+      token: issued.token,
+      signingSecret: issued.signingSecret,
+      kwhTotal: 10,
+    });
+
+    // Пока шла зарядка, кВт·ч ушли: водопад §16.6 обязан пересчитаться.
+    await prisma.energyToken.deleteMany({ where: { ownerWalletId: fx.walletId } });
+    await prisma.wallet.update({
+      where: { id: fx.walletId },
+      data: { kwhBalance: 0 },
+    });
+
+    const done = await finishSession({ sessionId: session.id, reason: "end" });
+
+    expect(done.status).toBe("COMPLETED");
+    const payment = await prisma.payment.findUniqueOrThrow({
+      where: { id: done.paymentId! },
+    });
+    expect(Number(payment.kwhFromBalance)).toBe(0);
+    expect(Number(payment.amountFiat)).toBeGreaterThan(0);
+  });
+
+  it("expires a session the equipment never reported", async () => {
+    const session = await authorizeSession({
+      userId: fx.driverUserId,
+      pointId: fx.pointId,
+      connectorId: fx.connectorId,
+      plannedKwh: 10,
+      idempotencyKey: key("f5"),
+    });
+    await prisma.chargeSession.update({
+      where: { id: session.id },
+      data: { createdAt: new Date(Date.now() - 60 * 60 * 1000) },
+    });
+
+    const swept = await expireStaleSessions(new Date());
+    expect(swept).toBe(1);
+
+    const after = await prisma.chargeSession.findUniqueOrThrow({
+      where: { id: session.id },
+    });
+    expect(after.status).toBe("EXPIRED");
+    const connector = await prisma.pointConnector.findUniqueOrThrow({
+      where: { id: fx.connectorId },
+    });
+    expect(connector.status).toBe(ConnectorStatus.FREE);
+    expect(await prisma.payment.count({ where: { walletId: fx.walletId } })).toBe(0);
+  });
+
+  it("leaves a young session alone", async () => {
+    await authorizeSession({
+      userId: fx.driverUserId,
+      pointId: fx.pointId,
+      connectorId: fx.connectorId,
+      plannedKwh: 10,
+      idempotencyKey: key("f6"),
+    });
+    expect(await expireStaleSessions(new Date())).toBe(0);
   });
 });

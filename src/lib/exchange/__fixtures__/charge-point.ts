@@ -8,6 +8,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateWallet } from "../wallet-service";
+import { placeOrder } from "../order-service";
 
 export interface ChargePointFixture {
   zoneId: string;
@@ -15,6 +16,7 @@ export interface ChargePointFixture {
   operatorUserId: string;
   operatorId: string;
   walletId: string;
+  sellerUserId: string;
   pointId: string;
   connectorId: string;
   secondConnectorId: string;
@@ -26,8 +28,10 @@ export interface SeedArgs {
   zoneCode: string;
   kwhBalance?: number;
   fiatBalance?: number;
-  /** §16.7 — внешняя цена, чтобы водопад мог досыпать из агрегатора. */
+  /** §16.5 — спотовый ориентир зоны: от него считается коридор цены. */
   spotPrice?: number;
+  /** Сколько кВт·ч выставить в книгу на продажу и по какой цене. */
+  book?: { amountKwh: number; price: number };
 }
 
 export async function wipeChargePoint(prefix: string, zoneCode: string): Promise<void> {
@@ -77,6 +81,9 @@ export async function seedChargePoint(args: SeedArgs): Promise<ChargePointFixtur
   });
   const owner = await prisma.user.create({
     data: { username: `${prefix}owner`, passwordHash: "x" },
+  });
+  const seller = await prisma.user.create({
+    data: { username: `${prefix}seller`, passwordHash: "x" },
   });
 
   const company = await prisma.company.create({
@@ -168,12 +175,41 @@ export async function seedChargePoint(args: SeedArgs): Promise<ChargePointFixtur
     });
   }
 
+  // Книга с настоящей стоящей заявкой: без неё покупка недостающего в §16.6
+  // не исполняется, и сеанс падает там, где по расчёту должен пройти.
+  if (args.book) {
+    const sellerWallet = await getOrCreateWallet(seller.id, zone.id);
+    await prisma.energyToken.create({
+      data: {
+        zoneId: zone.id,
+        assetId: asset.id,
+        ownerWalletId: sellerWallet.id,
+        amountKwh: new Prisma.Decimal(args.book.amountKwh),
+        intervalStart: new Date(),
+        status: "AVAILABLE",
+      },
+    });
+    await prisma.wallet.update({
+      where: { id: sellerWallet.id },
+      data: { kwhBalance: new Prisma.Decimal(args.book.amountKwh) },
+    });
+    await placeOrder({
+      userId: seller.id,
+      zoneId: zone.id,
+      side: "SELL",
+      type: "LIMIT",
+      amountKwh: args.book.amountKwh,
+      limitPrice: args.book.price,
+    });
+  }
+
   return {
     zoneId: zone.id,
     driverUserId: driver.id,
     operatorUserId: owner.id,
     operatorId: operator.id,
     walletId: wallet.id,
+    sellerUserId: seller.id,
     pointId: point.id,
     connectorId: point.connectors[0]!.id,
     secondConnectorId: point.connectors[1]!.id,

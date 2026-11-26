@@ -16,6 +16,7 @@ import { type Db, writeAudit } from "./audit";
 import { type ChargePlan, planCharge } from "./charge";
 import { num, numOrNull } from "./decimal";
 import { DEFAULT_FEE_RATES } from "./fees";
+import { aggregatorOpen } from "./gates";
 import type { MatchResult } from "./matching";
 import { isKwhDust, roundKwh, roundMoney } from "./precision";
 import { notifyWallets } from "./realtime-notify";
@@ -178,7 +179,10 @@ export async function quoteCharge(
       ? { maxKwh: leg.maxKwh, conversionRate: leg.conversionRate, feePct: leg.feePct }
       : null,
     market: quoteToMatch(quote),
-    aggregatorPrice: numOrNull(zone.spotPrice),
+    // §16.7 за гейтом: ступень агрегатора попадает в расчёт только если есть
+    // кому продать нам кВт·ч вне книги. Иначе расчёт обещал бы то, чего
+    // списание не исполняет.
+    aggregatorPrice: aggregatorOpen() ? numOrNull(zone.spotPrice) : null,
     authBufferPct: input.authBufferPct,
     chargeFeePct,
   });
