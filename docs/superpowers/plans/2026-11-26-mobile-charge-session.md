@@ -73,7 +73,7 @@ DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local | tr -d '"' \
 **Files:**
 - Modify: `prisma/schema.prisma`
 
-- [ ] **Step 1: Добавить перечисление и две модели**
+- [x] **Step 1: Добавить перечисление и две модели**
 
 В `prisma/schema.prisma`, рядом с `Payment`, добавить:
 
@@ -147,7 +147,7 @@ model ChargeSessionTick {
 }
 ```
 
-- [ ] **Step 2: Добавить обратные связи**
+- [x] **Step 2: Добавить обратные связи**
 
 В `model User` добавить строку:
 
@@ -191,7 +191,7 @@ model ChargeSessionTick {
   chargeSession ChargeSession?
 ```
 
-- [ ] **Step 3: Создать миграцию**
+- [x] **Step 3: Создать миграцию**
 
 ```bash
 cd ~/poolwatt
@@ -202,7 +202,7 @@ DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local | tr -d '"' \
 
 Ожидание: появился каталог `prisma/migrations/<дата>_charge_session/`.
 
-- [ ] **Step 4: Применить к обеим базам и собрать клиент**
+- [x] **Step 4: Применить к обеим базам и собрать клиент**
 
 ```bash
 cd ~/poolwatt
@@ -214,7 +214,7 @@ npx prisma generate
 
 Ожидание: `All migrations have been successfully applied` дважды.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add prisma/schema.prisma prisma/migrations
@@ -229,7 +229,7 @@ git commit -m "feat(charge): a charging session is a state, not one call"
 - Create: `src/lib/exchange/qr-code.ts`
 - Test: `src/lib/exchange/qr-code.test.ts`
 
-- [ ] **Step 1: Написать падающий тест**
+- [x] **Step 1: Написать падающий тест**
 
 `src/lib/exchange/qr-code.test.ts`:
 
@@ -287,7 +287,7 @@ describe("parseConnectorCode", () => {
 });
 ```
 
-- [ ] **Step 2: Запустить и убедиться, что падает**
+- [x] **Step 2: Запустить и убедиться, что падает**
 
 ```bash
 cd ~/poolwatt
@@ -296,7 +296,7 @@ NODE_ENV=test npx vitest run src/lib/exchange/qr-code.test.ts
 
 Ожидание: FAIL, `Failed to resolve import "./qr-code"`.
 
-- [ ] **Step 3: Реализовать**
+- [x] **Step 3: Реализовать**
 
 `src/lib/exchange/qr-code.ts`:
 
@@ -351,7 +351,7 @@ function valid(pointId: string | null, connectorId: string | null): ConnectorCod
 }
 ```
 
-- [ ] **Step 4: Запустить тесты**
+- [x] **Step 4: Запустить тесты**
 
 ```bash
 cd ~/poolwatt
@@ -360,7 +360,7 @@ NODE_ENV=test npx vitest run src/lib/exchange/qr-code.test.ts
 
 Ожидание: 7 passed.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/exchange/qr-code.ts src/lib/exchange/qr-code.test.ts
@@ -375,7 +375,7 @@ git commit -m "feat(charge): read the QR on a connector, refuse a stranger's"
 - Modify: `src/lib/exchange/gates.ts`
 - Test: `src/lib/exchange/gates.test.ts`
 
-- [ ] **Step 1: Написать падающий тест**
+- [x] **Step 1: Написать падающий тест**
 
 Добавить в конец `src/lib/exchange/gates.test.ts`:
 
@@ -399,7 +399,7 @@ describe("ocppOpen", () => {
 В начале файла добавить `ocppOpen` и `assertOcppOpen` в существующий импорт
 из `./gates`.
 
-- [ ] **Step 2: Запустить и убедиться, что падает**
+- [x] **Step 2: Запустить и убедиться, что падает**
 
 ```bash
 cd ~/poolwatt
@@ -408,7 +408,7 @@ NODE_ENV=test npx vitest run src/lib/exchange/gates.test.ts
 
 Ожидание: FAIL, `ocppOpen is not a function`.
 
-- [ ] **Step 3: Реализовать**
+- [x] **Step 3: Реализовать**
 
 В конец `src/lib/exchange/gates.ts`:
 
@@ -444,7 +444,7 @@ export function assertOcppOpen(env: Env = process.env): void {
 }
 ```
 
-- [ ] **Step 4: Запустить тесты**
+- [x] **Step 4: Запустить тесты**
 
 ```bash
 cd ~/poolwatt
@@ -453,7 +453,7 @@ NODE_ENV=test npx vitest run src/lib/exchange/gates.test.ts
 
 Ожидание: все passed, включая три новых.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/exchange/gates.ts src/lib/exchange/gates.test.ts
@@ -473,7 +473,7 @@ git commit -m "feat(charge): the OCPP bridge is a gate, shut by default"
 скопировав их в новый файл (фикстуры живут в
 `src/lib/exchange/__fixtures__/`).
 
-- [ ] **Step 1: Написать падающий тест на авторизацию**
+- [x] **Step 1: Написать падающий тест на авторизацию**
 
 `src/lib/exchange/charge-session.test.ts`:
 
@@ -610,7 +610,7 @@ describe("authorizeSession", () => {
 });
 ```
 
-- [ ] **Step 2: Написать фикстуру**
+- [x] **Step 2: Написать фикстуру**
 
 `src/lib/exchange/__fixtures__/charge-point.ts` — посмотреть, что уже есть в
 каталоге, и дописать функцию, если её нет:
@@ -729,7 +729,7 @@ export async function seedChargePoint(opts: {
 использовать то, что в файле) и наличие обязательных полей у `ChargerOperator`
 и `User`.
 
-- [ ] **Step 3: Запустить и убедиться, что падает**
+- [x] **Step 3: Запустить и убедиться, что падает**
 
 ```bash
 cd ~/poolwatt
@@ -740,7 +740,7 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 
 Ожидание: FAIL, `Failed to resolve import "./charge-session"`.
 
-- [ ] **Step 4: Реализовать авторизацию**
+- [x] **Step 4: Реализовать авторизацию**
 
 `src/lib/exchange/charge-session.ts` — первая часть файла:
 
@@ -996,7 +996,7 @@ export async function authorizeSession(args: AuthorizeArgs): Promise<SessionView
 подпись `writeAudit` в `src/lib/exchange/audit.ts` и `getOrCreateWallet` в
 `src/lib/exchange/wallet-service.ts`.
 
-- [ ] **Step 5: Запустить тесты**
+- [x] **Step 5: Запустить тесты**
 
 ```bash
 cd ~/poolwatt
@@ -1007,7 +1007,7 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 
 Ожидание: 6 passed.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/exchange/charge-session.ts src/lib/exchange/charge-session.test.ts \
@@ -1023,7 +1023,7 @@ git commit -m "feat(charge): authorizing a session holds the connector and the m
 - Modify: `src/lib/exchange/charge-session.ts`
 - Modify: `src/lib/exchange/charge-session.test.ts`
 
-- [ ] **Step 1: Написать падающий тест**
+- [x] **Step 1: Написать падающий тест**
 
 Добавить в `src/lib/exchange/charge-session.test.ts`:
 
@@ -1123,7 +1123,7 @@ describe("reportMeter", () => {
 пользователя и связать его с `ChargerOperator` так, как это делает
 `point-availability.test.ts` (посмотреть там, кто считается владельцем пункта).
 
-- [ ] **Step 2: Запустить и убедиться, что падает**
+- [x] **Step 2: Запустить и убедиться, что падает**
 
 ```bash
 cd ~/poolwatt
@@ -1134,7 +1134,7 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 
 Ожидание: FAIL, `reportMeter is not exported`.
 
-- [ ] **Step 3: Реализовать**
+- [x] **Step 3: Реализовать**
 
 Дописать в `src/lib/exchange/charge-session.ts`:
 
@@ -1236,7 +1236,7 @@ export async function reportMeter(report: MeterReport): Promise<SessionView> {
 Сверить имена помощников перед написанием: `sha256` (откуда его берёт
 `point-availability.ts`) и `open` из `crypto-box.ts`.
 
-- [ ] **Step 4: Заглушка уведомления, чтобы файл собрался**
+- [x] **Step 4: Заглушка уведомления, чтобы файл собрался**
 
 Дописать в `src/lib/exchange/realtime-notify.ts`:
 
@@ -1255,7 +1255,7 @@ export async function notifyChargeSession(
 }
 ```
 
-- [ ] **Step 5: Запустить тесты**
+- [x] **Step 5: Запустить тесты**
 
 ```bash
 cd ~/poolwatt
@@ -1267,7 +1267,7 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 Ожидание: 10 passed (4 новых; `finishSession` ещё не написан, поэтому
 последний случай временно `it.skip` — снять skip в Task 6).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/exchange/charge-session.ts src/lib/exchange/charge-session.test.ts \
@@ -1283,7 +1283,7 @@ git commit -m "feat(charge): the equipment reports kWh, the meter only goes up"
 - Modify: `src/lib/exchange/charge-session.ts`
 - Modify: `src/lib/exchange/charge-session.test.ts`
 
-- [ ] **Step 1: Написать падающий тест**
+- [x] **Step 1: Написать падающий тест**
 
 Добавить в `src/lib/exchange/charge-session.test.ts`:
 
@@ -1407,7 +1407,7 @@ describe("finishSession", () => {
 });
 ```
 
-- [ ] **Step 2: Запустить и убедиться, что падает**
+- [x] **Step 2: Запустить и убедиться, что падает**
 
 ```bash
 cd ~/poolwatt
@@ -1418,7 +1418,7 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 
 Ожидание: FAIL, `finishSession is not exported`.
 
-- [ ] **Step 3: Реализовать**
+- [x] **Step 3: Реализовать**
 
 Дописать в `src/lib/exchange/charge-session.ts`:
 
@@ -1566,11 +1566,11 @@ export async function expireStaleSessions(now = new Date()): Promise<number> {
 }
 ```
 
-- [ ] **Step 4: Снять `it.skip` из Task 5**
+- [x] **Step 4: Снять `it.skip` из Task 5**
 
 Вернуть случай «refuses a session that is already settled» в обычный `it`.
 
-- [ ] **Step 5: Запустить тесты**
+- [x] **Step 5: Запустить тесты**
 
 ```bash
 cd ~/poolwatt
@@ -1581,7 +1581,7 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 
 Ожидание: 14 passed.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/exchange/charge-session.ts src/lib/exchange/charge-session.test.ts
@@ -1595,7 +1595,7 @@ git commit -m "feat(charge): a session settles on the facts and frees what it he
 **Files:**
 - Create: `src/lib/exchange/charge-session-flow.test.ts`
 
-- [ ] **Step 1: Написать тест**
+- [x] **Step 1: Написать тест**
 
 ```ts
 import { beforeEach, describe, expect, it } from "vitest";
@@ -1709,7 +1709,7 @@ describe("charge sessions under concurrency", () => {
 });
 ```
 
-- [ ] **Step 2: Запустить**
+- [x] **Step 2: Запустить**
 
 ```bash
 cd ~/poolwatt
@@ -1723,7 +1723,7 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 `releaseHold`-транзакции `SELECT … FOR UPDATE` по `ChargeSession` и
 перепроверять статус. Правка идёт в `charge-session.ts`, тест не меняется.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/exchange/charge-session-flow.test.ts src/lib/exchange/charge-session.ts
@@ -1741,7 +1741,7 @@ git commit -m "test(charge): a connector, a key and an ending are each used once
 - Create: `src/app/api/v1/charge-sessions/[id]/stop/route.ts`
 - Create: `src/app/api/v1/points/resolve/route.ts`
 
-- [ ] **Step 1: Старт сеанса**
+- [x] **Step 1: Старт сеанса**
 
 `src/app/api/v1/charge-sessions/route.ts`:
 
@@ -1801,7 +1801,7 @@ export async function POST(req: NextRequest) {
 деньги) — если `idempotent` сам отвечает 400 на отсутствующий ключ, оставить
 как есть; если нет, вернуть 400 до вызова.
 
-- [ ] **Step 2: Живой сеанс**
+- [x] **Step 2: Живой сеанс**
 
 `src/app/api/v1/charge-sessions/me/active/route.ts`:
 
@@ -1818,7 +1818,7 @@ export async function GET() {
 }
 ```
 
-- [ ] **Step 3: Отчёт счётчика**
+- [x] **Step 3: Отчёт счётчика**
 
 `src/app/api/v1/charge-sessions/[id]/meter/route.ts`:
 
@@ -1871,7 +1871,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 }
 ```
 
-- [ ] **Step 4: Завершение**
+- [x] **Step 4: Завершение**
 
 `src/app/api/v1/charge-sessions/[id]/stop/route.ts`:
 
@@ -1902,7 +1902,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 отвечать 404, если он не совпадает с `user.id` (404, не 403: чужой сеанс для
 этого водителя не существует).
 
-- [ ] **Step 5: Разбор QR**
+- [x] **Step 5: Разбор QR**
 
 `src/app/api/v1/points/resolve/route.ts`:
 
@@ -1959,7 +1959,7 @@ export async function GET(req: NextRequest) {
 }
 ```
 
-- [ ] **Step 6: Проверить, что собирается**
+- [x] **Step 6: Проверить, что собирается**
 
 ```bash
 cd ~/poolwatt
@@ -1968,7 +1968,7 @@ npx tsc --noEmit
 
 Ожидание: без ошибок.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/app/api/v1/charge-sessions src/app/api/v1/points/resolve
@@ -1982,14 +1982,14 @@ git commit -m "feat(charge): the five methods a session needs"
 **Files:**
 - Modify: `worker/index.ts`
 
-- [ ] **Step 1: Посмотреть, как устроены существующие задачи**
+- [x] **Step 1: Посмотреть, как устроены существующие задачи**
 
 ```bash
 cd ~/poolwatt
 grep -n 'cron\|schedule\|closeExpiredReservations' worker/index.ts | head -30
 ```
 
-- [ ] **Step 2: Добавить задачу рядом с той, что закрывает брони**
+- [x] **Step 2: Добавить задачу рядом с той, что закрывает брони**
 
 ```ts
 import { expireStaleSessions } from "@/lib/exchange/charge-session";
@@ -2009,7 +2009,7 @@ cron.schedule("* * * * *", async () => {
 Имя переменной `cron` и форму вызова взять из того, как это уже написано в
 файле — не вводить второй стиль.
 
-- [ ] **Step 3: Проверить сборку и перезапустить воркер**
+- [x] **Step 3: Проверить сборку и перезапустить воркер**
 
 ```bash
 cd ~/poolwatt
@@ -2020,7 +2020,7 @@ pm2 logs poolwatt-worker --lines 20 --nostream
 
 Ожидание: воркер поднялся без ошибок.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add worker/index.ts
@@ -2035,7 +2035,7 @@ git commit -m "feat(charge): the worker releases a session nobody charged"
 - Create: `src/components/mobile/qr-scan.tsx`
 - Modify: `package.json`
 
-- [ ] **Step 1: Поставить зависимость**
+- [x] **Step 1: Поставить зависимость**
 
 ```bash
 cd ~/poolwatt
@@ -2045,7 +2045,7 @@ NODE_ENV=development npm install jsqr
 Ожидание: `jsqr` в `dependencies`, devDependencies целы (`npx vitest --version`
 отвечает).
 
-- [ ] **Step 2: Написать компонент**
+- [x] **Step 2: Написать компонент**
 
 `src/components/mobile/qr-scan.tsx`:
 
@@ -2212,14 +2212,14 @@ export function QrScan({
 сверить с `globals.css`; если его нет, взять тот, которым в проекте уже
 печатают ошибку.
 
-- [ ] **Step 3: Проверить сборку**
+- [x] **Step 3: Проверить сборку**
 
 ```bash
 cd ~/poolwatt
 npx tsc --noEmit
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add package.json package-lock.json src/components/mobile/qr-scan.tsx
@@ -2235,7 +2235,7 @@ git commit -m "feat(charge): read a QR with the camera, or type the code"
 - Create: `src/app/[locale]/app/charge/start/page.tsx`
 - Modify: `messages/en.json`, `messages/ru.json`, `messages/sk.json`
 
-- [ ] **Step 1: Добавить раздел сообщений**
+- [x] **Step 1: Добавить раздел сообщений**
 
 В `messages/ru.json`, в объект `app`, добавить:
 
@@ -2282,7 +2282,7 @@ git commit -m "feat(charge): read a QR with the camera, or type the code"
 В `messages/en.json` и `messages/sk.json` — те же ключи с переводом. Остальные
 26 локалей не трогать: они падают на английский по `src/i18n.ts`.
 
-- [ ] **Step 2: Серверные действия**
+- [x] **Step 2: Серверные действия**
 
 `src/app/[locale]/app/charge/actions.ts`:
 
@@ -2349,7 +2349,7 @@ export async function stopCharge(sessionId: string): Promise<{ error?: string }>
 завершении чужого сеанса — дописать поле в `SessionView` и в `view()`
 (Task 4), и проверить `row.userId !== session.user.id → { error: "not found" }`.
 
-- [ ] **Step 3: Экран расчёта**
+- [x] **Step 3: Экран расчёта**
 
 `src/app/[locale]/app/charge/start/page.tsx`:
 
@@ -2473,7 +2473,7 @@ export default async function ChargeStartScreen({
 Поле суммы авторизации в `ChargePlan` подставить настоящее (см. Task 4,
 Step 4) и прокинуть его в `plan` отдельным числом.
 
-- [ ] **Step 4: Форма подтверждения**
+- [x] **Step 4: Форма подтверждения**
 
 `src/components/mobile/charge-start-form.tsx` — клиентский компонент: чипы
 сумм (перезагружают страницу с `?kwh=`), таблица разбивки, кнопка «Начать
@@ -2482,14 +2482,14 @@ Step 4) и прокинуть его в `plan` отдельным числом.
 нулём не печатается. При `unservedKwh > 0` вместо кнопки — `noLiquidity`.
 После успеха — `router.push(\`/${locale}/app/charge\`)`.
 
-- [ ] **Step 5: Проверить сборку**
+- [x] **Step 5: Проверить сборку**
 
 ```bash
 cd ~/poolwatt
 npx tsc --noEmit && npm run build
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/app/[locale]/app/charge src/components/mobile/charge-start-form.tsx messages
@@ -2505,7 +2505,7 @@ git commit -m "feat(charge): the driver sees the whole §16.6 bill before agreei
 - Create: `src/components/mobile/charge-live.tsx`
 - Create: `src/components/mobile/nearby-points.tsx`
 
-- [ ] **Step 1: Живой ход зарядки**
+- [x] **Step 1: Живой ход зарядки**
 
 `src/components/mobile/charge-live.tsx` — клиентский компонент: крупная цифра
 `deliveredKwh`, мощность последнего тика, время с `startedAt`, стоимость,
@@ -2515,7 +2515,7 @@ git commit -m "feat(charge): the driver sees the whole §16.6 bill before agreei
 `charge.completed`, `charge.completed` ведёт на чек. Пока `ocppOpen` закрыт,
 под кнопкой «Завершить» печатается `stopHint`.
 
-- [ ] **Step 2: Ближайшие пункты**
+- [x] **Step 2: Ближайшие пункты**
 
 `src/components/mobile/nearby-points.tsx` — клиентский компонент: просит
 `navigator.geolocation.getCurrentPosition`, дёргает `/api/chargers?south=…`
@@ -2523,7 +2523,7 @@ git commit -m "feat(charge): the driver sees the whole §16.6 bill before agreei
 непустой) с расстоянием, ценой и ссылкой на `/app/charge/start?p=…`. Отказ в
 геолокации — печатается `nearbyHelp`, экран не ломается.
 
-- [ ] **Step 3: Переписать вкладку**
+- [x] **Step 3: Переписать вкладку**
 
 `src/app/[locale]/app/charge/page.tsx`:
 
@@ -2598,7 +2598,7 @@ export default async function ChargeScreen({
 `NearbyPoints`; найденный код ведёт на
 `/{locale}/app/charge/start?p=<pointId>&c=<connectorId>`.
 
-- [ ] **Step 4: Собрать и посмотреть глазами**
+- [x] **Step 4: Собрать и посмотреть глазами**
 
 ```bash
 cd ~/poolwatt
@@ -2608,7 +2608,7 @@ curl -s -o /dev/null -w '%{http_code}\n' https://poolwatt.com/ru/app/charge
 
 Ожидание: 200.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/[locale]/app/charge src/components/mobile
@@ -2622,7 +2622,7 @@ git commit -m "feat(charge): the charge tab is a session, a QR and what is near"
 **Files:**
 - Create: `src/app/[locale]/me/charger-operator/[id]/points/[pointId]/qr/page.tsx`
 
-- [ ] **Step 1: Страница**
+- [x] **Step 1: Страница**
 
 Серверная страница: проверяет, что подписанный пользователь — владелец этой
 сети (так же, как это делает соседняя
@@ -2645,14 +2645,14 @@ const svg = await QRCode.toString(buildConnectorCode(point.id, connector.id), {
 Класс печати: `@media print` скрывает навигацию, каждый разъём — на своём
 листе.
 
-- [ ] **Step 2: Проверить**
+- [x] **Step 2: Проверить**
 
 ```bash
 cd ~/poolwatt
 npm run build && pm2 restart poolwatt-web
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add "src/app/[locale]/me/charger-operator/[id]/points/[pointId]/qr"
@@ -2669,7 +2669,7 @@ git commit -m "feat(charge): an operator prints a QR for every connector"
 Образец — `tests/e2e/mobile-wallet.mobile.spec.ts`: там уже есть вход в
 аккаунт, подготовка данных и уборка за собой.
 
-- [ ] **Step 1: Написать тест**
+- [x] **Step 1: Написать тест**
 
 Сценарий одного случая (остальные — по образцу файла кошелька):
 
@@ -2687,7 +2687,7 @@ git commit -m "feat(charge): an operator prints a QR for every connector"
 8. Нажатие «Завершить» — виден чек, в нём 4.500 кВт·ч.
 9. Уборка: удалить сеанс, платёж, чек, пункт, сеть, кошелёк.
 
-- [ ] **Step 2: Запустить**
+- [x] **Step 2: Запустить**
 
 ```bash
 cd ~/poolwatt
@@ -2696,7 +2696,7 @@ npx playwright test tests/e2e/mobile-charge.mobile.spec.ts --project=mobile
 
 Ожидание: все passed. `poolwatt-web` должен быть online (`pm2 status`).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add tests/e2e/mobile-charge.mobile.spec.ts
@@ -2710,7 +2710,7 @@ git commit -m "test(charge): a session from the code to the receipt on a Pixel 7
 **Files:**
 - Modify: `~/poolwatt-android/android/app/src/main/AndroidManifest.xml` (другой репозиторий)
 
-- [ ] **Step 1: Камера в манифесте Android**
+- [x] **Step 1: Камера в манифесте Android**
 
 ```bash
 grep -n 'CAMERA' ~/poolwatt-android/android/app/src/main/AndroidManifest.xml
@@ -2725,7 +2725,7 @@ grep -n 'CAMERA' ~/poolwatt-android/android/app/src/main/AndroidManifest.xml
 
 Закоммитить в репозитории `~/poolwatt-android`.
 
-- [ ] **Step 2: Собрать APK**
+- [x] **Step 2: Собрать APK**
 
 ```bash
 /home/dv/bin/android-build
@@ -2733,7 +2733,7 @@ grep -n 'CAMERA' ~/poolwatt-android/android/app/src/main/AndroidManifest.xml
 
 Ожидание: печатает адреса загрузки; номер сборки на единицу больше прежнего.
 
-- [ ] **Step 3: iOS — строка о камере**
+- [x] **Step 3: iOS — строка о камере**
 
 `NSCameraUsageDescription` в `Info.plist` репозитория на Маке. Проверить
 сборку симулятора:
@@ -2747,7 +2747,7 @@ grep -n 'CAMERA' ~/poolwatt-android/android/app/src/main/AndroidManifest.xml
 и экран зарядки на TestFlight-сборке уже работает, только камера без
 строки в plist не включится.
 
-- [ ] **Step 4: Весь набор тестов перед выкладкой**
+- [x] **Step 4: Весь набор тестов перед выкладкой**
 
 ```bash
 cd ~/poolwatt
@@ -2758,7 +2758,7 @@ npm run test:e2e
 
 Ожидание: всё зелёное. Числа записать в отчёт.
 
-- [ ] **Step 5: Обновить трекер и доложить**
+- [x] **Step 5: Обновить трекер и доложить**
 
 В `inbox/TZ-STATUS.md`: US-20 переносится в «Готово» с доказательствами
 (коммиты, тесты, адреса страниц, номер APK); этап M3 отмечается как «M3-а
@@ -2782,3 +2782,30 @@ Task 11, 12. Гейт OCPP — Task 3. Живой канал — Task 5 (`notify
 **Чего в плане нет намеренно:** карта §27, фильтры §27, карточка §28 под
 телефон, отзывы, история доступности, продление брони с телефона — это
 этап M3-б, отдельный план.
+
+---
+
+## Где работа разошлась с планом
+
+- **Task 5/6 писались не строго тестом вперёд.** Сервис сеанса получился одним
+  файлом целиком, а тесты на отчёт счётчика и расчёт пришли следом. Тесты
+  авторизации (Task 4) и гонок (Task 7) — по порядку.
+- **Ступень агрегатора §16.7 оказалась ложной.** В плане её не было: расчёт её
+  считал, а списание не исполняло. Появился гейт `aggregatorOpen`, и один
+  случай в `roaming-flow.test.ts`, который на этой ступени держался, получил
+  настоящую книгу. Это не доделка плана, а исправление существующей ошибки.
+- **Монотонность счётчика пришлось переносить под блокировку строки.** План
+  проверял её до транзакции; тест на два одновременных отчёта показал, что так
+  больший результат затирается меньшим.
+- **`SETTLING` в перечислении не появился.** Гонку двух завершений решает
+  блокировка строки сеанса: проигравший видит статус вне живых и возвращает
+  готовое.
+- **Ключ пункта в e2e создаётся прямой записью в базу, без секрета подписи.**
+  Playwright запускается не как модуль приложения, и `issuePointKey` в него не
+  импортируется. Ветка с подписью HMAC закрыта юнит-тестами.
+- **`jsqr` вместо нативного плагина.** Как и в спецификации; плагина не
+  потребовалось, но Android-манифесту нужно разрешение камеры, а iOS —
+  `NSCameraUsageDescription`. Оба добавлены в своих репозиториях.
+- **Экран `/app/charge/[id]` не понадобился.** Законченный сеанс показывается
+  карточкой на самой вкладке со ссылкой на чек; отдельный адрес был бы
+  страницей, на которую никто не заходит.
