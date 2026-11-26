@@ -2672,6 +2672,47 @@
         "GRID": "Sieť",
         "MIXED": "Zmiešaný"
       }
+    },
+    "transfer": {
+      "title": "Kontakty a prevody",
+      "closed": "Prevody kWh ešte nie sú zapnuté: §24.4 žiada stanovisko litovského právnika pred spustením funkcie a to nemáme. Všetko ostatné na tejto obrazovke funguje.",
+      "myQr": "Môj QR na príjem",
+      "myQrHint": "Priateľ ho naskenuje a vaša prezývka sa doplní sama. Funguje aj bez siete.",
+      "recipient": "Príjemca",
+      "recipientHint": "Prezývka v Poolwatt alebo naskenovanie jeho QR.",
+      "scan": "Naskenovať QR",
+      "scanning": "Nasmerujte kameru na QR",
+      "notOurs": "Toto nie je kód Poolwatt",
+      "denied": "Bez prístupu ku kamere — zadajte prezývku ručne.",
+      "amount": "kWh",
+      "note": "Poznámka",
+      "requireConfirmation": "Príjemca potvrdí pred pohybom kWh",
+      "send": "Previesť",
+      "sending": "Prevádzame…",
+      "sent": "Prevedené",
+      "allowance": "Zostáva previesť",
+      "allowanceToday": "dnes",
+      "allowanceMonth": "tento mesiac",
+      "allowanceHint": "§24 žiada denný a mesačný limit a monitoring AML ako pri peňažných prevodoch.",
+      "incoming": "Čaká na vás",
+      "accept": "Prijať",
+      "decline": "Odmietnuť",
+      "noIncoming": "Nič nečaká.",
+      "confirmWithDevice": "Potvrdiť na zariadení",
+      "needZone": "Ešte nemáte peňaženku kWh. Najprv kúpte kWh.",
+      "coopOnly": "§24 dovoľuje previesť kWh len medzi členmi jednej kooperatívy s KYC a v jednej zóne siete."
+    },
+    "devices": {
+      "title": "Toto zariadenie",
+      "link": "Pripojiť toto zariadenie",
+      "linking": "Čakáme na odtlačok…",
+      "linked": "Pripojené",
+      "unsupported": "Toto zariadenie nemá vstavaný autentifikátor.",
+      "none": "Zariadenie nie je pripojené. Prevod kWh potom ide bez potvrdenia.",
+      "forget": "Zabudnúť",
+      "lastUsed": "použité",
+      "never": "ešte nepoužité",
+      "why": "§25 žiada potvrdzovať platby podľa SCA. Podpis kontroluje server, takže odtlačok chráni kWh, nie len obrazovku. Privátny kľúč z telefónu neodchádza."
     }
   },
   "route": {

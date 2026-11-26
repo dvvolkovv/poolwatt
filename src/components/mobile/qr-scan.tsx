@@ -22,12 +22,19 @@ export type QrScanLabels = {
   notOurs: string;
 };
 
-export function QrScan({
+/**
+ * Сканер общий по виду кода: на зарядке он читает разъём, на переводе — ник
+ * получателя. Разбор приходит снаружи, потому что «это не код Poolwatt»
+ * зависит от того, какой код здесь ждут.
+ */
+export function QrScan<T>({
   labels,
   onCode,
+  parse = parseConnectorCode as unknown as (raw: string) => T | null,
 }: {
   labels: QrScanLabels;
-  onCode: (code: ConnectorCode) => void;
+  onCode: (code: T) => void;
+  parse?: (raw: string) => T | null;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [scanning, setScanning] = useState(false);
@@ -40,6 +47,10 @@ export function QrScan({
   useEffect(() => {
     handler.current = onCode;
   }, [onCode]);
+  const parser = useRef(parse);
+  useEffect(() => {
+    parser.current = parse;
+  }, [parse]);
 
   useEffect(() => {
     if (!scanning) return;
@@ -67,7 +78,7 @@ export function QrScan({
       const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const found = jsQR(image.data, image.width, image.height);
       if (found) {
-        const parsed = parseConnectorCode(found.data);
+        const parsed = parser.current(found.data);
         if (parsed) {
           stopped = true;
           setScanning(false);
@@ -108,7 +119,7 @@ export function QrScan({
   }, [scanning, labels.denied, labels.notOurs]);
 
   const submitManual = useCallback(() => {
-    const parsed = parseConnectorCode(manual);
+    const parsed = parser.current(manual);
     if (!parsed) {
       setError(labels.notOurs);
       return;

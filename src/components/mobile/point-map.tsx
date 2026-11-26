@@ -98,12 +98,21 @@ export function PointMap({
   const [here, setHere] = useState<{ lat: number; lng: number } | null>(null);
   const [locationDenied, setLocationDenied] = useState(false);
 
+  // Карта поднимается один раз и живёт в обработчиках maplibre, поэтому
+  // свежее состояние она читает через ref. Обновляются они в эффектах, а не
+  // во время отрисовки: во время отрисовки ref трогать нельзя.
   const stationsRef = useRef(stations);
-  stationsRef.current = stations;
   const filtersRef = useRef(filters);
-  filtersRef.current = filters;
   const hereRef = useRef(here);
-  hereRef.current = here;
+  useEffect(() => {
+    stationsRef.current = stations;
+  }, [stations]);
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+  useEffect(() => {
+    hereRef.current = here;
+  }, [here]);
 
   const inflight = useRef<AbortController | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);

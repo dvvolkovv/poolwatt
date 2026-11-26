@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildConnectorCode, parseConnectorCode } from "./qr-code";
+import { buildConnectorCode, parseConnectorCode, parseUserCode } from "./qr-code";
 
 describe("parseConnectorCode", () => {
   it("reads the compact form", () => {
@@ -52,5 +52,32 @@ describe("parseConnectorCode", () => {
       pointId: "point123",
       connectorId: null,
     });
+  });
+});
+
+describe("parseUserCode — §22.8 QR на получение", () => {
+  it("reads our own code", () => {
+    expect(parseUserCode("PWX:jozef")).toBe("jozef");
+    expect(parseUserCode("pwx:Jozef")).toBe("jozef");
+  });
+
+  it("reads a nickname typed by hand", () => {
+    expect(parseUserCode("  Jozef.Novak  ")).toBe("jozef.novak");
+  });
+
+  it("reads a nickname out of a link", () => {
+    expect(parseUserCode("https://poolwatt.com/ru/app/contacts?u=jozef")).toBe("jozef");
+  });
+
+  it("refuses what cannot be a nickname", () => {
+    expect(parseUserCode("PWX:ab")).toBeNull();
+    expect(parseUserCode("PWX:" + "x".repeat(31))).toBeNull();
+    expect(parseUserCode("PWX:jozef novak")).toBeNull();
+    expect(parseUserCode("")).toBeNull();
+    expect(parseUserCode(null)).toBeNull();
+  });
+
+  it("does not take a connector code for a nickname", () => {
+    expect(parseUserCode("PW1:point1:conn1")).toBeNull();
   });
 });

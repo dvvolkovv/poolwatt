@@ -2672,6 +2672,47 @@
         "GRID": "Grid",
         "MIXED": "Mixed"
       }
+    },
+    "transfer": {
+      "title": "Contacts and transfers",
+      "closed": "Transfers of kWh are not switched on yet: §24.4 asks for a Lithuanian lawyer's opinion before the feature goes live, and we have none. Everything else on this screen works.",
+      "myQr": "My QR to receive",
+      "myQrHint": "A friend scans this and your nickname fills in. Works without a network.",
+      "recipient": "Recipient",
+      "recipientHint": "A Poolwatt nickname, or scan their QR.",
+      "scan": "Scan a QR",
+      "scanning": "Point the camera at the QR",
+      "notOurs": "This is not a Poolwatt QR",
+      "denied": "No access to the camera — type the nickname instead.",
+      "amount": "kWh",
+      "note": "Note",
+      "requireConfirmation": "The recipient confirms before the kWh move",
+      "send": "Send",
+      "sending": "Sending…",
+      "sent": "Sent",
+      "allowance": "Left to transfer",
+      "allowanceToday": "today",
+      "allowanceMonth": "this month",
+      "allowanceHint": "§24 asks for a daily and a monthly limit, with AML monitoring as for money transfers.",
+      "incoming": "Waiting for you",
+      "accept": "Accept",
+      "decline": "Decline",
+      "noIncoming": "Nothing is waiting.",
+      "confirmWithDevice": "Confirm with your device",
+      "needZone": "You have no kWh wallet yet. Buy kWh first.",
+      "coopOnly": "§24 lets kWh move only between KYC-verified members of one cooperative, inside one grid zone."
+    },
+    "devices": {
+      "title": "This device",
+      "link": "Link this device",
+      "linking": "Waiting for the fingerprint…",
+      "linked": "Linked",
+      "unsupported": "This device has no built-in authenticator.",
+      "none": "No device is linked. A transfer of kWh then goes without confirmation.",
+      "forget": "Forget",
+      "lastUsed": "last used",
+      "never": "not used yet",
+      "why": "§25 asks for payments to be confirmed under SCA. The signature is checked by the server, so the fingerprint protects the kWh, not just the screen. The private key never leaves your phone."
     }
   },
   "route": {

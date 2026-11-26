@@ -47,3 +47,37 @@ function valid(pointId: string | null, connectorId: string | null): ConnectorCod
   if (connectorId && !ID.test(connectorId)) return null;
   return { pointId, connectorId: connectorId || null };
 }
+
+// §22.8 — QR на получение перевода. Внутри ник, и ничего больше: получателя
+// в переводе и так называют ником, секрета в нём нет. Поэтому этот код можно
+// нарисовать без сети и показать кому угодно.
+
+export const USER_PREFIX = "PWX";
+
+/** Ник: буквы, цифры, точка, дефис, подчёркивание; 3…30 знаков. */
+const USERNAME = /^[A-Za-z0-9._-]{3,30}$/;
+
+export function buildUserCode(username: string): string {
+  return `${USER_PREFIX}:${username}`;
+}
+
+export function parseUserCode(raw: string | null | undefined): string | null {
+  const text = (raw ?? "").trim();
+  if (!text) return null;
+
+  if (text.toUpperCase().startsWith(`${USER_PREFIX}:`)) {
+    const nick = text.slice(USER_PREFIX.length + 1).trim();
+    return USERNAME.test(nick) ? nick.toLowerCase() : null;
+  }
+
+  // Адрес с ником в параметре — так ссылку можно отправить в переписке.
+  try {
+    const url = new URL(text);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    const nick = url.searchParams.get("u")?.trim() ?? "";
+    return USERNAME.test(nick) ? nick.toLowerCase() : null;
+  } catch {
+    // Не адрес и не наш код — может быть просто ник, набранный руками.
+    return USERNAME.test(text) ? text.toLowerCase() : null;
+  }
+}
