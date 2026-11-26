@@ -48,6 +48,7 @@ export default async function PointWizardPage({
 
   const t = await getTranslations("points");
   const tPolicy = await getTranslations("booking.policy");
+  const tCharge = await getTranslations("app.charge");
   const policy = await readPolicy(pointId);
   const [zones, missing] = await Promise.all([
     prisma.gridZone.findMany({
@@ -86,12 +87,23 @@ export default async function PointWizardPage({
 
       <div className="mt-4 flex flex-wrap items-baseline justify-between gap-3">
         <h1 className="text-[28px] font-bold">{point.name}</h1>
-        <span
-          data-testid="point-status"
-          className="rounded-full border border-hairline px-2.5 py-0.5 text-[11px] uppercase tracking-[0.12em] text-muted"
-        >
-          {t(`status.${point.status}`)}
-        </span>
+        <div className="flex items-baseline gap-3">
+          {/* US-20 — код, который водитель сканирует у разъёма. */}
+          <Link
+            href={`/${locale}/me/charger-operator/${id}/points/${pointId}/qr`}
+            prefetch={false}
+            className="text-[13px] text-muted underline hover:text-foreground"
+            data-testid="point-qr-link"
+          >
+            {tCharge("qrTitle")}
+          </Link>
+          <span
+            data-testid="point-status"
+            className="rounded-full border border-hairline px-2.5 py-0.5 text-[11px] uppercase tracking-[0.12em] text-muted"
+          >
+            {t(`status.${point.status}`)}
+          </span>
+        </div>
       </div>
       {point.reviewNote && point.status === "DRAFT" && (
         <p className="mt-2 rounded border border-down/40 px-3 py-2 text-[13px] text-down">
