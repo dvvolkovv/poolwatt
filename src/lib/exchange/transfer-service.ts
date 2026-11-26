@@ -17,6 +17,8 @@ import { isKwhDust, roundKwh } from "./precision";
 import { notifyWallets } from "./realtime-notify";
 import { transferTokens } from "./token-registry";
 import { getOrCreateWallet } from "./wallet-service";
+import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
+import { hasDeviceKey, verifyAssertion } from "@/lib/webauthn/device-keys";
 
 /** §24 "Лимиты на перевод в сутки и месяц" — defaults until the operator sets them. */
 export const DAILY_TRANSFER_LIMIT_KWH = 500;
@@ -35,6 +37,14 @@ export interface TransferInput {
   requireConfirmation?: boolean;
   /** §15 — a replayed POST must not move the energy twice. */
   idempotencyKey?: string | null;
+  /**
+   * §25 SCA — подпись встроенного аутентификатора над одноразовым вызовом.
+   * Обязательна, если у отправителя привязано хоть одно устройство;
+   * у кого устройства нет, перевод идёт без неё — требовать биометрию с
+   * того, у кого её нет, значит закрыть функцию человеку со старым
+   * телефоном.
+   */
+  sca?: AuthenticationResponseJSON | null;
 }
 
 export interface TransferResult {
@@ -87,6 +97,28 @@ async function transferredSince(walletId: string, since: Date): Promise<number> 
 
 export async function transferKwh(input: TransferInput): Promise<TransferResult> {
   assertTransfersOpen();
+
+  // §25 — подтверждение операции тем, кто её затеял. Проверка идёт до любой
+  // записи: подпись охраняет движение энергии, а не сообщение о нём.
+  if (await hasDeviceKey(input.fromUserId)) {
+    if (!input.sca) {
+      throw new TransferError(
+        "Confirm the transfer with your device: this account has biometrics linked (ТЗ §25)",
+      );
+    }
+    try {
+      await verifyAssertion({
+        userId: input.fromUserId,
+        purpose: "transfer",
+        response: input.sca,
+      });
+    } catch (err) {
+      throw new TransferError(
+        err instanceof Error ? err.message : "Could not confirm the transfer",
+      );
+    }
+  }
+
   if (input.idempotencyKey) {
     const replay = await replayTransfer(input.idempotencyKey);
     if (replay) return replay;

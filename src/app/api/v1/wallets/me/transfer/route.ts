@@ -21,6 +21,9 @@ const bodySchema = z.object({
   amountKwh: z.number().positive().max(100_000),
   note: z.string().max(200).optional().nullable(),
   requireConfirmation: z.boolean().optional(),
+  // §25 SCA — ответ встроенного аутентификатора; форма у него своя, разбирает
+  // её библиотека WebAuthn, поэтому здесь он проходит как есть.
+  assertion: z.unknown().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -46,6 +49,7 @@ export async function POST(req: NextRequest) {
           amountKwh: parsed.data.amountKwh,
           note: parsed.data.note ?? null,
           requireConfirmation: parsed.data.requireConfirmation,
+          sca: (parsed.data.assertion ?? null) as never,
           idempotencyKey: key,
         });
         return { status: 201, data: { transfer } };
