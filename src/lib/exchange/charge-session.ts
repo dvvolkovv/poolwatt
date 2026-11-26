@@ -132,6 +132,29 @@ export async function readLastTick(
     : null;
 }
 
+/**
+ * Сеанс, закончившийся только что. Нужен экрану зарядки: водитель отсоединил
+ * кабель, живого сеанса больше нет, и первое, что он должен увидеть, — чем
+ * всё кончилось и где чек, а не снова кнопку «сканировать».
+ */
+export async function readJustFinishedSession(
+  userId: string,
+  withinMinutes = 10,
+): Promise<SessionView | null> {
+  const since = new Date(Date.now() - withinMinutes * 60_000);
+  const row = await prisma.chargeSession.findFirst({
+    where: {
+      userId,
+      status: { notIn: LIVE },
+      endedAt: { gte: since },
+      deliveredKwh: { gt: 0 },
+    },
+    orderBy: { endedAt: "desc" },
+    include: WITH_NAMES,
+  });
+  return row ? view(row) : null;
+}
+
 export interface AuthorizeArgs {
   userId: string;
   pointId: string;
