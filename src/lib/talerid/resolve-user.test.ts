@@ -157,8 +157,11 @@ describe("link", () => {
   });
 
   it("never creates an account", async () => {
-    const before = await prisma.user.count();
+    // Считаем только своих: прочие файлы набора идут рядом и заводят
+    // собственных пользователей, и общий счётчик от этого дрожит.
+    const mine = { username: { startsWith: "tid-" } };
+    const before = await prisma.user.count({ where: mine });
     await expect(resolveTalerIdUser(claims(1), { linkToUserId: "no-such-user" })).rejects.toThrow();
-    expect(await prisma.user.count()).toBe(before);
+    expect(await prisma.user.count({ where: mine })).toBe(before);
   });
 });
