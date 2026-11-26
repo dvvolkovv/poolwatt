@@ -114,3 +114,23 @@ export function assertCardTariffsOpen(): void {
     );
   }
 }
+
+/**
+ * §34 "Станция получает бронь через OCPP (ReserveNow / CancelReservation)",
+ * §51 "поддержка отправляет команду через OCPP", US-20 старт по QR.
+ *
+ * Командовать чужой станцией можно только через мост к сети зарядок, и его
+ * нет: первые сети с OCPP/OCPI — открытый вопрос к владельцу. Закрыто
+ * означает, что оборудование отчитывается само — о занятости разъёмов и о
+ * выданных кВт·ч, — а мы не делаем вид, что нажали кнопку на станции. Никогда
+ * не означает «зарядку нельзя оплатить»: водопад §16.6 работает без моста.
+ */
+export function ocppOpen(env: Env = process.env): boolean {
+  return Boolean(env.OCPP_BRIDGE_URL?.trim());
+}
+
+export function assertOcppOpen(env: Env = process.env): void {
+  if (!ocppOpen(env)) {
+    throw new FeatureClosedError("There is no bridge to a charging network yet");
+  }
+}

@@ -3,9 +3,11 @@ import {
   FeatureClosedError,
   assertCampaignFiatFundingOpen,
   assertCardTariffsOpen,
+  assertOcppOpen,
   campaignFiatFundingOpen,
   cardTariffsOpen,
   ibansOpen,
+  ocppOpen,
   publishableIban,
   transfersOpen,
 } from "./gates";
@@ -64,5 +66,20 @@ describe("card tariff gate — ТЗ §53", () => {
 
   it("refuses rather than invents an interchange rate", () => {
     expect(() => assertCardTariffsOpen()).toThrow(FeatureClosedError);
+  });
+});
+
+describe("OCPP gate — ТЗ §34, §51, US-20", () => {
+  it("is shut without a bridge to a charging network", () => {
+    expect(ocppOpen({})).toBe(false);
+    expect(ocppOpen({ OCPP_BRIDGE_URL: "   " })).toBe(false);
+  });
+
+  it("opens once a bridge is configured", () => {
+    expect(ocppOpen({ OCPP_BRIDGE_URL: "https://ocpp.example/v1" })).toBe(true);
+  });
+
+  it("refuses rather than pretends it pressed a button on a station", () => {
+    expect(() => assertOcppOpen({})).toThrow(FeatureClosedError);
   });
 });
