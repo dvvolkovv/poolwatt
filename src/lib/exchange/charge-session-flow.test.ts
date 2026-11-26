@@ -125,9 +125,7 @@ describe("charge sessions under concurrency", () => {
       }),
     ]);
 
-    const ids = results
-      .filter((r): r is PromiseFulfilledResult<{ id: string }> => r.status === "fulfilled")
-      .map((r) => r.value.id);
+    const ids = results.flatMap((r) => (r.status === "fulfilled" ? [r.value.id] : []));
     expect(ids.length).toBeGreaterThan(0);
     expect(new Set(ids).size).toBe(1);
     expect(await prisma.chargeSession.count({ where: { idempotencyKey: k } })).toBe(1);
