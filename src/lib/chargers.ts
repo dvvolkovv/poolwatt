@@ -90,6 +90,16 @@ export type ChargerStation = {
   bannerAssetId?: string | null;
   priceTokens?: number | null;
   howToFind?: string | null;
+  /** §27 — значок пина показывает тип пункта. Есть только у нашего пункта. */
+  pointType?: string;
+  /** §28 «Способы оплаты»; на них стоит фильтр §27 «white label карты». */
+  paymentMethods?: string[];
+  /** §27 «работает 24/7». */
+  open24?: boolean;
+  /** Метры до водителя, когда он поделился местоположением. */
+  distanceM?: number | null;
+  /** false — цена выбрана по UTC: часового пояса страны пункта мы не знаем. */
+  priceZoneKnown?: boolean;
 };
 
 export function classifyPower(kw: number): PowerLevel {

@@ -66,5 +66,10 @@ export function pointToStation(point: FoundPoint): ChargerStation {
         : null,
     poolwattPointId: point.id,
     priceTokens: point.priceTokens,
+    pointType: point.type,
+    paymentMethods: point.paymentMethods,
+    open24: point.open24,
+    distanceM: point.distanceM,
+    priceZoneKnown: point.priceZoneKnown,
   };
 }
