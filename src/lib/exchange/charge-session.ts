@@ -360,14 +360,26 @@ export async function reportMeter(report: MeterReport): Promise<SessionView> {
 
   const kwhTotal = roundKwh(report.body.kwhTotal);
   if (!(kwhTotal >= 0)) throw new ChargeSessionError("kwhTotal must not be negative");
-  if (kwhTotal + 0.0005 < num(session.deliveredKwh)) {
-    throw new ChargeSessionError(
-      `The meter cannot be lower than it was: ${kwhTotal} after ${num(session.deliveredKwh)}`,
-    );
-  }
 
   const now = report.now ?? new Date();
   const updated = await prisma.$transaction(async (tx) => {
+    // Счётчик только растёт — и проверять это надо под блокировкой строки.
+    // Иначе два отчёта, пришедшие вместе, оба видят прежнее значение, и
+    // меньший записывается последним: 5 кВт·ч превращаются в 2.
+    const locked = await tx.$queryRaw<{ deliveredKwh: string; status: ChargeSessionStatus }[]>`
+      SELECT "deliveredKwh", status FROM "ChargeSession" WHERE id = ${session.id} FOR UPDATE`;
+    const current = locked[0];
+    if (!current) throw new ChargeSessionError("No such session");
+    if (!LIVE.includes(current.status)) {
+      throw new ChargeSessionError("This session is not running");
+    }
+    const already = Number(current.deliveredKwh);
+    if (kwhTotal + 0.0005 < already) {
+      throw new ChargeSessionError(
+        `The meter cannot be lower than it was: ${kwhTotal} after ${already}`,
+      );
+    }
+
     await tx.chargeSessionTick.create({
       data: {
         sessionId: session.id,
