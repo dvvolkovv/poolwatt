@@ -2529,5 +2529,14 @@
       "qrHint": "Vytlačte a nalepte na konektor",
       "print": "Tlač"
     }
+  },
+  "route": {
+    "route": "Trasa",
+    "openIn": "Otvoriť v",
+    "system": "Predvolená navigácia",
+    "google": "Google Maps",
+    "apple": "Apple Maps",
+    "waze": "Waze",
+    "cancel": "Zrušiť"
   }
 }

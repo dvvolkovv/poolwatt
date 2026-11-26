@@ -2529,5 +2529,14 @@
       "qrHint": "Print and stick on the connector",
       "print": "Print"
     }
+  },
+  "route": {
+    "route": "Route",
+    "openIn": "Open in",
+    "system": "Default navigator",
+    "google": "Google Maps",
+    "apple": "Apple Maps",
+    "waze": "Waze",
+    "cancel": "Cancel"
   }
 }

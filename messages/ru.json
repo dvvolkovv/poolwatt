@@ -2529,5 +2529,14 @@
       "qrHint": "Распечатайте и наклейте на разъём",
       "print": "Печать"
     }
+  },
+  "route": {
+    "route": "Маршрут",
+    "openIn": "Открыть в",
+    "system": "Навигатор по умолчанию",
+    "google": "Google Maps",
+    "apple": "Apple Maps",
+    "waze": "Waze",
+    "cancel": "Отмена"
   }
 }
