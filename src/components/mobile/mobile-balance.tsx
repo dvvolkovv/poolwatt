@@ -70,14 +70,6 @@ export function MobileBalance({
     }
   }, [totalKwh, fiat, currency, zoneCode]);
 
-  if (wallets.length === 0) {
-    return (
-      <p className="mt-6 text-[14px] text-muted" data-testid="no-wallet">
-        {labels.empty}
-      </p>
-    );
-  }
-
   return (
     <div className="mt-6">
       <div className="text-[11px] uppercase tracking-[0.18em] text-muted">
@@ -104,7 +96,15 @@ export function MobileBalance({
         <span className="ml-2 text-[13px] text-muted">{labels.money}</span>
       </div>
 
-      {detail && (
+      {/* Ноль — настоящий баланс, поэтому крупная цифра есть всегда. Пусто
+          бывает только в разбивке по зонам: кошелька в зоне ещё нет. */}
+      {detail && wallets.length === 0 && (
+        <p className="mt-5 text-[14px] text-muted" data-testid="no-wallet">
+          {labels.empty}
+        </p>
+      )}
+
+      {detail && wallets.length > 0 && (
         <ul className="mt-5 divide-y divide-hairline rounded-lg border border-hairline bg-card">
           {wallets.map((w) => (
             <li key={w.id} className="px-4 py-3" data-zone={w.zoneCode}>
