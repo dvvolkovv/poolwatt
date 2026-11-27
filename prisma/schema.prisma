@@ -578,12 +578,80 @@ model WorkOrder {
   updatedAt      DateTime          @updatedAt
   closedAt       DateTime?
 
-  ticket        Ticket?         @relation("TicketWorkOrder")
+  ticket        Ticket?             @relation("TicketWorkOrder")
   StockMovement StockMovement[]
+  // §48 — то, что инженер делает на объекте.
+  tasks         WorkOrderTask[]
+  sitePhotos    WorkOrderPhoto[]
+  signature     WorkOrderSignature?
 
   @@index([operatorId, status])
   @@index([companyId, status])
   @@index([assigneeId, status])
+}
+
+/// §48 «чек-лист работ». Строка создаётся из типового списка по виду наряда
+/// при первом открытии наряда тем, кто имеет право в нём работать: в живой
+/// базе наряды уже есть, и чек-лист, появляющийся только у будущих, означал
+/// бы, что §48 выполнен для половины.
+model WorkOrderTask {
+  id          String    @id @default(cuid())
+  workOrderId String
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  position    Int
+  title       String
+  /// Обязательный пункт нельзя оставить без ответа: закрытие спросит.
+  required    Boolean   @default(true)
+  doneAt      DateTime?
+  doneById    String?
+  /// Пропущен с объяснением («щит заперт», «не применимо к этой модели»).
+  /// Или отметка, или объяснение — не оба.
+  skipReason  String?   @db.Text
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([workOrderId, position])
+  @@index([workOrderId])
+}
+
+enum WorkOrderPhotoStage {
+  BEFORE
+  AFTER
+}
+
+/// §48 «фото до и после». Это снимки **инженера**, а не клиента:
+/// `WorkOrder.photos` несёт фотографии заявителя §51, которые лежат в
+/// хранилище заявок и принадлежат другому человеку.
+model WorkOrderPhoto {
+  id          String              @id @default(cuid())
+  workOrderId String
+  workOrder   WorkOrder           @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  stage       WorkOrderPhotoStage
+  key         String              @unique
+  takenById   String?
+  takenAt     DateTime            @default(now())
+
+  @@index([workOrderId, stage])
+}
+
+/// Кто подписал. Инженер, подписавшийся сам, — не подделка подписи клиента:
+/// у зарядной станции часто нет никого на месте, и наряд должен говорить об
+/// этом прямо.
+enum WorkOrderSignerKind {
+  SITE_CONTACT
+  ENGINEER
+}
+
+/// §48 «подпись». Одна на наряд.
+model WorkOrderSignature {
+  id          String              @id @default(cuid())
+  workOrderId String              @unique
+  workOrder   WorkOrder           @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  signerKind  WorkOrderSignerKind
+  signerName  String
+  /// Росчерк с холста, PNG, вне веб-корня.
+  key         String              @unique
+  signedById  String
+  signedAt    DateTime            @default(now())
 }
 
 // §51 "Сообщение о поломке от клиента" / US-52, US-54.
