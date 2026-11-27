@@ -44,6 +44,7 @@ export default async function ReceiptPage({
   const chain = await prisma.receipt.findUniqueOrThrow({
     where: { id },
     select: {
+      paymentId: true,
       corrects: { select: { id: true, number: true } },
       correctedBy: { select: { id: true, number: true } },
     },
@@ -87,6 +88,22 @@ export default async function ReceiptPage({
         }}
       />
       <ReceiptSheet doc={doc} />
+
+      {/* §51.1 — «кнопка доступна … в истории зарядок». Сеанс едет с
+          заявкой, и только поэтому поддержка знает, какое списание
+          проверяет. */}
+      {chain.paymentId && doc.session?.pointId && (
+        <p className="mt-6 text-[13px]" data-print-hide>
+          <Link
+            href={`/${locale}/c/${doc.session.pointId}/report?payment=${chain.paymentId}`}
+            prefetch={false}
+            data-testid="receipt-report"
+            className="text-accent underline"
+          >
+            {t("reportProblem")}
+          </Link>
+        </p>
+      )}
 
       <div className="mt-10" data-print-hide>
         <ContentSection contents={marketing} heading={tMarketing("sectionHeading")} />

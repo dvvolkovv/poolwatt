@@ -70,6 +70,13 @@ export default async function MyTicketPage({
         )}
       </p>
 
+      {ticket.compensation && (
+        <p className="mt-2 text-[13px]" data-testid="ticket-compensation-given">
+          {t("compensation.mineHeading")}:{" "}
+          <span className="num">{ticket.compensation}</span>
+        </p>
+      )}
+
       {ticket.photos.length > 0 && (
         <ul className="mt-4 flex flex-wrap gap-2" data-testid="ticket-photos">
           {ticket.photos.map((key) => (

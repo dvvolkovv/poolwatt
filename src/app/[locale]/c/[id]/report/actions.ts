@@ -9,6 +9,9 @@ import { MAX_TICKET_PHOTOS, MAX_TICKET_PHOTO_BYTES } from "@/lib/work/ticket-pho
 
 const schema = z.object({
   pointId: z.string().min(1),
+  // §51.1 — сеанс, если заявка пришла из истории зарядок. Принадлежность
+  // проверяет `reportProblem`: чужой сеанс дал бы право вернуть не те деньги.
+  paymentId: z.string().min(1).nullable().optional(),
   connectorId: z.string().min(1).nullable(),
   problemType: z.enum([
     "NO_START",
@@ -62,6 +65,7 @@ export async function sendReport(input: unknown): Promise<ReportResult> {
   try {
     const result = await reportProblem({
       pointId: parsed.data.pointId,
+      paymentId: parsed.data.paymentId ?? null,
       connectorId: parsed.data.connectorId,
       reporterId: session?.user?.id ?? null,
       problemType: parsed.data.problemType,

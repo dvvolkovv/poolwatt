@@ -11,6 +11,8 @@ export const HISTORY_FILTERS = [
   "charge",
   "transfer",
   "gift",
+  // §51 — возврат ошибочного списания: своя строка в ленте, свой чип.
+  "refund",
 ] as const;
 
 export type HistoryFilter = (typeof HISTORY_FILTERS)[number];
@@ -34,5 +36,7 @@ export function kindsForFilter(filter: HistoryFilter): WalletHistoryKind[] | und
       return ["TRANSFER_IN", "TRANSFER_OUT"];
     case "gift":
       return ["GIFT"];
+    case "refund":
+      return ["REFUND"];
   }
 }

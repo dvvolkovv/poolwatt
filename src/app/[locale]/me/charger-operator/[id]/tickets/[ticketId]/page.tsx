@@ -11,6 +11,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TicketThread } from "@/components/work/ticket-thread";
+import { TicketCompensationPanel } from "@/components/work/ticket-compensation-panel";
+import { readCompensationCampaign } from "@/lib/work/ticket-compensation";
+import { num } from "@/lib/exchange/decimal";
+import { roundMoney } from "@/lib/exchange/precision";
 import { readTicketForUser } from "@/lib/work/ticket-access";
 import { readThread, toListRow } from "@/lib/work/ticket-view";
 import { threadLabels } from "@/lib/work/ticket-labels";
@@ -48,10 +52,26 @@ export default async function SupportTicketPage({
       reporter: { select: { username: true } },
       workOrder: { select: { id: true, title: true } },
       messages: { orderBy: { createdAt: "asc" } },
+      // §51 — обжалуемый сеанс и то, что по нему уже вернули.
+      payment: {
+        select: {
+          amountFiat: true,
+          cardId: true,
+          capturedAt: true,
+          point: { select: { name: true } },
+          zone: { select: { currency: true } },
+        },
+      },
+      refunds: { select: { amountFiat: true } },
     },
   });
   const row = toListRow(full);
   const thread = await readThread(ticketId);
+  // §51 — партнёр мог не настраивать компенсацию, и тогда её не предлагают.
+  const compensationCampaign = await readCompensationCampaign(
+    ticket.operatorId,
+    ticket.pointId,
+  );
 
   return (
     <div>
@@ -114,6 +134,44 @@ export default async function SupportTicketPage({
             </li>
           ))}
         </ul>
+      )}
+
+      {seen.canWrite && (
+        <TicketCompensationPanel
+          ticketId={ticket.id}
+          session={
+            full.payment
+              ? {
+                  pointName: full.payment.point?.name ?? null,
+                  at: full.payment.capturedAt?.toISOString() ?? null,
+                  chargedFiat: num(full.payment.amountFiat),
+                  refundableFiat: roundMoney(
+                    num(full.payment.amountFiat) -
+                      full.refunds.reduce((sum, r) => sum + num(r.amountFiat), 0),
+                  ),
+                  currency: full.payment.zone.currency,
+                  byCard: full.payment.cardId !== null,
+                }
+              : null
+          }
+          compensation={ticket.compensation}
+          giftKwh={compensationCampaign ? num(compensationCampaign.giftKwh) : null}
+          giftGiven={(ticket.compensation ?? "").includes("kWh")}
+          labels={{
+            heading: t("compensation.heading"),
+            given: t("compensation.given"),
+            session: t("compensation.session"),
+            leftToRefund: t("compensation.leftToRefund"),
+            amount: t("compensation.amount"),
+            reason: t("compensation.reason"),
+            refund: t("compensation.refund"),
+            refunding: t("compensation.refunding"),
+            compensate: t("compensation.compensate"),
+            cardClosed: t("compensation.cardClosed"),
+            noCampaign: t("compensation.noCampaign"),
+            noSession: t("compensation.noSession"),
+          }}
+        />
       )}
 
       <TicketThread

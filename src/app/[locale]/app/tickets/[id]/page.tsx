@@ -55,6 +55,13 @@ export default async function MobileTicket({
         <span data-testid="ticket-status">{t(`status.${ticket.status}`)}</span>
       </p>
 
+      {ticket.compensation && (
+        <p className="mt-2 text-[13px]" data-testid="ticket-compensation-given">
+          {t("compensation.mineHeading")}:{" "}
+          <span className="num">{ticket.compensation}</span>
+        </p>
+      )}
+
       {ticket.photos.length > 0 && (
         <ul className="mt-4 flex gap-2 overflow-x-auto" data-testid="ticket-photos">
           {ticket.photos.map((key) => (

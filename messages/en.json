@@ -1734,6 +1734,21 @@
       "CUSTOMER": "Customer",
       "SUPPORT": "Support",
       "SYSTEM": "System"
+    },
+    "compensation": {
+      "heading": "Compensation",
+      "given": "The network gave back",
+      "session": "Session",
+      "leftToRefund": "Left to refund",
+      "amount": "Amount",
+      "reason": "Reason for the refund",
+      "refund": "Refund the debit",
+      "refunding": "…",
+      "compensate": "Give {kwh} kWh for the trouble",
+      "cardClosed": "A refund onto a card is the payment provider's job, and it is not connected yet.",
+      "noCampaign": "This network has configured no gift-kWh compensation.",
+      "noSession": "This ticket names no session, so there is nothing to give back.",
+      "mineHeading": "What the network gave back"
     }
   },
   "booking": {
@@ -1846,7 +1861,8 @@
     "cashbackKwh": "Cashback earned",
     "correctedBy": "This document has been corrected. The document in force is {number}.",
     "correctsDocument": "This is a corrected version of document {number}.",
-    "journal": "Change journal"
+    "journal": "Change journal",
+    "reportProblem": "Report a problem"
   },
   "accounting": {
     "eyebrow": "Accounting",
@@ -2537,7 +2553,9 @@
       "kindCHARGE": "Charge",
       "kindTRANSFER_IN": "Transfer received",
       "kindTRANSFER_OUT": "Transfer sent",
-      "kindGIFT": "Gift"
+      "kindGIFT": "Gift",
+      "refund": "Refunds",
+      "kindREFUND": "Refund"
     },
     "sections": {
       "work": "Work orders",

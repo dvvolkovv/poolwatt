@@ -36,6 +36,7 @@ export default async function WalletPage({
 
   const t = await getTranslations("exchange.wallet");
   const tGifts = await getTranslations("gifts");
+  const tReceipt = await getTranslations("receipt");
 
   const [wallets, zones, account, purchases, receipts, gifts] = await Promise.all([
     readWallets(userId),
@@ -60,6 +61,7 @@ export default async function WalletPage({
         issuedAt: true,
         paymentId: true,
         tradeId: true,
+        payment: { select: { pointId: true } },
       },
     }),
     // §43 — "В приложении показывается отдельно от основного баланса".
@@ -211,6 +213,7 @@ export default async function WalletPage({
                 <th>{t("history")}</th>
                 <th className="text-right">{t("receiptKwh")}</th>
                 <th className="text-right">{t("receiptTotal")}</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -230,6 +233,20 @@ export default async function WalletPage({
                   <td className="text-right num">{num(r.totalKwh).toFixed(3)}</td>
                   <td className="text-right num">
                     {num(r.totalFiat).toFixed(2)} {r.currency}
+                  </td>
+                  {/* §51.1 — «кнопка доступна … в истории зарядок». Зарядка
+                      не в нашей сети жаловаться некому: там нет пункта. */}
+                  <td className="text-right">
+                    {r.payment?.pointId && (
+                      <Link
+                        href={`/${locale}/c/${r.payment.pointId}/report?payment=${r.paymentId}`}
+                        prefetch={false}
+                        data-testid="history-report"
+                        className="text-[12px] text-muted underline hover:text-foreground"
+                      >
+                        {tReceipt("reportProblem")}
+                      </Link>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -2,6 +2,7 @@
 // чека здесь нет сознательно: иначе через месяц в кабинете и в телефоне
 // будут два разных чека на одну сделку.
 
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
@@ -44,6 +45,7 @@ export default async function MobileReceiptScreen({
   const chain = await prisma.receipt.findUniqueOrThrow({
     where: { id },
     select: {
+      paymentId: true,
       corrects: { select: { id: true, number: true } },
       correctedBy: { select: { id: true, number: true } },
     },
@@ -66,6 +68,20 @@ export default async function MobileReceiptScreen({
           }}
         />
         <ReceiptSheet doc={doc} />
+
+        {/* §51.1 — та же кнопка в телефоне. */}
+        {chain.paymentId && doc.session?.pointId && (
+          <p className="mt-6 text-[14px]">
+            <Link
+              href={`/${locale}/c/${doc.session.pointId}/report?payment=${chain.paymentId}`}
+              prefetch={false}
+              data-testid="receipt-report"
+              className="text-accent underline"
+            >
+              {tr("reportProblem")}
+            </Link>
+          </p>
+        )}
       </div>
     </Screen>
   );

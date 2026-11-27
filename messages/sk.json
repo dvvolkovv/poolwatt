@@ -1734,6 +1734,21 @@
       "CUSTOMER": "Klient",
       "SUPPORT": "Podpora",
       "SYSTEM": "Systém"
+    },
+    "compensation": {
+      "heading": "Kompenzácia",
+      "given": "Sieť vrátila",
+      "session": "Nabíjanie",
+      "leftToRefund": "Zostáva vrátiť",
+      "amount": "Suma",
+      "reason": "Dôvod vrátenia",
+      "refund": "Vrátiť platbu",
+      "refunding": "…",
+      "compensate": "Darovať {kwh} kWh za nepríjemnosť",
+      "cardClosed": "Vrátenie na kartu urobí platobný poskytovateľ — ten ešte nie je pripojený.",
+      "noCampaign": "Sieť nenastavila kompenzáciu darčekovými kWh.",
+      "noSession": "Táto žiadosť neuvádza nabíjanie, takže nie je čo vrátiť.",
+      "mineHeading": "Čo sieť vrátila"
     }
   },
   "booking": {
@@ -1846,7 +1861,8 @@
     "cashbackKwh": "Priznaný cashback",
     "correctedBy": "Tento doklad bol opravený. V platnosti je doklad {number}.",
     "correctsDocument": "Toto je opravená verzia dokladu {number}.",
-    "journal": "Žurnál zmien"
+    "journal": "Žurnál zmien",
+    "reportProblem": "Nahlásiť problém"
   },
   "accounting": {
     "eyebrow": "Účtovníctvo",
@@ -2537,7 +2553,9 @@
       "kindCHARGE": "Nabíjanie",
       "kindTRANSFER_IN": "Prevod prijatý",
       "kindTRANSFER_OUT": "Prevod odoslaný",
-      "kindGIFT": "Darček"
+      "kindGIFT": "Darček",
+      "refund": "Vrátenia",
+      "kindREFUND": "Vrátenie"
     },
     "sections": {
       "work": "Zákazky",

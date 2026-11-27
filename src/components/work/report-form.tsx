@@ -22,12 +22,18 @@ const MAX_PHOTOS = 3;
 
 export function ReportForm({
   pointId,
+  paymentId,
   locale,
   connectors,
   signedIn,
   labels,
 }: {
   pointId: string;
+  /**
+   * §51.1 — заявка из истории зарядок. Сеанс едет с ней, потому что без него
+   * «возврат ошибочного списания» не имеет предмета.
+   */
+  paymentId?: string | null;
   locale: string;
   connectors: { id: string; label: string }[];
   /** §51.5 — следить за заявкой можно только со своего счёта. */
@@ -59,6 +65,7 @@ export function ReportForm({
     startTransition(async () => {
       const r = await sendReport({
         pointId,
+        paymentId: paymentId ?? null,
         connectorId: connectorId || null,
         problemType,
         comment: comment.trim() || null,

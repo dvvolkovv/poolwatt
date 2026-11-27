@@ -13,10 +13,15 @@ export const dynamic = "force-dynamic";
 
 export default async function ReportPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ payment?: string }>;
 }) {
   const { locale, id } = await params;
+  // §51.1 — «кнопка доступна … в истории зарядок»: оттуда приходит сеанс.
+  // Принадлежность проверяет `reportProblem`, а не адресная строка.
+  const { payment } = await searchParams;
   setRequestLocale(locale);
 
   const point = await prisma.acceptancePoint.findUnique({
@@ -49,6 +54,7 @@ export default async function ReportPage({
 
         <ReportForm
           pointId={point.id}
+          paymentId={payment ?? null}
           locale={locale}
           signedIn={Boolean(session?.user)}
           connectors={point.connectors.map((c) => ({
