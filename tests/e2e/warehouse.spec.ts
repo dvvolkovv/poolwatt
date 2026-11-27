@@ -23,6 +23,11 @@ test.describe.configure({ mode: "serial" });
 test.use({ baseURL: process.env.PUBLIC_BASE_URL ?? "https://poolwatt.com" });
 
 async function wipe() {
+  // The keys below are fixed, so without this the next run of the suite would
+  // replay the previous run's stored answers instead of moving the shelf.
+  await prisma.idempotencyRecord.deleteMany({
+    where: { endpoint: "POST /v1/stock-movements", key: { startsWith: "e2e-wh-" } },
+  });
   await prisma.restockRequest.deleteMany({ where: { warehouse: { operator: { slug: SLUG } } } });
   await prisma.stockMovement.deleteMany({ where: { part: { operator: { slug: SLUG } } } });
   await prisma.stockItem.deleteMany({ where: { part: { operator: { slug: SLUG } } } });
@@ -159,6 +164,9 @@ test("issuing a part to a job raises the request US-50 asks for", async ({ page 
   // §49 — the engineer issues the part on the job, through the method §50
   // names. Two off a shelf of six, with a minimum of five.
   const issue = await page.request.post("/api/v1/stock-movements", {
+    // §15 — every POST that moves money or energy carries a key, and a part's
+    // cost lands in the point's upkeep (§49).
+    headers: { "idempotency-key": "e2e-wh-issue-1" },
     data: {
       kind: "ISSUE",
       partId,
@@ -212,8 +220,12 @@ test("a second request is not raised while the first is still open", async ({ pa
   const before = await prisma.restockRequest.count({ where: { warehouseId, status: "OPEN" } });
   expect(before).toBe(0);
 
+  let nth = 0;
   for (const qty of [1, 1]) {
+    nth += 1;
     const res = await page.request.post("/api/v1/stock-movements", {
+      // Two separate intents, so two keys: one key would replay the first.
+      headers: { "idempotency-key": `e2e-wh-issue-again-${nth}` },
       data: { kind: "ISSUE", partId, warehouseId, qty, workOrderId },
     });
     expect(res.status()).toBe(201);
@@ -230,6 +242,7 @@ test("the shelf refuses to go below what is on it", async ({ page }) => {
   await signInWithPassword(page, OWNER);
 
   const res = await page.request.post("/api/v1/stock-movements", {
+    headers: { "idempotency-key": "e2e-wh-issue-too-many" },
     data: { kind: "ISSUE", partId, warehouseId, qty: 99, workOrderId },
   });
   expect(res.status()).toBe(400);
