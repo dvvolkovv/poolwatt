@@ -13,6 +13,9 @@ import { TicketError, reportProblem } from "@/lib/work/ticket-service";
 
 const schema = z.object({
   pointId: z.string().min(1),
+  // §51.1 — сеанс, если заявка идёт из истории зарядок. Принадлежность
+  // проверяет `reportProblem`.
+  paymentId: z.string().min(1).nullable().optional(),
   connectorId: z.string().min(1).nullable().optional(),
   problemType: z.enum([
     "NO_START",
@@ -46,6 +49,7 @@ export async function POST(request: NextRequest) {
   try {
     const result = await reportProblem({
       pointId: body.pointId,
+      paymentId: body.paymentId ?? null,
       connectorId: body.connectorId ?? null,
       reporterId: user?.id ?? null,
       problemType: body.problemType,
