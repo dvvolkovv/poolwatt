@@ -294,3 +294,45 @@ describe("readLedger", () => {
     expect(ledger.vatRatePct).toBe(20);
   });
 });
+
+// §46 — "исправление по регламенту": what a corrected document does to the
+// month an accountant exports.
+describe("readLedger and corrected documents", () => {
+  it("prints the number of the version in force and counts the month once", async () => {
+    const before = await readLedger({ operatorId, ...MARCH, pointIds: null });
+    const original = await charge(pointA, "2026-03-20T10:00:00Z", 10, 3);
+
+    const corrected = await prisma.receipt.create({
+      data: {
+        ...(await receiptStamp(prisma, new Date("2026-03-25T10:00:00Z"))),
+        correctsReceiptId: original.id,
+        documentVersion: 2,
+        burnedTokenIds: [],
+        totalKwh: original.totalKwh,
+        totalFiat: original.totalFiat,
+        currency: original.currency,
+        issuedAt: new Date("2026-03-25T10:00:00Z"),
+        breakdown: original.breakdown as Prisma.InputJsonValue,
+      },
+    });
+
+    const after = await readLedger({ operatorId, ...MARCH, pointIds: null });
+
+    // One new line for one sale, not two.
+    expect(after.lines).toHaveLength(before.lines.length + 1);
+    expect(after.totals.gross).toBe(roundTo2(before.totals.gross + 3));
+
+    const line = after.lines.find((l) => l.receiptId === original.id)!;
+    expect(line.documentNumber).toBe(corrected.number);
+    expect(line.correctedReceiptId).toBe(corrected.id);
+    // The money is the original's, unchanged.
+    expect(line.gross).toBe(3);
+
+    await prisma.receipt.delete({ where: { id: corrected.id } });
+    await prisma.receipt.delete({ where: { id: original.id } });
+  });
+});
+
+function roundTo2(v: number): number {
+  return Math.round(v * 100) / 100;
+}

@@ -28,7 +28,8 @@ const baseLedger: Ledger = {
     {
       date: new Date("2026-03-02T10:00:00Z"),
       documentNumber: "PW-2026-000001",
-      receiptId: "rc_1",
+      correctedReceiptId: null,
+    receiptId: "rc_1",
       kind: "charge",
       pointId: "p_a",
       pointName: "Point A",
@@ -45,7 +46,8 @@ const baseLedger: Ledger = {
     {
       date: new Date("2026-03-18T09:15:00Z"),
       documentNumber: "PW-2026-000002",
-      receiptId: "rc_2",
+      correctedReceiptId: null,
+    receiptId: "rc_2",
       kind: "reservation.no_show",
       pointId: "p_b",
       pointName: "Point B",

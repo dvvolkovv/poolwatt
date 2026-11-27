@@ -19,8 +19,11 @@ export type LedgerKind = "charge" | "reservation.no_show" | "other";
 
 export interface LedgerLine {
   date: Date;
+  /** §46 — the number of the version in force, not of a corrected original. */
   documentNumber: string;
   receiptId: string;
+  /** Set when this line's document has been corrected (§46's journal). */
+  correctedReceiptId: string | null;
   kind: LedgerKind;
   pointId: string | null;
   pointName: string | null;
@@ -115,6 +118,41 @@ export async function accountingAccess(
 }
 
 /**
+ * §46 — the last version of each of these receipts, when it has been
+ * corrected. One query per step of the chain, and a chain is one step long in
+ * practice; a corrected correction still resolves to the last document.
+ */
+async function versionsInForce(
+  receiptIds: string[],
+): Promise<Map<string, { id: string; number: string | null }>> {
+  const latest = new Map<string, { id: string; number: string | null }>();
+  if (receiptIds.length === 0) return latest;
+
+  // Which original every version in the chain belongs to.
+  const rootOf = new Map<string, string>(receiptIds.map((id) => [id, id]));
+  let frontier = receiptIds;
+
+  while (frontier.length > 0) {
+    const next = await prisma.receipt.findMany({
+      where: { correctsReceiptId: { in: frontier } },
+      select: { id: true, number: true, correctsReceiptId: true },
+    });
+    if (next.length === 0) break;
+
+    frontier = [];
+    for (const row of next) {
+      const root = rootOf.get(row.correctsReceiptId!);
+      if (!root) continue;
+      rootOf.set(row.id, root);
+      latest.set(root, { id: row.id, number: row.number });
+      frontier.push(row.id);
+    }
+  }
+
+  return latest;
+}
+
+/**
  * A commission as the receipt recorded it. Missing means nothing was taken —
  * which is true of every receipt written before §54's commissions were kept.
  */
@@ -160,6 +198,11 @@ export async function readLedger(args: {
   const receipts = await prisma.receipt.findMany({
     where: {
       issuedAt: window,
+      // §46 — a corrected version is not a second sale. The original keeps its
+      // place in the month (its amounts never changed), and the correction is
+      // only a different document for the same money; counting both would
+      // double the month.
+      correctsReceiptId: null,
       OR: [
         { payment: { point: pointFilter } },
         { reservation: { point: pointFilter } },
@@ -181,6 +224,9 @@ export async function readLedger(args: {
     },
   });
 
+  // §46 — which document is in force for each of these receipts.
+  const inForce = await versionsInForce(receipts.map((r) => r.id));
+
   const lines: LedgerLine[] = receipts.map((r) => {
     const gross = num(r.totalFiat);
     const split = splitVat(gross, vatRatePct);
@@ -194,10 +240,12 @@ export async function readLedger(args: {
             ? "reservation.no_show"
             : "other";
     const point = r.payment ?? r.reservation;
+    const current = inForce.get(r.id) ?? null;
     return {
       date: r.issuedAt,
-      documentNumber: r.number ?? r.id,
+      documentNumber: current?.number ?? r.number ?? r.id,
       receiptId: r.id,
+      correctedReceiptId: current?.id ?? null,
       kind,
       pointId: point?.pointId ?? null,
       pointName: point?.point?.name ?? null,
