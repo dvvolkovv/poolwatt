@@ -172,18 +172,18 @@ afterAll(async () => {
 describe("availableGiftKwh — US-43 'в чужой сети подарок не применяется'", () => {
   it("offers the gift at a point of its own network", async () => {
     await grant();
-    expect(await availableGiftKwh(driverUserId, pointA)).toBe(10);
-    expect(await availableGiftKwh(driverUserId, pointB)).toBe(10);
+    expect(await availableGiftKwh(driverUserId, pointA, 1000)).toBe(10);
+    expect(await availableGiftKwh(driverUserId, pointB, 1000)).toBe(10);
   });
 
   it("offers nothing at somebody else's point", async () => {
     await grant();
-    expect(await availableGiftKwh(driverUserId, foreignPoint)).toBe(0);
+    expect(await availableGiftKwh(driverUserId, foreignPoint, 1000)).toBe(0);
   });
 
   it("offers nothing when there is no point at all", async () => {
     await grant();
-    expect(await availableGiftKwh(driverUserId, null)).toBe(0);
+    expect(await availableGiftKwh(driverUserId, null, 1000)).toBe(0);
   });
 
   it("honours the campaign's own scope inside the network", async () => {
@@ -192,32 +192,32 @@ describe("availableGiftKwh — US-43 'в чужой сети подарок не
       data: { scopePointIds: [pointB] },
     });
     await grant();
-    expect(await availableGiftKwh(driverUserId, pointA)).toBe(0);
-    expect(await availableGiftKwh(driverUserId, pointB)).toBe(10);
+    expect(await availableGiftKwh(driverUserId, pointA, 1000)).toBe(0);
+    expect(await availableGiftKwh(driverUserId, pointB, 1000)).toBe(10);
   });
 
   it("counts only what is left of a part-spent gift", async () => {
     await grant({ usedKwh: new Prisma.Decimal(4) });
-    expect(await availableGiftKwh(driverUserId, pointA)).toBe(6);
+    expect(await availableGiftKwh(driverUserId, pointA, 1000)).toBe(6);
   });
 
   it("ignores an expired, used or revoked gift", async () => {
     await grant({ expiresAt: new Date(Date.now() - 1000) });
-    expect(await availableGiftKwh(driverUserId, pointA)).toBe(0);
+    expect(await availableGiftKwh(driverUserId, pointA, 1000)).toBe(0);
 
     await prisma.promoGrant.deleteMany({ where: { operatorId } });
     await grant({ status: "USED", usedKwh: new Prisma.Decimal(10) });
-    expect(await availableGiftKwh(driverUserId, pointA)).toBe(0);
+    expect(await availableGiftKwh(driverUserId, pointA, 1000)).toBe(0);
 
     await prisma.promoGrant.deleteMany({ where: { operatorId } });
     await grant({ status: "REVOKED" });
-    expect(await availableGiftKwh(driverUserId, pointA)).toBe(0);
+    expect(await availableGiftKwh(driverUserId, pointA, 1000)).toBe(0);
   });
 
   it("ignores a gift whose campaign was paused", async () => {
     await grant();
     await prisma.campaign.update({ where: { id: campaignId }, data: { status: "PAUSED" } });
-    expect(await availableGiftKwh(driverUserId, pointA)).toBe(0);
+    expect(await availableGiftKwh(driverUserId, pointA, 1000)).toBe(0);
   });
 
   it("adds up two gifts of the same network", async () => {
@@ -237,7 +237,7 @@ describe("availableGiftKwh — US-43 'в чужой сети подарок не
     });
     await grant({ campaignId: second.id, amountKwh: new Prisma.Decimal(3) });
 
-    expect(await availableGiftKwh(driverUserId, pointA)).toBe(13);
+    expect(await availableGiftKwh(driverUserId, pointA, 1000)).toBe(13);
     await prisma.campaign.delete({ where: { id: second.id } });
   });
 });

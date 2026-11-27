@@ -149,7 +149,7 @@ export async function quoteCharge(
 
   // §43 — the partner's gift goes before the balance, and only in the network
   // it belongs to. A session with no point of ours gets nothing (US-43).
-  const giftKwh = await availableGiftKwh(input.userId, input.pointId ?? null);
+  const giftKwh = await availableGiftKwh(input.userId, input.pointId ?? null, requested);
 
   const afterGift = roundKwh(Math.max(0, requested - Math.min(giftKwh, requested)));
   const afterBalance = roundKwh(Math.max(0, afterGift - Math.min(balance, afterGift)));
@@ -388,6 +388,9 @@ export async function chargeSession(input: ChargeInput): Promise<ChargeResult> {
       userId: input.userId,
       pointId: session.pointId,
       amountKwh: plan.kwhFromGift,
+      // §42 — a discount is a share of the session, so the rule needs the
+      // session, not just the slice the plan asked the gift for.
+      sessionKwh: requested,
     });
     giftSpent = gift.spentKwh;
     giftNetwork = gift.networkName;
