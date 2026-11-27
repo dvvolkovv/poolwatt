@@ -27,13 +27,17 @@ export interface EngineerOrderRow {
   where: string;
 }
 
-/** Мои наряды: назначенные мне, плюс все, если сеть или компания моя. */
+/**
+ * Мои наряды: назначенные мне лично, назначенные моей бригаде (§48), плюс
+ * все, если сеть или компания моя.
+ */
 export async function readEngineerOrders(userId: string): Promise<EngineerOrderRow[]> {
   const orders = await prisma.workOrder.findMany({
     where: {
       status: { in: OPEN },
       OR: [
         { assignee: { userId } },
+        { crew: { members: { some: { employee: { userId } } } } },
         { operator: { claimedById: userId } },
         { company: { ownerUserId: userId } },
       ],

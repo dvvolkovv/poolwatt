@@ -19,6 +19,7 @@ let centralId: string;
 let partId: string;
 let orderId: string;
 let otherOrderId: string;
+let crewOrderId: string;
 
 async function wipe() {
   await prisma.stockMovement.deleteMany({
@@ -31,6 +32,9 @@ async function wipe() {
     where: { operator: { slug: { startsWith: PREFIX } } },
   });
   await prisma.warehouse.deleteMany({
+    where: { operator: { slug: { startsWith: PREFIX } } },
+  });
+  await prisma.crew.deleteMany({
     where: { operator: { slug: { startsWith: PREFIX } } },
   });
   await prisma.sparePart.deleteMany({
@@ -135,6 +139,29 @@ beforeAll(async () => {
       },
     })
   ).id;
+
+  // §48 — наряд бригады, в которой этот инженер состоит.
+  const crew = await prisma.crew.create({
+    data: {
+      operatorId,
+      name: "Crew of one",
+      regions: [],
+      members: { create: [{ employeeId, lead: true }] },
+    },
+  });
+  crewOrderId = (
+    await prisma.workOrder.create({
+      data: {
+        operatorId,
+        pointId: point.id,
+        type: "MAINTENANCE",
+        title: "Ours as a crew",
+        description: "Quarterly check",
+        crewId: crew.id,
+        status: "ASSIGNED",
+      },
+    })
+  ).id;
 });
 
 afterAll(async () => {
@@ -142,9 +169,9 @@ afterAll(async () => {
 });
 
 describe("readEngineerOrders", () => {
-  it("gives the engineer the orders assigned to them", async () => {
+  it("gives the engineer the orders assigned to them, personally and as a crew", async () => {
     const orders = await readEngineerOrders(engineerUserId);
-    expect(orders.map((o) => o.id)).toEqual([orderId]);
+    expect(orders.map((o) => o.id).sort()).toEqual([orderId, crewOrderId].sort());
     expect(orders[0].where).toContain("Point");
   });
 
@@ -154,7 +181,9 @@ describe("readEngineerOrders", () => {
 
   it("gives the owner of the network every open order", async () => {
     const orders = await readEngineerOrders(ownerUserId);
-    expect(orders.map((o) => o.id).sort()).toEqual([orderId, otherOrderId].sort());
+    expect(orders.map((o) => o.id).sort()).toEqual(
+      [orderId, otherOrderId, crewOrderId].sort(),
+    );
   });
 });
 

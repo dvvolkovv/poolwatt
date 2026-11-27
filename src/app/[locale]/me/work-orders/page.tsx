@@ -25,12 +25,14 @@ export default async function WorkOrdersPage({
 
   const t = await getTranslations("workOrders");
 
-  // Mine as an engineer, mine as the owner of the network or the company.
+  // Mine as an engineer, mine through my crew (§48), mine as the owner of the
+  // network or the company.
   const orders = await prisma.workOrder.findMany({
     where: {
       status: { in: OPEN as unknown as string[] as never },
       OR: [
         { assignee: { userId } },
+        { crew: { members: { some: { employee: { userId } } } } },
         { operator: { claimedById: userId } },
         { company: { ownerUserId: userId } },
       ],
@@ -41,6 +43,7 @@ export default async function WorkOrdersPage({
       point: { select: { name: true, city: true, addressLine: true } },
       asset: { select: { name: true } },
       assignee: { select: { user: { select: { username: true } } } },
+      crew: { select: { name: true } },
     },
   });
 
@@ -66,6 +69,7 @@ export default async function WorkOrdersPage({
                 <span className="text-[12px] text-muted">
                   {t(`priority.${o.priority}`)} · {t(`status.${o.status}`)}
                   {o.assignee && <> · @{o.assignee.user.username}</>}
+                  {o.crew && <> · {o.crew.name}</>}
                 </span>
               </div>
               <p className="mt-0.5 text-[12px] text-muted">

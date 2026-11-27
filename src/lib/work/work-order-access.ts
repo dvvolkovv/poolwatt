@@ -35,6 +35,9 @@ export async function readWorkOrderForUser(
     where: { id: workOrderId },
     include: {
       assignee: { select: { id: true, userId: true } },
+      crew: {
+        select: { members: { select: { employeeId: true, employee: { select: { userId: true } } } } },
+      },
       operator: { select: { claimedById: true } },
       company: { select: { ownerUserId: true } },
     },
@@ -47,6 +50,14 @@ export async function readWorkOrderForUser(
   // области пунктов: наряд ему уже назначили.
   if (order.assignee?.userId === userId) {
     return { order: plain, canRead: true, canWork: true, employeeId: order.assignee.id };
+  }
+
+  // §48 «назначение инженеру или бригаде»: бригадный наряд — наряд каждого
+  // её участника, и по той же причине, что и личный. Урезанные пункты §47
+  // этому не мешают: наряд ему уже назначили.
+  const mine = order.crew?.members.find((m) => m.employee.userId === userId);
+  if (mine) {
+    return { order: plain, canRead: true, canWork: true, employeeId: mine.employeeId };
   }
 
   if (role === "ADMIN") {

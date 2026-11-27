@@ -24,6 +24,8 @@ let engineerBUserId: string;
 let pointA: string;
 let pointB: string;
 let orderId: string;
+let crewOrderId: string;
+let crewEngineerUserId: string;
 let companyOrderId: string;
 let companyOwnerId: string;
 
@@ -32,6 +34,7 @@ async function wipe() {
   await prisma.workOrder.deleteMany({
     where: { company: { legalName: { startsWith: PREFIX } } },
   });
+  await prisma.crew.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.employee.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.staffRole.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.acceptancePoint.deleteMany({ where: { operator: { slug: SLUG } } });
@@ -53,6 +56,7 @@ beforeAll(async () => {
   strangerUserId = await user("stranger");
   companyOwnerId = await user("coowner");
   engineerBUserId = await user("engineerb");
+  crewEngineerUserId = await user("crewengineer");
 
   operatorId = (
     await prisma.chargerOperator.create({
@@ -98,6 +102,25 @@ beforeAll(async () => {
     pointIds: [pointB],
   });
 
+  // §48 — участник бригады. Пункты ему урезаны до B, а наряд на A: право
+  // работать он получает от назначения бригаде, ровно как личный
+  // исполнитель получает его от своего назначения.
+  const crewEngineer = await inviteEmployee({
+    operatorId,
+    actorUserId: ownerUserId,
+    username: `${PREFIX}crewengineer`,
+    roleName: "ENGINEER",
+    pointIds: [pointB],
+  });
+  const crew = await prisma.crew.create({
+    data: {
+      operatorId,
+      name: "Access crew",
+      regions: [],
+      members: { create: [{ employeeId: crewEngineer.id, lead: true }] },
+    },
+  });
+
   orderId = (
     await prisma.workOrder.create({
       data: {
@@ -107,6 +130,19 @@ beforeAll(async () => {
         title: "Access test order",
         description: "x",
         assigneeId: engineer.id,
+      },
+    })
+  ).id;
+  crewOrderId = (
+    await prisma.workOrder.create({
+      data: {
+        operatorId,
+        pointId: pointA,
+        type: "REPAIR",
+        title: "Crew order",
+        description: "x",
+        crewId: crew.id,
+        status: "ASSIGNED",
       },
     })
   ).id;
@@ -188,6 +224,22 @@ describe("readWorkOrderForUser", () => {
     expect(seen?.canWork).toBe(true);
     const outsider = await readWorkOrderForUser(companyOrderId, ownerUserId, "USER");
     expect(outsider).toBeNull();
+  });
+
+  it("§48 — a member of the assigned crew works the order", async () => {
+    const seen = await readWorkOrderForUser(crewOrderId, crewEngineerUserId, "USER");
+    expect(seen?.canWork).toBe(true);
+    expect(seen?.employeeId).toBeTruthy();
+  });
+
+  it("§48 — the same person without the crew order does not see the point at all", async () => {
+    // Тот же человек, тот же пункт A, но наряд не его бригады: остаётся
+    // правило §47 про урезанные пункты.
+    expect(await readWorkOrderForUser(orderId, crewEngineerUserId, "USER")).toBeNull();
+  });
+
+  it("§48 — a stranger is not in the crew either", async () => {
+    expect(await readWorkOrderForUser(crewOrderId, strangerUserId, "USER")).toBeNull();
   });
 
   it("an order that does not exist is null, not a throw", async () => {
