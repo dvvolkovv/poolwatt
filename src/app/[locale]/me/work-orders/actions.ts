@@ -67,10 +67,16 @@ export async function advanceOrder(input: unknown): Promise<WorkResult> {
   }
 }
 
-const assignSchema = z.object({
-  workOrderId: z.string().min(1),
-  employeeId: z.string().min(1),
-});
+// §48 — исполнитель либо человек, либо бригада. Ровно одно поле.
+const assignSchema = z
+  .object({
+    workOrderId: z.string().min(1),
+    employeeId: z.string().min(1).optional(),
+    crewId: z.string().min(1).optional(),
+  })
+  .refine((v) => Boolean(v.employeeId) !== Boolean(v.crewId), {
+    message: "Pick either an engineer or a crew",
+  });
 
 export async function assignOrder(input: unknown): Promise<WorkResult> {
   const session = await auth();
@@ -85,7 +91,13 @@ export async function assignOrder(input: unknown): Promise<WorkResult> {
   if (!order) return { ok: false, formError: "Not your work order." };
 
   try {
-    await assignWorkOrder(parsed.data.workOrderId, parsed.data.employeeId, session.user.id);
+    await assignWorkOrder(
+      parsed.data.workOrderId,
+      parsed.data.employeeId
+        ? { employeeId: parsed.data.employeeId }
+        : { crewId: parsed.data.crewId! },
+      session.user.id,
+    );
     revalidatePath("/[locale]/me/work-orders/[id]", "page");
     return { ok: true };
   } catch (err) {

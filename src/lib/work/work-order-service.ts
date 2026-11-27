@@ -173,30 +173,65 @@ export async function openWorkOrdersForAlerts(scope: WorkScope = {}): Promise<nu
   return opened;
 }
 
+/**
+ * §48 — «назначение инженеру **или** бригаде». Ровно одно из двух: назначая
+ * одно, обнуляем другое, потому что наряд с двумя исполнителями — ничей
+ * наряд.
+ */
+export type AssignTarget = { employeeId: string; crewId?: never } | { crewId: string; employeeId?: never };
+
 export async function assignWorkOrder(
   workOrderId: string,
-  employeeId: string,
+  target: AssignTarget,
   actorUserId: string,
 ): Promise<WorkOrder> {
   const order = await prisma.workOrder.findUnique({ where: { id: workOrderId } });
   if (!order) throw new WorkOrderError("Work order not found");
-
-  const employee = await prisma.employee.findUnique({
-    where: { id: employeeId },
-    include: { role: true },
-  });
-  if (!employee) throw new WorkOrderError("Employee not found");
-  if (!order.operatorId || employee.operatorId !== order.operatorId) {
-    throw new WorkOrderError("That person is not on this network");
+  if (!order.operatorId) {
+    // Наряд объекта генерации принадлежит компании, а сотрудники §47 — это
+    // сеть зарядных пунктов: назначать некого.
+    throw new WorkOrderError("This order belongs to a company, which has no network staff");
   }
-  if (!employee.role.permissions.includes("workorders.write")) {
-    throw new WorkOrderError("That role does not do work orders");
+
+  let assigneeId: string | null = null;
+  let crewId: string | null = null;
+
+  if (target.employeeId) {
+    const employee = await prisma.employee.findUnique({
+      where: { id: target.employeeId },
+      include: { role: true },
+    });
+    if (!employee) throw new WorkOrderError("Employee not found");
+    if (employee.operatorId !== order.operatorId) {
+      throw new WorkOrderError("That person is not on this network");
+    }
+    if (!employee.role.permissions.includes("workorders.write")) {
+      throw new WorkOrderError("That role does not do work orders");
+    }
+    assigneeId = employee.id;
+  } else {
+    const crew = await prisma.crew.findUnique({
+      where: { id: target.crewId },
+      include: { members: { include: { employee: { include: { role: true } } } } },
+    });
+    if (!crew) throw new WorkOrderError("Crew not found");
+    if (crew.operatorId !== order.operatorId) {
+      throw new WorkOrderError("That crew is not on this network");
+    }
+    const able = crew.members.filter((m) =>
+      m.employee.role.permissions.includes("workorders.write"),
+    );
+    if (able.length === 0) {
+      throw new WorkOrderError("Nobody in that crew may work an order");
+    }
+    crewId = crew.id;
   }
 
   const updated = await prisma.workOrder.update({
     where: { id: workOrderId },
     data: {
-      assigneeId: employeeId,
+      assigneeId,
+      crewId,
       status: order.status === WorkOrderStatus.NEW ? WorkOrderStatus.ASSIGNED : order.status,
       // A reassigned order owes its new engineer a word.
       notifiedAt: null,
@@ -207,8 +242,8 @@ export async function assignWorkOrder(
     entity: "WorkOrder",
     entityId: workOrderId,
     action: "workorder.assigned",
-    before: { assigneeId: order.assigneeId, status: order.status },
-    after: { assigneeId: employeeId, status: updated.status },
+    before: { assigneeId: order.assigneeId, crewId: order.crewId, status: order.status },
+    after: { assigneeId, crewId, status: updated.status },
   });
   return updated;
 }

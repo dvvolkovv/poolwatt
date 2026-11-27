@@ -31,6 +31,9 @@ let engineerEmployeeId: string;
 let strangerEmployeeId: string;
 let pointId: string;
 let assetId: string;
+let crewIdOfThisNetwork: string;
+let emptyCrewId: string;
+let strangerCrewId: string;
 
 const sent: { to: string; subject: string }[] = [];
 const mailer = async (to: string, subject: string) => {
@@ -42,6 +45,7 @@ const notifyMine = () => notifyPendingWorkOrders({ sendTo: mailer, scope: { oper
 
 async function wipe() {
   await prisma.workOrder.deleteMany({ where: { operator: { slug: SLUG } } });
+  await prisma.crew.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.employee.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.staffRole.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.acceptancePoint.deleteMany({ where: { operator: { slug: SLUG } } });
@@ -138,6 +142,26 @@ beforeAll(async () => {
     })
   ).id;
 
+  // §48 — бригады: своя с инженером, своя пустая и чужая.
+  crewIdOfThisNetwork = (
+    await prisma.crew.create({
+      data: {
+        operatorId,
+        name: "WO test crew",
+        regions: [],
+        members: { create: [{ employeeId: engineerEmployeeId, lead: true }] },
+      },
+    })
+  ).id;
+  emptyCrewId = (
+    await prisma.crew.create({ data: { operatorId, name: "WO empty crew", regions: [] } })
+  ).id;
+  strangerCrewId = (
+    await prisma.crew.create({
+      data: { operatorId: otherOperator.id, name: "Their crew", regions: [] },
+    })
+  ).id;
+
   // An asset with an alarm, the §30 source of an order.
   const zone = await prisma.gridZone.create({
     data: { code: ZONE, country: "SK", name: "WO zone", currency: "EUR" },
@@ -175,6 +199,7 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
+  await prisma.crew.deleteMany({ where: { operator: { slug: `${SLUG}-other` } } });
   await prisma.chargerOperator.deleteMany({ where: { slug: `${SLUG}-other` } });
   await wipe();
   await prisma.user.deleteMany({ where: { username: { startsWith: PREFIX } } });
@@ -274,7 +299,7 @@ describe("assignWorkOrder — §48", () => {
   it("assigns an engineer of this network and moves the order on", async () => {
     const order = await fresh();
 
-    const assigned = await assignWorkOrder(order.id, engineerEmployeeId, ownerUserId);
+    const assigned = await assignWorkOrder(order.id, { employeeId: engineerEmployeeId }, ownerUserId);
 
     expect(assigned.assigneeId).toBe(engineerEmployeeId);
     expect(assigned.status).toBe("ASSIGNED");
@@ -283,8 +308,45 @@ describe("assignWorkOrder — §48", () => {
   it("refuses somebody from another network", async () => {
     const order = await fresh();
     await expect(
-      assignWorkOrder(order.id, strangerEmployeeId, ownerUserId),
+      assignWorkOrder(order.id, { employeeId: strangerEmployeeId }, ownerUserId),
     ).rejects.toThrow(/network/i);
+  });
+
+  // §48 — «инженеру **или** бригаде». Двух исполнителей у наряда не бывает:
+  // наряд с двумя исполнителями — ничей наряд.
+  it("assigning a crew clears the person", async () => {
+    const order = await fresh();
+    await assignWorkOrder(order.id, { employeeId: engineerEmployeeId }, ownerUserId);
+
+    const after = await assignWorkOrder(order.id, { crewId: crewIdOfThisNetwork }, ownerUserId);
+
+    expect(after.crewId).toBe(crewIdOfThisNetwork);
+    expect(after.assigneeId).toBeNull();
+    expect(after.status).toBe("ASSIGNED");
+  });
+
+  it("assigning a person clears the crew", async () => {
+    const order = await fresh();
+    await assignWorkOrder(order.id, { crewId: crewIdOfThisNetwork }, ownerUserId);
+
+    const after = await assignWorkOrder(order.id, { employeeId: engineerEmployeeId }, ownerUserId);
+
+    expect(after.assigneeId).toBe(engineerEmployeeId);
+    expect(after.crewId).toBeNull();
+  });
+
+  it("refuses a crew of another network", async () => {
+    const order = await fresh();
+    await expect(
+      assignWorkOrder(order.id, { crewId: strangerCrewId }, ownerUserId),
+    ).rejects.toThrow(/network/i);
+  });
+
+  it("refuses a crew without a single engineer who may work", async () => {
+    const order = await fresh();
+    await expect(
+      assignWorkOrder(order.id, { crewId: emptyCrewId }, ownerUserId),
+    ).rejects.toThrow(/nobody|empty/i);
   });
 });
 
@@ -297,7 +359,7 @@ describe("advanceWorkOrder — the statuses of §48", () => {
       title: "Replace the cable",
       description: "Cut insulation",
     });
-    return assignWorkOrder(order.id, engineerEmployeeId, ownerUserId);
+    return assignWorkOrder(order.id, { employeeId: engineerEmployeeId }, ownerUserId);
   }
 
   /**
@@ -372,7 +434,7 @@ describe("notifyPendingWorkOrders — within a minute (US-48)", () => {
       title: "Cable damaged",
       description: "cut insulation",
     });
-    await assignWorkOrder(order.id, engineerEmployeeId, ownerUserId);
+    await assignWorkOrder(order.id, { employeeId: engineerEmployeeId }, ownerUserId);
 
     const count = await notifyMine();
 
@@ -450,7 +512,7 @@ describe("closing a work order asks for the checklist and the signature", () => 
       title: "Closing rules",
       description: "x",
     });
-    const assignedOrder = await assignWorkOrder(order.id, engineerEmployeeId, ownerUserId);
+    const assignedOrder = await assignWorkOrder(order.id, { employeeId: engineerEmployeeId }, ownerUserId);
     return advanceWorkOrder(assignedOrder.id, "IN_PROGRESS", ownerUserId, null);
   }
 
