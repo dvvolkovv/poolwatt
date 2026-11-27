@@ -23,11 +23,18 @@ type CampaignRow = {
   triggerPeriodDays: number | null;
   giftKwh: Prisma.Decimal;
   cashbackPct?: Prisma.Decimal | null;
+  // §42 — a discount of N % (the gift kWh is then its ceiling) and a free
+  // booking, which may come together with the energy gift ("комбинация").
+  discountPct?: Prisma.Decimal | null;
+  freeBooking?: boolean;
   scopePointIds: string[];
   validityDays: number;
   oncePerClient: boolean;
   budgetKwh: Prisma.Decimal;
   issuedKwh: Prisma.Decimal;
+  // §42's count ceiling, the only honest one for a gift that costs no kWh.
+  budgetGrants?: number | null;
+  issuedGrants?: number;
 };
 
 /**
@@ -55,6 +62,12 @@ async function triggerFired(
   // that payment's own transaction (see `awardCashback`). The history pass
   // has nothing to count for it.
   if (campaign.trigger === "TOKEN_PAYMENT") return false;
+
+  // §42 — a code is redeemed by the driver (`promo-code.ts`) and a birthday
+  // comes round on its own (`birthday.ts`). Neither is earned by charging,
+  // and falling through to the n-th-charge branch would hand them out to
+  // whoever charged the right number of times.
+  if (campaign.trigger === "PROMO_CODE" || campaign.trigger === "BIRTHDAY") return false;
 
   if (campaign.trigger === "VOLUME_PERIOD") {
     const days = campaign.triggerPeriodDays ?? 30;
@@ -152,8 +165,10 @@ export async function awardAfterCharge(paymentId: string): Promise<string[]> {
       continue;
     }
 
-    const grantId = await issueGrant(campaign, userId, payment.id);
-    if (grantId) granted.push(grantId);
+    // §42 "комбинация" — the energy gift and the free booking are two gifts
+    // from one campaign, each with its own once-per-client key.
+    const grantIds = await issueCampaignGifts(campaign, userId, payment.id);
+    granted.push(...grantIds);
   }
 
   await prisma.payment.update({
@@ -171,18 +186,43 @@ export async function awardAfterCharge(paymentId: string): Promise<string[]> {
  * the budget, so the check and the increment have to be the same write — two
  * drivers finishing at once must not both fit into the last 5 kWh.
  */
+export async function issueCampaignGifts(
+  campaign: CampaignRow,
+  userId: string,
+  paymentId: string | null,
+): Promise<string[]> {
+  const ids: string[] = [];
+
+  // The energy half: a fixed number of kWh, or the ceiling reserved for a
+  // discount of N %.
+  if (num(campaign.giftKwh) > 0) {
+    const id = await issueGrant(campaign, userId, paymentId, "ENERGY");
+    if (id) ids.push(id);
+  }
+
+  // §42 "бесплатная бронь" — no kWh, so it is counted against `budgetGrants`.
+  if (campaign.freeBooking) {
+    const id = await issueGrant(campaign, userId, paymentId, "FREE_BOOKING");
+    if (id) ids.push(id);
+  }
+
+  return ids;
+}
+
 async function issueGrant(
   campaign: CampaignRow,
   userId: string,
-  paymentId: string,
+  paymentId: string | null,
+  kind: "ENERGY" | "FREE_BOOKING",
 ): Promise<string | null> {
   try {
     return await prisma.$transaction((tx) =>
       issueGrantTx(tx, campaign, {
         userId,
         paymentId,
-        amountKwh: num(campaign.giftKwh),
+        amountKwh: kind === "ENERGY" ? num(campaign.giftKwh) : 0,
         action: "promo.granted",
+        kind,
       }),
     );
   } catch (err) {
@@ -203,31 +243,71 @@ async function issueGrant(
  * from, it kills the whole transaction, and for a cashback that transaction
  * is a charging session.
  */
-async function issueGrantTx(
+export async function issueGrantTx(
   tx: Db,
   campaign: CampaignRow,
-  args: { userId: string; paymentId: string | null; amountKwh: number; action: string },
+  args: {
+    userId: string;
+    paymentId: string | null;
+    amountKwh: number;
+    action: string;
+    /** §42 — energy, or the free booking that costs no kWh. */
+    kind?: "ENERGY" | "FREE_BOOKING";
+    /** Overrides the campaign's own key, for the once-a-year birthday gift. */
+    onceKey?: string | null;
+  },
 ): Promise<string | null> {
+  const kind = args.kind ?? "ENERGY";
   const amountKwh = roundKwh(args.amountKwh);
-  if (isKwhDust(amountKwh)) return null;
+  // A free booking is a right, not an amount; every other gift has to be
+  // worth at least one thousandth of a kWh.
+  if (kind === "ENERGY" && isKwhDust(amountKwh)) return null;
 
-  const [locked] = await tx.$queryRaw<{ id: string; issued: string; budget: string; status: string }[]>`
-    SELECT id, "issuedKwh"::text AS issued, "budgetKwh"::text AS budget, status::text AS status
+  const [locked] = await tx.$queryRaw<
+    {
+      id: string;
+      issued: string;
+      budget: string;
+      status: string;
+      issued_grants: number;
+      budget_grants: number | null;
+    }[]
+  >`
+    SELECT id, "issuedKwh"::text AS issued, "budgetKwh"::text AS budget, status::text AS status,
+           "issuedGrants" AS issued_grants, "budgetGrants" AS budget_grants
     FROM "Campaign" WHERE id = ${campaign.id} FOR UPDATE
   `;
   if (!locked || locked.status !== "ACTIVE") return null;
 
   const issued = Number(locked.issued);
   const budget = Number(locked.budget);
-  if (roundKwh(issued + amountKwh) > roundKwh(budget)) {
+  if (kind === "ENERGY" && roundKwh(issued + amountKwh) > roundKwh(budget)) {
     // Nothing left to promise. Say so once, so the partner sees why.
     await tx.campaign.update({ where: { id: campaign.id }, data: { status: "EXHAUSTED" } });
     return null;
   }
 
+  // §42 — the count ceiling. Checked under the same lock as the kWh budget,
+  // so two drivers cannot both take the last free booking.
+  const issuedGrants = Number(locked.issued_grants ?? 0);
+  const budgetGrants = locked.budget_grants == null ? null : Number(locked.budget_grants);
+  if (budgetGrants != null && issuedGrants + 1 > budgetGrants) {
+    await tx.campaign.update({ where: { id: campaign.id }, data: { status: "EXHAUSTED" } });
+    return null;
+  }
+
   // §42 "Один раз на клиента" for a campaign that gives once; null for one
-  // that repeats, which Postgres counts as distinct in the unique index.
-  const onceKey = campaign.oncePerClient ? "once" : null;
+  // that repeats, which Postgres counts as distinct in the unique index. The
+  // two kinds of gift of one campaign hold different keys, so "once" is once
+  // per kind — a combination gives both.
+  const onceKey =
+    args.onceKey !== undefined
+      ? args.onceKey
+      : campaign.oncePerClient
+        ? kind === "FREE_BOOKING"
+          ? "once-booking"
+          : "once"
+        : null;
   if (onceKey) {
     const already = await tx.promoGrant.findFirst({
       where: { campaignId: campaign.id, userId: args.userId, onceKey },
@@ -237,7 +317,7 @@ async function issueGrantTx(
   }
   if (args.paymentId) {
     const sameCharge = await tx.promoGrant.findFirst({
-      where: { campaignId: campaign.id, paymentId: args.paymentId },
+      where: { campaignId: campaign.id, paymentId: args.paymentId, kind },
       select: { id: true },
     });
     if (sameCharge) return null;
@@ -251,20 +331,26 @@ async function issueGrantTx(
       operatorId: campaign.operatorId,
       paymentId: args.paymentId,
       onceKey,
+      kind,
       amountKwh,
+      // Copied, not read later: editing the campaign must not change a gift
+      // somebody already holds.
+      discountPct: kind === "ENERGY" ? (campaign.discountPct ?? null) : null,
       expiresAt,
     },
   });
 
   const nowIssued = roundKwh(issued + amountKwh);
+  const nowIssuedGrants = issuedGrants + 1;
+  const outOfKwh = kind === "ENERGY" && roundKwh(nowIssued + amountKwh) > roundKwh(budget);
+  const outOfCount = budgetGrants != null && nowIssuedGrants >= budgetGrants;
   await tx.campaign.update({
     where: { id: campaign.id },
     data: {
       issuedKwh: nowIssued,
-      // Exhausted the moment the next grant of this size would not fit.
-      ...(roundKwh(nowIssued + amountKwh) > roundKwh(budget)
-        ? { status: "EXHAUSTED" as const }
-        : {}),
+      issuedGrants: nowIssuedGrants,
+      // Exhausted the moment the next gift would not fit — in kWh or in count.
+      ...(outOfKwh || outOfCount ? { status: "EXHAUSTED" as const } : {}),
     },
   });
 
@@ -277,10 +363,14 @@ async function issueGrantTx(
       campaignId: campaign.id,
       userId: args.userId,
       paymentId: args.paymentId,
+      kind,
       amountKwh,
+      discountPct: numOrNull(campaign.discountPct ?? null),
       expiresAt: expiresAt.toISOString(),
       issuedKwh: nowIssued,
       budgetKwh: budget,
+      issuedGrants: nowIssuedGrants,
+      budgetGrants,
     },
   });
 
@@ -412,16 +502,48 @@ export async function expireGrants(now: Date = new Date()): Promise<string[]> {
     const burned = await prisma.$transaction(async (tx) => {
       // Re-read under a lock: a charge may be spending this very grant.
       const [grant] = await tx.$queryRaw<
-        { id: string; campaignId: string; amount: string; used: string; status: string }[]
+        {
+          id: string;
+          campaignId: string;
+          amount: string;
+          used: string;
+          status: string;
+          kind: string;
+          used_count: number;
+        }[]
       >`
         SELECT id, "campaignId", "amountKwh"::text AS amount, "usedKwh"::text AS used,
-               status::text AS status
+               status::text AS status, kind::text AS kind, "usedCount" AS used_count
         FROM "PromoGrant" WHERE id = ${id} FOR UPDATE
       `;
       if (!grant || grant.status !== "ACTIVE") return null;
 
       const remainder = roundKwh(Number(grant.amount) - Number(grant.used));
       await tx.promoGrant.update({ where: { id }, data: { status: "EXPIRED" } });
+
+      // §43 "сгоревший объём возвращается в бюджет" has a twin for the gift
+      // that costs no kWh: a free booking nobody used gives its slot back, or
+      // a count budget would be spent on gifts that were never taken.
+      if (grant.kind === "FREE_BOOKING" && Number(grant.used_count ?? 0) === 0) {
+        const campaign = await tx.campaign.findUnique({
+          where: { id: grant.campaignId },
+          select: { id: true, status: true, issuedGrants: true, budgetGrants: true },
+        });
+        if (campaign) {
+          const issuedGrants = Math.max(0, campaign.issuedGrants - 1);
+          const fitsAgain =
+            campaign.budgetGrants == null || issuedGrants + 1 <= campaign.budgetGrants;
+          await tx.campaign.update({
+            where: { id: campaign.id },
+            data: {
+              issuedGrants,
+              ...(campaign.status === "EXHAUSTED" && fitsAgain
+                ? { status: "ACTIVE" as const }
+                : {}),
+            },
+          });
+        }
+      }
 
       if (remainder > 0) {
         const campaign = await tx.campaign.findUnique({
@@ -451,7 +573,7 @@ export async function expireGrants(now: Date = new Date()): Promise<string[]> {
         entity: "PromoGrant",
         entityId: id,
         action: "promo.expired",
-        after: { campaignId: grant.campaignId, returnedKwh: remainder },
+        after: { campaignId: grant.campaignId, kind: grant.kind, returnedKwh: remainder },
       });
 
       return id;
