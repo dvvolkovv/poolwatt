@@ -47,6 +47,10 @@ model User {
   passwordResetTokens     PasswordResetToken[]
   producerRequests        ProducerRequest[]
   reviewedRequests        ProducerRequest[]        @relation("RequestReviewer")
+  // §46 — a receipt claim filed, a claim answered, a correction issued.
+  receiptClaims           ReceiptClaim[]           @relation("ReceiptClaimant")
+  receiptClaimsResolved   ReceiptClaim[]           @relation("ReceiptClaimResolver")
+  receiptCorrections      ReceiptCorrection[]      @relation("ReceiptCorrector")
   adminAddedProducers     Producer[]               @relation("AdminProducerAdditions")
   claimedProducers        Producer[]               @relation("ProducerClaims")
   claimedChargerOperators ChargerOperator[]        @relation("ChargerOperatorClaims")
@@ -244,6 +248,8 @@ model ChargerOperator {
   pointTemplates    PointTemplate[]
   siteLeads         SiteLead[]
   spareParts        SparePart[]
+  // §46 — the claims this network's accountant returned to support.
+  receiptClaims     ReceiptClaim[]
   warehouses        Warehouse[]
 
   createdAt DateTime @default(now())
@@ -1935,37 +1941,138 @@ model ChargeSessionTick {
 
 // §13 / §46 Receipt — issued for a payment or a trade; lists the burned batches.
 model Receipt {
-  id               String       @id @default(cuid())
+  id             String       @id @default(cuid())
   // Poolwatt's own document number, PW-<year>-<6 digits>, from
   // receipt_number_seq. Not a tax invoice number: numbering under the law of
   // the point's country is part of the tax opinion the owner still owes.
-  number           String?      @unique
+  number         String?      @unique
   // §46 "QR-код для проверки чека" — what the QR carries. Unguessable,
   // because anyone can photograph a printed receipt.
-  verifyCode       String?      @unique
-  paymentId        String?      @unique
-  payment          Payment?     @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  tradeId          String?      @unique
-  trade            Trade?       @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  verifyCode     String?      @unique
+  paymentId      String?      @unique
+  payment        Payment?     @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  tradeId        String?      @unique
+  trade          Trade?       @relation(fields: [tradeId], references: [id], onDelete: Cascade)
   // §35 US-33 — a no-show leaves a receipt like any other charge.
-  reservationId    String?      @unique
-  reservation      Reservation? @relation(fields: [reservationId], references: [id], onDelete: Cascade)
-  burnedTokenIds   String[]
-  totalKwh         Decimal      @default(0) @db.Decimal(18, 3)
-  totalFiat        Decimal      @default(0) @db.Decimal(18, 2)
-  currency         String       @default("EUR")
+  reservationId  String?      @unique
+  reservation    Reservation? @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  burnedTokenIds String[]
+  totalKwh       Decimal      @default(0) @db.Decimal(18, 3)
+  totalFiat      Decimal      @default(0) @db.Decimal(18, 2)
+  currency       String       @default("EUR")
   // §46 "Состав чека" — per-line detail kept verbatim for accounting export.
-  breakdown        Json         @default("{}")
-  issuedAt         DateTime     @default(now())
+  breakdown      Json         @default("{}")
+
+  // §46 — the document as it was issued. Until this column existed the
+  // receipt was rebuilt from live rows at every read, so a partner editing
+  // their VAT rate today silently rewrote every receipt they ever issued.
+  // A document is a document: it is frozen here, and changing it goes
+  // through a claim and a correction (`ReceiptCorrection`).
+  document        Json?
+  documentVersion Int   @default(1)
+
+  // §46 "исправление по регламенту" — the receipt this one corrects. The
+  // original stays as it was and points here through the back relation, so
+  // both versions are readable forever.
+  correctsReceiptId String?  @unique
+  corrects          Receipt? @relation("ReceiptCorrectionChain", fields: [correctsReceiptId], references: [id], onDelete: Cascade)
+  correctedBy       Receipt? @relation("ReceiptCorrectionChain")
+
+  claims      ReceiptClaim[]
+  corrections ReceiptCorrection[] @relation("CorrectionOfReceipt")
+  issuedAs    ReceiptCorrection[] @relation("CorrectionIssuedReceipt")
+
+  issuedAt         DateTime  @default(now())
   // §46 "Доставка чека". Null means nobody has been told yet, and the worker
   // sweep will pick it up — that is what makes "within a minute" true even
   // when the inline attempt fails.
   deliveredAt      DateTime?
-  deliveryChannels String[]     @default([])
+  deliveryChannels String[]  @default([])
   deliveryError    String?
 
   @@index([issuedAt])
   @@index([deliveredAt])
+}
+
+// §46 — "Ошибочный чек или счёт бухгалтер возвращает в поддержку Poolwatt".
+//
+// The accountant's side of the regulation: what they say is wrong, and what
+// support did about it. One open claim per receipt, as a rule of the database
+// rather than a check two clicks can both pass.
+model ReceiptClaim {
+  id         String           @id @default(cuid())
+  receiptId  String
+  receipt    Receipt          @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  // Denormalised for the queue and for scope checks (§47).
+  operatorId String?
+  operator   ChargerOperator? @relation(fields: [operatorId], references: [id], onDelete: SetNull)
+
+  claimedById String
+  claimedBy   User               @relation("ReceiptClaimant", fields: [claimedById], references: [id], onDelete: Cascade)
+  reason      ReceiptClaimReason
+  comment     String             @db.Text
+
+  status       ReceiptClaimStatus @default(OPEN)
+  resolvedById String?
+  resolvedBy   User?              @relation("ReceiptClaimResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  // Mandatory when a claim is refused: a refusal with no reason is not an
+  // answer an accountant can act on.
+  resolution   String?            @db.Text
+  resolvedAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  corrections ReceiptCorrection[]
+
+  // One live claim per receipt; a resolved one carries the key null, which
+  // Postgres counts as distinct, so the next claim is allowed.
+  openKey String?
+
+  @@unique([receiptId, openKey])
+  @@index([status, createdAt])
+  @@index([operatorId, status])
+}
+
+// §46 "журнал изменений" — append-only. One row per correction, naming every
+// field that moved and both documents.
+model ReceiptCorrection {
+  id      String        @id @default(cuid())
+  claimId String?
+  claim   ReceiptClaim? @relation(fields: [claimId], references: [id], onDelete: SetNull)
+
+  receiptId       String
+  receipt         Receipt @relation("CorrectionOfReceipt", fields: [receiptId], references: [id], onDelete: Cascade)
+  // The version issued in its place.
+  issuedReceiptId String
+  issuedReceipt   Receipt @relation("CorrectionIssuedReceipt", fields: [issuedReceiptId], references: [id], onDelete: Cascade)
+
+  correctedById String
+  correctedBy   User     @relation("ReceiptCorrector", fields: [correctedById], references: [id], onDelete: Cascade)
+  /// [{ field, before, after }] — what the regulation allowed to change.
+  changes       Json
+  note          String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  @@index([receiptId])
+  @@index([createdAt])
+}
+
+enum ReceiptClaimReason {
+  // Wrong requisites of the network on the document.
+  REQUISITES
+  // Wrong VAT rate or tax note: the gross stays, its split changes.
+  VAT
+  // Wrong point name, address or connector label.
+  SESSION_DETAILS
+  // Wrong amount or volume — a refund, which needs the payment provider.
+  AMOUNTS
+  OTHER
+}
+
+enum ReceiptClaimStatus {
+  OPEN
+  CORRECTED
+  REJECTED
 }
 
 // §46 "Бухгалтерия партнёра" — what a charging network says about itself on
