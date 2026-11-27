@@ -61,7 +61,12 @@ export default async function AccountingPage({
   const window = monthWindow(month, new Date());
   // §46 — which documents are already with support, and what came back.
   const claims = await readClaimsForOperator(id, session.user.id);
-  const claimByReceipt = new Map(claims.map((c) => [c.receiptId, c]));
+  // Newest first, and a document may have been returned more than once: the
+  // row should show the latest claim, not the one it has forgotten about.
+  const claimByReceipt = new Map<string, (typeof claims)[number]>();
+  for (const claim of claims) {
+    if (!claimByReceipt.has(claim.receiptId)) claimByReceipt.set(claim.receiptId, claim);
+  }
   const ledger = await readLedger({
     operatorId: id,
     from: window.from,

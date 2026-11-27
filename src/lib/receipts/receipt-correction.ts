@@ -221,7 +221,9 @@ export async function correctReceipt(
     return { correctionId: correction.id, issuedReceiptId: issued.id, changes };
   });
 
-  await notifyClaimant(claim.id).catch((err) =>
+  // Not awaited, for the same reason as the claim itself: the decision is
+  // written down, and the letter is a courtesy on top of it.
+  void notifyClaimant(claim.id).catch((err) =>
     console.error("[receipts] claim answer mail failed", err),
   );
 
@@ -267,7 +269,7 @@ export async function rejectClaim(
     });
   });
 
-  await notifyClaimant(claimId).catch((err) =>
+  void notifyClaimant(claimId).catch((err) =>
     console.error("[receipts] claim answer mail failed", err),
   );
 }

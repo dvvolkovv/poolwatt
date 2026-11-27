@@ -117,7 +117,10 @@ export async function fileReceiptClaim(userId: string, input: ClaimInput) {
     after: { receiptId: input.receiptId, reason: input.reason, operatorId: where.operatorId },
   });
 
-  await notifySupport(claim.id).catch((err) =>
+  // Not awaited: the mail server is somebody else's and can be slow or
+  // rate-limited, and the accountant's click should not wait on it. The claim
+  // is in the queue either way, which is what support reads.
+  void notifySupport(claim.id).catch((err) =>
     console.error("[receipts] claim mail failed", err),
   );
 
