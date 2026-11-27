@@ -64,6 +64,7 @@ model User {
   staffMemberships        Employee[]               @relation("StaffMembership")
   reservations            Reservation[]            @relation("ReservationDriver")
   reportedTickets         Ticket[]                 @relation("TicketReporter")
+  ticketMessages          TicketMessage[]          @relation("TicketMessageAuthor")
 
   // Exchange core (ТЗ §4–§8).
   ownedCompanies     Company[]            @relation("CompanyOwner")
@@ -586,32 +587,66 @@ model WorkOrder {
 
 // §51 "Сообщение о поломке от клиента" / US-52, US-54.
 model Ticket {
-  id           String            @id @default(cuid())
-  operatorId   String
-  operator     ChargerOperator   @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  pointId      String?
-  point        AcceptancePoint?  @relation(fields: [pointId], references: [id], onDelete: SetNull)
-  connectorId  String?
-  connector    PointConnector?   @relation(fields: [connectorId], references: [id], onDelete: SetNull)
-  reporterId   String?
-  reporter     User?             @relation("TicketReporter", fields: [reporterId], references: [id], onDelete: SetNull)
-  source       String            @default("app")
-  problemType  TicketProblemType
-  comment      String?           @db.Text
-  photos       String[]
-  priority     WorkOrderPriority @default(NORMAL)
-  status       TicketStatus      @default(OPEN)
+  id                 String            @id @default(cuid())
+  operatorId         String
+  operator           ChargerOperator   @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  pointId            String?
+  point              AcceptancePoint?  @relation(fields: [pointId], references: [id], onDelete: SetNull)
+  connectorId        String?
+  connector          PointConnector?   @relation(fields: [connectorId], references: [id], onDelete: SetNull)
+  reporterId         String?
+  reporter           User?             @relation("TicketReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  source             String            @default("app")
+  problemType        TicketProblemType
+  comment            String?           @db.Text
+  photos             String[]
+  priority           WorkOrderPriority @default(NORMAL)
+  status             TicketStatus      @default(OPEN)
   // §48 "SLA по приоритету": when a first response is due.
-  respondBy    DateTime?
-  workOrderId  String?           @unique
-  workOrder    WorkOrder?        @relation("TicketWorkOrder", fields: [workOrderId], references: [id], onDelete: SetNull)
-  compensation String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  closedAt     DateTime?
+  respondBy          DateTime?
+  workOrderId        String?           @unique
+  workOrder          WorkOrder?        @relation("TicketWorkOrder", fields: [workOrderId], references: [id], onDelete: SetNull)
+  compensation       String?
+  // §51 "клиент видит статус заявки и переписывается с поддержкой в чате".
+  messages           TicketMessage[]
+  // §48 "SLA по приоритету; эскалация". The first answer by a person, not
+  // the work order the system opens by itself, is what the SLA measures.
+  firstRespondedAt   DateTime?
+  escalatedAt        DateTime?
+  // §51 "после ремонта клиент получает уведомление, что станция снова
+  // работает" — stamped once, so the worker never says it twice.
+  recoveryNotifiedAt DateTime?
+  resolvedAt         DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  closedAt           DateTime?
 
   @@index([operatorId, status])
   @@index([reporterId])
+  @@index([operatorId, respondBy])
+}
+
+/// Who said it. Not derived: a network's employee can also be a customer of
+/// the same network, so the side someone spoke from is stored, not guessed.
+enum TicketAuthorKind {
+  CUSTOMER
+  SUPPORT
+  SYSTEM
+}
+
+/// §51 — the conversation on a ticket. Append-only: for both sides this is
+/// the evidence of what was said and when.
+model TicketMessage {
+  id         String           @id @default(cuid())
+  ticketId   String
+  ticket     Ticket           @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorKind TicketAuthorKind
+  authorId   String?
+  author     User?            @relation("TicketMessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  body       String           @db.Text
+  createdAt  DateTime         @default(now())
+
+  @@index([ticketId, createdAt])
 }
 
 enum WorkOrderType {
