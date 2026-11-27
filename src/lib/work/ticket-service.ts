@@ -64,6 +64,12 @@ export interface ReportProblemArgs {
   comment?: string | null;
   photos?: IncomingPhoto[];
   source?: string;
+  /**
+   * §51.1 — заявка из истории зарядок. Тот сеанс, о котором речь: без него
+   * «возврат ошибочного списания» не имеет предмета, потому что поддержке
+   * неизвестно, какое списание возвращать.
+   */
+  paymentId?: string | null;
 }
 
 export interface ReportProblemResult {
@@ -86,6 +92,23 @@ export async function reportProblem(
     ? point.connectors.find((c) => c.id === args.connectorId) ?? null
     : null;
 
+  // Чужой сеанс в заявке дал бы поддержке право вернуть не те деньги, так
+  // что он проверяется, а не принимается на слово.
+  let paymentId: string | null = null;
+  if (args.paymentId) {
+    if (!args.reporterId) {
+      throw new TicketError("A session belongs to somebody: sign in first");
+    }
+    const payment = await prisma.payment.findUnique({
+      where: { id: args.paymentId },
+      select: { id: true, wallet: { select: { ownerUserId: true } } },
+    });
+    if (!payment || payment.wallet.ownerUserId !== args.reporterId) {
+      throw new TicketError("That session is not yours");
+    }
+    paymentId = payment.id;
+  }
+
   const technical = TECHNICAL.has(args.problemType);
   const priority: WorkOrderPriority = technical
     ? "URGENT"
@@ -93,7 +116,13 @@ export async function reportProblem(
       ? "HIGH"
       : "NORMAL";
 
-  const { ticket, fresh } = await findOrCreateTicket(args, point.operatorId, connector?.id ?? null, priority);
+  const { ticket, fresh } = await findOrCreateTicket(
+    args,
+    point.operatorId,
+    connector?.id ?? null,
+    priority,
+    paymentId,
+  );
 
   if (!fresh) {
     // Тот же палец, то же нажатие: заявка уже есть, и всё, что она должна
@@ -199,53 +228,46 @@ async function findOrCreateTicket(
   operatorId: string,
   connectorId: string | null,
   priority: WorkOrderPriority,
+  paymentId: string | null,
 ): Promise<{ ticket: Ticket; fresh: boolean }> {
-  const create = () =>
-    prisma.ticket.create({
-      data: {
-        operatorId,
-        pointId: args.pointId,
-        connectorId,
-        reporterId: args.reporterId ?? null,
-        source: args.source ?? "app",
-        problemType: args.problemType,
-        comment: args.comment?.trim() || null,
-        photos: [],
-        priority,
-        respondBy: new Date(Date.now() + SLA_MINUTES[args.problemType] * 60 * 1000),
-      },
-    });
+  const data = {
+    operatorId,
+    pointId: args.pointId,
+    connectorId,
+    paymentId,
+    source: args.source ?? "app",
+    problemType: args.problemType,
+    comment: args.comment?.trim() || null,
+    photos: [],
+    priority,
+    respondBy: new Date(Date.now() + SLA_MINUTES[args.problemType] * 60 * 1000),
+  };
 
-  if (!args.reporterId) return { ticket: await create(), fresh: true };
+  if (!args.reporterId) {
+    const ticket = await prisma.ticket.create({ data: { ...data, reporterId: null } });
+    return { ticket, fresh: true };
+  }
+  const reporterId = args.reporterId;
 
   return prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${args.reporterId} FOR UPDATE`;
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${reporterId} FOR UPDATE`;
     const since = new Date(Date.now() - DEDUPE_WINDOW_MINUTES * 60 * 1000);
     const existing = await tx.ticket.findFirst({
       where: {
-        reporterId: args.reporterId,
-        pointId: args.pointId,
+        reporterId,
         problemType: args.problemType,
         status: { in: ["OPEN", "IN_PROGRESS"] },
-        createdAt: { gte: since },
+        // Ошибочное списание — один факт, а не момент: заявка о сеансе
+        // склеивается по сеансу, без окна в пять минут. Заявка с места
+        // остаётся при прежнем правиле, где окно и есть весь смысл.
+        ...(paymentId
+          ? { paymentId }
+          : { pointId: args.pointId, createdAt: { gte: since } }),
       },
       orderBy: { createdAt: "desc" },
     });
     if (existing) return { ticket: existing, fresh: false };
-    const ticket = await tx.ticket.create({
-      data: {
-        operatorId,
-        pointId: args.pointId,
-        connectorId,
-        reporterId: args.reporterId,
-        source: args.source ?? "app",
-        problemType: args.problemType,
-        comment: args.comment?.trim() || null,
-        photos: [],
-        priority,
-        respondBy: new Date(Date.now() + SLA_MINUTES[args.problemType] * 60 * 1000),
-      },
-    });
+    const ticket = await tx.ticket.create({ data: { ...data, reporterId } });
     return { ticket, fresh: true };
   });
 }

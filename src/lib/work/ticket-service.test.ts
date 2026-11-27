@@ -14,6 +14,7 @@ import { TicketError, nearestWorkingPoints, reportProblem } from "./ticket-servi
 
 const PREFIX = "test_ticket_";
 const SLUG = `${PREFIX}net`;
+const ZONE = "TKTSVC";
 
 let operatorId: string;
 let reporterId: string;
@@ -22,6 +23,9 @@ let brokenConnectorId: string;
 let nearbyFreeId: string;
 let nearbyBusyId: string;
 let farFreeId: string;
+let zoneId: string;
+let walletId: string;
+let strangerWalletId: string;
 
 /** Настоящие первые байты: тип файла читается из них, а не из имени. */
 const JPEG = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(16, 9)]);
@@ -32,9 +36,14 @@ const LNG = 17.11;
 async function wipe() {
   await prisma.ticketMessage.deleteMany({ where: { ticket: { operator: { slug: SLUG } } } });
   await prisma.ticket.deleteMany({ where: { operator: { slug: SLUG } } });
+  await prisma.payment.deleteMany({
+    where: { wallet: { owner: { username: { startsWith: PREFIX } } } },
+  });
+  await prisma.wallet.deleteMany({ where: { owner: { username: { startsWith: PREFIX } } } });
   await prisma.workOrder.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.acceptancePoint.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.chargerOperator.deleteMany({ where: { slug: SLUG } });
+  await prisma.gridZone.deleteMany({ where: { code: ZONE } });
 }
 
 async function seedPoint(args: {
@@ -106,11 +115,47 @@ beforeAll(async () => {
       },
     })
   ).id;
+
+  // §51.1 — заявка из истории зарядок, поэтому в мире есть сеанс.
+  zoneId = (
+    await prisma.gridZone.create({
+      data: { code: ZONE, country: "SK", name: "Ticket service zone", currency: "EUR" },
+    })
+  ).id;
+  walletId = (
+    await prisma.wallet.create({ data: { ownerUserId: reporterId, zoneId, currency: "EUR" } })
+  ).id;
+  const stranger = await prisma.user.upsert({
+    where: { username: `${PREFIX}stranger` },
+    update: {},
+    create: { username: `${PREFIX}stranger`, passwordHash: "x" },
+  });
+  strangerWalletId = (
+    await prisma.wallet.create({
+      data: { ownerUserId: stranger.id, zoneId, currency: "EUR" },
+    })
+  ).id;
 });
+
+/** Captured сеанс на указанном кошельке и сломанном пункте. */
+async function seedPayment(wallet: string) {
+  return prisma.payment.create({
+    data: {
+      walletId: wallet,
+      zoneId,
+      pointId: brokenPointId,
+      requestedKwh: new Prisma.Decimal(20),
+      amountFiat: new Prisma.Decimal(8),
+      status: "CAPTURED",
+      capturedAt: new Date(),
+    },
+  });
+}
 
 beforeEach(async () => {
   await prisma.ticketMessage.deleteMany({ where: { ticket: { operatorId } } });
   await prisma.ticket.deleteMany({ where: { operatorId } });
+  await prisma.payment.deleteMany({ where: { walletId: { in: [walletId, strangerWalletId] } } });
   await prisma.workOrder.deleteMany({ where: { operatorId } });
   await prisma.acceptancePoint.deleteMany({ where: { operatorId } });
 
@@ -407,5 +452,61 @@ describe("the conversation starts with the report", () => {
     });
     expect(result.ticket.photos).toHaveLength(1);
     expect(result.workOrder?.photos).toEqual(result.ticket.photos);
+  });
+
+  // §51.1 "кнопка доступна … в истории зарядок" — такая заявка называет сеанс,
+  // и без этого «возврат ошибочного списания» не имеет предмета.
+  describe("a report from the charge history", () => {
+    it("keeps the session it came from", async () => {
+      const payment = await seedPayment(walletId);
+      const { ticket } = await reportProblem({
+        pointId: brokenPointId,
+        reporterId,
+        problemType: "WRONG_PRICE",
+        paymentId: payment.id,
+      });
+      expect(ticket.paymentId).toBe(payment.id);
+    });
+
+    it("two reports about one session and one problem are one ticket", async () => {
+      const payment = await seedPayment(walletId);
+      const first = await reportProblem({
+        pointId: brokenPointId,
+        reporterId,
+        problemType: "WRONG_PRICE",
+        paymentId: payment.id,
+      });
+      const second = await reportProblem({
+        pointId: brokenPointId,
+        reporterId,
+        problemType: "WRONG_PRICE",
+        paymentId: payment.id,
+      });
+      expect(second.ticket.id).toBe(first.ticket.id);
+    });
+
+    it("refuses a session that belongs to somebody else", async () => {
+      const payment = await seedPayment(strangerWalletId);
+      await expect(
+        reportProblem({
+          pointId: brokenPointId,
+          reporterId,
+          problemType: "WRONG_PRICE",
+          paymentId: payment.id,
+        }),
+      ).rejects.toThrow(TicketError);
+    });
+
+    it("refuses a session on an anonymous report", async () => {
+      const payment = await seedPayment(walletId);
+      await expect(
+        reportProblem({
+          pointId: brokenPointId,
+          reporterId: null,
+          problemType: "WRONG_PRICE",
+          paymentId: payment.id,
+        }),
+      ).rejects.toThrow(TicketError);
+    });
   });
 });

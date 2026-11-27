@@ -13,7 +13,7 @@ import {
   refundTicketPayment,
 } from "./ticket-compensation";
 
-const PREFIX = "test_ticketcomp_";
+const PREFIX = "test_tcomp_";
 const ZONE = "TCMP";
 
 let operatorId: string;
