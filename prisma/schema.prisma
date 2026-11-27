@@ -31,6 +31,10 @@ model User {
   receiptEmail      Boolean   @default(true)
   receiptPush       Boolean   @default(true)
   emailVerified     DateTime?
+  // §42's birthday trigger. Day and month only, given voluntarily: a year
+  // would be one more piece of personal data for no extra use.
+  birthDay          Int?
+  birthMonth        Int?
   createdAt         DateTime  @default(now())
 
   accounts                Account[]
@@ -58,19 +62,19 @@ model User {
   reportedTickets         Ticket[]                 @relation("TicketReporter")
 
   // Exchange core (ТЗ §4–§8).
-  ownedCompanies    Company[]            @relation("CompanyOwner")
-  reviewedListings  ListingApplication[] @relation("ListingReviewer")
-  screeningChecks   ScreeningCheck[]     @relation("ScreeningChecker")
-  wallets           Wallet[]
-  settlementAccount SettlementAccount?   @relation("UserSettlementAccount")
-  coopMemberships   CoopMember[]         @relation("CoopMembership")
-  promoGrants       PromoGrant[]         @relation("PromoGrantHolder")
-  roamingSessions   RoamingSettlement[]  @relation("RoamingDriver")
-  dashboards        Dashboard[]          @relation("DashboardOwner")
-  contentViews      ContentEvent[]       @relation("ContentViewer")
-  chargeSessions    ChargeSession[]      @relation("ChargeSessionDriver")
-  pointReviews      PointReview[]
-  deviceKeys        DeviceKey[]
+  ownedCompanies     Company[]            @relation("CompanyOwner")
+  reviewedListings   ListingApplication[] @relation("ListingReviewer")
+  screeningChecks    ScreeningCheck[]     @relation("ScreeningChecker")
+  wallets            Wallet[]
+  settlementAccount  SettlementAccount?   @relation("UserSettlementAccount")
+  coopMemberships    CoopMember[]         @relation("CoopMembership")
+  promoGrants        PromoGrant[]         @relation("PromoGrantHolder")
+  roamingSessions    RoamingSettlement[]  @relation("RoamingDriver")
+  dashboards         Dashboard[]          @relation("DashboardOwner")
+  contentViews       ContentEvent[]       @relation("ContentViewer")
+  chargeSessions     ChargeSession[]      @relation("ChargeSessionDriver")
+  pointReviews       PointReview[]
+  deviceKeys         DeviceKey[]
   webauthnChallenges WebAuthnChallenge[]
 }
 
@@ -705,6 +709,9 @@ model Reservation {
 
   // §54 — which version of §33 the copied numbers above came from.
   pricingVersion Int?
+
+  // §42 "бесплатная бронь" — the gift that paid the fee, when one did.
+  promoGrantId String?
 
   // §32.4 / US-31 — "при опоздании предлагает продлить или перенести бронь".
   // How many times the window has been pushed back, and when the driver was
@@ -2521,10 +2528,16 @@ model Campaign {
   triggerN          Int?
   triggerPeriodDays Int?
 
-  // §42 "Подарок". Only the kWh gift is built; a percentage discount and a
-  // free reservation are a separate story, and dead columns would not make
-  // them any more real.
+  // §42 "Подарок". Three kinds, combinable: a fixed number of kWh, a
+  // percentage discount on the next charge, a free booking. The discount is
+  // energy too — `giftKwh` is then the ceiling the partner reserves for it,
+  // because the real size is only known when the session happens.
   giftKwh     Decimal  @db.Decimal(18, 3)
+  // §42 "скидка в % на следующую зарядку". The share of a session the partner
+  // covers out of its own generation; the driver pays for the rest.
+  discountPct Decimal? @db.Decimal(5, 2)
+  // §42 "бесплатная бронь" — a right to one booking with no fee (§33).
+  freeBooking Boolean  @default(false)
   // §8, US-12 — the share of a token-paid session that comes back, for a
   // campaign whose trigger is TOKEN_PAYMENT. Null for a gift campaign.
   cashbackPct Decimal? @db.Decimal(5, 2)
@@ -2536,13 +2549,25 @@ model Campaign {
   validityDays     Int
   oncePerClient    Boolean  @default(true)
   minNextChargeKwh Decimal? @db.Decimal(18, 3)
+  // §42 "не суммируется с другими акциями" — a session this gift is used in
+  // uses no other gift, so the driver gets the single best one.
+  exclusive        Boolean  @default(false)
+
+  // §42 "регистрация по QR-коду или промокоду партнёра". Stored upper-case;
+  // the QR sticker is a link carrying the same code.
+  promoCode String?
 
   // §42 "Бюджет кампании" — in kWh. A budget in money needs the partner's
   // settlement account, which the EMI has not issued (see `gates.ts`).
-  budgetKwh Decimal @db.Decimal(18, 3)
+  budgetKwh    Decimal @db.Decimal(18, 3)
   // Issued and not yet expired. Burning a grant's unused remainder gives it
   // back, which is §43's "сгоревший объём возвращается в бюджет кампании".
-  issuedKwh Decimal @default(0) @db.Decimal(18, 3)
+  issuedKwh    Decimal @default(0) @db.Decimal(18, 3)
+  // A free booking costs no kWh, and a budget in money waits for the EMI, so
+  // the only honest ceiling for it is a count of gifts. Null means no count
+  // limit; the kWh budget still stops the energy ones.
+  budgetGrants Int?
+  issuedGrants Int     @default(0)
 
   // §42 "Источник финансирования". TOKENS burns the partner's own batches;
   // FIAT waits for the EMI.
@@ -2561,6 +2586,7 @@ model Campaign {
 
   grants PromoGrant[]
 
+  @@unique([operatorId, promoCode])
   @@index([operatorId, status])
   @@index([status, startsAt, endsAt])
 }
@@ -2581,8 +2607,19 @@ model PromoGrant {
   paymentId String?
   payment   Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
 
-  amountKwh Decimal @db.Decimal(18, 3)
-  usedKwh   Decimal @default(0) @db.Decimal(18, 3)
+  // §42's "комбинация" — one campaign can hand out one of each kind, so the
+  // kind is part of what makes a grant unique.
+  kind PromoGrantKind @default(ENERGY)
+
+  // For an ENERGY grant: the kWh promised, and for a discount the ceiling the
+  // partner reserved. A FREE_BOOKING grant carries 0.
+  amountKwh   Decimal  @db.Decimal(18, 3)
+  usedKwh     Decimal  @default(0) @db.Decimal(18, 3)
+  // Copied from the campaign when the grant is issued: a later edit of the
+  // campaign must not change a gift someone already holds.
+  discountPct Decimal? @db.Decimal(5, 2)
+  // FREE_BOOKING — a gift for one booking, so one use.
+  usedCount   Int      @default(0)
 
   expiresAt DateTime
   status    PromoGrantStatus @default(ACTIVE)
@@ -2601,8 +2638,10 @@ model PromoGrant {
   onceKey String?
 
   @@unique([campaignId, userId, onceKey])
-  // US-12 — one accrual per campaign per charge, whatever retries happen.
-  @@unique([campaignId, paymentId])
+  // US-12 — one accrual per campaign per charge, whatever retries happen. The
+  // kind is in the key because §42's combination gives two gifts for one
+  // charge: energy and a free booking.
+  @@unique([campaignId, paymentId, kind])
   @@index([userId, status, expiresAt])
   @@index([status, expiresAt])
 }
@@ -2611,8 +2650,18 @@ enum CampaignTrigger {
   FIRST_CHARGE
   NTH_CHARGE
   VOLUME_PERIOD
+  // §42 — the driver arrives with the partner's code or QR sticker, and the
+  // gift is issued there and then, without a charge.
+  PROMO_CODE
+  // §42 "день рождения клиента" — the daily worker pass issues it.
+  BIRTHDAY
   // §8, US-12 — every session paid with tokens, not an n-th one.
   TOKEN_PAYMENT
+}
+
+enum PromoGrantKind {
+  ENERGY
+  FREE_BOOKING
 }
 
 enum CampaignFunding {
