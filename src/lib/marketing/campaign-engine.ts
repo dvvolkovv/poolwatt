@@ -63,11 +63,18 @@ async function triggerFired(
   // has nothing to count for it.
   if (campaign.trigger === "TOKEN_PAYMENT") return false;
 
-  // §42 — a code is redeemed by the driver (`promo-code.ts`) and a birthday
-  // comes round on its own (`birthday.ts`). Neither is earned by charging,
-  // and falling through to the n-th-charge branch would hand them out to
-  // whoever charged the right number of times.
-  if (campaign.trigger === "PROMO_CODE" || campaign.trigger === "BIRTHDAY") return false;
+  // §42 — a code is redeemed by the driver (`promo-code.ts`), a birthday
+  // comes round on its own (`birthday.ts`), and a §51 compensation is handed
+  // out by support on a ticket (`ticket-compensation.ts`). None of the three
+  // is earned by charging, and falling through to the n-th-charge branch
+  // would hand them out to whoever charged the right number of times.
+  if (
+    campaign.trigger === "PROMO_CODE" ||
+    campaign.trigger === "BIRTHDAY" ||
+    campaign.trigger === "COMPENSATION"
+  ) {
+    return false;
+  }
 
   if (campaign.trigger === "VOLUME_PERIOD") {
     const days = campaign.triggerPeriodDays ?? 30;
