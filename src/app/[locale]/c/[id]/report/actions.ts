@@ -5,6 +5,7 @@
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { reportProblem } from "@/lib/work/ticket-service";
+import { MAX_TICKET_PHOTOS, MAX_TICKET_PHOTO_BYTES } from "@/lib/work/ticket-photos";
 
 const schema = z.object({
   pointId: z.string().min(1),
@@ -19,6 +20,17 @@ const schema = z.object({
     "OTHER",
   ]),
   comment: z.string().trim().max(2000).nullable(),
+  // §51.4 — фотографии с места. Приезжают строкой base64: это одно
+  // серверное действие, а тридцать секунд §51 не выдержат второго запроса.
+  photos: z
+    .array(
+      z.object({
+        filename: z.string().max(200),
+        base64: z.string().max(Math.ceil((MAX_TICKET_PHOTO_BYTES * 4) / 3) + 1024),
+      }),
+    )
+    .max(MAX_TICKET_PHOTOS)
+    .optional(),
 });
 
 export type ReportResult =
@@ -26,6 +38,8 @@ export type ReportResult =
       ok: true;
       ticketId: string;
       opened: boolean;
+      /** Сколько фотографий дошло: отказ по файлу не теряет саму заявку. */
+      photos: number;
       alternatives: {
         id: string;
         name: string;
@@ -52,11 +66,16 @@ export async function sendReport(input: unknown): Promise<ReportResult> {
       reporterId: session?.user?.id ?? null,
       problemType: parsed.data.problemType,
       comment: parsed.data.comment,
+      photos: parsed.data.photos?.map((photo) => ({
+        filename: photo.filename,
+        bytes: Buffer.from(photo.base64, "base64"),
+      })),
     });
     return {
       ok: true,
       ticketId: result.ticket.id,
       opened: result.workOrder !== null,
+      photos: result.ticket.photos.length,
       alternatives: result.alternatives.map((p) => ({
         id: p.id,
         name: p.name,

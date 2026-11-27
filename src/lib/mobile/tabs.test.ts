@@ -29,10 +29,21 @@ describe("moreSections — §22", () => {
     ).toEqual([]);
   });
 
-  it("offers a plain account bookings, the account, the card, contacts and roaming", () => {
+  it("offers a plain account bookings, support, the account, the card, contacts and roaming", () => {
     expect(
       moreSections({ signedIn: true, hasAsset: false, isCoopMember: false, isStaff: false }),
-    ).toEqual(["bookings", "account", "card", "contacts", "roaming"]);
+    ).toEqual(["bookings", "support", "account", "card", "contacts", "roaming"]);
+  });
+
+  // §51.5 — заявку видно, и искать её не должно быть дольше, чем отправить.
+  it("puts support before the account and the card, which still wait for the EMI", () => {
+    const sections = moreSections({
+      signedIn: true,
+      hasAsset: false,
+      isCoopMember: false,
+      isStaff: false,
+    });
+    expect(sections.indexOf("support")).toBeLessThan(sections.indexOf("account"));
   });
 
   it("puts bookings before the account and the card, which still wait for the EMI", () => {

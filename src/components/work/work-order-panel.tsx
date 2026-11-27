@@ -3,6 +3,7 @@
 // One work order as the engineer works it — ТЗ §48.
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MapsDeepLink } from "@/components/maps-deep-link";
 import { advanceOrder, assignOrder } from "@/app/[locale]/me/work-orders/actions";
@@ -113,9 +114,21 @@ export function WorkOrderPanel({
       {order.photos.length > 0 && (
         <section>
           <h2 className="text-[11px] uppercase tracking-[0.14em] text-muted">{labels.photos}</h2>
-          <ul className="text-[12px] text-muted">
-            {order.photos.map((p) => (
-              <li key={p}>{p}</li>
+          {/* §48 «фото до и после» начинается с фотографии клиента. Раньше
+              здесь печатался список строк: массив всегда был пуст, потому
+              что форма §51 файлов не принимала, и этого никто не видел. */}
+          <ul className="mt-1 flex flex-wrap gap-2" data-testid="work-order-photos">
+            {order.photos.map((key) => (
+              <li key={key}>
+                <Image
+                  src={`/api/v1/ticket-photos/${key}`}
+                  alt={labels.photos}
+                  width={160}
+                  height={120}
+                  unoptimized
+                  className="h-[120px] w-auto rounded border border-hairline object-cover"
+                />
+              </li>
             ))}
           </ul>
         </section>

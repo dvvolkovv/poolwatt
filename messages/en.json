@@ -1712,6 +1712,28 @@
       "IN_PROGRESS": "In progress",
       "RESOLVED": "Resolved",
       "CLOSED": "Closed"
+    },
+    "mine": "My tickets",
+    "noneOfMine": "No tickets yet",
+    "awaiting": "waiting for support",
+    "overdue": "response time passed",
+    "escalated": "escalated",
+    "conversation": "Conversation",
+    "placeholder": "Anything else support should know",
+    "send": "Send",
+    "sending": "…",
+    "resolve": "Resolved",
+    "closedNote": "This ticket is closed. If the problem is back, send a new one.",
+    "live": "Live",
+    "photos": "Photos",
+    "reporter": "Reported by",
+    "follow": "Follow this ticket",
+    "followHint": "Sign in to see the status of your ticket and talk to support.",
+    "addPhotos": "Photos from the spot (up to 3)",
+    "author": {
+      "CUSTOMER": "Customer",
+      "SUPPORT": "Support",
+      "SYSTEM": "System"
     }
   },
   "booking": {
@@ -2525,7 +2547,8 @@
       "account": "Account",
       "card": "Card",
       "contacts": "Contacts and transfers",
-      "roaming": "Roaming"
+      "roaming": "Roaming",
+      "support": "Support"
     },
     "soon": {
       "title": "Not here yet",

@@ -16,6 +16,7 @@ export type MobileSection =
   | "station"
   | "coop"
   | "bookings"
+  | "support"
   | "account"
   | "card"
   | "contacts"
@@ -58,7 +59,9 @@ export function moreSections(caps: ShellCapabilities): MobileSection[] {
   if (caps.isCoopMember) sections.push("coop");
   // Брони идут до счёта и карты: ими пользуются сегодня, а счёт и карта
   // ждут EMI.
-  sections.push("bookings", "account", "card", "contacts", "roaming");
+  // Поддержка идёт сразу за бронями: §51 обещает, что заявку видно, и
+  // искать её не должно быть дольше, чем отправить.
+  sections.push("bookings", "support", "account", "card", "contacts", "roaming");
   return sections;
 }
 
@@ -67,6 +70,7 @@ export const SECTION_HREF: Record<MobileSection, string> = {
   station: "/station",
   coop: "/coop",
   bookings: "/bookings",
+  support: "/tickets",
   account: "/account",
   card: "/card",
   contacts: "/contacts",

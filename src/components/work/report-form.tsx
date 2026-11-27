@@ -18,19 +18,27 @@ const TYPES = [
   "OTHER",
 ] as const;
 
+const MAX_PHOTOS = 3;
+
 export function ReportForm({
   pointId,
   locale,
   connectors,
+  signedIn,
   labels,
 }: {
   pointId: string;
   locale: string;
   connectors: { id: string; label: string }[];
+  /** §51.5 — следить за заявкой можно только со своего счёта. */
+  signedIn: boolean;
   labels: {
     connector: string;
     anyConnector: string;
     comment: string;
+    addPhotos: string;
+    follow: string;
+    followHint: string;
     send: string;
     sending: string;
     sent: string;
@@ -42,6 +50,7 @@ export function ReportForm({
 }) {
   const [connectorId, setConnectorId] = useState(connectors[0]?.id ?? "");
   const [comment, setComment] = useState("");
+  const [photos, setPhotos] = useState<{ filename: string; base64: string }[]>([]);
   const [result, setResult] = useState<ReportResult | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -53,6 +62,7 @@ export function ReportForm({
         connectorId: connectorId || null,
         problemType,
         comment: comment.trim() || null,
+        photos: photos.length > 0 ? photos : undefined,
       });
       setResult(r);
     });
@@ -63,6 +73,25 @@ export function ReportForm({
       <div data-testid="report-sent" className="space-y-4">
         <p className="text-sm text-up">{labels.sent}</p>
         {result.opened && <p className="text-[13px] text-muted">{labels.opened}</p>}
+
+        {/* §51.5 — отсюда человек попадает в свою заявку. До этого отправка
+            была односторонней: сказал и больше ничего не узнал. */}
+        {signedIn ? (
+          <p className="text-[13px]">
+            <Link
+              href={`/${locale}/me/tickets/${result.ticketId}`}
+              prefetch={false}
+              className="text-accent underline"
+              data-testid="follow-ticket"
+            >
+              {labels.follow}
+            </Link>
+          </p>
+        ) : (
+          <p className="text-[13px] text-muted" data-testid="follow-hint">
+            {labels.followHint}
+          </p>
+        )}
 
         <section>
           <h2 className="mb-2 text-[11px] uppercase tracking-[0.14em] text-muted">
@@ -133,6 +162,36 @@ export function ReportForm({
         ))}
       </div>
 
+      {/* §51.4 — фотографии выбираются до нажатия: тип проблемы и есть
+          кнопка «отправить», и спрашивать файл после отправки поздно. */}
+      <label className="block">
+        <span className="mb-1 block text-[11px] uppercase tracking-[0.14em] text-muted">
+          {labels.addPhotos}
+        </span>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          data-testid="report-photos"
+          onChange={async (event) => {
+            const files = Array.from(event.target.files ?? []).slice(0, MAX_PHOTOS);
+            const read = await Promise.all(
+              files.map(async (file) => ({
+                filename: file.name,
+                base64: toBase64(await file.arrayBuffer()),
+              })),
+            );
+            setPhotos(read);
+          }}
+          className="w-full text-[13px]"
+        />
+        {photos.length > 0 && (
+          <span className="mt-1 block text-[12px] text-muted num" data-testid="photo-count">
+            {photos.length}
+          </span>
+        )}
+      </label>
+
       <label className="block">
         <span className="mb-1 block text-[11px] uppercase tracking-[0.14em] text-muted">
           {labels.comment}
@@ -149,6 +208,14 @@ export function ReportForm({
       {result && !result.ok && <p className="text-[13px] text-down">{result.formError}</p>}
     </div>
   );
+}
+
+/** Файл уходит одним серверным действием, поэтому строкой. */
+function toBase64(bytes: ArrayBuffer): string {
+  let binary = "";
+  const view = new Uint8Array(bytes);
+  for (let i = 0; i < view.length; i += 1) binary += String.fromCharCode(view[i]);
+  return btoa(binary);
 }
 
 function formatDistance(metres: number): string {

@@ -1712,6 +1712,28 @@
       "IN_PROGRESS": "V práci",
       "RESOLVED": "Vyriešený",
       "CLOSED": "Zatvorený"
+    },
+    "mine": "Moje hlásenia",
+    "noneOfMine": "Zatiaľ žiadne hlásenia",
+    "awaiting": "čaká na odpoveď podpory",
+    "overdue": "lehota na odpoveď vypršala",
+    "escalated": "eskalované",
+    "conversation": "Konverzácia",
+    "placeholder": "Čo ešte má podpora vedieť",
+    "send": "Poslať",
+    "sending": "…",
+    "resolve": "Vyriešené",
+    "closedNote": "Hlásenie je uzavreté. Ak sa problém vrátil, pošlite nové.",
+    "live": "Aktualizuje sa",
+    "photos": "Fotografie",
+    "reporter": "Nahlásil",
+    "follow": "Sledovať hlásenie",
+    "followHint": "Prihláste sa, aby ste videli stav hlásenia a mohli písať podpore.",
+    "addPhotos": "Fotografie z miesta (max. 3)",
+    "author": {
+      "CUSTOMER": "Klient",
+      "SUPPORT": "Podpora",
+      "SYSTEM": "Systém"
     }
   },
   "booking": {
@@ -2525,7 +2547,8 @@
       "account": "Účet",
       "card": "Karta",
       "contacts": "Kontakty a prevody",
-      "roaming": "Roaming"
+      "roaming": "Roaming",
+      "support": "Podpora"
     },
     "soon": {
       "title": "Obrazovka ešte nie je",

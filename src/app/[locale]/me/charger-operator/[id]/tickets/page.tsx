@@ -5,7 +5,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { can, readEmployee } from "@/lib/staff/staff-service";
+import { readOperatorQueueAccess } from "@/lib/work/ticket-access";
+import { toListRow } from "@/lib/work/ticket-view";
 
 export const dynamic = "force-dynamic";
 
@@ -28,26 +29,31 @@ export default async function TicketsPage({
   });
   if (!operator) notFound();
 
-  const isOwner =
-    operator.claimedById === session.user.id || session.user.role === "ADMIN";
-  if (!isOwner) {
-    const employee = await readEmployee(id, session.user.id);
-    if (!employee || !can(employee, "tickets.read")) notFound();
-  }
+  const access = await readOperatorQueueAccess(id, session.user.id, session.user.role);
+  if (!access) notFound();
 
   const t = await getTranslations("tickets");
   const tReport = await getTranslations("report");
 
   const tickets = await prisma.ticket.findMany({
-    where: { operatorId: id, status: { in: ["OPEN", "IN_PROGRESS"] } },
+    where: {
+      operatorId: id,
+      status: { in: ["OPEN", "IN_PROGRESS"] },
+      // §47 — область сотрудника. Заявка о пункте, которого ему не выдали,
+      // для него не существует; заявка без пункта — забота всей сети.
+      ...(access.pointIds ? { OR: [{ pointId: { in: access.pointIds } }, { pointId: null }] } : {}),
+    },
     orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
     take: 100,
     include: {
       point: { select: { name: true, city: true } },
       reporter: { select: { username: true } },
       workOrder: { select: { id: true, title: true } },
+      messages: { orderBy: { createdAt: "asc" }, take: 50 },
     },
   });
+  const now = new Date();
+  const rows = tickets.map((ticket) => toListRow(ticket, now));
 
   return (
     <div>
@@ -64,41 +70,56 @@ export default async function TicketsPage({
       </div>
       <h1 className="mb-6 text-[28px] font-bold">{t("title")}</h1>
 
-      {tickets.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="text-sm text-muted">{t("empty")}</p>
       ) : (
         <ul className="divide-y divide-hairline" data-testid="ticket-queue">
-          {tickets.map((ticket) => (
-            <li key={ticket.id} className="py-3">
+          {rows.map((row) => (
+            <li key={row.id} className="py-3">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="text-sm">
-                  {tReport(`type.${ticket.problemType}`)}
-                  {ticket.point && <span className="text-muted"> · {ticket.point.name}</span>}
-                </span>
-                <span className="text-[12px] text-muted">
-                  {t(`status.${ticket.status}`)}
-                  {ticket.respondBy && (
+                <Link
+                  href={`/${locale}/me/charger-operator/${id}/tickets/${row.id}`}
+                  prefetch={false}
+                  className="text-sm underline hover:text-accent"
+                  data-testid="ticket-link"
+                >
+                  {tReport(`type.${row.problemType}`)}
+                  {row.pointName && <span className="text-muted"> · {row.pointName}</span>}
+                </Link>
+                <span
+                  className={row.overdue ? "text-[12px] text-down" : "text-[12px] text-muted"}
+                  data-overdue={row.overdue ? "yes" : "no"}
+                >
+                  {t(`status.${row.status}`)}
+                  {row.awaitingAnswer && (
+                    <>
+                      {" · "}
+                      {row.overdue ? t("overdue") : t("awaiting")}
+                    </>
+                  )}
+                  {row.respondBy && (
                     <>
                       {" · "}
                       {t("respondBy")}{" "}
-                      <span className="num">
-                        {ticket.respondBy.toISOString().slice(11, 16)}
-                      </span>
+                      <span className="num">{row.respondBy.slice(11, 16)}</span>
                     </>
                   )}
-                  {ticket.reporter && <> · @{ticket.reporter.username}</>}
+                  {row.escalated && <> · {t("escalated")}</>}
+                  {row.reporterName && <> · @{row.reporterName}</>}
                 </span>
               </div>
-              {ticket.comment && (
-                <p className="mt-0.5 text-[13px] text-muted">{ticket.comment}</p>
+              {row.lastMessage && (
+                <p className="mt-0.5 line-clamp-1 text-[13px] text-muted">
+                  {row.lastMessage.body}
+                </p>
               )}
-              {ticket.workOrder && (
+              {row.workOrderId && (
                 <Link
-                  href={`/${locale}/me/work-orders/${ticket.workOrder.id}`}
+                  href={`/${locale}/me/work-orders/${row.workOrderId}`}
                   prefetch={false}
                   className="text-[12px] text-accent underline"
                 >
-                  {t("workOrder")}: {ticket.workOrder.title}
+                  {t("workOrder")}
                 </Link>
               )}
             </li>

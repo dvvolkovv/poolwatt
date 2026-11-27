@@ -4,6 +4,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
 import { ReportForm } from "@/components/work/report-form";
@@ -25,6 +26,8 @@ export default async function ReportPage({
   if (!point || point.status !== "PUBLISHED") notFound();
 
   const t = await getTranslations("report");
+  const tTickets = await getTranslations("tickets");
+  const session = await auth();
 
   return (
     <main className="bg-bg min-h-[calc(100vh-4rem)]">
@@ -47,6 +50,7 @@ export default async function ReportPage({
         <ReportForm
           pointId={point.id}
           locale={locale}
+          signedIn={Boolean(session?.user)}
           connectors={point.connectors.map((c) => ({
             id: c.id,
             label: `${c.type} · ${num(c.powerKw)} kW`,
@@ -55,6 +59,9 @@ export default async function ReportPage({
             connector: t("connector"),
             anyConnector: t("anyConnector"),
             comment: t("comment"),
+            addPhotos: tTickets("addPhotos"),
+            follow: tTickets("follow"),
+            followHint: tTickets("followHint"),
             send: t("send"),
             sending: t("sending"),
             sent: t("sent"),
