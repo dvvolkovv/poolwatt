@@ -1158,6 +1158,14 @@
       "pushClosed": "not available yet",
       "submit": "Save",
       "success": "Saved"
+    },
+    "birthday": {
+      "title": "Birthday",
+      "help": "Day and month only — partners can send a birthday gift. Leave both empty to remove it.",
+      "day": "Day",
+      "month": "Month",
+      "submit": "Save",
+      "success": "Saved."
     }
   },
   "verifyEmail": {
@@ -1748,7 +1756,9 @@
       "save": "Save terms",
       "saved": "Saved"
     },
-    "extend": "Extend"
+    "extend": "Extend",
+    "giftFee": "free (gift)",
+    "giftFeeNote": "{network} covers this booking: the gift pays the fee. Extending the booking stays paid, and the guarantee is still held."
   },
   "receipt": {
     "eyebrow": "Receipt",
@@ -1968,13 +1978,20 @@
       "zone": "Zone",
       "from": "From",
       "to": "To",
-      "cashbackPct": "Cashback, %"
+      "cashbackPct": "Cashback, %",
+      "promoCode": "Promo code",
+      "discountPct": "Discount, %",
+      "freeBooking": "Free booking as the gift",
+      "budgetGrants": "How many gifts in total",
+      "exclusive": "Does not stack with other campaigns"
     },
     "trigger": {
       "FIRST_CHARGE": "First charge in the network",
       "NTH_CHARGE": "N-th charge",
       "VOLUME_PERIOD": "kWh charged over a period",
-      "TOKEN_PAYMENT": "Payment in tokens"
+      "TOKEN_PAYMENT": "Payment in tokens",
+      "PROMO_CODE": "Promo code or QR sticker",
+      "BIRTHDAY": "Client's birthday"
     },
     "funding": {
       "TOKENS": "Your own generation",
@@ -2009,7 +2026,13 @@
       "clicks": "Clicks",
       "videoViews": "Video views",
       "ctr": "Click-through"
-    }
+    },
+    "promoNote": "The driver types the code, or opens the link the QR sticker carries. One gift per client.",
+    "qrLink": "Link for the QR sticker",
+    "discountNote": "A discount is paid in energy: the gift in kWh above is the ceiling you cover out of your own generation.",
+    "bookingNote": "A free booking covers one booking fee. Extending a booking stays paid, and the guarantee is still held.",
+    "gifts": "gifts",
+    "giftsUsed": "Gifts given"
   },
   "gifts": {
     "eyebrow": "Gifts",
@@ -2026,7 +2049,14 @@
     "walletLink": "Gifts",
     "cashback": "cashback",
     "cashbackPct": "cashback {pct} %",
-    "fromCharge": "The charge's receipt"
+    "fromCharge": "The charge's receipt",
+    "discountPct": "−{pct} % on a charge",
+    "booking": "One free booking",
+    "minNextCharge": "From {kwh} kWh per charge",
+    "codeTitle": "Have a promo code?",
+    "codeField": "Promo code",
+    "codeSubmit": "Use the code",
+    "codeDone": "The gift from {network} is yours."
   },
   "pricing": {
     "eyebrow": "Your economy",

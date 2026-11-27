@@ -16,7 +16,14 @@ export type ActionResult = { ok: true } | { ok: false; formError: string };
 const createSchema = z.object({
   operatorId: z.string().min(1),
   name: z.string().trim().min(2).max(120),
-  trigger: z.enum(["FIRST_CHARGE", "NTH_CHARGE", "VOLUME_PERIOD", "TOKEN_PAYMENT"]),
+  trigger: z.enum([
+    "FIRST_CHARGE",
+    "NTH_CHARGE",
+    "VOLUME_PERIOD",
+    "TOKEN_PAYMENT",
+    "PROMO_CODE",
+    "BIRTHDAY",
+  ]),
   triggerN: z.number().int().positive().max(100_000).nullable(),
   triggerPeriodDays: z.number().int().positive().max(365).nullable(),
   // Zero for a cashback campaign, which is priced in percent (US-12).
@@ -26,7 +33,14 @@ const createSchema = z.object({
   validityDays: z.number().int().min(1).max(3650),
   oncePerClient: z.boolean(),
   minNextChargeKwh: z.number().positive().max(100_000).nullable(),
-  budgetKwh: z.number().positive().max(10_000_000),
+  // §42 — no stacking, a discount of N %, a free booking and its count.
+  exclusive: z.boolean().optional(),
+  discountPct: z.number().min(0).max(100).nullable().optional(),
+  freeBooking: z.boolean().optional(),
+  promoCode: z.string().trim().max(40).nullable().optional(),
+  // Zero for a campaign that only gives a free booking: it promises no kWh.
+  budgetKwh: z.number().min(0).max(10_000_000),
+  budgetGrants: z.number().int().positive().max(1_000_000).nullable().optional(),
   fundingSource: z.enum(["TOKENS", "FIAT"]),
   zoneId: z.string().min(1),
   startsAt: z.string().datetime().nullable(),

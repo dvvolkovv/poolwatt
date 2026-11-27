@@ -1158,6 +1158,14 @@
       "pushClosed": "zatiaľ nedostupné",
       "submit": "Uložiť",
       "success": "Uložené"
+    },
+    "birthday": {
+      "title": "Narodeniny",
+      "help": "Len deň a mesiac — partneri môžu poslať darček k narodeninám. Nechajte prázdne a údaj sa odstráni.",
+      "day": "Deň",
+      "month": "Mesiac",
+      "submit": "Uložiť",
+      "success": "Uložené."
     }
   },
   "verifyEmail": {
@@ -1748,7 +1756,9 @@
       "save": "Uložiť podmienky",
       "saved": "Uložené"
     },
-    "extend": "Predĺžiť"
+    "extend": "Predĺžiť",
+    "giftFee": "bezplatne (darček)",
+    "giftFeeNote": "{network} kryje túto rezerváciu: platbu uhradí darček. Predĺženie zostáva platené a záruka sa stále drží."
   },
   "receipt": {
     "eyebrow": "Doklad",
@@ -1968,13 +1978,20 @@
       "zone": "Zóna",
       "from": "Od",
       "to": "Do",
-      "cashbackPct": "Cashback, %"
+      "cashbackPct": "Cashback, %",
+      "promoCode": "Promo kód",
+      "discountPct": "Zľava, %",
+      "freeBooking": "Darček — bezplatná rezervácia",
+      "budgetGrants": "Koľko darčekov celkovo",
+      "exclusive": "Nespája sa s inými akciami"
     },
     "trigger": {
       "FIRST_CHARGE": "Prvé nabíjanie v sieti",
       "NTH_CHARGE": "N-té nabíjanie",
       "VOLUME_PERIOD": "kWh za obdobie",
-      "TOKEN_PAYMENT": "Platba tokenmi"
+      "TOKEN_PAYMENT": "Platba tokenmi",
+      "PROMO_CODE": "Promo kód alebo QR nálepka",
+      "BIRTHDAY": "Narodeniny klienta"
     },
     "funding": {
       "TOKENS": "Vlastná výroba",
@@ -2009,7 +2026,13 @@
       "clicks": "Kliknutia",
       "videoViews": "Prehrania videa",
       "ctr": "Kliknutia k zobrazeniam"
-    }
+    },
+    "promoNote": "Vodič zadá kód alebo otvorí odkaz z nálepky. Jeden darček na klienta.",
+    "qrLink": "Odkaz pre QR nálepku",
+    "discountNote": "Zľavu platíte energiou: darček v kWh vyššie je strop, ktorý kryjete z vlastnej výroby.",
+    "bookingNote": "Bezplatná rezervácia kryje jednu platbu za rezerváciu. Predĺženie zostáva platené a záruka sa stále drží.",
+    "gifts": "darčekov",
+    "giftsUsed": "Vydaných darčekov"
   },
   "gifts": {
     "eyebrow": "Darčeky",
@@ -2026,7 +2049,14 @@
     "walletLink": "Darčeky",
     "cashback": "cashback",
     "cashbackPct": "cashback {pct} %",
-    "fromCharge": "Doklad o nabíjaní"
+    "fromCharge": "Doklad o nabíjaní",
+    "discountPct": "−{pct} % na nabíjanie",
+    "booking": "Jedna bezplatná rezervácia",
+    "minNextCharge": "Od {kwh} kWh na nabíjanie",
+    "codeTitle": "Máte promo kód?",
+    "codeField": "Promo kód",
+    "codeSubmit": "Použiť kód",
+    "codeDone": "Darček od {network} je váš."
   },
   "pricing": {
     "eyebrow": "Vaša ekonomika",

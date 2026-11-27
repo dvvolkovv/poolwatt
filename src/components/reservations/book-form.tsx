@@ -12,6 +12,12 @@ const WHEN = [15, 30, 60, 120];
 export function BookForm({
   connectors,
   policy,
+  /**
+   * §42 "бесплатная бронь" — the gift this driver holds for this network, if
+   * any. The fee is shown as free *before* the booking is made, because §54
+   * says the driver sees every charge before confirming.
+   */
+  freeBookingNetwork = null,
   labels,
 }: {
   connectors: { id: string; label: string; free: boolean }[];
@@ -23,6 +29,7 @@ export function BookForm({
     freeCancelMinutes: number;
     currency: string;
   };
+  freeBookingNetwork?: string | null;
   labels: {
     title: string;
     connector: string;
@@ -38,6 +45,8 @@ export function BookForm({
     freeCancel: string;
     booked: string;
     noFreeConnector: string;
+    giftFee: string;
+    giftFeeNote: string;
   };
 }) {
   const router = useRouter();
@@ -105,7 +114,11 @@ export function BookForm({
 
       <dl className="border-t border-hairline pt-3 text-[12px]">
         <div className="text-muted">{labels.terms}</div>
-        <Row label={labels.fee} value={`${policy.feeFiat.toFixed(2)} ${policy.currency}`} />
+        {freeBookingNetwork ? (
+          <Row label={labels.fee} value={labels.giftFee} testId="booking-fee-gift" />
+        ) : (
+          <Row label={labels.fee} value={`${policy.feeFiat.toFixed(2)} ${policy.currency}`} />
+        )}
         <Row
           label={labels.guarantee}
           value={`${policy.guaranteeFiat.toFixed(2)} ${policy.currency}`}
@@ -120,6 +133,12 @@ export function BookForm({
           value={`${policy.freeCancelMinutes} ${labels.minutes}`}
         />
       </dl>
+
+      {freeBookingNetwork && (
+        <p className="text-[12px] text-muted" data-testid="booking-gift-note">
+          {labels.giftFeeNote.replace("{network}", freeBookingNetwork)}
+        </p>
+      )}
 
       <button
         type="button"
@@ -147,11 +166,21 @@ export function BookForm({
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({
+  label,
+  value,
+  testId,
+}: {
+  label: string;
+  value: string;
+  testId?: string;
+}) {
   return (
     <div className="flex justify-between py-0.5">
       <dt className="text-muted">{label}</dt>
-      <dd className="num">{value}</dd>
+      <dd className="num" data-testid={testId}>
+        {value}
+      </dd>
     </div>
   );
 }

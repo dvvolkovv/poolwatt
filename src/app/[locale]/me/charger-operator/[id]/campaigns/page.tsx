@@ -99,6 +99,15 @@ export default async function CampaignsPage({
             oncePerClient: t("field.oncePerClient"),
             minNextChargeKwh: t("field.minNextChargeKwh"),
             budgetKwh: t("field.budgetKwh"),
+            promoCode: t("field.promoCode"),
+            discountPct: t("field.discountPct"),
+            freeBooking: t("field.freeBooking"),
+            budgetGrants: t("field.budgetGrants"),
+            exclusive: t("field.exclusive"),
+            promoNote: t("promoNote"),
+            qrLink: t("qrLink"),
+            discountNote: t("discountNote"),
+            bookingNote: t("bookingNote"),
             funding: t("field.funding"),
             fundingTokens: t("funding.TOKENS"),
             fundingFiat: t("funding.FIAT"),
@@ -107,7 +116,14 @@ export default async function CampaignsPage({
             to: t("field.to"),
             create: t("create"),
             triggerNames: names(
-              ["FIRST_CHARGE", "NTH_CHARGE", "VOLUME_PERIOD", "TOKEN_PAYMENT"],
+              [
+                "FIRST_CHARGE",
+                "NTH_CHARGE",
+                "VOLUME_PERIOD",
+                "TOKEN_PAYMENT",
+                "PROMO_CODE",
+                "BIRTHDAY",
+              ],
               "trigger",
             ),
           }}
@@ -132,11 +148,20 @@ export default async function CampaignsPage({
                       <>
                         <span className="num">{c.cashbackPct}</span> %
                       </>
-                    ) : (
+                    ) : c.discountPct != null ? (
+                      <>
+                        −<span className="num">{c.discountPct}</span> %{" "}
+                        <span className="text-muted">
+                          (≤ <span className="num">{c.giftKwh}</span> {t("kwh")})
+                        </span>
+                      </>
+                    ) : c.giftKwh > 0 ? (
                       <>
                         <span className="num">{c.giftKwh}</span> {t("kwh")}
                       </>
-                    )}{" "}
+                    ) : null}
+                    {c.freeBooking && <> · {t("field.freeBooking")}</>}
+                    {c.exclusive && <> · {t("field.exclusive")}</>}{" "}
                     ·{" "}
                     {c.scopePointIds.length === 0
                       ? t("wholeNetwork")
@@ -156,6 +181,24 @@ export default async function CampaignsPage({
                   {" · "}
                   <span className="num">{c.grantCount}</span> {t("grants")}
                 </div>
+
+                {c.promoCode && (
+                  <div className="text-[12px]" data-testid="promo-code-row">
+                    <code className="rounded bg-hairline/40 px-1.5 py-0.5">{c.promoCode}</code>
+                    {" · "}
+                    {t("qrLink")}:{" "}
+                    <code className="break-all">
+                      https://poolwatt.com/{locale}/promo/{c.promoCode}
+                    </code>
+                  </div>
+                )}
+
+                {c.budgetGrants != null && (
+                  <div className="text-[12px] text-muted">
+                    {t("giftsUsed")}: <span className="num">{c.issuedGrants}</span> /{" "}
+                    <span className="num">{c.budgetGrants}</span> {t("gifts")}
+                  </div>
+                )}
 
                 {c.pauseReason && (
                   <p className="text-[13px] text-down" data-testid="pause-reason">

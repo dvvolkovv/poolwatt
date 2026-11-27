@@ -22,6 +22,7 @@ import {
   type HistoryFilter,
 } from "@/lib/mobile/history-filter";
 import { readMyGifts } from "@/lib/marketing/grant-spend";
+import { PromoCodeForm } from "@/components/marketing/promo-code-form";
 import { Screen } from "@/components/mobile/screen";
 import { MobileBalance } from "@/components/mobile/mobile-balance";
 import { BuySheet } from "@/components/mobile/buy-sheet";
@@ -51,6 +52,8 @@ export default async function WalletScreen({
   const tw = await getTranslations("app.wallet");
   const th = await getTranslations("app.history");
   const tHome = await getTranslations("app.home");
+  // §42's gift wording is the same on the phone as in the cabinet.
+  const tg = await getTranslations("gifts");
 
   const filter = parseHistoryFilter(kind);
 
@@ -142,12 +145,21 @@ export default async function WalletScreen({
       </section>
 
       {/* §43 "в приложении показывается отдельно от основного баланса". */}
-      {gifts.length > 0 && (
-        <section className="mt-8" data-testid="wallet-gifts">
-          <h2 className="text-[12px] uppercase tracking-[0.16em] text-muted">
-            {tw("gifts")}
-          </h2>
-          <p className="mt-1 text-[12px] text-muted">{tw("giftsHelp")}</p>
+      <section className="mt-8" data-testid="wallet-gifts">
+        <h2 className="text-[12px] uppercase tracking-[0.16em] text-muted">{tw("gifts")}</h2>
+        <p className="mt-1 text-[12px] text-muted">{tw("giftsHelp")}</p>
+
+        {/* §42 — the code the sticker on the charger carries, typed by hand. */}
+        <PromoCodeForm
+          labels={{
+            title: tg("codeTitle"),
+            field: tg("codeField"),
+            submit: tg("codeSubmit"),
+            done: tg("codeDone", { network: "{network}" }),
+          }}
+        />
+
+        {gifts.length > 0 && (
           <ul className="mt-3 divide-y divide-hairline rounded-lg border border-hairline bg-card">
             {gifts.map((g) => (
               <li key={g.id} className="flex items-center justify-between px-4 py-3">
@@ -157,16 +169,20 @@ export default async function WalletScreen({
                     {tw("giftUntil")}{" "}
                     <span className="num">{g.expiresAt.toISOString().slice(0, 10)}</span>
                     {g.kind === "cashback" && ` · ${tw("giftCashback")}`}
+                    {/* §42 — a discount and a free booking, said in words. */}
+                    {g.kind === "discount" &&
+                      ` · ${tg("discountPct", { pct: g.discountPct ?? 0 })}`}
+                    {g.kind === "booking" && ` · ${tg("booking")}`}
                   </div>
                 </div>
                 <div className="num pl-3 text-[15px] text-accent">
-                  {g.remainingKwh.toFixed(3)} kWh
+                  {g.kind === "booking" ? "—" : `${g.remainingKwh.toFixed(3)} kWh`}
                 </div>
               </li>
             ))}
           </ul>
-        </section>
-      )}
+        )}
+      </section>
 
       <section className="mt-8">
         <h2 className="mb-3 text-[12px] uppercase tracking-[0.16em] text-muted">

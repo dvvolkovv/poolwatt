@@ -77,3 +77,20 @@ export const nameSchema = z
 export const updateNameSchema = z.object({
   name: z.union([nameSchema, z.literal("")]),  // empty string = clear
 });
+
+// §42's birthday gift needs the day and the month, and nothing else: a year
+// would be one more piece of personal data for no extra use. Both empty
+// clears the date again.
+const DAYS_IN_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+export const updateBirthdaySchema = z
+  .object({
+    birthDay: z.number().int().min(1).max(31).nullable(),
+    birthMonth: z.number().int().min(1).max(12).nullable(),
+  })
+  .refine((v) => (v.birthDay == null) === (v.birthMonth == null), {
+    message: "Give both the day and the month",
+  })
+  .refine((v) => v.birthDay == null || v.birthDay <= DAYS_IN_MONTH[v.birthMonth! - 1], {
+    message: "That month does not have that many days",
+  });

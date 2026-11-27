@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { NameSection } from "@/components/settings/name-section";
 import { EmailSection } from "@/components/settings/email-section";
 import { PhoneSection } from "@/components/settings/phone-section";
+import { BirthdaySection } from "@/components/settings/birthday-section";
 import { PasswordSection } from "@/components/settings/password-section";
 import { SetPasswordSection } from "@/components/settings/set-password-section";
 import { TalerIdSection } from "@/components/settings/talerid-section";
@@ -36,6 +37,8 @@ export default async function SettingsPage({
       email: true,
       emailVerified: true,
       phone: true,
+      birthDay: true,
+      birthMonth: true,
       preferredLocale: true,
       preferredCurrency: true,
       preferredTheme: true,
@@ -92,6 +95,20 @@ export default async function SettingsPage({
             placeholder: t("phone.placeholder"),
             submit: t("phone.submit"),
             success: t("phone.success"),
+          }}
+        />
+
+        {/* §42 — the birthday gift of the gift constructor. */}
+        <BirthdaySection
+          currentDay={user.birthDay}
+          currentMonth={user.birthMonth}
+          labels={{
+            title: t("birthday.title"),
+            help: t("birthday.help"),
+            day: t("birthday.day"),
+            month: t("birthday.month"),
+            submit: t("birthday.submit"),
+            success: t("birthday.success"),
           }}
         />
 

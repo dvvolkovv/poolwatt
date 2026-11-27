@@ -5,6 +5,7 @@ import { getChargerById } from "@/lib/chargers-mock";
 import { loadPointAsStation } from "@/lib/points/point-detail";
 import { readPolicy } from "@/lib/reservations/reservation-service";
 import { BookForm } from "@/components/reservations/book-form";
+import { findFreeBookingGift } from "@/lib/marketing/grant-spend";
 import { auth } from "@/lib/auth";
 import { readFavoriteChargerIds } from "@/lib/favorites";
 import { FavoriteButton } from "@/components/favorite-button";
@@ -139,6 +140,12 @@ export default async function ChargerDetailPage({
   // §35 — booking lives on the card of a Poolwatt point; an OpenStreetMap
   // node has no owner to hold a place with.
   const policy = charger.poolwattPointId ? await readPolicy(charger.poolwattPointId) : null;
+  // §42 "бесплатная бронь" — read before the form is drawn, so the fee line
+  // tells the truth rather than surprising the driver afterwards.
+  const freeBookingGift =
+    charger.poolwattPointId && sessionForCard?.user?.id
+      ? await findFreeBookingGift(sessionForCard.user.id, charger.poolwattPointId)
+      : null;
   const bookable =
     policy?.enabled && charger.poolwattPointId
       ? await prisma.pointConnector.findMany({
@@ -235,6 +242,7 @@ export default async function ChargerDetailPage({
         {policy?.enabled && bookable.length > 0 && (
           <section className="mb-10 max-w-[420px] rounded-lg border border-hairline p-4">
             <BookForm
+              freeBookingNetwork={freeBookingGift?.networkName ?? null}
               connectors={bookable.map((c) => ({
                 id: c.id,
                 label: `${c.type} · ${Number(c.powerKw)} kW`,
@@ -263,6 +271,8 @@ export default async function ChargerDetailPage({
                 freeCancel: tBook("freeCancel"),
                 booked: tBook("booked"),
                 noFreeConnector: tBook("noFreeConnector"),
+                giftFee: tBook("giftFee"),
+                giftFeeNote: tBook("giftFeeNote"),
               }}
             />
           </section>

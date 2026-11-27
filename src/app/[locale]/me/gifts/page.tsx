@@ -7,6 +7,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { readMyGifts } from "@/lib/marketing/grant-spend";
+import { PromoCodeForm } from "@/components/marketing/promo-code-form";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,12 @@ export default async function GiftsPage({
   const gifts = await readMyGifts(session.user.id);
 
   const totalKwh = gifts.reduce((sum, g) => sum + g.remainingKwh, 0);
+  const codeLabels = {
+    title: t("codeTitle"),
+    field: t("codeField"),
+    submit: t("codeSubmit"),
+    done: t("codeDone", { network: "{network}" }),
+  };
 
   return (
     <div className="max-w-2xl">
@@ -40,13 +47,16 @@ export default async function GiftsPage({
       <h1 className="mb-2 text-[28px] font-bold">{t("title")}</h1>
       <p className="mb-8 text-sm text-muted">{t("intro")}</p>
 
+      {/* §42 — the code is typed here, and on the phone. */}
+      <PromoCodeForm labels={codeLabels} />
+
       {gifts.length === 0 ? (
-        <p className="text-sm text-muted" data-testid="gifts-empty">
+        <p className="mt-6 text-sm text-muted" data-testid="gifts-empty">
           {t("empty")}
         </p>
       ) : (
         <>
-          <p className="mb-4 text-sm">
+          <p className="mb-4 mt-6 text-sm">
             {t("total")}: <span className="num font-semibold">{totalKwh}</span> {t("kwh")}
           </p>
           <ul className="divide-y divide-hairline" data-testid="gift-list">
@@ -66,9 +76,32 @@ export default async function GiftsPage({
                           : t("cashbackPct", { pct: g.cashbackPct })}
                       </span>
                     )}
+                    {/* §42 — a discount and a free booking are gifts too. */}
+                    {g.kind === "discount" && (
+                      <span
+                        className="ml-2 rounded border border-hairline px-1.5 py-0.5 text-[11px] text-muted"
+                        data-testid="gift-discount-badge"
+                      >
+                        {t("discountPct", { pct: g.discountPct ?? 0 })}
+                      </span>
+                    )}
+                    {g.kind === "booking" && (
+                      <span
+                        className="ml-2 rounded border border-hairline px-1.5 py-0.5 text-[11px] text-muted"
+                        data-testid="gift-booking-badge"
+                      >
+                        {t("booking")}
+                      </span>
+                    )}
                   </span>
                   <span className="text-[15px]">
-                    <span className="num font-semibold">{g.remainingKwh}</span> {t("kwh")}
+                    {g.kind === "booking" ? (
+                      t("booking")
+                    ) : (
+                      <>
+                        <span className="num font-semibold">{g.remainingKwh}</span> {t("kwh")}
+                      </>
+                    )}
                   </span>
                 </div>
                 <div className="text-[12px] text-muted">
@@ -83,6 +116,11 @@ export default async function GiftsPage({
                   )}
                 </div>
                 <p className="text-[12px] text-muted">{t("onlyHere", { network: g.networkName })}</p>
+                {g.minNextChargeKwh != null && (
+                  <p className="text-[12px] text-muted" data-testid="gift-min-charge">
+                    {t("minNextCharge", { kwh: g.minNextChargeKwh })}
+                  </p>
+                )}
                 {/* US-12 "отображение в истории" — the charge it came from. */}
                 {g.receiptId && (
                   <Link

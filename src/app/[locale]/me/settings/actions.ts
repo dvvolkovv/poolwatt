@@ -12,6 +12,7 @@ import {
   addEmailSchema,
   updatePhoneSchema,
   updateNameSchema,
+  updateBirthdaySchema,
 } from "@/lib/validation";
 import { TALERID_PROVIDER_ID } from "@/lib/talerid/config";
 
@@ -223,6 +224,35 @@ export async function updatePhoneAction(
   await prisma.user.update({
     where: { id: session.user.id },
     data: { phone: parsed.data.phone === "" ? null : parsed.data.phone },
+  });
+  revalidatePath("/[locale]/me/settings", "page");
+  return { ok: true };
+}
+
+// ─── Birthday (§42) ───────────────────────────────────────────────────────
+
+export async function updateBirthdayAction(
+  _prev: FieldError,
+  formData: FormData,
+): Promise<FieldError> {
+  const session = await auth();
+  if (!session?.user) return { formError: "Not authenticated" };
+
+  const toNumber = (name: string) => {
+    const raw = String(formData.get(name) ?? "").trim();
+    return raw === "" ? null : Number(raw);
+  };
+  const parsed = updateBirthdaySchema.safeParse({
+    birthDay: toNumber("birthDay"),
+    birthMonth: toNumber("birthMonth"),
+  });
+  if (!parsed.success) {
+    return { fieldErrors: { birthday: parsed.error.issues[0].message } };
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { birthDay: parsed.data.birthDay, birthMonth: parsed.data.birthMonth },
   });
   revalidatePath("/[locale]/me/settings", "page");
   return { ok: true };
