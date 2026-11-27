@@ -14,7 +14,7 @@
 //   и очередь молча потеряла бы запись. Экран говорит это прямо, а не делает
 //   вид, что снимок ушёл.
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import type { NewOp } from "@/lib/mobile/offline-queue";
 
 export interface SiteTask {
@@ -97,6 +97,10 @@ export function WorkOrderSiteWork({
   const [signed, setSigned] = useState(signature !== null);
   const [pending, startTransition] = useTransition();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Сервер мог отрисовать другое: очередь досылает отметки и дёргает
+  // `router.refresh()`, и экран должен показать то, что лежит в базе.
+  useEffect(() => setLocal(tasks), [tasks]);
   const drawing = useRef(false);
   const drew = useRef(false);
 

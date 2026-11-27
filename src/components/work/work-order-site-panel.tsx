@@ -10,7 +10,7 @@
 // места, ни человека, который принимает работу. Снимки и подпись он
 // показывает.
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { answerOrderTask } from "@/app/[locale]/me/work-orders/actions";
 
 export interface SitePanelTask {
@@ -54,20 +54,42 @@ export function WorkOrderSitePanel({
     signerEngineer: string;
   };
 }) {
+  // Отметка держится в состоянии, а не только в пропсах: управляемый
+  // checkbox без него возвращается в прежнее положение сразу после нажатия и
+  // ждёт ревалидации — для человека это «кнопка не нажимается».
+  const [local, setLocal] = useState(tasks);
   const [skipping, setSkipping] = useState<string | null>(null);
   const [words, setWords] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  // Сервер мог отрисовать другое (ревалидация, отметка с телефона).
+  useEffect(() => setLocal(tasks), [tasks]);
+
   function answer(taskId: string, done: boolean, skipReason?: string) {
     setError(null);
+    setLocal((rows) =>
+      rows.map((row) =>
+        row.id === taskId
+          ? {
+              ...row,
+              doneAt: done ? new Date().toISOString() : null,
+              skipReason: skipReason ?? null,
+            }
+          : row,
+      ),
+    );
     startTransition(async () => {
       const result = await answerOrderTask({
         workOrderId,
         taskId,
         ...(skipReason ? { skipReason } : { done }),
       });
-      if (!result.ok) setError(result.formError);
+      if (!result.ok) {
+        setError(result.formError);
+        // Отказ возвращает экран к тому, что знает сервер.
+        setLocal(tasks);
+      }
     });
   }
 
@@ -78,7 +100,7 @@ export function WorkOrderSitePanel({
           {labels.checklist}
         </h2>
         <ul className="mt-2 divide-y divide-hairline rounded border border-hairline">
-          {tasks.map((task) => (
+          {local.map((task) => (
             <li key={task.id} className="px-3 py-2" data-task={task.id}>
               <label className="flex items-start gap-2 text-[13px]">
                 <input
