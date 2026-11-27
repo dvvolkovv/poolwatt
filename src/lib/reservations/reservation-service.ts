@@ -16,6 +16,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/exchange/audit";
 import { num } from "@/lib/exchange/decimal";
+import { spendFreeBookingGift } from "@/lib/marketing/grant-spend";
 import { hasVerifiedKyc } from "@/lib/exchange/membership";
 import { roundMoney } from "@/lib/exchange/precision";
 import { getOrCreateWallet } from "@/lib/exchange/wallet-service";
@@ -221,7 +222,7 @@ export async function createReservation(
   if (!zoneId) throw new ReservationError("This point has no grid zone, so it has no wallet");
   const wallet = await getOrCreateWallet(args.userId, zoneId);
 
-  const fee = roundMoney(policy.feeFiat);
+  const listedFee = roundMoney(policy.feeFiat);
   const guarantee = roundMoney(policy.guaranteeFiat);
 
   return prisma.$transaction(async (tx) => {
@@ -252,6 +253,15 @@ export async function createReservation(
       }
     }
 
+    // §42 "бесплатная бронь" — the gift is taken only once every other check
+    // has passed, so a booking that fails does not burn it. It is taken under
+    // a row lock, so two taps cannot both get a free booking.
+    const freeBooking = await spendFreeBookingGift(tx, {
+      userId: args.userId,
+      pointId: connector.point.id,
+    });
+    const fee = freeBooking ? 0 : listedFee;
+
     const walletRow = await tx.wallet.findUniqueOrThrow({ where: { id: wallet.id } });
     const available = roundMoney(num(walletRow.fiatBalance) - num(walletRow.reservedFiat));
     if (available < roundMoney(fee + guarantee)) {
@@ -278,6 +288,7 @@ export async function createReservation(
         // US-32 — the terms are copied in, so a later change leaves this one
         // where it is.
         feeFiat: new Prisma.Decimal(fee),
+        promoGrantId: freeBooking?.grantId ?? null,
         guaranteeFiat: new Prisma.Decimal(guarantee),
         noShowPenaltyFiat: new Prisma.Decimal(roundMoney(policy.noShowPenaltyFiat)),
         freeCancelMinutes: policy.freeCancelMinutes,
@@ -293,7 +304,14 @@ export async function createReservation(
       entity: "Reservation",
       entityId: reservation.id,
       action: "reservation.created",
-      after: { connectorId: connector.id, fee, guarantee, windowEnd: reservation.windowEnd },
+      after: {
+        connectorId: connector.id,
+        fee,
+        guarantee,
+        windowEnd: reservation.windowEnd,
+        // §42 — which gift paid for it, if one did.
+        promoGrantId: freeBooking?.grantId ?? null,
+      },
     });
 
     return reservation;
