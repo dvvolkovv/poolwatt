@@ -2553,9 +2553,11 @@ model Campaign {
   // uses no other gift, so the driver gets the single best one.
   exclusive        Boolean  @default(false)
 
-  // §42 "регистрация по QR-коду или промокоду партнёра". Stored upper-case;
-  // the QR sticker is a link carrying the same code.
-  promoCode String?
+  // §42 "регистрация по QR-коду или промокоду партнёра". Stored upper-case,
+  // and unique across every network: the driver types a code without saying
+  // whose it is, so two campaigns answering to one code would be a coin toss.
+  // The QR sticker is a link carrying the same code.
+  promoCode String? @unique
 
   // §42 "Бюджет кампании" — in kWh. A budget in money needs the partner's
   // settlement account, which the EMI has not issued (see `gates.ts`).
@@ -2586,7 +2588,6 @@ model Campaign {
 
   grants PromoGrant[]
 
-  @@unique([operatorId, promoCode])
   @@index([operatorId, status])
   @@index([status, startsAt, endsAt])
 }
