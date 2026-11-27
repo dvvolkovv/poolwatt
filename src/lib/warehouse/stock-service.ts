@@ -14,19 +14,22 @@
 import type { Prisma, StockMovementKind } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { type Db, writeAudit } from "@/lib/exchange/audit";
+import { StockAccessError, requireStockActor } from "./stock-access";
 
 export class StockError extends Error {}
 
-async function requireNetwork(operatorId: string, userId: string) {
-  const op = await prisma.chargerOperator.findUnique({
-    where: { id: operatorId },
-    select: { id: true, claimedById: true },
-  });
-  if (!op) throw new StockError("No such network");
-  if (!op.claimedById || op.claimedById !== userId) {
-    throw new StockError("This network belongs to somebody else");
+/**
+ * §47 + §49 — the owner, or staff with `warehouse.write`. The decision itself
+ * lives in `stock-access`; here it is only translated into the one error type
+ * every route and page of the warehouse already catches.
+ */
+async function requireNetwork(operatorId: string, userId: string, pointId?: string | null) {
+  try {
+    return await requireStockActor(operatorId, userId, { pointId });
+  } catch (err) {
+    if (err instanceof StockAccessError) throw new StockError(err.message);
+    throw err;
   }
-  return op;
 }
 
 /** A part and the warehouses it moves between all have to be one network's. */
@@ -34,13 +37,15 @@ async function requireSameNetwork(args: {
   partId: string;
   warehouseIds: (string | null | undefined)[];
   actorId: string;
+  /** §47's scope, when the operation hangs off a point (a work order). */
+  pointId?: string | null;
 }) {
   const part = await prisma.sparePart.findUnique({
     where: { id: args.partId },
     select: { id: true, operatorId: true, unitCostFiat: true },
   });
   if (!part) throw new StockError("No such part");
-  await requireNetwork(part.operatorId, args.actorId);
+  const actor = await requireNetwork(part.operatorId, args.actorId, args.pointId);
 
   const ids = args.warehouseIds.filter((id): id is string => Boolean(id));
   if (ids.length > 0) {
@@ -51,7 +56,7 @@ async function requireSameNetwork(args: {
       throw new StockError("That warehouse is not in the same network as the part");
     }
   }
-  return part;
+  return { part, actor };
 }
 
 function requirePositive(qty: number): void {
@@ -154,7 +159,7 @@ interface MovementArgs {
 }
 
 async function writeMovement(tx: Prisma.TransactionClient, args: MovementArgs) {
-  return tx.stockMovement.create({
+  const movement = await tx.stockMovement.create({
     data: {
       partId: args.partId,
       kind: args.kind,
@@ -168,6 +173,26 @@ async function writeMovement(tx: Prisma.TransactionClient, args: MovementArgs) {
       actorId: args.actorId,
     },
   });
+
+  // §49 — a movement is what puts a part's cost into the point's upkeep, so it
+  // leaves a trace. Until US-49 only the US-50 request wrote to the journal,
+  // and a write-off made by somebody else's hands and synced later is exactly
+  // the case a journal is for.
+  await writeAudit(tx, {
+    actor: args.actorId,
+    entity: "StockMovement",
+    entityId: movement.id,
+    action: `stock.movement.${args.kind}`,
+    after: {
+      partId: args.partId,
+      qty: args.qty,
+      fromWarehouseId: args.fromWarehouseId ?? null,
+      toWarehouseId: args.toWarehouseId ?? null,
+      workOrderId: args.workOrderId ?? null,
+      serialNo: args.serialNo?.trim() || null,
+    },
+  });
+  return movement;
 }
 
 /** §49 "приход" — a delivery from a supplier. */
@@ -179,7 +204,7 @@ export async function receiveStock(args: {
   actorId: string;
 }) {
   requirePositive(args.qty);
-  const part = await requireSameNetwork({
+  const { part } = await requireSameNetwork({
     partId: args.partId,
     warehouseIds: [args.warehouseId],
     actorId: args.actorId,
@@ -262,18 +287,37 @@ export async function issueToWorkOrder(args: {
   actorId: string;
 }) {
   requirePositive(args.qty);
-  const part = await requireSameNetwork({
+
+  // The order comes first: §47 scopes an engineer's right by point, and the
+  // point is the order's.
+  const order = await prisma.workOrder.findUnique({
+    where: { id: args.workOrderId },
+    select: { operatorId: true, pointId: true },
+  });
+  if (!order) {
+    throw new StockError("That work order is not in the same network as the part");
+  }
+
+  const { part, actor } = await requireSameNetwork({
     partId: args.partId,
     warehouseIds: [args.warehouseId],
     actorId: args.actorId,
+    pointId: order.pointId,
   });
-
-  const order = await prisma.workOrder.findUnique({
-    where: { id: args.workOrderId },
-    select: { operatorId: true },
-  });
-  if (!order || order.operatorId !== part.operatorId) {
+  if (order.operatorId !== part.operatorId) {
     throw new StockError("That work order is not in the same network as the part");
+  }
+
+  // §49 — "наличие у себя в машине": somebody else's van is not a store this
+  // engineer may take from. The owner of the network may take from any.
+  if (!actor.isOwner) {
+    const warehouse = await prisma.warehouse.findUnique({
+      where: { id: args.warehouseId },
+      select: { kind: true, keeperEmployeeId: true },
+    });
+    if (warehouse?.kind === "VAN" && warehouse.keeperEmployeeId !== actor.employee?.id) {
+      throw new StockError("That van is somebody else's");
+    }
   }
 
   return prisma.$transaction(async (tx) => {
@@ -317,7 +361,7 @@ export async function writeOffStock(args: {
   if (!args.note?.trim()) {
     throw new StockError("Say why it is being written off: stock that vanishes without a reason is a hole");
   }
-  const part = await requireSameNetwork({
+  const { part } = await requireSameNetwork({
     partId: args.partId,
     warehouseIds: [args.warehouseId],
     actorId: args.actorId,

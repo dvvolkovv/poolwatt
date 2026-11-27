@@ -8,6 +8,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { ensureBuiltInRoles } from "@/lib/staff/staff-service";
 import {
   StockError,
   closeRestockRequest,
@@ -33,6 +34,9 @@ let foreignWarehouse: string;
 let cableId: string;
 let foreignPartId: string;
 let workOrderId: string;
+let engineerUserId: string;
+let engineerEmployeeId: string;
+let otherVan: string;
 
 async function wipe() {
   await prisma.restockRequest.deleteMany({
@@ -45,6 +49,12 @@ async function wipe() {
     where: { part: { operator: { slug: { startsWith: PREFIX } } } },
   });
   await prisma.warehouse.deleteMany({ where: { operator: { slug: { startsWith: PREFIX } } } });
+  await prisma.employee.deleteMany({
+    where: { operator: { slug: { startsWith: PREFIX } } },
+  });
+  await prisma.staffRole.deleteMany({
+    where: { operator: { slug: { startsWith: PREFIX } } },
+  });
   await prisma.sparePart.deleteMany({ where: { operator: { slug: { startsWith: PREFIX } } } });
   await prisma.workOrder.deleteMany({ where: { operator: { slug: { startsWith: PREFIX } } } });
   await prisma.acceptancePoint.deleteMany({
@@ -127,6 +137,29 @@ beforeAll(async () => {
         title: "Replace the cable",
         description: "The cable is cut",
       },
+    })
+  ).id;
+
+  // US-49 — the engineer §49 puts in charge of the van.
+  engineerUserId = await user("engineer");
+  const roles = await ensureBuiltInRoles(operatorId);
+  engineerEmployeeId = (
+    await prisma.employee.create({
+      data: {
+        operatorId,
+        userId: engineerUserId,
+        roleId: roles.find((r) => r.name === "ENGINEER")!.id,
+        pointIds: [],
+      },
+    })
+  ).id;
+  await prisma.warehouse.update({
+    where: { id: van },
+    data: { keeperEmployeeId: engineerEmployeeId },
+  });
+  otherVan = (
+    await prisma.warehouse.create({
+      data: { operatorId, name: "Van 2", kind: "VAN" },
     })
   ).id;
 });
@@ -518,10 +551,116 @@ describe("readStock — what the keeper and the engineer look at", () => {
     expect(vanRow.below).toBe(false);
 
     expect(view.openRequests).toHaveLength(1);
-    expect(view.warehouses.map((w) => w.name).sort()).toEqual(["Central", "Van 1"]);
+    expect(view.warehouses.map((w) => w.name).sort()).toEqual(["Central", "Van 1", "Van 2"]);
   });
 
   it("says nothing about another network's store", async () => {
     await expect(readStock(operatorId, strangerUserId)).rejects.toThrow(StockError);
+  });
+});
+
+describe("US-49 — the engineer's own hands on the stores", () => {
+  it("lets an engineer issue a part to a work order", async () => {
+    await receiveStock({ partId: cableId, warehouseId: van, qty: 2, actorId: ownerUserId });
+
+    const movement = await issueToWorkOrder({
+      partId: cableId,
+      warehouseId: van,
+      qty: 1,
+      workOrderId,
+      actorId: engineerUserId,
+    });
+
+    expect(movement.kind).toBe("ISSUE");
+    expect(movement.actorId).toBe(engineerUserId);
+    const item = await prisma.stockItem.findUniqueOrThrow({
+      where: { warehouseId_partId: { warehouseId: van, partId: cableId } },
+    });
+    expect(item.qty).toBe(1);
+  });
+
+  it("writes an audit entry for the movement", async () => {
+    await receiveStock({ partId: cableId, warehouseId: van, qty: 1, actorId: ownerUserId });
+    const movement = await issueToWorkOrder({
+      partId: cableId,
+      warehouseId: van,
+      qty: 1,
+      workOrderId,
+      actorId: engineerUserId,
+    });
+
+    const entry = await prisma.auditLog.findFirst({
+      where: { entity: "StockMovement", entityId: movement.id },
+    });
+    expect(entry?.action).toBe("stock.movement.ISSUE");
+    expect(entry?.actor).toBe(engineerUserId);
+  });
+
+  it("refuses a van that belongs to another engineer", async () => {
+    await receiveStock({
+      partId: cableId,
+      warehouseId: otherVan,
+      qty: 2,
+      actorId: ownerUserId,
+    });
+
+    await expect(
+      issueToWorkOrder({
+        partId: cableId,
+        warehouseId: otherVan,
+        qty: 1,
+        workOrderId,
+        actorId: engineerUserId,
+      }),
+    ).rejects.toThrow(StockError);
+  });
+
+  it("still lets the owner issue from any van", async () => {
+    await receiveStock({
+      partId: cableId,
+      warehouseId: otherVan,
+      qty: 1,
+      actorId: ownerUserId,
+    });
+    await expect(
+      issueToWorkOrder({
+        partId: cableId,
+        warehouseId: otherVan,
+        qty: 1,
+        workOrderId,
+        actorId: ownerUserId,
+      }),
+    ).resolves.toMatchObject({ kind: "ISSUE" });
+  });
+
+  it("gives the last part on the shelf to exactly one of two concurrent issues", async () => {
+    await receiveStock({ partId: cableId, warehouseId: van, qty: 1, actorId: ownerUserId });
+
+    const results = await Promise.allSettled([
+      issueToWorkOrder({
+        partId: cableId,
+        warehouseId: van,
+        qty: 1,
+        workOrderId,
+        actorId: engineerUserId,
+      }),
+      issueToWorkOrder({
+        partId: cableId,
+        warehouseId: van,
+        qty: 1,
+        workOrderId,
+        actorId: engineerUserId,
+      }),
+    ]);
+
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    const item = await prisma.stockItem.findUniqueOrThrow({
+      where: { warehouseId_partId: { warehouseId: van, partId: cableId } },
+    });
+    expect(item.qty).toBe(0);
+    const issues = await prisma.stockMovement.count({
+      where: { partId: cableId, kind: "ISSUE" },
+    });
+    expect(issues).toBe(1);
   });
 });
