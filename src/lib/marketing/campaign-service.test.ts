@@ -40,6 +40,17 @@ const base = {
   zoneId: "",
 };
 
+/** §51 — компенсация за неудобство, которую выдаёт поддержка. */
+const compensation = {
+  name: "Sorry about that",
+  trigger: "COMPENSATION" as const,
+  giftKwh: 5,
+  validityDays: 30,
+  budgetKwh: 100,
+  oncePerClient: false,
+  zoneId: "",
+};
+
 beforeAll(async () => {
   await wipe();
   zoneId = (
@@ -48,6 +59,7 @@ beforeAll(async () => {
     })
   ).id;
   base.zoneId = zoneId;
+  compensation.zoneId = zoneId;
 
   const user = async (name: string) =>
     (
@@ -378,6 +390,30 @@ describe("the rest of §42's constructor", () => {
     await expect(
       createCampaign(operatorId, ownerUserId, { ...base, promoCode: "FIRSTCHARGE" }),
     ).rejects.toThrow("Only a promo-code campaign");
+  });
+
+  // §51 — компенсация сети одна: две активные сделали бы выбор монеткой.
+  it("refuses a second active compensation campaign in one network", async () => {
+    const first = await createCampaign(operatorId, ownerUserId, compensation);
+    await setCampaignStatus(first.id, ownerUserId, "ACTIVE");
+    const second = await createCampaign(operatorId, ownerUserId, compensation);
+    await expect(setCampaignStatus(second.id, ownerUserId, "ACTIVE")).rejects.toThrow(
+      /one compensation/i,
+    );
+  });
+
+  it("lets a compensation campaign replace a paused one", async () => {
+    const first = await createCampaign(operatorId, ownerUserId, compensation);
+    await setCampaignStatus(first.id, ownerUserId, "ACTIVE");
+    await setCampaignStatus(first.id, ownerUserId, "PAUSED");
+    const second = await createCampaign(operatorId, ownerUserId, compensation);
+    await expect(setCampaignStatus(second.id, ownerUserId, "ACTIVE")).resolves.toBeTruthy();
+  });
+
+  it("a compensation is measured in kWh, not in free bookings", async () => {
+    await expect(
+      createCampaign(operatorId, ownerUserId, { ...compensation, freeBooking: true }),
+    ).rejects.toThrow(/free booking/i);
   });
 
   it("refuses to start a campaign whose gifts have all been given out", async () => {

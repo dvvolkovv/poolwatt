@@ -119,6 +119,17 @@ async function validate(
     if (gift !== undefined && !(gift > 0) && !booking) {
       throw new CampaignError("The gift has to be more than zero kWh, or a free booking");
     }
+
+    // §51 — компенсация за неудобство это кВт·ч. Бесплатная бронь на
+    // сломанной станции не компенсация, а второе обещание того же.
+    if (trigger === "COMPENSATION") {
+      if (booking) {
+        throw new CampaignError("A compensation is measured in kWh, not in a free booking");
+      }
+      if (gift !== undefined && !(gift > 0)) {
+        throw new CampaignError("A compensation has to be more than zero kWh");
+      }
+    }
   }
 
   if (
@@ -324,6 +335,25 @@ export async function setCampaignStatus(
   }
 
   if (status === "ACTIVE") {
+    // §51 говорит о компенсации сети в единственном числе. Две активные
+    // сделали бы выбор монеткой при каждой выдаче.
+    if (campaign.trigger === "COMPENSATION") {
+      const other = await prisma.campaign.findFirst({
+        where: {
+          operatorId: campaign.operatorId,
+          trigger: "COMPENSATION",
+          status: "ACTIVE",
+          id: { not: campaign.id },
+        },
+        select: { name: true },
+      });
+      if (other) {
+        throw new CampaignError(
+          `A network runs one compensation at a time; "${other.name}" is the active one`,
+        );
+      }
+    }
+
     const left = roundKwh(num(campaign.budgetKwh) - num(campaign.issuedKwh));
     // A cashback campaign has no fixed gift to measure the remainder
     // against; any budget at all is enough to pay somebody back.
