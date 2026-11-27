@@ -98,11 +98,21 @@ export function WorkOrderSiteWork({
   const [pending, startTransition] = useTransition();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Сервер мог отрисовать другое: очередь досылает отметки и дёргает
-  // `router.refresh()`, и экран должен показать то, что лежит в базе.
-  useEffect(() => setLocal(tasks), [tasks]);
   const drawing = useRef(false);
   const drew = useRef(false);
+
+  // Сервер мог отрисовать другое: очередь досылает отметки и дёргает
+  // `router.refresh()`, и экран должен показать то, что лежит в базе. Без
+  // связи досыла нет, значит и обновления нет — отметка остаётся на экране,
+  // где её и поставили.
+  useEffect(() => {
+    setLocal(tasks);
+    if (signature) {
+      setSigned(true);
+      setSignerName(signature.signerName);
+      setSignerKind(signature.signerKind);
+    }
+  }, [tasks, signature]);
 
   const closed = status === "DONE" || status === "VERIFIED" || status === "CANCELLED";
   const unanswered = local.filter((t) => t.required && !t.doneAt && !t.skipReason);
