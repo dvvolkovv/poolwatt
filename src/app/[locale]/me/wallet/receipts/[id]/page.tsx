@@ -6,7 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { readReceiptForUser } from "@/lib/exchange/payment-service";
-import { buildReceiptDocument } from "@/lib/receipts/receipt-document";
+import { readReceiptDocument } from "@/lib/receipts/receipt-store";
 import { ReceiptSheet } from "@/components/receipts/receipt-sheet";
 import { readLiveContent } from "@/lib/marketing/content-service";
 import { ContentSection } from "@/components/marketing/content-block";
@@ -31,7 +31,7 @@ export default async function ReceiptPage({
   const allowed = await readReceiptForUser(id, session.user.id, session.user.role === "ADMIN");
   if (!allowed) notFound();
 
-  const doc = await buildReceiptDocument(id);
+  const doc = await readReceiptDocument(id);
   if (!doc) notFound();
 
   const t = await getTranslations("receipt");

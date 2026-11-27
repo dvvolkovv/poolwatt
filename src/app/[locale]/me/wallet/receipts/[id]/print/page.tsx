@@ -5,7 +5,7 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { readReceiptForUser } from "@/lib/exchange/payment-service";
-import { buildReceiptDocument } from "@/lib/receipts/receipt-document";
+import { readReceiptDocument } from "@/lib/receipts/receipt-store";
 import { ReceiptSheet } from "@/components/receipts/receipt-sheet";
 import { AutoPrint } from "@/components/receipts/auto-print";
 
@@ -26,7 +26,7 @@ export default async function ReceiptPrintPage({
 
   const allowed = await readReceiptForUser(id, session.user.id, session.user.role === "ADMIN");
   if (!allowed) notFound();
-  const doc = await buildReceiptDocument(id);
+  const doc = await readReceiptDocument(id);
   if (!doc) notFound();
 
   return (

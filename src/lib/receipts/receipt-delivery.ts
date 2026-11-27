@@ -16,7 +16,8 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { emailText, escapeHtml } from "@/lib/email-i18n";
 import { pushOpen } from "@/lib/exchange/gates";
-import { buildReceiptDocument, type ReceiptDocument } from "./receipt-document";
+import type { ReceiptDocument } from "./receipt-document";
+import { readReceiptDocument } from "./receipt-store";
 
 const BASE = process.env.NEXTAUTH_URL ?? "https://poolwatt.com";
 
@@ -95,7 +96,7 @@ export async function deliverReceipt(
     const wantsEmail = user.receiptEmail && Boolean(user.email) && Boolean(user.emailVerified);
 
     if (wantsEmail) {
-      const doc = await buildReceiptDocument(receipt.id);
+      const doc = await readReceiptDocument(receipt.id);
       if (doc) {
         const mail = await receiptEmail(doc, user.preferredLocale);
         await send(user.email!, mail.subject, mail.html);
