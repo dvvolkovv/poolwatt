@@ -31,6 +31,8 @@ let engineerEmployeeId: string;
 let strangerEmployeeId: string;
 let pointId: string;
 let assetId: string;
+let bareOperatorId: string;
+let barePointId: string;
 let crewIdOfThisNetwork: string;
 let emptyCrewId: string;
 let strangerCrewId: string;
@@ -142,6 +144,30 @@ beforeAll(async () => {
     })
   ).id;
 
+  // Сеть без единого сотрудника: кому-то же надо проверить, что наряд
+  // остаётся `NEW`, а письмо уходит владельцу.
+  const bare = await prisma.chargerOperator.create({
+    data: {
+      slug: `${SLUG}-bare`,
+      displayName: "Network with no staff",
+      claimedById: ownerUserId,
+      claimedAt: new Date(),
+    },
+  });
+  bareOperatorId = bare.id;
+  barePointId = (
+    await prisma.acceptancePoint.create({
+      data: {
+        operatorId: bare.id,
+        type: "CHARGING_STATION",
+        name: "Bare point",
+        status: "PUBLISHED",
+        country: "SK",
+        city: "Nitra",
+      },
+    })
+  ).id;
+
   // §48 — бригады: своя с инженером, своя пустая и чужая.
   crewIdOfThisNetwork = (
     await prisma.crew.create({
@@ -193,14 +219,18 @@ beforeAll(async () => {
 beforeEach(async () => {
   sent.length = 0;
   await prisma.workOrder.deleteMany({
-    where: { OR: [{ operatorId }, { assetId }] },
+    where: { OR: [{ operatorId }, { operatorId: bareOperatorId }, { assetId }] },
   });
   await prisma.assetAlert.deleteMany({ where: { assetId } });
 });
 
 afterAll(async () => {
   await prisma.crew.deleteMany({ where: { operator: { slug: `${SLUG}-other` } } });
-  await prisma.chargerOperator.deleteMany({ where: { slug: `${SLUG}-other` } });
+  await prisma.workOrder.deleteMany({ where: { operator: { slug: `${SLUG}-bare` } } });
+  await prisma.acceptancePoint.deleteMany({ where: { operator: { slug: `${SLUG}-bare` } } });
+  await prisma.chargerOperator.deleteMany({
+    where: { slug: { in: [`${SLUG}-other`, `${SLUG}-bare`] } },
+  });
   await wipe();
   await prisma.user.deleteMany({ where: { username: { startsWith: PREFIX } } });
 });
@@ -347,6 +377,68 @@ describe("assignWorkOrder — §48", () => {
     await expect(
       assignWorkOrder(order.id, { crewId: emptyCrewId }, ownerUserId),
     ).rejects.toThrow(/nobody|empty/i);
+  });
+});
+
+// §48 «наряд создаётся … автоматически по аварии оборудования» плюс критерий
+// US-48 «наряд приходит в течение минуты». Минута адресована инженеру, а не
+// владельцу сети, и ночью диспетчера нет — значит наряд, которого никто не
+// касался руками, должен найти исполнителя сам.
+describe("createWorkOrder — автоматическое назначение", () => {
+  it("assigns an order nobody touched to the best candidate", async () => {
+    const order = await createWorkOrder({
+      operatorId,
+      pointId,
+      type: "REPAIR",
+      title: "Cable damaged",
+      description: "Reported by a customer",
+      autoAssign: true,
+    });
+
+    expect(order.assigneeId).toBe(engineerEmployeeId);
+    expect(order.status).toBe("ASSIGNED");
+  });
+
+  it("records the automatic assignment as the system's", async () => {
+    const order = await createWorkOrder({
+      operatorId,
+      pointId,
+      type: "REPAIR",
+      title: "Audited assignment",
+      description: "x",
+      autoAssign: true,
+    });
+
+    const entry = await prisma.auditLog.findFirst({
+      where: { entity: "WorkOrder", entityId: order.id, action: "workorder.assigned" },
+    });
+    expect(entry?.actor).toBe("system");
+  });
+
+  it("leaves the order NEW when the network has nobody to send", async () => {
+    const order = await createWorkOrder({
+      operatorId: bareOperatorId,
+      pointId: barePointId,
+      type: "REPAIR",
+      title: "Nobody home",
+      description: "x",
+      autoAssign: true,
+    });
+
+    expect(order.assigneeId).toBeNull();
+    expect(order.status).toBe("NEW");
+  });
+
+  it("leaves an alarm on a generation asset unassigned: a company has no network staff", async () => {
+    await prisma.assetAlert.create({
+      data: { assetId, kind: "LINK_LOST", note: "No readings for an hour" },
+    });
+
+    expect(await openWorkOrdersForAlerts({ assetId })).toBe(1);
+    const order = await prisma.workOrder.findFirstOrThrow({ where: { assetId } });
+    expect(order.assigneeId).toBeNull();
+    expect(order.crewId).toBeNull();
+    expect(order.status).toBe("NEW");
   });
 });
 

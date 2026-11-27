@@ -189,6 +189,8 @@ export async function reportProblem(
       partsNeeded: PARTS_BY_PROBLEM[args.problemType] ?? [],
       photos: photoKeys,
       sourceTicketId: ticket.id,
+      // US-48 — заявку никто не распределяет руками; наряд ищет инженера сам.
+      autoAssign: true,
     });
     await prisma.ticket.update({
       where: { id: ticket.id },

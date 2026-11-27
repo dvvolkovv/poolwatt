@@ -18,6 +18,7 @@ import { writeAudit } from "@/lib/exchange/audit";
 import { pushOpen } from "@/lib/exchange/gates";
 import { checklistBlocking } from "./work-order-checklist";
 import { readSignature } from "./work-order-media";
+import { suggestAssignees } from "./assignment";
 
 export class WorkOrderError extends Error {}
 
@@ -66,6 +67,13 @@ export interface CreateWorkOrderArgs {
   photos?: string[];
   sourceAlertId?: string | null;
   sourceTicketId?: string | null;
+  /**
+   * US-48 — «наряд приходит в течение минуты». Наряд, родившийся из аварии
+   * или из заявки клиента, никто не назначает руками, и ночью диспетчера
+   * нет: пусть сам найдёт исполнителя по региону и загрузке. Ручное
+   * создание этого не делает — диспетчер стоит рядом и выбирает.
+   */
+  autoAssign?: boolean;
 }
 
 export async function createWorkOrder(args: CreateWorkOrderArgs): Promise<WorkOrder> {
@@ -99,7 +107,36 @@ export async function createWorkOrder(args: CreateWorkOrderArgs): Promise<WorkOr
     action: "workorder.created",
     after: { type: order.type, priority: order.priority, title: order.title },
   });
+
+  if (args.autoAssign) {
+    const assigned = await autoAssign(order.id);
+    if (assigned) return assigned;
+  }
   return order;
+}
+
+/**
+ * Отдать наряд первому кандидату подбора §48. Возвращает наряд, если кого-то
+ * нашли, иначе null — и тогда наряд остаётся `NEW`, а письмо уходит владельцу
+ * сети, как было до этого.
+ *
+ * Подбор не должен уронить создание: наряд без исполнителя лучше, чем
+ * отсутствующий наряд, поэтому ошибка здесь только пишется в лог.
+ */
+export async function autoAssign(workOrderId: string): Promise<WorkOrder | null> {
+  try {
+    const candidates = await suggestAssignees(workOrderId);
+    const best = candidates[0];
+    if (!best) return null;
+    return await assignWorkOrder(
+      workOrderId,
+      best.kind === "crew" ? { crewId: best.id } : { employeeId: best.id },
+      "system",
+    );
+  } catch (err) {
+    console.error(`[work-orders] could not pick an assignee for ${workOrderId}`, err);
+    return null;
+  }
 }
 
 /** Narrows a platform-wide sweep to one owner or one asset. */
@@ -156,6 +193,7 @@ export async function openWorkOrdersForAlerts(scope: WorkScope = {}): Promise<nu
           .join("\n"),
         partsNeeded: PARTS_BY_ALERT[alert.kind] ?? [],
         sourceAlertId: alert.id,
+        autoAssign: true,
       });
       opened += 1;
     } catch (err) {
