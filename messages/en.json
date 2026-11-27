@@ -2473,6 +2473,7 @@
       "kindGIFT": "Gift"
     },
     "sections": {
+      "work": "Work orders",
       "station": "My station",
       "coop": "Cooperative",
       "bookings": "Bookings",
@@ -2789,6 +2790,35 @@
         "saving": "Saving…",
         "saved": "Saved"
       }
+    },
+    "work": {
+      "title": "Work orders",
+      "empty": "Nothing open for you",
+      "where": "Where",
+      "howToFind": "How to find it",
+      "fault": "The fault",
+      "parts": "Bring",
+      "photos": "Photos",
+      "issue": "Write off a part",
+      "warehouse": "From",
+      "mine": "my van",
+      "part": "Part",
+      "nothingHere": "Nothing on this shelf",
+      "onShelf": "on the shelf",
+      "qty": "How many",
+      "serial": "Serial number",
+      "note": "Note",
+      "send": "Write it off",
+      "snapshotAt": "Shelves as of {at}",
+      "queued": "Not sent yet",
+      "queuedHint": "Saved on this phone. It will go as soon as there is a signal.",
+      "sendNow": "Send now",
+      "sending": "Sending…",
+      "rejected": "Refused",
+      "dismiss": "Remove",
+      "offline": "No signal",
+      "statusTitle": "Status",
+      "statusOffline": "A status change needs a signal — the write-off does not."
     }
   },
   "route": {

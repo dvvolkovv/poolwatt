@@ -12,6 +12,7 @@
 export type MobileTab = "home" | "wallet" | "charge" | "more" | "profile";
 
 export type MobileSection =
+  | "work"
   | "station"
   | "coop"
   | "bookings"
@@ -24,6 +25,8 @@ export interface ShellCapabilities {
   signedIn: boolean;
   hasAsset: boolean;
   isCoopMember: boolean;
+  /** §47 — сотрудник сети с правом видеть наряды. Его экран — US-49. */
+  isStaff: boolean;
 }
 
 /** A visitor gets §20's "карта зарядных станций, цены, регистрация". */
@@ -49,6 +52,8 @@ export const TAB_HREF: Record<MobileTab, string> = {
 export function moreSections(caps: ShellCapabilities): MobileSection[] {
   if (!caps.signedIn) return [];
   const sections: MobileSection[] = [];
+  // Наряды впереди всего: для инженера это работа, а не настройка.
+  if (caps.isStaff) sections.push("work");
   if (caps.hasAsset) sections.push("station");
   if (caps.isCoopMember) sections.push("coop");
   // Брони идут до счёта и карты: ими пользуются сегодня, а счёт и карта
@@ -58,6 +63,7 @@ export function moreSections(caps: ShellCapabilities): MobileSection[] {
 }
 
 export const SECTION_HREF: Record<MobileSection, string> = {
+  work: "/work-orders",
   station: "/station",
   coop: "/coop",
   bookings: "/bookings",

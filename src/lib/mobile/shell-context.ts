@@ -14,6 +14,8 @@ export interface ShellContext {
   status: UserStatus;
   hasAsset: boolean;
   isCoopMember: boolean;
+  /** §47 — сотрудник сети: хаб показывает ему наряды (US-48, US-49). */
+  isStaff: boolean;
   wallets: WalletView[];
   /** Every zone added up: the figure §22.2 shows big. */
   totalKwh: number;
@@ -22,7 +24,7 @@ export interface ShellContext {
 }
 
 export async function readShellContext(userId: string): Promise<ShellContext> {
-  const [status, asset, member, wallets] = await Promise.all([
+  const [status, asset, member, staff, wallets] = await Promise.all([
     readUserStatus(userId),
     prisma.asset.findFirst({
       where: { company: { ownerUserId: userId } },
@@ -30,6 +32,10 @@ export async function readShellContext(userId: string): Promise<ShellContext> {
     }),
     prisma.coopMember.findFirst({
       where: { userId, status: CoopMemberStatus.ACTIVE, shares: { gt: 0 } },
+      select: { id: true },
+    }),
+    prisma.employee.findFirst({
+      where: { userId, role: { permissions: { has: "workorders.read" } } },
       select: { id: true },
     }),
     readWallets(userId),
@@ -44,6 +50,7 @@ export async function readShellContext(userId: string): Promise<ShellContext> {
     status,
     hasAsset: Boolean(asset),
     isCoopMember: Boolean(member),
+    isStaff: Boolean(staff),
     wallets,
     totalKwh,
     primary,

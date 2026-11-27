@@ -2473,6 +2473,7 @@
       "kindGIFT": "Darček"
     },
     "sections": {
+      "work": "Zákazky",
       "station": "Moja stanica",
       "coop": "Družstvo",
       "bookings": "Rezervácie",
@@ -2789,6 +2790,35 @@
         "saving": "Ukladáme…",
         "saved": "Uložené"
       }
+    },
+    "work": {
+      "title": "Zákazky",
+      "empty": "Žiadne otvorené zákazky",
+      "where": "Kde",
+      "howToFind": "Ako to nájsť",
+      "fault": "Porucha",
+      "parts": "Vziať s sebou",
+      "photos": "Fotografie",
+      "issue": "Odpísať súčiastku",
+      "warehouse": "Odkiaľ",
+      "mine": "moje auto",
+      "part": "Súčiastka",
+      "nothingHere": "Na tomto sklade nič nie je",
+      "onShelf": "na sklade",
+      "qty": "Koľko",
+      "serial": "Výrobné číslo",
+      "note": "Poznámka",
+      "send": "Odpísať",
+      "snapshotAt": "Zásoby k {at}",
+      "queued": "Neodoslané",
+      "queuedHint": "Uložené v telefóne. Odošle sa, len čo bude signál.",
+      "sendNow": "Odoslať teraz",
+      "sending": "Odosielam…",
+      "rejected": "Zamietnuté",
+      "dismiss": "Odstrániť",
+      "offline": "Bez signálu",
+      "statusTitle": "Stav",
+      "statusOffline": "Zmena stavu potrebuje signál — odpis nie."
     }
   },
   "route": {

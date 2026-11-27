@@ -25,24 +25,24 @@ describe("visibleTabs — §20", () => {
 describe("moreSections — §22", () => {
   it("offers a visitor nothing: every section needs an account", () => {
     expect(
-      moreSections({ signedIn: false, hasAsset: false, isCoopMember: false }),
+      moreSections({ signedIn: false, hasAsset: false, isCoopMember: false, isStaff: false }),
     ).toEqual([]);
   });
 
   it("offers a plain account bookings, the account, the card, contacts and roaming", () => {
     expect(
-      moreSections({ signedIn: true, hasAsset: false, isCoopMember: false }),
+      moreSections({ signedIn: true, hasAsset: false, isCoopMember: false, isStaff: false }),
     ).toEqual(["bookings", "account", "card", "contacts", "roaming"]);
   });
 
   it("puts bookings before the account and the card, which still wait for the EMI", () => {
-    const sections = moreSections({ signedIn: true, hasAsset: false, isCoopMember: false });
+    const sections = moreSections({ signedIn: true, hasAsset: false, isCoopMember: false, isStaff: false });
     expect(sections.indexOf("bookings")).toBeLessThan(sections.indexOf("account"));
   });
 
   it("puts the station first for a prosumer", () => {
     expect(
-      moreSections({ signedIn: true, hasAsset: true, isCoopMember: false })[0],
+      moreSections({ signedIn: true, hasAsset: true, isCoopMember: false, isStaff: false })[0],
     ).toBe("station");
   });
 
@@ -51,6 +51,7 @@ describe("moreSections — §22", () => {
       signedIn: true,
       hasAsset: true,
       isCoopMember: true,
+      isStaff: false,
     });
     expect(sections).toContain("station");
     expect(sections).toContain("coop");
@@ -58,7 +59,31 @@ describe("moreSections — §22", () => {
 
   it("gives a member without a station no station section", () => {
     expect(
-      moreSections({ signedIn: true, hasAsset: false, isCoopMember: true }),
+      moreSections({ signedIn: true, hasAsset: false, isCoopMember: true, isStaff: false }),
     ).not.toContain("station");
+  });
+});
+
+describe("moreSections — US-49's engineer", () => {
+  const base = { signedIn: true, hasAsset: false, isCoopMember: false };
+
+  it("offers work orders to staff and to nobody else", () => {
+    expect(moreSections({ ...base, isStaff: true })).toContain("work");
+    expect(moreSections({ ...base, isStaff: false })).not.toContain("work");
+  });
+
+  it("puts work orders first: for an engineer it is the job, not a setting", () => {
+    expect(moreSections({ ...base, isStaff: true })[0]).toBe("work");
+  });
+
+  it("puts work orders before the station for somebody who is both", () => {
+    const sections = moreSections({ ...base, hasAsset: true, isStaff: true });
+    expect(sections.indexOf("work")).toBeLessThan(sections.indexOf("station"));
+  });
+
+  it("shows a visitor nothing at all, staff or not", () => {
+    expect(
+      moreSections({ signedIn: false, hasAsset: true, isCoopMember: true, isStaff: true }),
+    ).toEqual([]);
   });
 });
