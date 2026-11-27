@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => {
       environment: "node",
       setupFiles: ["./src/test-setup.ts"],
       clearMocks: true,
+      // Nothing in a test run may post real mail: the box's own keys are in
+      // this environment. `email.test.ts` turns it off for itself.
+      env: { MAIL_STUB: "1" },
       exclude: ["**/node_modules/**", "**/dist/**", "**/.next/**", "tests/e2e/**"],
     },
     resolve: {

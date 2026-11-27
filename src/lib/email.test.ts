@@ -25,6 +25,8 @@ beforeEach(() => {
   for (const k of ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "EMAIL_FROM", "EMAIL_REPLY_TO", "RESEND_API_KEY"]) {
     vi.stubEnv(k, "");
   }
+  // This file is about the transports, so the run-wide stub is off here.
+  vi.stubEnv("MAIL_STUB", "");
   createTransport.mockReturnValue({ sendMail });
   sendMail.mockResolvedValue({ messageId: "1" });
   resendSend.mockResolvedValue({ data: { id: "1" }, error: null });

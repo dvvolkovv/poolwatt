@@ -58,11 +58,13 @@ function htmlToText(html: string): string {
 
 export async function sendEmail({ to, subject, html }: OutgoingEmail): Promise<void> {
   // The test suite runs against the real environment of this box, keys
-  // included, so without this line every service that notifies somebody
+  // included, so without this switch every service that notifies somebody
   // posted real mail to invented addresses like `test_x@test.local` — slow,
-  // and bouncing in the owner's own inbox.
-  if (process.env.NODE_ENV === "test") {
-    console.log(`[mail stub:test] to ${to}: ${subject}`);
+  // and bouncing in the owner's own inbox. `MAIL_STUB` is set for the whole
+  // vitest run (see `vitest.config.ts`); the tests of this file turn it off
+  // to exercise the transports themselves.
+  if (process.env.MAIL_STUB === "1") {
+    console.log(`[mail stub] to ${to}: ${subject}`);
     return;
   }
 
