@@ -16,6 +16,8 @@ import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/exchange/audit";
 import { pushOpen } from "@/lib/exchange/gates";
+import { checklistBlocking } from "./work-order-checklist";
+import { readSignature } from "./work-order-media";
 
 export class WorkOrderError extends Error {}
 
@@ -222,6 +224,22 @@ export async function advanceWorkOrder(
 
   if (!NEXT_STATUSES[order.status].includes(next)) {
     throw new WorkOrderError(`A work order cannot go from ${order.status} to ${next}`);
+  }
+
+  // §48 «чек-лист работ … подпись, закрытие». Чек-лист, который закрытие не
+  // спрашивает, — украшение, а подпись — единственное свидетельство, что
+  // работу приняли. Отменённый наряд ни то ни другое не держит: его не
+  // делали.
+  if (next === WorkOrderStatus.DONE) {
+    const blocking = await checklistBlocking(workOrderId);
+    if (blocking.length > 0) {
+      throw new WorkOrderError(
+        `The checklist still has no answer for: ${blocking.map((t) => t.title).join("; ")}`,
+      );
+    }
+    if (!(await readSignature(workOrderId))) {
+      throw new WorkOrderError("A finished order needs a signature of whoever accepted the work");
+    }
   }
 
   const updated = await prisma.workOrder.update({

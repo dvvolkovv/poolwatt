@@ -18,6 +18,8 @@ import {
   openWorkOrdersForAlerts,
 } from "./work-order-service";
 import { inviteEmployee } from "@/lib/staff/staff-service";
+import { ensureChecklist, skipTask, tickTask } from "./work-order-checklist";
+import { saveSignature } from "./work-order-media";
 
 const PREFIX = "test_wo_";
 const SLUG = `${PREFIX}net`;
@@ -298,8 +300,27 @@ describe("advanceWorkOrder — the statuses of §48", () => {
     return assignWorkOrder(order.id, engineerEmployeeId, ownerUserId);
   }
 
+  /**
+   * §48 — закрытие спрашивает чек-лист и подпись. Фикстуры дают и то и
+   * другое; что бывает без них, проверяет отдельный describe ниже.
+   */
+  async function workedOnSite(orderId: string) {
+    const tasks = await ensureChecklist(orderId);
+    for (const task of tasks.filter((t) => t.required)) await tickTask(task.id, ownerUserId);
+    await saveSignature(orderId, {
+      signerKind: "ENGINEER",
+      signerName: "Fixture engineer",
+      bytes: Buffer.concat([
+        Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+        Buffer.alloc(16, 2),
+      ]),
+      signedById: ownerUserId,
+    });
+  }
+
   it("walks новый → назначен → в пути → в работе → выполнен → проверен", async () => {
     let order = await assigned();
+    await workedOnSite(order.id);
     for (const next of ["EN_ROUTE", "IN_PROGRESS", "DONE", "VERIFIED"] as const) {
       order = await advanceWorkOrder(order.id, next, ownerUserId, null);
       expect(order.status).toBe(next);
@@ -333,6 +354,7 @@ describe("advanceWorkOrder — the statuses of §48", () => {
 
   it("keeps the engineer's report on the order", async () => {
     let order = await assigned();
+    await workedOnSite(order.id);
     order = await advanceWorkOrder(order.id, "EN_ROUTE", ownerUserId, null);
     order = await advanceWorkOrder(order.id, "IN_PROGRESS", ownerUserId, null);
     order = await advanceWorkOrder(order.id, "DONE", ownerUserId, "Replaced the cable, tested");
@@ -408,5 +430,83 @@ describe("notifyPendingWorkOrders — within a minute (US-48)", () => {
 
     const stored = await prisma.workOrder.findUniqueOrThrow({ where: { id: order.id } });
     expect(stored.notifiedAt).toBeNull();
+  });
+});
+
+// §48 — «чек-лист работ … подпись, закрытие». Чек-лист, который закрытие не
+// спрашивает, — украшение, а подпись — единственное свидетельство, что работу
+// приняли.
+describe("closing a work order asks for the checklist and the signature", () => {
+  const PNG = Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    Buffer.alloc(16, 4),
+  ]);
+
+  async function inProgress() {
+    const order = await createWorkOrder({
+      operatorId,
+      pointId,
+      type: "REPAIR",
+      title: "Closing rules",
+      description: "x",
+    });
+    const assignedOrder = await assignWorkOrder(order.id, engineerEmployeeId, ownerUserId);
+    return advanceWorkOrder(assignedOrder.id, "IN_PROGRESS", ownerUserId, null);
+  }
+
+  async function sign(orderId: string) {
+    await saveSignature(orderId, {
+      signerKind: "SITE_CONTACT",
+      signerName: "Jana Horváthová",
+      bytes: PNG,
+      signedById: ownerUserId,
+    });
+  }
+
+  it("refuses while a required item has no answer", async () => {
+    const order = await inProgress();
+    await ensureChecklist(order.id);
+    await sign(order.id);
+    await expect(
+      advanceWorkOrder(order.id, "DONE", ownerUserId, "done"),
+    ).rejects.toThrow(/checklist/i);
+  });
+
+  it("refuses without a signature", async () => {
+    const order = await inProgress();
+    const tasks = await ensureChecklist(order.id);
+    for (const task of tasks.filter((t) => t.required)) await tickTask(task.id, ownerUserId);
+    await expect(
+      advanceWorkOrder(order.id, "DONE", ownerUserId, "done"),
+    ).rejects.toThrow(/signature/i);
+  });
+
+  it("closes once every item is answered and somebody signed", async () => {
+    const order = await inProgress();
+    const tasks = await ensureChecklist(order.id);
+    const required = tasks.filter((t) => t.required);
+    for (const task of required.slice(0, -1)) await tickTask(task.id, ownerUserId);
+    // Пропуск с объяснением — тоже ответ.
+    await skipTask(required[required.length - 1].id, ownerUserId, "the switchboard was locked");
+    await sign(order.id);
+
+    const done = await advanceWorkOrder(order.id, "DONE", ownerUserId, "cable replaced");
+    expect(done.status).toBe("DONE");
+  });
+
+  it("does not hold a cancelled order to either: it was not done", async () => {
+    const order = await inProgress();
+    await ensureChecklist(order.id);
+    const cancelled = await advanceWorkOrder(order.id, "CANCELLED", ownerUserId, "nothing wrong");
+    expect(cancelled.status).toBe("CANCELLED");
+  });
+
+  it("does not hold an order nobody ever opened on site", async () => {
+    // Чек-листа нет: спрашивать за список, который человеку не показали,
+    // нельзя. Подпись всё равно нужна — её спрашивают всегда.
+    const order = await inProgress();
+    await sign(order.id);
+    const done = await advanceWorkOrder(order.id, "DONE", ownerUserId, "closed from the office");
+    expect(done.status).toBe("DONE");
   });
 });
