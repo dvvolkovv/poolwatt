@@ -317,8 +317,13 @@ describe("nearestWorkingPoints — the offer right after (US-53)", () => {
   it("offers the nearest free points with the same plug, nearest first", async () => {
     const offered = await nearestWorkingPoints(brokenPointId, "CCS2");
 
-    expect(offered.map((p) => p.id)).toEqual([nearbyFreeId, farFreeId]);
-    expect(offered[0].distanceM).toBeLessThan(offered[1].distanceM!);
+    // Поиск §51.6 географический и смотрит на весь мир, а не на один набор
+    // данных: другие наборы ставят свои пункты рядом с этими же
+    // координатами. Поэтому проверяется порядок **своих** пунктов, а не то,
+    // что в ответе больше никого нет.
+    const mine = offered.filter((p) => [nearbyFreeId, farFreeId].includes(p.id));
+    expect(mine.map((p) => p.id)).toEqual([nearbyFreeId, farFreeId]);
+    expect(mine[0].distanceM).toBeLessThan(mine[1].distanceM!);
   });
 
   it("leaves out the busy one and the wrong plug", async () => {

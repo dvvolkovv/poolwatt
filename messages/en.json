@@ -1678,7 +1678,21 @@
       "DONE": "Done",
       "VERIFIED": "Verified",
       "CANCELLED": "Cancelled"
-    }
+    },
+    "checklist": "Checklist",
+    "skip": "Skip",
+    "skipReason": "Why it was skipped",
+    "skipped": "Skipped",
+    "save": "Save",
+    "cancel": "Cancel",
+    "photosBefore": "Photos before the work",
+    "photosAfter": "Photos after the work",
+    "noPhotos": "No photos",
+    "signature": "Signature",
+    "noSignature": "Nobody has signed the work off yet",
+    "signedBy": "Signed by",
+    "signerSiteContact": "site representative",
+    "signerEngineer": "the engineer, for themselves"
   },
   "report": {
     "title": "Report a problem",

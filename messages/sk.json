@@ -1678,7 +1678,21 @@
       "DONE": "Hotovo",
       "VERIFIED": "Overené",
       "CANCELLED": "Zrušené"
-    }
+    },
+    "checklist": "Kontrolný zoznam prác",
+    "skip": "Preskočiť",
+    "skipReason": "Prečo bolo preskočené",
+    "skipped": "Preskočené",
+    "save": "Uložiť",
+    "cancel": "Zrušiť",
+    "photosBefore": "Fotografie pred prácou",
+    "photosAfter": "Fotografie po práci",
+    "noPhotos": "Žiadne fotografie",
+    "signature": "Podpis",
+    "noSignature": "Prácu ešte nikto nepodpísal",
+    "signedBy": "Podpísal",
+    "signerSiteContact": "zástupca objektu",
+    "signerEngineer": "technik za seba"
   },
   "report": {
     "title": "Nahlásiť problém",

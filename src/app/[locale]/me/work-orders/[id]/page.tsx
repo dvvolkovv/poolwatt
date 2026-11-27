@@ -7,6 +7,10 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { WorkOrderPanel } from "@/components/work/work-order-panel";
+import { WorkOrderSitePanel } from "@/components/work/work-order-site-panel";
+import { readWorkOrderForUser } from "@/lib/work/work-order-access";
+import { ensureChecklist, readChecklist } from "@/lib/work/work-order-checklist";
+import { readSignature, readSitePhotos } from "@/lib/work/work-order-media";
 
 export const dynamic = "force-dynamic";
 
@@ -46,12 +50,21 @@ export default async function WorkOrderPage({
   });
   if (!order) notFound();
 
+  // Право на наряд — одно, в `work-order-access.ts`: §47 и тут, и в телефоне,
+  // и в маршруте файла.
+  const seen = await readWorkOrderForUser(order.id, session.user.id, session.user.role);
+  if (!seen) notFound();
   const isOwner =
     order.operator?.claimedById === session.user.id ||
     order.company?.ownerUserId === session.user.id ||
     session.user.role === "ADMIN";
-  const isAssignee = order.assignee?.user.username === session.user.username;
-  if (!isOwner && !isAssignee) notFound();
+
+  // §48 — чек-лист создаётся при первом открытии наряда тем, кто в нём
+  // работает: наряды в базе уже есть, и иначе §48 был бы выполнен только для
+  // будущих.
+  const tasks = seen.canWork ? await ensureChecklist(order.id) : await readChecklist(order.id);
+  const strips = await readSitePhotos(order.id);
+  const signature = await readSignature(order.id);
 
   const t = await getTranslations("workOrders");
 
@@ -117,6 +130,31 @@ export default async function WorkOrderPage({
             VERIFIED: t("status.VERIFIED"),
             CANCELLED: t("status.CANCELLED"),
           },
+        }}
+      />
+
+      <WorkOrderSitePanel
+        workOrderId={order.id}
+        tasks={tasks}
+        before={strips.before}
+        after={strips.after}
+        signature={signature}
+        canWork={seen.canWork}
+        labels={{
+          checklist: t("checklist"),
+          skip: t("skip"),
+          skipReason: t("skipReason"),
+          skipped: t("skipped"),
+          save: t("save"),
+          cancel: t("cancel"),
+          photosBefore: t("photosBefore"),
+          photosAfter: t("photosAfter"),
+          noPhotos: t("noPhotos"),
+          signature: t("signature"),
+          noSignature: t("noSignature"),
+          signedBy: t("signedBy"),
+          signerSiteContact: t("signerSiteContact"),
+          signerEngineer: t("signerEngineer"),
         }}
       />
     </div>

@@ -1678,7 +1678,21 @@
       "DONE": "Выполнен",
       "VERIFIED": "Проверен",
       "CANCELLED": "Отменён"
-    }
+    },
+    "checklist": "Чек-лист работ",
+    "skip": "Пропустить",
+    "skipReason": "Почему пропущено",
+    "skipped": "Пропущено",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "photosBefore": "Фото до работ",
+    "photosAfter": "Фото после работ",
+    "noPhotos": "Снимков нет",
+    "signature": "Подпись",
+    "noSignature": "Работу ещё не подписали",
+    "signedBy": "Подписал",
+    "signerSiteContact": "представитель объекта",
+    "signerEngineer": "инженер за себя"
   },
   "report": {
     "title": "Сообщить о проблеме",
