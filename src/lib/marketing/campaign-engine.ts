@@ -190,19 +190,30 @@ export async function issueCampaignGifts(
   campaign: CampaignRow,
   userId: string,
   paymentId: string | null,
+  /**
+   * Replaces the campaign's own once-per-client key. The birthday gift uses
+   * the year, so one pass a day cannot give two and next year gives one.
+   */
+  onceKey?: string,
 ): Promise<string[]> {
   const ids: string[] = [];
 
   // The energy half: a fixed number of kWh, or the ceiling reserved for a
   // discount of N %.
   if (num(campaign.giftKwh) > 0) {
-    const id = await issueGrant(campaign, userId, paymentId, "ENERGY");
+    const id = await issueGrant(campaign, userId, paymentId, "ENERGY", onceKey);
     if (id) ids.push(id);
   }
 
   // §42 "бесплатная бронь" — no kWh, so it is counted against `budgetGrants`.
   if (campaign.freeBooking) {
-    const id = await issueGrant(campaign, userId, paymentId, "FREE_BOOKING");
+    const id = await issueGrant(
+      campaign,
+      userId,
+      paymentId,
+      "FREE_BOOKING",
+      onceKey ? `${onceKey}-booking` : undefined,
+    );
     if (id) ids.push(id);
   }
 
@@ -214,6 +225,7 @@ async function issueGrant(
   userId: string,
   paymentId: string | null,
   kind: "ENERGY" | "FREE_BOOKING",
+  onceKey?: string,
 ): Promise<string | null> {
   try {
     return await prisma.$transaction((tx) =>
@@ -223,6 +235,7 @@ async function issueGrant(
         amountKwh: kind === "ENERGY" ? num(campaign.giftKwh) : 0,
         action: "promo.granted",
         kind,
+        ...(onceKey ? { onceKey } : {}),
       }),
     );
   } catch (err) {

@@ -29,6 +29,7 @@ import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { expireStaleSessions } from "@/lib/exchange/charge-session";
 import { expireGrants, sweepPendingAwards } from "@/lib/marketing/campaign-engine";
+import { issueBirthdayGifts } from "@/lib/marketing/birthday";
 import { notifyPendingGrants } from "@/lib/marketing/gift-mail";
 import { notifyPendingRestockRequests } from "@/lib/warehouse/restock-mail";
 import { applyCurrentSpotToAllZones, refreshAllZoneSpots } from "@/lib/exchange/spot-service";
@@ -248,6 +249,16 @@ export async function runGrantExpiry(): Promise<void> {
   if (expired.length > 0) log(`campaigns: ${expired.length} gift(s) expired`);
 }
 
+/**
+ * §42 "день рождения клиента" — once a day, early, so the gift is waiting
+ * when the person wakes up. Running it twice gives nothing twice: the key of
+ * the gift is the year (`birthday.ts`).
+ */
+export async function runBirthdayGifts(): Promise<void> {
+  const granted = await issueBirthdayGifts();
+  if (granted.length > 0) log(`campaigns: ${granted.length} birthday gift(s) issued`);
+}
+
 /** §15 — the replay log is a log, not a financial record: 30 days is plenty. */
 export async function runIdempotencyPurge(): Promise<void> {
   const removed = await purgeIdempotencyRecords();
@@ -293,6 +304,11 @@ async function main() {
     void runGrantExpiry();
   });
 
+  // §42 — the birthday pass, at 06:05 local time.
+  cron.schedule("5 6 * * *", () => {
+    void runBirthdayGifts();
+  });
+
   // Daily registry reconciliation (§16.11), at 03:15 local time.
   cron.schedule("15 3 * * *", () => {
     void runReconciliation();
@@ -312,7 +328,7 @@ async function main() {
   await runIntervalClose();
   await runSpotRefresh();
   log(
-    "schedules registered: interval close + spot apply */5 min, alerts, work orders, receipts + reservations + campaign gifts + charge sessions every min, spot refresh :10, gift expiry :20, reconciliation 03:15, idempotency + connector log + webauthn challenge purge 03:40",
+    "schedules registered: interval close + spot apply */5 min, alerts, work orders, receipts + reservations + campaign gifts + charge sessions every min, spot refresh :10, gift expiry :20, birthday gifts 06:05, reconciliation 03:15, idempotency + connector log + webauthn challenge purge 03:40",
   );
 }
 
