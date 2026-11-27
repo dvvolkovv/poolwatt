@@ -485,3 +485,24 @@ describe("rejectClaim", () => {
     await expect(rejectClaim(supportId, claim.id, "no")).rejects.toThrow(ReceiptCorrectionError);
   });
 });
+
+describe("who may open a corrected version", () => {
+  it("lets the person the original belonged to open it", async () => {
+    const receipt = await receiptAt();
+    await readReceiptDocument(receipt.id);
+    const claim = await fileReceiptClaim(accountantId, {
+      receiptId: receipt.id,
+      reason: "REQUISITES",
+      comment: "The legal name on this one is wrong",
+    });
+    const { issuedReceiptId } = await correctReceipt(supportId, {
+      claimId: claim.id,
+      changes: [{ field: "network.legalName", after: "Owner can read a.s." }],
+    });
+
+    // The wallet behind the original belongs to the owner in these fixtures.
+    const { readReceiptForUser } = await import("@/lib/exchange/payment-service");
+    expect(await readReceiptForUser(issuedReceiptId, ownerId, false)).not.toBeNull();
+    expect(await readReceiptForUser(issuedReceiptId, strangerId, false)).toBeNull();
+  });
+});

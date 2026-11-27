@@ -660,7 +660,21 @@ export async function readReceiptForUser(
   const receipt = await readReceipt(receiptId, db);
   if (!receipt) return null;
 
-  if (!isOperator) {
+  // §46 — a corrected version carries no payment of its own (a payment has
+  // one receipt), so it belongs to whoever the document it corrects belonged
+  // to. Without this neither the driver nor the accountant could open the
+  // document that is actually in force.
+  const chain = await db.receipt.findUnique({
+    where: { id: receiptId },
+    select: { correctsReceiptId: true },
+  });
+  const correctsId = chain?.correctsReceiptId ?? null;
+  if (!isOperator && correctsId) {
+    const original = await readReceiptForUser(correctsId, userId, isOperator, db);
+    if (!original) return null;
+  }
+
+  if (!isOperator && !correctsId) {
     const wallets = await db.wallet.findMany({
       where: { ownerUserId: userId },
       select: { id: true },

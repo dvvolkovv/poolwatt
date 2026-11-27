@@ -1041,7 +1041,8 @@
       "externalFeed": "«Dáta siete» tu znamenajú merania podpísané samotnými objektmi. Porovnanie s výkazom prevádzkovateľa siete si vyžaduje zmluvu a prístup k ich dátam; denný súčet za objekt je navrhnutý tak, aby sa tento výkaz dal postaviť vedľa."
     },
     "navPoints": "Karty bodov",
-    "navMarketing": "Obsah partnerov"
+    "navMarketing": "Obsah partnerov",
+    "navReceiptClaims": "Vrátené doklady"
   },
   "claim": {
     "title": "Prevziať {name}",
@@ -1820,7 +1821,10 @@
     "roamingDebit": "Odpísané v domácej zóne",
     "roamingFee": "Provízia koridoru",
     "roamingPartner": "Zúčtovací partner",
-    "cashbackKwh": "Priznaný cashback"
+    "cashbackKwh": "Priznaný cashback",
+    "correctedBy": "Tento doklad bol opravený. V platnosti je doklad {number}.",
+    "correctsDocument": "Toto je opravená verzia dokladu {number}.",
+    "journal": "Žurnál zmien"
   },
   "accounting": {
     "eyebrow": "Účtovníctvo",
@@ -1856,7 +1860,18 @@
     "fiscalYearStart": "Fiškálny rok začína mesiacom",
     "bmdClientNo": "Číslo klienta BMD",
     "save": "Uložiť",
-    "saved": "Uložené"
+    "saved": "Uložené",
+    "returnToSupport": "Vrátiť podpore",
+    "claimReason": "Čo je nesprávne",
+    "claimComment": "Napíšte podpore, čo je nesprávne",
+    "claimSend": "Vrátiť doklad",
+    "claimSent": "Doklad je u podpory.",
+    "claimOpen": "u podpory",
+    "claimCorrected": "opravené",
+    "claimRejected": "zamietnuté",
+    "claimsTitle": "Vrátené doklady",
+    "claimsEmpty": "Podpore nebolo nič vrátené.",
+    "corrections": "Opravy"
   },
   "marketing": {
     "eyebrow": "Marketing partnera",
@@ -2859,5 +2874,43 @@
     "apple": "Apple Maps",
     "waze": "Waze",
     "cancel": "Zrušiť"
+  },
+  "adminReceiptClaims": {
+    "title": "Vrátené doklady",
+    "intro": "Doklady, ktoré účtovník partnera vrátil podpore (§46). Oprava vydá novú verziu dokladu a zapíše zmenu do žurnálu; starý doklad sa neprepisuje a peniaze sa nehýbu.",
+    "empty": "Nič vrátené.",
+    "openReceipt": "Otvoriť doklad",
+    "correct": "Vydať opravenú verziu",
+    "reject": "Zamietnuť",
+    "note": "Poznámka do žurnálu",
+    "rejectReason": "Dôvod zamietnutia",
+    "corrected": "Opravená verzia bola vydaná.",
+    "rejectedDone": "Žiadosť je zamietnutá a účtovník bol informovaný.",
+    "keep": "Polia, ktorých ste sa nedotkli, zostanú ako sú.",
+    "journal": "Žurnál zmien",
+    "newVersion": "nová verzia",
+    "reason": {
+      "REQUISITES": "Údaje firmy",
+      "VAT": "DPH",
+      "SESSION_DETAILS": "Údaje o nabíjaní",
+      "AMOUNTS": "Sumy",
+      "OTHER": "Iné"
+    },
+    "status": {
+      "OPEN": "U podpory",
+      "CORRECTED": "Opravené",
+      "REJECTED": "Zamietnuté"
+    },
+    "field": {
+      "legalName": "Obchodné meno",
+      "regNumber": "IČO",
+      "vatNumber": "DIČ/IČ DPH",
+      "address": "Adresa",
+      "vatRate": "Sadzba DPH, %",
+      "taxNote": "Daňová poznámka",
+      "pointName": "Bod",
+      "pointAddress": "Adresa bodu",
+      "connector": "Konektor"
+    }
   }
 }

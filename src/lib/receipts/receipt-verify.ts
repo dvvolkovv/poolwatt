@@ -7,6 +7,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { num } from "@/lib/exchange/decimal";
+import { reviveDocument } from "./receipt-store";
 
 export interface ReceiptProof {
   number: string | null;
@@ -17,6 +18,13 @@ export interface ReceiptProof {
   currency: string;
   pointName: string | null;
   networkName: string | null;
+  /**
+   * §46 — whoever holds this paper should learn that it is no longer the
+   * document in force, and which one is.
+   */
+  supersededByNumber: string | null;
+  /** Set when the paper in hand is itself a correction. */
+  correctsNumber: string | null;
 }
 
 export async function verifyReceipt(code: string): Promise<ReceiptProof | null> {
@@ -34,8 +42,11 @@ export async function verifyReceipt(code: string): Promise<ReceiptProof | null> 
       paymentId: true,
       tradeId: true,
       reservationId: true,
+      document: true,
       payment: { select: { point: { select: { name: true, operator: { select: { displayName: true } } } } } },
       reservation: { select: { point: { select: { name: true, operator: { select: { displayName: true } } } } } },
+      corrects: { select: { number: true } },
+      correctedBy: { select: { number: true } },
     },
   });
   if (!receipt) return null;
@@ -53,6 +64,10 @@ export async function verifyReceipt(code: string): Promise<ReceiptProof | null> 
             ? "reservation.no_show"
             : "other";
 
+  // A corrected version carries no payment of its own — a payment has one
+  // receipt — so its point and network come from its stored document.
+  const doc = reviveDocument(receipt.document);
+
   return {
     number: receipt.number,
     issuedAt: receipt.issuedAt,
@@ -60,7 +75,9 @@ export async function verifyReceipt(code: string): Promise<ReceiptProof | null> 
     totalKwh: num(receipt.totalKwh),
     totalFiat: num(receipt.totalFiat),
     currency: receipt.currency,
-    pointName: point?.name ?? null,
-    networkName: point?.operator.displayName ?? null,
+    pointName: point?.name ?? doc?.session?.pointName ?? null,
+    networkName: point?.operator.displayName ?? doc?.network?.displayName ?? null,
+    supersededByNumber: receipt.correctedBy?.number ?? null,
+    correctsNumber: receipt.corrects?.number ?? null,
   };
 }

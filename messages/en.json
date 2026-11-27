@@ -1041,7 +1041,8 @@
       "externalFeed": "«Данные сети» here means the readings signed by the assets themselves. Comparing against the grid operator's own statement needs a contract and a feed from them — the per-asset daily total is shaped so that feed can be dropped in beside it."
     },
     "navPoints": "Point cards",
-    "navMarketing": "Partner content"
+    "navMarketing": "Partner content",
+    "navReceiptClaims": "Returned receipts"
   },
   "claim": {
     "title": "Claim {name}",
@@ -1820,7 +1821,10 @@
     "roamingDebit": "Debited in the home zone",
     "roamingFee": "Corridor fee",
     "roamingPartner": "Clearing partner",
-    "cashbackKwh": "Cashback earned"
+    "cashbackKwh": "Cashback earned",
+    "correctedBy": "This document has been corrected. The document in force is {number}.",
+    "correctsDocument": "This is a corrected version of document {number}.",
+    "journal": "Change journal"
   },
   "accounting": {
     "eyebrow": "Accounting",
@@ -1856,7 +1860,18 @@
     "fiscalYearStart": "Fiscal year starts in month",
     "bmdClientNo": "BMD client no.",
     "save": "Save",
-    "saved": "Saved"
+    "saved": "Saved",
+    "returnToSupport": "Return to support",
+    "claimReason": "What is wrong",
+    "claimComment": "Tell support what is wrong",
+    "claimSend": "Return the document",
+    "claimSent": "The document is with support.",
+    "claimOpen": "with support",
+    "claimCorrected": "corrected",
+    "claimRejected": "refused",
+    "claimsTitle": "Returned documents",
+    "claimsEmpty": "Nothing returned to support.",
+    "corrections": "Corrections"
   },
   "marketing": {
     "eyebrow": "Partner marketing",
@@ -2859,5 +2874,43 @@
     "apple": "Apple Maps",
     "waze": "Waze",
     "cancel": "Cancel"
+  },
+  "adminReceiptClaims": {
+    "title": "Returned receipts",
+    "intro": "Receipts a partner's accountant returned to support (§46). A correction issues a new version of the document and writes the change down; it never edits the old one, and it never moves money.",
+    "empty": "Nothing returned.",
+    "openReceipt": "Open the document",
+    "correct": "Issue a corrected version",
+    "reject": "Refuse",
+    "note": "Note for the journal",
+    "rejectReason": "Why it is refused",
+    "corrected": "A corrected version has been issued.",
+    "rejectedDone": "The claim is refused and the accountant has been told.",
+    "keep": "Fields left as they are stay as they are.",
+    "journal": "Change journal",
+    "newVersion": "new version",
+    "reason": {
+      "REQUISITES": "Requisites",
+      "VAT": "VAT",
+      "SESSION_DETAILS": "Session details",
+      "AMOUNTS": "Amounts",
+      "OTHER": "Other"
+    },
+    "status": {
+      "OPEN": "With support",
+      "CORRECTED": "Corrected",
+      "REJECTED": "Refused"
+    },
+    "field": {
+      "legalName": "Legal name",
+      "regNumber": "Reg. number",
+      "vatNumber": "VAT number",
+      "address": "Address",
+      "vatRate": "VAT rate, %",
+      "taxNote": "Tax note",
+      "pointName": "Point",
+      "pointAddress": "Point address",
+      "connector": "Connector"
+    }
   }
 }

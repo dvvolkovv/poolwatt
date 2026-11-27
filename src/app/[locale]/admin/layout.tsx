@@ -94,6 +94,14 @@ export default async function AdminLayout({
               >
                 🧮 {tNav("navReconciliation")}
               </Link>
+              {/* §46 — receipts a partner's accountant returned to support. */}
+              <Link
+                href={`/${locale}/admin/receipt-claims`}
+                prefetch={false}
+                className="text-[14px] text-muted hover:text-foreground py-2 md:py-2.5"
+              >
+                🧾 {tNav("navReceiptClaims")}
+              </Link>
             </nav>
           </aside>
           <section className="min-w-0">{children}</section>

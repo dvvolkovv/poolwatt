@@ -12,6 +12,8 @@ import { prisma } from "@/lib/prisma";
 import { accountingAccess, readLedger } from "@/lib/accounting/ledger";
 import { EXPORT_FORMATS } from "@/lib/accounting/formats";
 import { RequisitesForm } from "./requisites-form";
+import { ReturnReceiptForm } from "@/components/receipts/return-receipt-form";
+import { readClaimsForOperator } from "@/lib/receipts/receipt-claims";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +57,11 @@ export default async function AccountingPage({
   if (!operator) notFound();
 
   const t = await getTranslations("accounting");
+  const tClaims = await getTranslations("adminReceiptClaims");
   const window = monthWindow(month, new Date());
+  // §46 — which documents are already with support, and what came back.
+  const claims = await readClaimsForOperator(id, session.user.id);
+  const claimByReceipt = new Map(claims.map((c) => [c.receiptId, c]));
   const ledger = await readLedger({
     operatorId: id,
     from: window.from,
@@ -159,6 +165,7 @@ export default async function AccountingPage({
                   <th className="px-3 py-2 text-right">{t("net")}</th>
                   <th className="px-3 py-2 text-right">{t("vat")}</th>
                   <th className="px-3 py-2 text-right">{t("gross")}</th>
+                  <th className="px-3 py-2 text-left">{t("corrections")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -171,6 +178,49 @@ export default async function AccountingPage({
                     <td className="num px-3 py-2 text-right">{l.net.toFixed(2)}</td>
                     <td className="num px-3 py-2 text-right">{l.vat.toFixed(2)}</td>
                     <td className="num px-3 py-2 text-right">{l.gross.toFixed(2)}</td>
+                    <td className="px-3 py-2 align-top">
+                      {(() => {
+                        const claim = claimByReceipt.get(l.receiptId);
+                        if (claim?.status === "OPEN") {
+                          return (
+                            <span className="text-[12px] text-muted" data-testid="claim-open">
+                              {t("claimOpen")}
+                            </span>
+                          );
+                        }
+                        return (
+                          <div className="space-y-1">
+                            {l.correctedReceiptId && (
+                              <span className="block text-[12px] text-up" data-testid="line-corrected">
+                                {t("claimCorrected")}
+                              </span>
+                            )}
+                            {claim?.status === "REJECTED" && (
+                              <span className="block text-[12px] text-muted">
+                                {t("claimRejected")}
+                              </span>
+                            )}
+                            <ReturnReceiptForm
+                              receiptId={l.receiptId}
+                              labels={{
+                                open: t("returnToSupport"),
+                                reason: t("claimReason"),
+                                comment: t("claimComment"),
+                                send: t("claimSend"),
+                                sent: t("claimSent"),
+                                reasonNames: {
+                                  REQUISITES: tClaims("reason.REQUISITES"),
+                                  VAT: tClaims("reason.VAT"),
+                                  SESSION_DETAILS: tClaims("reason.SESSION_DETAILS"),
+                                  AMOUNTS: tClaims("reason.AMOUNTS"),
+                                  OTHER: tClaims("reason.OTHER"),
+                                },
+                              }}
+                            />
+                          </div>
+                        );
+                      })()}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -185,10 +235,50 @@ export default async function AccountingPage({
                   <td className="num px-3 py-2 text-right">
                     {ledger.totals.gross.toFixed(2)} {ledger.currency}
                   </td>
+                  <td />
                 </tr>
               </tfoot>
             </table>
           </div>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <h2 className="mb-2 text-[16px] font-semibold">{t("claimsTitle")}</h2>
+        {claims.length === 0 ? (
+          <p className="text-sm text-muted" data-testid="claims-empty">
+            {t("claimsEmpty")}
+          </p>
+        ) : (
+          <ul className="divide-y divide-hairline text-[13px]" data-testid="operator-claims">
+            {claims.map((c) => (
+              <li key={c.id} className="py-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-3">
+                  <span className="num">{c.receiptNumber ?? c.receiptId}</span>
+                  <span className="text-[12px] text-muted">
+                    {tClaims(`reason.${c.reason}`)} · {tClaims(`status.${c.status}`)} ·{" "}
+                    {c.createdAt.toISOString().slice(0, 10)}
+                  </span>
+                </div>
+                <p className="mt-1 text-muted">{c.comment}</p>
+                {c.resolution && (
+                  <p className="mt-1" data-testid="claim-resolution">
+                    {c.resolution}
+                  </p>
+                )}
+                {c.issuedReceiptId && (
+                  <Link
+                    href={`/${locale}/me/wallet/receipts/${c.issuedReceiptId}`}
+                    prefetch={false}
+                    data-testid="claim-new-version"
+                    className="mt-1 inline-block underline hover:text-accent"
+                  >
+                    {c.issuedReceiptNumber ?? tClaims("newVersion")} →
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 

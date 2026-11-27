@@ -10,6 +10,9 @@ import { readReceiptDocument } from "@/lib/receipts/receipt-store";
 import { ReceiptSheet } from "@/components/receipts/receipt-sheet";
 import { readLiveContent } from "@/lib/marketing/content-service";
 import { ContentSection } from "@/components/marketing/content-block";
+import { CorrectionBanner } from "@/components/receipts/correction-banner";
+import { readCorrectionJournal } from "@/lib/receipts/receipt-correction";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +40,16 @@ export default async function ReceiptPage({
   const t = await getTranslations("receipt");
   const tMarketing = await getTranslations("marketing");
 
+  // §46 — which version this is, and what was changed to get here.
+  const chain = await prisma.receipt.findUniqueOrThrow({
+    where: { id },
+    select: {
+      corrects: { select: { id: true, number: true } },
+      correctedBy: { select: { id: true, number: true } },
+    },
+  });
+  const journal = await readCorrectionJournal(id);
+
   // §41 "экран завершения зарядки" — this page is what a driver sees once the
   // session is paid for, so it is where that placement lives. A trade receipt
   // has no point and therefore no network to advertise.
@@ -62,6 +75,17 @@ export default async function ReceiptPage({
           {t("print")}
         </Link>
       </div>
+      <CorrectionBanner
+        locale={locale}
+        correctedBy={chain.correctedBy}
+        corrects={chain.corrects}
+        journal={journal}
+        labels={{
+          correctedBy: t("correctedBy", { number: "{number}" }),
+          correctsDocument: t("correctsDocument", { number: "{number}" }),
+          journal: t("journal"),
+        }}
+      />
       <ReceiptSheet doc={doc} />
 
       <div className="mt-10" data-print-hide>

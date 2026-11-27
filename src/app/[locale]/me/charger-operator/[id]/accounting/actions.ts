@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/exchange/audit";
+import { fileReceiptClaim } from "@/lib/receipts/receipt-claims";
 
 export type SaveResult = { ok?: boolean; formError?: string; fieldErrors?: Record<string, string> };
 
@@ -79,4 +80,34 @@ export async function saveOperatorAccounting(
 
   revalidatePath(`/[locale]/me/charger-operator/[id]/accounting`, "page");
   return { ok: true };
+}
+
+// §46 — "Ошибочный чек или счёт бухгалтер возвращает в поддержку Poolwatt."
+const claimSchema = z.object({
+  receiptId: z.string().min(1),
+  reason: z.enum(["REQUISITES", "VAT", "SESSION_DETAILS", "AMOUNTS", "OTHER"]),
+  comment: z.string().trim().min(10).max(2000),
+});
+
+export async function fileReceiptClaimAction(
+  input: unknown,
+): Promise<{ ok: true } | { ok: false; formError: string }> {
+  const parsed = claimSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, formError: parsed.error.issues[0]?.message ?? "Invalid input." };
+  }
+
+  const session = await auth();
+  if (!session?.user) return { ok: false, formError: "Not authenticated." };
+
+  try {
+    await fileReceiptClaim(session.user.id, parsed.data);
+    revalidatePath("/[locale]/me/charger-operator/[id]/accounting", "page");
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      formError: err instanceof Error ? err.message : "Could not return the document.",
+    };
+  }
 }

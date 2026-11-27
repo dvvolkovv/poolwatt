@@ -9,6 +9,9 @@ import { readReceiptForUser } from "@/lib/exchange/payment-service";
 import { readReceiptDocument } from "@/lib/receipts/receipt-store";
 import { ReceiptSheet } from "@/components/receipts/receipt-sheet";
 import { Screen } from "@/components/mobile/screen";
+import { CorrectionBanner } from "@/components/receipts/correction-banner";
+import { readCorrectionJournal } from "@/lib/receipts/receipt-correction";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -34,10 +37,34 @@ export default async function MobileReceiptScreen({
   if (!doc) notFound();
 
   const t = await getTranslations("app.wallet");
+  const tr = await getTranslations("receipt");
+
+  // §46 — какая это версия документа и что в ней поменяли. Тот же компонент,
+  // что в кабинете: двух рассказов об одном исправлении быть не должно.
+  const chain = await prisma.receipt.findUniqueOrThrow({
+    where: { id },
+    select: {
+      corrects: { select: { id: true, number: true } },
+      correctedBy: { select: { id: true, number: true } },
+    },
+  });
+  const journal = await readCorrectionJournal(id);
 
   return (
     <Screen title={t("receipt")} back={`/${locale}/app/wallet`}>
       <div data-testid="mobile-receipt" className="mt-2">
+        <CorrectionBanner
+          locale={locale}
+          receiptPath={(l, rid) => `/${l}/app/wallet/receipts/${rid}`}
+          correctedBy={chain.correctedBy}
+          corrects={chain.corrects}
+          journal={journal}
+          labels={{
+            correctedBy: tr("correctedBy", { number: "{number}" }),
+            correctsDocument: tr("correctsDocument", { number: "{number}" }),
+            journal: tr("journal"),
+          }}
+        />
         <ReceiptSheet doc={doc} />
       </div>
     </Screen>

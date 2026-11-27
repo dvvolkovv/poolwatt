@@ -51,6 +51,18 @@ export default async function VerifyReceiptPage({
         <Row label={t("kwh")} value={`${proof.totalKwh.toFixed(3)} kWh`} />
         <Row label={t("total")} value={`${proof.totalFiat.toFixed(2)} ${proof.currency}`} strong />
       </dl>
+
+      {/* §46 — the paper in somebody's hand may have been superseded. */}
+      {proof.supersededByNumber && (
+        <p className="mt-4 text-[13px] text-down" data-testid="verify-superseded">
+          {t("correctedBy", { number: proof.supersededByNumber })}
+        </p>
+      )}
+      {proof.correctsNumber && (
+        <p className="mt-4 text-[13px] text-muted" data-testid="verify-corrects">
+          {t("correctsDocument", { number: proof.correctsNumber })}
+        </p>
+      )}
     </main>
   );
 }
