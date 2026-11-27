@@ -366,6 +366,14 @@ export async function notifyPendingWorkOrders(
     orderBy: { createdAt: "asc" },
     include: {
       assignee: { include: { user: { select: { email: true, emailVerified: true } } } },
+      crew: {
+        select: {
+          name: true,
+          members: {
+            select: { employee: { select: { user: { select: { email: true, emailVerified: true } } } } },
+          },
+        },
+      },
       operator: { select: { id: true, email: true, claimedBy: { select: { email: true, emailVerified: true } } } },
       company: { select: { contactEmail: true, owner: { select: { email: true, emailVerified: true } } } },
       point: { select: { addressLine: true, city: true, howToFind: true } },
@@ -377,6 +385,13 @@ export async function notifyPendingWorkOrders(
     const recipients = new Set<string>();
     const assignee = order.assignee?.user;
     if (assignee?.email && assignee.emailVerified) recipients.add(assignee.email);
+    // §48 — наряд бригады: письмо каждому, кто поедет. Если ни у кого почта
+    // не подтверждена, ниже сработает прежняя ветка владельца: наряд, о
+    // котором никто не узнал, хуже наряда, о котором узнал владелец.
+    for (const member of order.crew?.members ?? []) {
+      const user = member.employee.user;
+      if (user.email && user.emailVerified) recipients.add(user.email);
+    }
     // Nobody assigned yet: whoever answers for the equipment hears about it.
     if (recipients.size === 0) {
       const owner = order.operator?.claimedBy ?? order.company?.owner;

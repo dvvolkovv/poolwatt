@@ -33,6 +33,8 @@ let pointId: string;
 let assetId: string;
 let bareOperatorId: string;
 let barePointId: string;
+let secondEmployeeId: string;
+let noMailEmployeeId: string;
 let crewIdOfThisNetwork: string;
 let emptyCrewId: string;
 let strangerCrewId: string;
@@ -87,6 +89,17 @@ beforeAll(async () => {
     where: { username: `${PREFIX}other` },
     update: {},
     create: { username: `${PREFIX}other`, passwordHash: "x" },
+  });
+  // Второй в бригаде — чтобы письмо проверялось на двоих, а не на одном.
+  const secondUser = await prisma.user.upsert({
+    where: { username: `${PREFIX}second` },
+    update: { email: `${PREFIX}second@example.test`, emailVerified: new Date() },
+    create: {
+      username: `${PREFIX}second`,
+      passwordHash: "x",
+      email: `${PREFIX}second@example.test`,
+      emailVerified: new Date(),
+    },
   });
 
   operatorId = (
@@ -169,13 +182,43 @@ beforeAll(async () => {
   ).id;
 
   // §48 — бригады: своя с инженером, своя пустая и чужая.
+  // Инженер без подтверждённой почты: его бригаде письмо отправить некуда.
+  const noMailUser = await prisma.user.upsert({
+    where: { username: `${PREFIX}nomail` },
+    update: { email: null, emailVerified: null },
+    create: { username: `${PREFIX}nomail`, passwordHash: "x" },
+  });
+  noMailEmployeeId = (
+    await inviteEmployee({
+      operatorId,
+      actorUserId: ownerUserId,
+      username: noMailUser.username,
+      roleName: "ENGINEER",
+      pointIds: [],
+    })
+  ).id;
+
+  secondEmployeeId = (
+    await inviteEmployee({
+      operatorId,
+      actorUserId: ownerUserId,
+      username: secondUser.username,
+      roleName: "ENGINEER",
+      pointIds: [],
+    })
+  ).id;
   crewIdOfThisNetwork = (
     await prisma.crew.create({
       data: {
         operatorId,
         name: "WO test crew",
         regions: [],
-        members: { create: [{ employeeId: engineerEmployeeId, lead: true }] },
+        members: {
+          create: [
+            { employeeId: engineerEmployeeId, lead: true },
+            { employeeId: secondEmployeeId },
+          ],
+        },
       },
     })
   ).id;
@@ -535,6 +578,50 @@ describe("notifyPendingWorkOrders — within a minute (US-48)", () => {
     expect(sent[0].subject).toContain("Cable damaged");
     const stored = await prisma.workOrder.findUniqueOrThrow({ where: { id: order.id } });
     expect(stored.notifiedAt).not.toBeNull();
+  });
+
+  // §48 «назначение … бригаде» — письмо адресовано всем, кто поедет.
+  it("mails every member of the assigned crew", async () => {
+    const order = await createWorkOrder({
+      operatorId,
+      pointId,
+      type: "MAINTENANCE",
+      title: "Quarterly check",
+      description: "x",
+    });
+    await assignWorkOrder(order.id, { crewId: crewIdOfThisNetwork }, ownerUserId);
+
+    const count = await notifyMine();
+
+    expect(count).toBe(1);
+    expect(sent.map((s) => s.to).sort()).toEqual([
+      `${PREFIX}engineer@example.test`,
+      `${PREFIX}second@example.test`,
+    ]);
+  });
+
+  it("falls back to the owner when no member confirmed an address", async () => {
+    const quiet = await prisma.crew.create({
+      data: {
+        operatorId,
+        name: "WO quiet crew",
+        regions: [],
+        members: { create: [{ employeeId: noMailEmployeeId }] },
+      },
+    });
+    const order = await createWorkOrder({
+      operatorId,
+      pointId,
+      type: "MAINTENANCE",
+      title: "Nobody reads mail",
+      description: "x",
+    });
+    await assignWorkOrder(order.id, { crewId: quiet.id }, ownerUserId);
+
+    await notifyMine();
+
+    expect(sent.map((s) => s.to)).toContain(`${PREFIX}owner@example.test`);
+    await prisma.crew.delete({ where: { id: quiet.id } });
   });
 
   it("tells the network owner when nobody is assigned yet", async () => {
