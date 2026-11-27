@@ -8,7 +8,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { inviteEmployee } from "@/lib/staff/staff-service";
 import { createWorkOrder } from "./work-order-service";
-import { openLoad, suggestAssignees } from "./assignment";
+import { openLoad, readDispatchQueue, readTeamLoad, suggestAssignees } from "./assignment";
 
 const PREFIX = "test_asg_";
 const SLUG = `${PREFIX}net`;
@@ -285,5 +285,61 @@ describe("suggestAssignees — §48 «с учётом региона и загр
 
   it("knows nothing about an order that does not exist", async () => {
     await expect(suggestAssignees("nope")).resolves.toEqual([]);
+  });
+});
+
+describe("readDispatchQueue — рабочее место диспетчера", () => {
+  it("puts the unassigned orders first and says who has the rest", async () => {
+    await order({ assigneeId: kosice });
+    const unassigned = await order();
+
+    const queue = await readDispatchQueue(operatorId, ownerUserId);
+
+    expect(queue).not.toBeNull();
+    expect(queue![0].id).toBe(unassigned.id);
+    expect(queue![0].assignee).toBeNull();
+    expect(queue![1].assignee).toMatchObject({ kind: "employee" });
+    expect(queue![0].where).toContain("Košice");
+  });
+
+  it("names the crew when the order went to one", async () => {
+    const target = await order({ crewId });
+    const queue = await readDispatchQueue(operatorId, ownerUserId);
+    const row = queue!.find((r) => r.id === target.id);
+    expect(row?.assignee).toMatchObject({ kind: "crew", name: "East crew" });
+  });
+
+  it("leaves closed orders out", async () => {
+    const closed = await order({ assigneeId: kosice });
+    await prisma.workOrder.update({ where: { id: closed.id }, data: { status: "VERIFIED" } });
+    const queue = await readDispatchQueue(operatorId, ownerUserId);
+    expect(queue!.some((r) => r.id === closed.id)).toBe(false);
+  });
+
+  it("shows nothing of somebody else's network", async () => {
+    const outsider = await prisma.user.create({
+      data: { username: `${PREFIX}outsider`, passwordHash: "x" },
+    });
+    await expect(readDispatchQueue(operatorId, outsider.id)).resolves.toBeNull();
+  });
+});
+
+describe("readTeamLoad — «кто чем занят» до открытия наряда", () => {
+  it("lists people and crews with their regions and their load", async () => {
+    await order({ assigneeId: kosice });
+
+    const load = await readTeamLoad(operatorId, ownerUserId);
+
+    const person = load!.find((r) => r.id === kosice);
+    expect(person).toMatchObject({ kind: "employee", regions: ["Košice"], openOrders: 1 });
+    const team = load!.find((r) => r.id === crewId);
+    expect(team).toMatchObject({ kind: "crew", openOrders: 1 });
+  });
+
+  it("shows nothing of somebody else's network", async () => {
+    const outsider = await prisma.user.create({
+      data: { username: `${PREFIX}outsider2`, passwordHash: "x" },
+    });
+    await expect(readTeamLoad(operatorId, outsider.id)).resolves.toBeNull();
   });
 });

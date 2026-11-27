@@ -14,7 +14,7 @@
 
 import { WorkOrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { can, type EmployeeWithRole } from "@/lib/staff/staff-service";
+import { can, readEmployee, type EmployeeWithRole } from "@/lib/staff/staff-service";
 
 export type CandidateKind = "employee" | "crew";
 
@@ -178,5 +178,159 @@ export async function suggestAssignees(workOrderId: string): Promise<Candidate[]
       RANK[a.reason] - RANK[b.reason] ||
       a.openOrders - b.openOrders ||
       a.name.localeCompare(b.name),
+  );
+}
+
+/**
+ * Кто может смотреть очередь сети: владелец или сотрудник с правом читать
+ * наряды. `null` значит 404 — чужой очереди не существует.
+ */
+async function mayDispatch(operatorId: string, userId: string): Promise<boolean | null> {
+  const operator = await prisma.chargerOperator.findUnique({
+    where: { id: operatorId },
+    select: { claimedById: true },
+  });
+  if (!operator) return null;
+  if (operator.claimedById === userId) return true;
+
+  const employee = await readEmployee(operatorId, userId);
+  if (!employee || !can(employee, "workorders.read")) return null;
+  // Назначать — отдельное право: читающему диспетчеру кнопку не показываем.
+  return can(employee, "workorders.write");
+}
+
+export interface QueueRow {
+  id: string;
+  title: string;
+  type: string;
+  priority: string;
+  status: WorkOrderStatus;
+  where: string;
+  city: string | null;
+  assignee: { kind: CandidateKind; name: string } | null;
+  createdAt: string;
+  partsNeeded: string[];
+}
+
+export interface DispatchQueue {
+  rows: QueueRow[];
+  /** Назначать можно, только если право есть; иначе очередь на чтение. */
+  canAssign: boolean;
+}
+
+/**
+ * Очередь открытых нарядов сети — то, с чего диспетчер начинает смену.
+ *
+ * Неназначенные идут первыми: это единственные строки, которые требуют его
+ * решения прямо сейчас. Один и тот же вызов обслуживает страницу и метод
+ * §50, чтобы они не расходились.
+ */
+export async function readDispatchQueue(
+  operatorId: string,
+  userId: string,
+): Promise<QueueRow[] | null> {
+  const queue = await readDispatchBoard(operatorId, userId);
+  return queue?.rows ?? null;
+}
+
+export async function readDispatchBoard(
+  operatorId: string,
+  userId: string,
+): Promise<DispatchQueue | null> {
+  const mayAssign = await mayDispatch(operatorId, userId);
+  if (mayAssign === null) return null;
+
+  const orders = await prisma.workOrder.findMany({
+    where: { operatorId, status: { in: OPEN_STATUSES } },
+    orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+    take: 200,
+    include: {
+      point: { select: { name: true, addressLine: true, city: true } },
+      asset: { select: { name: true, address: true } },
+      assignee: { select: { user: { select: { username: true } } } },
+      crew: { select: { name: true } },
+    },
+  });
+
+  const rows: QueueRow[] = orders.map((o) => ({
+    id: o.id,
+    title: o.title,
+    type: o.type,
+    priority: o.priority,
+    status: o.status,
+    where: [o.point?.name ?? o.asset?.name, o.point?.addressLine ?? o.asset?.address, o.point?.city]
+      .filter(Boolean)
+      .join(" · "),
+    city: o.point?.city ?? null,
+    assignee: o.assignee
+      ? { kind: "employee" as const, name: o.assignee.user.username }
+      : o.crew
+        ? { kind: "crew" as const, name: o.crew.name }
+        : null,
+    createdAt: o.createdAt.toISOString(),
+    partsNeeded: o.partsNeeded,
+  }));
+
+  rows.sort((a, b) => Number(Boolean(a.assignee)) - Number(Boolean(b.assignee)));
+  return { rows, canAssign: mayAssign };
+}
+
+export interface LoadRow {
+  kind: CandidateKind;
+  id: string;
+  name: string;
+  regions: string[];
+  openOrders: number;
+  members: string[];
+}
+
+/**
+ * «Кто чем занят» — то, что диспетчеру нужно до того, как он откроет наряд.
+ * Это не подбор: здесь нет наряда и нет причины, только люди, бригады, их
+ * города и их загрузка.
+ */
+export async function readTeamLoad(
+  operatorId: string,
+  userId: string,
+): Promise<LoadRow[] | null> {
+  if ((await mayDispatch(operatorId, userId)) === null) return null;
+
+  const staff = (await prisma.employee.findMany({
+    where: { operatorId },
+    include: { role: true, user: { select: { username: true } } },
+  })) as (EmployeeWithRole & { user: { username: string } })[];
+  const able = staff.filter((e) => can(e, "workorders.write"));
+  const load = await loadByEmployee(able.map((e) => e.id));
+
+  const crews = await prisma.crew.findMany({
+    where: { operatorId },
+    include: { members: { include: { employee: { include: { user: { select: { username: true } } } } } } },
+  });
+
+  const people: LoadRow[] = able.map((e) => ({
+    kind: "employee",
+    id: e.id,
+    name: e.user.username,
+    regions: e.regions,
+    openOrders: load.get(e.id) ?? 0,
+    members: [],
+  }));
+
+  const ableIds = new Set(able.map((e) => e.id));
+  const teams: LoadRow[] = crews.map((c) => {
+    const working = c.members.filter((m) => ableIds.has(m.employeeId));
+    return {
+      kind: "crew" as const,
+      id: c.id,
+      name: c.name,
+      regions: c.regions,
+      openOrders:
+        working.length === 0 ? 0 : Math.max(...working.map((m) => load.get(m.employeeId) ?? 0)),
+      members: c.members.map((m) => m.employee.user.username),
+    };
+  });
+
+  return [...people, ...teams].sort(
+    (a, b) => b.openOrders - a.openOrders || a.name.localeCompare(b.name),
   );
 }
