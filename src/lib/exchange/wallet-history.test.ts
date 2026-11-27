@@ -34,6 +34,10 @@ async function cleanup() {
     await prisma.campaign.deleteMany({ where: { zoneId: zone.id } });
     await prisma.wallet.deleteMany({ where: { zoneId: zone.id } });
   }
+  await prisma.paymentRefund.deleteMany({
+    where: { wallet: { owner: { username: { startsWith: PREFIX } } } },
+  });
+  await prisma.ticket.deleteMany({ where: { operator: { slug: { startsWith: PREFIX } } } });
   await prisma.campaign.deleteMany({ where: { name: { startsWith: PREFIX } } });
   await prisma.chargerOperator.deleteMany({ where: { slug: { startsWith: PREFIX } } });
   await prisma.user.deleteMany({ where: { username: { startsWith: PREFIX } } });
@@ -257,6 +261,30 @@ beforeAll(async () => {
       issuedAt: new Date("2026-11-09T10:00:00.000Z"),
     },
   });
+
+  // §51 — возврат ошибочного списания по этой зарядке: деньги вернулись на
+  // баланс, и в ленте кошелька это отдельная строка.
+  const ticket = await prisma.ticket.create({
+    data: {
+      operatorId,
+      paymentId: captured.id,
+      reporterId: meId,
+      problemType: "WRONG_PRICE",
+    },
+  });
+  await prisma.paymentRefund.create({
+    data: {
+      paymentId: captured.id,
+      ticketId: ticket.id,
+      walletId: myWalletId,
+      number: "PW-2026-WH0001",
+      amountFiat: new Prisma.Decimal(1.2),
+      currency: "EUR",
+      reason: "wrong tariff",
+      decidedById: friendId,
+      createdAt: new Date("2026-11-10T10:00:00.000Z"),
+    },
+  });
 });
 
 afterAll(async () => {
@@ -268,6 +296,7 @@ describe("readWalletHistory", () => {
   it("merges every kind of operation, newest first", async () => {
     const rows = await readWalletHistory(meId);
     expect(rows.map((r) => r.kind)).toEqual([
+      "REFUND",
       "GIFT",
       "TRANSFER_IN",
       "TRANSFER_OUT",
@@ -288,6 +317,10 @@ describe("readWalletHistory", () => {
     expect(byKind("TRANSFER_OUT").kwh).toBe(-2);
     expect(byKind("TRANSFER_IN").kwh).toBe(3);
     expect(byKind("GIFT").kwh).toBe(5);
+    // Возврат — только деньги: кВт·ч не возвращаются, за ними стоит
+    // настоящая выработка (§8).
+    expect(byKind("REFUND").fiat).toBe(1.2);
+    expect(byKind("REFUND").kwh).toBe(0);
   });
 
   it("leaves out what has not happened", async () => {
@@ -320,7 +353,7 @@ describe("readWalletHistory", () => {
   it("honours the limit", async () => {
     const rows = await readWalletHistory(meId, { limit: 2 });
     expect(rows).toHaveLength(2);
-    expect(rows[0]!.kind).toBe("GIFT");
+    expect(rows[0]!.kind).toBe("REFUND");
   });
 
   it("shows nothing to somebody who has done nothing", async () => {

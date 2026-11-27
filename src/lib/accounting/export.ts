@@ -42,9 +42,21 @@ function isoDate(at: Date): string {
  * input, so it is prefixed before it can be executed on the accountant's
  * machine.
  */
+/**
+ * A number is a number, everything else is text that might be a formula.
+ *
+ * The guard below quotes a leading `-` so a spreadsheet cannot read a cell as
+ * a formula — but a §51 refund is a negative amount, and `'-4,20` is text: the
+ * accountant's own total would silently skip it. So a plain signed decimal
+ * (`-4,20`, `-0,700`) is left alone, and only something that is not just a
+ * number gets the apostrophe.
+ */
+const PLAIN_NUMBER = /^-?\d+(?:[.,]\d+)?$/;
+
 function csvCell(value: string | number): string {
   const raw = String(value);
-  const safe = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+  const dangerous = /^[=+\-@\t\r]/.test(raw) && !PLAIN_NUMBER.test(raw);
+  const safe = dangerous ? `'${raw}` : raw;
   return `"${safe.replace(/"/g, '""')}"`;
 }
 

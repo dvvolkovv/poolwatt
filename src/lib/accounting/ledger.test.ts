@@ -29,6 +29,10 @@ let otherPoint: string;
 let walletId: string;
 
 async function wipe() {
+  await prisma.paymentRefund.deleteMany({ where: { payment: { zone: { code: ZONE } } } });
+  await prisma.ticket.deleteMany({
+    where: { operator: { slug: { in: [SLUG, OTHER_SLUG] } } },
+  });
   await prisma.receipt.deleteMany({ where: { payment: { zone: { code: ZONE } } } });
   await prisma.receipt.deleteMany({
     where: { reservation: { point: { operator: { slug: { in: [SLUG, OTHER_SLUG] } } } } },
@@ -336,3 +340,70 @@ describe("readLedger and corrected documents", () => {
 function roundTo2(v: number): number {
   return Math.round(v * 100) / 100;
 }
+
+// §51 «Ошибочное списание — возврат после проверки поддержкой». Возврат — не
+// исправление чека, а новый факт, и месяц партнёра обязан его видеть: иначе
+// выгрузка навсегда завысит выручку сети, и заметить это будет нечем.
+describe("readLedger and a §51 refund", () => {
+  const MAY = { from: new Date("2026-05-01T00:00:00Z"), to: new Date("2026-06-01T00:00:00Z") };
+  let refundNumber: string;
+
+  beforeAll(async () => {
+    const receipt = await charge(pointA, "2026-05-04T10:00:00Z", 25, 10);
+    const paymentId = receipt.paymentId!;
+    const ticket = await prisma.ticket.create({
+      data: {
+        operatorId,
+        pointId: pointA,
+        paymentId,
+        reporterId: ownerUserId,
+        problemType: "WRONG_PRICE",
+      },
+    });
+    refundNumber = (
+      await prisma.paymentRefund.create({
+        data: {
+          paymentId,
+          ticketId: ticket.id,
+          walletId,
+          number: "PW-2026-RF9001",
+          amountFiat: new Prisma.Decimal(4.2),
+          currency: "EUR",
+          reason: "wrong tariff",
+          decidedById: ownerUserId,
+          createdAt: new Date("2026-05-06T12:00:00Z"),
+        },
+      })
+    ).number;
+  });
+
+  it("is a negative line of its own, with its document number", async () => {
+    const ledger = await readLedger({ operatorId, ...MAY, pointIds: null });
+    const line = ledger.lines.find((l) => l.kind === "refund");
+    expect(line).toBeDefined();
+    expect(line!.documentNumber).toBe(refundNumber);
+    expect(line!.gross).toBe(-4.2);
+    expect(line!.kwh).toBe(0);
+    expect(line!.pointName).toBe("Point A");
+  });
+
+  it("the month sums with the refund taken off", async () => {
+    const ledger = await readLedger({ operatorId, ...MAY, pointIds: null });
+    expect(ledger.totals.gross).toBeCloseTo(10 - 4.2, 2);
+    expect(ledger.totals.net + ledger.totals.vat).toBeCloseTo(ledger.totals.gross, 2);
+  });
+
+  it("stays out of a month it does not belong to", async () => {
+    const ledger = await readLedger({ operatorId, ...MARCH, pointIds: null });
+    expect(ledger.lines.some((l) => l.kind === "refund")).toBe(false);
+  });
+
+  it("§47 — an accountant with other points does not see it", async () => {
+    const access = await accountingAccess(operatorId, accountantUserId, "USER");
+    const ledger = await readLedger({ operatorId, ...MAY, pointIds: access!.pointIds });
+    // Точка A как раз разрешена этому бухгалтеру, поэтому возврат видно.
+    expect(ledger.lines.some((l) => l.kind === "refund")).toBe(true);
+    const narrowed = await readLedger({ operatorId, ...MAY, pointIds: [pointB] });
+    expect(narrowed.lines.some((l) => l.kind === "refund")).toBe(false);
+  });
+});

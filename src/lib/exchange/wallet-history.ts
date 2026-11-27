@@ -23,7 +23,9 @@ export type WalletHistoryKind =
   | "CHARGE"
   | "TRANSFER_IN"
   | "TRANSFER_OUT"
-  | "GIFT";
+  | "GIFT"
+  // §51 — деньги, которые сеть вернула после проверки поддержкой.
+  | "REFUND";
 
 export const ALL_HISTORY_KINDS: WalletHistoryKind[] = [
   "BUY",
@@ -32,6 +34,7 @@ export const ALL_HISTORY_KINDS: WalletHistoryKind[] = [
   "TRANSFER_IN",
   "TRANSFER_OUT",
   "GIFT",
+  "REFUND",
 ];
 
 export interface WalletHistoryEntry {
@@ -149,6 +152,38 @@ export async function readWalletHistory(
         zoneCode: payment.zone.code,
         receiptId: payment.receipt?.id ?? null,
         title: payment.point?.name ?? null,
+      });
+    }
+  }
+
+  if (walletIds.length > 0 && kinds.has("REFUND")) {
+    // §51 «Ошибочное списание — возврат после проверки поддержкой». Только
+    // деньги: кВт·ч не возвращаются, за ними стоит настоящая выработка (§8).
+    const refunds = await db.paymentRefund.findMany({
+      where: { walletId: { in: walletIds } },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        amountFiat: true,
+        currency: true,
+        createdAt: true,
+        payment: {
+          select: { point: { select: { name: true } }, zone: { select: { code: true } } },
+        },
+      },
+    });
+    for (const refund of refunds) {
+      entries.push({
+        id: `REFUND:${refund.id}`,
+        kind: "REFUND",
+        at: refund.createdAt,
+        kwh: 0,
+        fiat: roundMoney(num(refund.amountFiat)),
+        currency: refund.currency,
+        zoneCode: refund.payment.zone.code,
+        receiptId: null,
+        title: refund.payment.point?.name ?? null,
       });
     }
   }

@@ -15,7 +15,7 @@ import { roundKwh, roundMoney } from "@/lib/exchange/precision";
 import { splitVat } from "@/lib/receipts/vat";
 import { can, readEmployee } from "@/lib/staff/staff-service";
 
-export type LedgerKind = "charge" | "reservation.no_show" | "other";
+export type LedgerKind = "charge" | "reservation.no_show" | "refund" | "other";
 
 export interface LedgerLine {
   date: Date;
@@ -262,6 +262,49 @@ export async function readLedger(args: {
       currency: r.currency,
     };
   });
+
+  // §51 — возврат ошибочного списания. Второй источник строк, а не чек: чек
+  // на зарядку остаётся верным, зарядка была, а возврат — новый факт. Без
+  // этой строки выгрузка навсегда завысила бы выручку сети, и заметить это
+  // было бы нечем — чек-то верный.
+  const refunds = await prisma.paymentRefund.findMany({
+    where: { createdAt: window, payment: { point: pointFilter } },
+    orderBy: { createdAt: "asc" },
+    select: {
+      id: true,
+      number: true,
+      createdAt: true,
+      amountFiat: true,
+      currency: true,
+      payment: { select: { pointId: true, point: { select: { name: true } } } },
+    },
+  });
+
+  for (const r of refunds) {
+    const gross = roundMoney(-num(r.amountFiat));
+    const split = splitVat(gross, vatRatePct);
+    lines.push({
+      date: r.createdAt,
+      documentNumber: r.number,
+      receiptId: r.id,
+      correctedReceiptId: null,
+      kind: "refund",
+      pointId: r.payment.pointId,
+      pointName: r.payment.point?.name ?? null,
+      kwh: 0,
+      gross,
+      net: split?.net ?? gross,
+      vat: split?.amount ?? 0,
+      vatRatePct,
+      currency: r.currency,
+      // Комиссии §53/§52 брались со зарядки и возвратом не двигаются: их
+      // перерасчёт — вопрос договора с партнёром, а не этой строки.
+      platformFee: 0,
+      subpartnerFee: 0,
+      partnerNet: gross,
+    });
+  }
+  lines.sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const totals = lines.reduce<LedgerTotals>(
     (acc2, l) => ({

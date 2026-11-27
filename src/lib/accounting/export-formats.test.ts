@@ -227,3 +227,51 @@ describe("an empty period", () => {
     }
   });
 });
+
+// §51 — возврат ошибочного списания проходит все пять форматов как
+// отрицательная строка: месяц партнёра должен сойтись с тем, что человек
+// действительно получил назад.
+describe("a §51 refund in every format", () => {
+  const withRefund: Ledger = {
+    ...baseLedger,
+    lines: [
+      ...baseLedger.lines,
+      {
+        date: new Date("2026-03-19T12:00:00Z"),
+        documentNumber: "PW-2026-000003",
+        correctedReceiptId: null,
+        receiptId: "rf_1",
+        kind: "refund",
+        pointId: "p_a",
+        pointName: "Point A",
+        kwh: 0,
+        gross: -4.2,
+        net: -3.5,
+        vat: -0.7,
+        vatRatePct: 20,
+        currency: "EUR",
+        platformFee: 0,
+        subpartnerFee: 0,
+        partnerNet: -4.2,
+      },
+    ],
+    totals: { kwh: 10, gross: 3, net: 2.5, vat: 0.5, platformFee: 0.15, subpartnerFee: 0.3, partnerNet: 2.55 },
+  };
+
+  it("the csv carries the line and its sign", async () => {
+    const file = await exportLedger(withRefund, "csv");
+    const text = file.body.toString("utf8");
+    expect(text).toContain("refund");
+    // Минус, а не текст: апостроф спас бы от формулы и сломал бы сумму в
+    // таблице бухгалтера.
+    expect(text).toContain('"-4,20"');
+    expect(text).not.toContain("'-4,20");
+  });
+
+  it("every format is produced with it", async () => {
+    for (const format of EXPORT_FORMATS) {
+      const file = await exportLedger(withRefund, format);
+      expect(file.body.length).toBeGreaterThan(0);
+    }
+  });
+});
