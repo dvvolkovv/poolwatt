@@ -62,7 +62,12 @@ export const BUILT_IN_ROLES: { name: string; permissions: Permission[] }[] = [
 
 export type EmployeeWithRole = Employee & { role: StaffRole };
 
-async function requireOwner(operatorId: string, userId: string) {
+/**
+ * Кто может менять состав сети. Экспортировано, потому что бригады §48 — тот
+ * же вопрос («кто распоряжается людьми сети»), и второго ответа на него быть
+ * не должно.
+ */
+export async function requireNetworkOwner(operatorId: string, userId: string) {
   const operator = await prisma.chargerOperator.findUnique({
     where: { id: operatorId },
     select: { claimedById: true },
@@ -70,6 +75,8 @@ async function requireOwner(operatorId: string, userId: string) {
   if (!operator) throw new StaffError("Network not found");
   if (operator.claimedById !== userId) throw new StaffError("Not your network");
 }
+
+const requireOwner = requireNetworkOwner;
 
 export async function ensureBuiltInRoles(operatorId: string): Promise<StaffRole[]> {
   const existing = await prisma.staffRole.findMany({ where: { operatorId } });
