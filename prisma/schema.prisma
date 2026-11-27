@@ -236,6 +236,7 @@ model ChargerOperator {
   points      AcceptancePoint[]
   roles       StaffRole[]
   employees   Employee[]
+  crews       Crew[]
   workOrders  WorkOrder[]
   tickets     Ticket[]
   marketing   MarketingContent[]
@@ -529,15 +530,20 @@ model Employee {
   role       StaffRole       @relation(fields: [roleId], references: [id])
   // Empty means the whole network; otherwise exactly these points.
   pointIds   String[]
+  /// §48 «с учётом региона» — города, которые закрывает этот инженер.
+  /// Пусто значит вся сеть, как у `pointIds` выше.
+  regions    String[]
   invitedBy  String?
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
 
-  workOrders WorkOrder[] @relation("WorkOrderAssignee")
+  workOrders WorkOrder[]  @relation("WorkOrderAssignee")
   // §48 — the leads this person is answerable for.
   siteLeads  SiteLead[]
   // §49 — the van this engineer drives, if they have one.
-  warehouses Warehouse[] @relation("WarehouseKeeper")
+  warehouses Warehouse[]  @relation("WarehouseKeeper")
+  // §48 — the crews this person rides with.
+  crews      CrewMember[]
 
   @@unique([operatorId, userId])
   @@index([userId])
@@ -568,6 +574,9 @@ model WorkOrder {
   photos         String[]
   assigneeId     String?
   assignee       Employee?         @relation("WorkOrderAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  /// §48 «назначение инженеру **или** бригаде»: заполнено ровно одно из двух.
+  crewId         String?
+  crew           Crew?             @relation(fields: [crewId], references: [id], onDelete: SetNull)
   // What produced it, so the same fault never makes two orders.
   sourceAlertId  String?           @unique
   sourceAlert    AssetAlert?       @relation("AlertWorkOrder", fields: [sourceAlertId], references: [id], onDelete: SetNull)
@@ -588,6 +597,7 @@ model WorkOrder {
   @@index([operatorId, status])
   @@index([companyId, status])
   @@index([assigneeId, status])
+  @@index([crewId, status])
 }
 
 /// §48 «чек-лист работ». Строка создаётся из типового списка по виду наряда
@@ -652,6 +662,41 @@ model WorkOrderSignature {
   key         String              @unique
   signedById  String
   signedAt    DateTime            @default(now())
+}
+
+/// §48 «Назначение инженеру или бригаде». Бригада принадлежит сети: §47 —
+/// это сеть зарядных пунктов, у компании-производителя сотрудников нет.
+model Crew {
+  id         String          @id @default(cuid())
+  operatorId String
+  operator   ChargerOperator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  name       String
+  /// Города бригады; пусто — вся сеть, как у инженера.
+  regions    String[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  members    CrewMember[]
+  workOrders WorkOrder[]
+
+  @@unique([operatorId, name])
+  @@index([operatorId])
+}
+
+/// Инженер может быть в нескольких бригадах: утром монтаж с бригадой, днём
+/// жалоба в одиночку.
+model CrewMember {
+  id         String   @id @default(cuid())
+  crewId     String
+  crew       Crew     @relation(fields: [crewId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  /// Старший: письмо адресовано ему, остальным — то же письмо.
+  lead       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([crewId, employeeId])
+  @@index([employeeId])
 }
 
 // §51 "Сообщение о поломке от клиента" / US-52, US-54.
