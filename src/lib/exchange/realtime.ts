@@ -26,10 +26,17 @@ export const orderbookChannel = (zoneCode: string) => `orderbook.${zoneCode.toUp
 export const tradesChannel = (zoneCode: string) => `trades.${zoneCode.toUpperCase()}`;
 export const walletChannel = (userId: string) => `wallet.${userId}`;
 export const telemetryChannel = (assetId: string) => `telemetry.${assetId}`;
+/**
+ * A fifth kind, beyond the four §15 lists: the support conversation of §51.
+ * Said plainly because it is a departure — a chat where the answer appears
+ * after a reload is not a chat, and the machinery for live delivery already
+ * exists. Who may hear it is decided by `readTicketForUser`, not here.
+ */
+export const ticketChannel = (ticketId: string) => `ticket.${ticketId}`;
 
 /** §15 channel names, as a guard against typos in a publisher. */
 export function isKnownChannel(channel: string): boolean {
-  return /^(orderbook|trades|wallet|telemetry)\.[A-Za-z0-9_-]{1,64}$/.test(channel);
+  return /^(orderbook|trades|wallet|telemetry|ticket)\.[A-Za-z0-9_-]{1,64}$/.test(channel);
 }
 
 /** Order books and trades are public: the terminal shows them to anyone. */

@@ -11,6 +11,7 @@ import {
   publish,
   telemetryChannel,
   ticketAllows,
+  ticketChannel,
   tradesChannel,
   verifyTicket,
   walletChannel,
@@ -163,5 +164,20 @@ describe("publish", () => {
     });
     expect(ok).toBe(false);
     expect(called).toBe(false);
+  });
+});
+
+// §51 — the fifth kind of channel, the support conversation.
+describe("ticket channels", () => {
+  it("is a known channel and is never public", () => {
+    expect(isKnownChannel(ticketChannel("abc123"))).toBe(true);
+    expect(isPublicChannel(ticketChannel("abc123"))).toBe(false);
+  });
+
+  it("is only heard by a ticket the holder was granted", () => {
+    const ticket = issueTicket({ userId: "u1", channels: [ticketChannel("t1")] });
+    const claims = verifyTicket(ticket)!;
+    expect(ticketAllows(claims, ticketChannel("t1"))).toBe(true);
+    expect(ticketAllows(claims, ticketChannel("t2"))).toBe(false);
   });
 });

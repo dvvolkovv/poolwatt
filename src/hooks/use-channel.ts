@@ -44,7 +44,13 @@ export function useChannel(
     async function connect() {
       if (stopped) return;
       try {
-        const response = await fetch("/api/v1/realtime/ticket", { method: "POST" });
+        // The channel travels with the request: a ticket conversation (§51)
+        // is authorised by name, not listed in advance.
+        const response = await fetch("/api/v1/realtime/ticket", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ channel }),
+        });
         if (!response.ok) throw new Error(`ticket ${response.status}`);
         const { ticket } = (await response.json()) as { ticket: string };
 
