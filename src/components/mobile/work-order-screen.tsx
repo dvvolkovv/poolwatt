@@ -16,6 +16,8 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  type QueuedKind,
+  type NewOp,
   type QueuedOp,
   type SendResult,
   classify,
@@ -26,6 +28,25 @@ import {
 } from "@/lib/mobile/offline-queue";
 import type { EngineerStockView } from "@/lib/warehouse/engineer-view";
 import { Screen } from "@/components/mobile/screen";
+import {
+  WorkOrderSiteWork,
+  type SitePhoto,
+  type SiteSignature,
+  type SiteTask,
+  type SiteWorkLabels,
+} from "@/components/mobile/work-order-site-work";
+
+/**
+ * Куда уходит каждая запись очереди. До этой работы таблицы не было: очередь
+ * умела один маршрут, а объявленный вид `workorder.status` не отправлял никто
+ * и отправлять было некуда.
+ */
+const ENDPOINTS: Partial<Record<QueuedKind, (workOrderId: string) => string>> = {
+  "stock.issue": () => "/api/v1/stock-movements",
+  "workorder.task": (id) => `/api/v1/work-orders/${id}/tasks`,
+  "workorder.signature": (id) => `/api/v1/work-orders/${id}/signature`,
+  "workorder.status": (id) => `/api/v1/work-orders/${id}/status`,
+};
 
 export interface WorkOrderScreenLabels {
   title: string;
@@ -70,12 +91,17 @@ export function WorkOrderScreen({
   locale,
   order,
   stock,
+  site,
   labels,
+  siteLabels,
 }: {
   locale: string;
   order: WorkOrderScreenOrder;
   stock: EngineerStockView;
+  /** §48 — чек-лист, снимки и подпись этого наряда. */
+  site: { tasks: SiteTask[]; photos: SitePhoto[]; signature: SiteSignature | null; canWork: boolean };
   labels: WorkOrderScreenLabels;
+  siteLabels: SiteWorkLabels;
 }) {
   const router = useRouter();
   const [queue, setQueue] = useState<QueuedOp[]>([]);
@@ -99,13 +125,10 @@ export function WorkOrderScreen({
   }, [order.id]);
 
   const send = useCallback(async (op: QueuedOp): Promise<SendResult> => {
-    if (op.kind !== "stock.issue") {
-      // Единственный маршрут, который очередь умеет досылать. Статус наряда
-      // меняет серверное действие, у него нет своего POST.
-      return { outcome: "rejected", reason: `Unsupported operation ${op.kind}` };
-    }
+    const url = ENDPOINTS[op.kind]?.(op.workOrderId);
+    if (!url) return { outcome: "rejected", reason: `Unsupported operation ${op.kind}` };
     try {
-      const res = await fetch("/api/v1/stock-movements", {
+      const res = await fetch(url, {
         method: "POST",
         headers: { "content-type": "application/json", "idempotency-key": op.id },
         body: JSON.stringify(op.body),
@@ -173,6 +196,22 @@ export function WorkOrderScreen({
     await drain();
   }
 
+  /**
+   * Поставить запись в очередь и попробовать отправить. Один путь на все
+   * записи §48: иначе отметка пункта ушла бы мимо очереди и потерялась в
+   * подвале.
+   */
+  const enqueueOp = useCallback(
+    async (op: NewOp) => {
+      const s = store();
+      if (!s) return;
+      enqueue(s, op);
+      refreshQueue();
+      await drain();
+    },
+    [drain, refreshQueue],
+  );
+
   function onDismiss(id: string) {
     const s = store();
     if (!s) return;
@@ -220,6 +259,18 @@ export function WorkOrderScreen({
           </div>
         </Field>
       )}
+
+      <WorkOrderSiteWork
+        workOrderId={order.id}
+        status={order.status}
+        tasks={site.tasks}
+        photos={site.photos}
+        signature={site.signature}
+        canWork={site.canWork}
+        labels={siteLabels}
+        enqueueOp={enqueueOp}
+        refresh={() => router.refresh()}
+      />
 
       {queue.length > 0 && (
         <section

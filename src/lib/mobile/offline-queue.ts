@@ -21,8 +21,18 @@
 
 export const QUEUE_KEY = "poolwatt.offlineQueue";
 
-/** Две операции §48, которые инженер делает на месте работ. */
-export type QueuedKind = "stock.issue" | "workorder.status";
+/**
+ * Записи §48, которые инженер делает на месте работ.
+ *
+ * Фотографии сюда не входят сознательно: кадр с камеры 2–5 МБ, и три таких
+ * не влезут в `localStorage` — очередь молча потеряла бы запись. Снимок
+ * требует связи, и экран говорит это прямо.
+ */
+export type QueuedKind =
+  | "stock.issue"
+  | "workorder.task"
+  | "workorder.signature"
+  | "workorder.status";
 
 export interface QueuedOp {
   /** Он же `Idempotency-Key`: придуман при нажатии, неизменен при досылах. */
