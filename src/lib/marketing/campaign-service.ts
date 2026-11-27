@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { assertCampaignFiatFundingOpen } from "@/lib/exchange/gates";
 import { num, numOrNull } from "@/lib/exchange/decimal";
 import { roundKwh } from "@/lib/exchange/precision";
+import { normalizePromoCode } from "./promo-code";
 
 export class CampaignError extends Error {}
 
@@ -24,7 +25,17 @@ export interface CampaignInput {
   validityDays: number;
   oncePerClient?: boolean;
   minNextChargeKwh?: number | null;
+  /** §42 "не суммируется с другими акциями". */
+  exclusive?: boolean;
+  /** §42 "скидка в % на следующую зарядку"; `giftKwh` is then its ceiling. */
+  discountPct?: number | null;
+  /** §42 "бесплатная бронь", on its own or next to the energy gift. */
+  freeBooking?: boolean;
+  /** §42 "регистрация по QR-коду или промокоду партнёра". */
+  promoCode?: string | null;
   budgetKwh: number;
+  /** The count ceiling, which is what a free booking is measured in. */
+  budgetGrants?: number | null;
   fundingSource?: "TOKENS" | "FIAT";
   zoneId: string;
   startsAt?: Date | null;
@@ -59,11 +70,15 @@ async function validate(
   operatorId: string,
   input: Partial<CampaignInput>,
   current?: {
+    id?: string;
     trigger: CampaignTrigger;
     giftKwh: Prisma.Decimal;
     budgetKwh: Prisma.Decimal;
     cashbackPct: Prisma.Decimal | null;
     oncePerClient: boolean;
+    freeBooking?: boolean;
+    discountPct?: Prisma.Decimal | null;
+    promoCode?: string | null;
   },
 ): Promise<void> {
   if (input.fundingSource === "FIAT") {
@@ -97,17 +112,79 @@ async function validate(
         "Cashback is earned by every token payment, so it cannot be once per client",
       );
     }
-  } else if (gift !== undefined && !(gift > 0)) {
-    throw new CampaignError("The gift has to be more than zero kWh");
+  } else {
+    // §42 "комбинация" — a campaign that gives a free booking does not have
+    // to give energy as well, so zero kWh is a complete gift on its own.
+    const booking = input.freeBooking ?? current?.freeBooking ?? false;
+    if (gift !== undefined && !(gift > 0) && !booking) {
+      throw new CampaignError("The gift has to be more than zero kWh, or a free booking");
+    }
   }
 
   if (
     trigger !== "TOKEN_PAYMENT" &&
     budget !== undefined &&
     gift !== undefined &&
+    gift > 0 &&
     roundKwh(budget) < roundKwh(gift)
   ) {
     throw new CampaignError("The budget is smaller than a single gift");
+  }
+
+  // §42 "скидка в % на следующую зарядку". The percentage is what the driver
+  // sees; the kWh gift is the ceiling the partner is willing to cover, and
+  // without one a discount would have no limit at all.
+  const discount =
+    input.discountPct !== undefined
+      ? input.discountPct
+      : current
+        ? numOrNull(current.discountPct ?? null)
+        : undefined;
+  if (discount != null) {
+    if (!(discount > 0) || discount > 100) {
+      throw new CampaignError("A discount has to be between 0 and 100 %");
+    }
+    if (trigger === "TOKEN_PAYMENT") {
+      throw new CampaignError("A cashback campaign is already a share, so it takes no discount");
+    }
+    if (gift !== undefined && !(gift > 0)) {
+      throw new CampaignError("A discount needs a ceiling in kWh the partner will cover");
+    }
+  }
+
+  // §42's count ceiling. A free booking costs no kWh, so without it the
+  // campaign would never stop.
+  const booking = input.freeBooking ?? current?.freeBooking ?? false;
+  const countBudget =
+    input.budgetGrants !== undefined ? input.budgetGrants : undefined;
+  if (booking && current === undefined && !(countBudget != null && countBudget > 0)) {
+    throw new CampaignError("Say how many free bookings this campaign may give out");
+  }
+  if (countBudget != null && !(countBudget > 0)) {
+    throw new CampaignError("The number of gifts has to be more than zero");
+  }
+
+  // §42's promo code: the trigger and the code come together, and the code
+  // has to be unique across every network — the driver types it without
+  // saying whose it is.
+  const code = input.promoCode !== undefined ? input.promoCode : current?.promoCode;
+  if (trigger === "PROMO_CODE") {
+    const normalized = code ? normalizePromoCode(code) : "";
+    if (normalized.length < 3) {
+      throw new CampaignError("A promo-code campaign needs a code of at least 3 characters");
+    }
+    if (!/^[A-Z0-9-]+$/.test(normalized)) {
+      throw new CampaignError("A code may hold letters, digits and a dash");
+    }
+    const taken = await prisma.campaign.findUnique({
+      where: { promoCode: normalized },
+      select: { id: true },
+    });
+    if (taken && taken.id !== current?.id) {
+      throw new CampaignError("That code is already in use");
+    }
+  } else if (code) {
+    throw new CampaignError("Only a promo-code campaign carries a code");
   }
   if (input.validityDays !== undefined && !(input.validityDays >= 1)) {
     throw new CampaignError("A gift has to be valid for at least a day");
@@ -172,9 +249,20 @@ export async function createCampaign(
       validityDays: input.validityDays,
       // Cashback repeats with every payment; a gift is once per client
       // unless the partner says otherwise.
-      oncePerClient: input.oncePerClient ?? input.trigger !== "TOKEN_PAYMENT",
+      // A code is redeemed once by one driver, whatever the form says: §42's
+      // "один раз на клиента" is the only thing that stops one person from
+      // emptying the campaign.
+      oncePerClient:
+        input.trigger === "PROMO_CODE"
+          ? true
+          : (input.oncePerClient ?? input.trigger !== "TOKEN_PAYMENT"),
       minNextChargeKwh: input.minNextChargeKwh ?? null,
+      exclusive: input.exclusive ?? false,
+      discountPct: input.discountPct ?? null,
+      freeBooking: input.freeBooking ?? false,
+      promoCode: input.promoCode ? normalizePromoCode(input.promoCode) : null,
       budgetKwh: input.budgetKwh,
+      budgetGrants: input.budgetGrants ?? null,
       fundingSource: input.fundingSource ?? "TOKENS",
       startsAt: input.startsAt ?? null,
       endsAt: input.endsAt ?? null,
@@ -207,7 +295,14 @@ export async function updateCampaign(
   if (input.validityDays !== undefined) data.validityDays = input.validityDays;
   if (input.oncePerClient !== undefined) data.oncePerClient = input.oncePerClient;
   if (input.minNextChargeKwh !== undefined) data.minNextChargeKwh = input.minNextChargeKwh;
+  if (input.exclusive !== undefined) data.exclusive = input.exclusive;
+  if (input.discountPct !== undefined) data.discountPct = input.discountPct;
+  if (input.freeBooking !== undefined) data.freeBooking = input.freeBooking;
+  if (input.promoCode !== undefined) {
+    data.promoCode = input.promoCode ? normalizePromoCode(input.promoCode) : null;
+  }
   if (input.budgetKwh !== undefined) data.budgetKwh = input.budgetKwh;
+  if (input.budgetGrants !== undefined) data.budgetGrants = input.budgetGrants;
   if (input.fundingSource !== undefined) data.fundingSource = input.fundingSource;
   if (input.startsAt !== undefined) data.startsAt = input.startsAt;
   if (input.endsAt !== undefined) data.endsAt = input.endsAt;
@@ -237,6 +332,13 @@ export async function setCampaignStatus(
     if (left < needed) {
       throw new CampaignError("The budget is spent; raise it before running the campaign again");
     }
+    // §42 — the same question for the campaign measured in gifts rather than
+    // in kWh (a free booking).
+    if (campaign.budgetGrants != null && campaign.issuedGrants >= campaign.budgetGrants) {
+      throw new CampaignError(
+        "Every gift of this campaign has been given out; raise the number first",
+      );
+    }
   }
 
   return prisma.campaign.update({
@@ -264,6 +366,14 @@ export interface CampaignRow {
   scopePointIds: string[];
   validityDays: number;
   oncePerClient: boolean;
+  minNextChargeKwh: number | null;
+  /** §42's three additions: no stacking, a discount, a free booking. */
+  exclusive: boolean;
+  discountPct: number | null;
+  freeBooking: boolean;
+  promoCode: string | null;
+  budgetGrants: number | null;
+  issuedGrants: number;
   startsAt: Date | null;
   endsAt: Date | null;
   zoneId: string;
@@ -315,6 +425,13 @@ export async function readCampaigns(
       pauseReason: c.pauseReason,
       giftKwh: num(c.giftKwh),
       cashbackPct: numOrNull(c.cashbackPct),
+      minNextChargeKwh: numOrNull(c.minNextChargeKwh),
+      exclusive: c.exclusive,
+      discountPct: numOrNull(c.discountPct),
+      freeBooking: c.freeBooking,
+      promoCode: c.promoCode,
+      budgetGrants: c.budgetGrants,
+      issuedGrants: c.issuedGrants,
       budgetKwh: num(c.budgetKwh),
       issuedKwh: num(c.issuedKwh),
       scopePointIds: c.scopePointIds,

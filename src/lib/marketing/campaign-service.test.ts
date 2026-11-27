@@ -293,3 +293,104 @@ describe("readCampaigns — what the partner sees about their own money", () => 
     await expect(readCampaigns(operatorId, strangerUserId)).rejects.toThrow(CampaignError);
   });
 });
+
+describe("the rest of §42's constructor", () => {
+  it("takes a discount with a ceiling in kWh", async () => {
+    const c = await createCampaign(operatorId, ownerUserId, {
+      ...base,
+      giftKwh: 30,
+      discountPct: 20,
+      exclusive: true,
+    });
+    expect(Number(c.discountPct)).toBe(20);
+    expect(c.exclusive).toBe(true);
+  });
+
+  it("refuses a discount outside 0–100 %", async () => {
+    await expect(
+      createCampaign(operatorId, ownerUserId, { ...base, discountPct: 120 }),
+    ).rejects.toThrow("between 0 and 100");
+  });
+
+  it("refuses a discount with no ceiling to cover it", async () => {
+    await expect(
+      createCampaign(operatorId, ownerUserId, {
+        ...base,
+        giftKwh: 0,
+        freeBooking: true,
+        budgetGrants: 10,
+        discountPct: 20,
+      }),
+    ).rejects.toThrow("needs a ceiling");
+  });
+
+  it("takes a free booking on its own, with a count of gifts", async () => {
+    const c = await createCampaign(operatorId, ownerUserId, {
+      ...base,
+      giftKwh: 0,
+      budgetKwh: 0,
+      freeBooking: true,
+      budgetGrants: 50,
+    });
+    expect(c.freeBooking).toBe(true);
+    expect(c.budgetGrants).toBe(50);
+  });
+
+  it("refuses a free booking with no count, because nothing would stop it", async () => {
+    await expect(
+      createCampaign(operatorId, ownerUserId, { ...base, giftKwh: 0, freeBooking: true }),
+    ).rejects.toThrow("how many free bookings");
+  });
+
+  it("takes a promo code, upper-cased, and makes it once per client", async () => {
+    const c = await createCampaign(operatorId, ownerUserId, {
+      ...base,
+      trigger: "PROMO_CODE",
+      promoCode: " welcome-10 ",
+      oncePerClient: false,
+    });
+    expect(c.promoCode).toBe("WELCOME-10");
+    expect(c.oncePerClient).toBe(true);
+  });
+
+  it("refuses a promo-code campaign with no code", async () => {
+    await expect(
+      createCampaign(operatorId, ownerUserId, { ...base, trigger: "PROMO_CODE" }),
+    ).rejects.toThrow("needs a code");
+  });
+
+  it("refuses a code somebody else already prints", async () => {
+    await createCampaign(operatorId, ownerUserId, {
+      ...base,
+      trigger: "PROMO_CODE",
+      promoCode: "SAMECODE",
+    });
+    await expect(
+      createCampaign(operatorId, ownerUserId, {
+        ...base,
+        trigger: "PROMO_CODE",
+        promoCode: "samecode",
+      }),
+    ).rejects.toThrow("already in use");
+  });
+
+  it("refuses a code on a campaign that is not earned by one", async () => {
+    await expect(
+      createCampaign(operatorId, ownerUserId, { ...base, promoCode: "FIRSTCHARGE" }),
+    ).rejects.toThrow("Only a promo-code campaign");
+  });
+
+  it("refuses to start a campaign whose gifts have all been given out", async () => {
+    const c = await createCampaign(operatorId, ownerUserId, {
+      ...base,
+      giftKwh: 0,
+      budgetKwh: 0,
+      freeBooking: true,
+      budgetGrants: 1,
+    });
+    await prisma.campaign.update({ where: { id: c.id }, data: { issuedGrants: 1 } });
+    await expect(setCampaignStatus(c.id, ownerUserId, "ACTIVE")).rejects.toThrow(
+      "given out",
+    );
+  });
+});
