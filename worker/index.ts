@@ -28,6 +28,8 @@ import {
 import { reconcileRegistry } from "@/lib/exchange/reconciliation-service";
 import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { expireStaleSessions } from "@/lib/exchange/charge-session";
+import { escalateOverdueTickets, closeResolvedTickets } from "@/lib/work/ticket-sla";
+import { notifyRecoveredTickets } from "@/lib/work/ticket-recovery";
 import { expireGrants, sweepPendingAwards } from "@/lib/marketing/campaign-engine";
 import { issueBirthdayGifts } from "@/lib/marketing/birthday";
 import { notifyPendingGrants } from "@/lib/marketing/gift-mail";
@@ -236,6 +238,33 @@ export async function runAlertSweep(now = new Date()): Promise<void> {
     if (swept > 0) log(`charging: ${swept} session(s) expired with nothing delivered`);
   } catch (err) {
     console.error("[worker] expiring charge sessions failed:", err);
+  }
+
+  // §48 "SLA по приоритету; эскалация" — a ticket nobody answered inside the
+  // agreed time is raised one step and the network hears about it, once.
+  try {
+    const raised = await escalateOverdueTickets(now);
+    if (raised > 0) log(`support: ${raised} ticket(s) escalated past their response time`);
+  } catch (err) {
+    console.error("[worker] escalating tickets failed:", err);
+  }
+
+  // §51 "после ремонта клиент получает уведомление, что станция снова
+  // работает".
+  try {
+    const told = await notifyRecoveredTickets(now);
+    if (told > 0) log(`support: ${told} reporter(s) told the station works again`);
+  } catch (err) {
+    console.error("[worker] recovery notices failed:", err);
+  }
+
+  // A resolved ticket nobody argued with closes by itself; an argument
+  // reopens it, which is why this waits a week.
+  try {
+    const closed = await closeResolvedTickets(now);
+    if (closed > 0) log(`support: ${closed} resolved ticket(s) closed`);
+  } catch (err) {
+    console.error("[worker] closing resolved tickets failed:", err);
   }
 }
 
