@@ -57,6 +57,15 @@ function htmlToText(html: string): string {
 }
 
 export async function sendEmail({ to, subject, html }: OutgoingEmail): Promise<void> {
+  // The test suite runs against the real environment of this box, keys
+  // included, so without this line every service that notifies somebody
+  // posted real mail to invented addresses like `test_x@test.local` — slow,
+  // and bouncing in the owner's own inbox.
+  if (process.env.NODE_ENV === "test") {
+    console.log(`[mail stub:test] to ${to}: ${subject}`);
+    return;
+  }
+
   const from = process.env.EMAIL_FROM || "Poolwatt <noreply@poolwatt.com>";
   const replyTo = process.env.EMAIL_REPLY_TO || "info@poolwatt.com";
   const text = htmlToText(html);

@@ -8,6 +8,25 @@ type Env = Record<string, string | undefined>;
 export class FeatureClosedError extends Error {}
 
 /**
+ * §46 — a wrong *amount* on a receipt is not a wrong document, it is money the
+ * driver should get back, and giving money back needs the payment provider
+ * nobody has connected. Until then support can correct what a document says
+ * about itself, and a claim about the amount is answered with this, not with
+ * a document that says a refund happened.
+ */
+export function receiptRefundsOpen(env: Env = process.env): boolean {
+  return env.RECEIPT_REFUNDS === "open" && env.PAYMENT_PROVIDER !== undefined;
+}
+
+export function assertReceiptRefundsOpen(): void {
+  if (!receiptRefundsOpen()) {
+    throw new FeatureClosedError(
+      "A refund needs the payment provider, which is not connected yet: the amounts on a receipt cannot be corrected",
+    );
+  }
+}
+
+/**
  * IBANs are issued by the EMI. Until that integration exists the only source is
  * a local generator that invents account numbers, so it is a sandbox and never
  * runs in production: money sent to an invented IBAN is lost.
