@@ -4,6 +4,9 @@
 // from a list (US-52), the nearest working station is offered straight after
 // (US-53), and a technical report produces a work order (US-54).
 
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -20,10 +23,14 @@ let nearbyFreeId: string;
 let nearbyBusyId: string;
 let farFreeId: string;
 
+/** Настоящие первые байты: тип файла читается из них, а не из имени. */
+const JPEG = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(16, 9)]);
+
 const LAT = 48.15;
 const LNG = 17.11;
 
 async function wipe() {
+  await prisma.ticketMessage.deleteMany({ where: { ticket: { operator: { slug: SLUG } } } });
   await prisma.ticket.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.workOrder.deleteMany({ where: { operator: { slug: SLUG } } });
   await prisma.acceptancePoint.deleteMany({ where: { operator: { slug: SLUG } } });
@@ -70,8 +77,12 @@ async function seedPoint(args: {
   });
 }
 
+let photosRoot: string;
+
 beforeAll(async () => {
   await wipe();
+  photosRoot = await mkdtemp(join(tmpdir(), "poolwatt-ticket-service-"));
+  process.env.TICKET_PHOTOS_DIR = photosRoot;
   reporterId = (
     await prisma.user.upsert({
       where: { username: `${PREFIX}driver` },
@@ -98,6 +109,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  await prisma.ticketMessage.deleteMany({ where: { ticket: { operatorId } } });
   await prisma.ticket.deleteMany({ where: { operatorId } });
   await prisma.workOrder.deleteMany({ where: { operatorId } });
   await prisma.acceptancePoint.deleteMany({ where: { operatorId } });
@@ -127,6 +139,8 @@ beforeEach(async () => {
 afterAll(async () => {
   await wipe();
   await prisma.user.deleteMany({ where: { username: { startsWith: PREFIX } } });
+  await rm(photosRoot, { recursive: true, force: true });
+  delete process.env.TICKET_PHOTOS_DIR;
 });
 
 describe("reportProblem — thirty seconds' worth of form (US-52)", () => {
@@ -160,11 +174,14 @@ describe("reportProblem — thirty seconds' worth of form (US-52)", () => {
       reporterId,
       problemType: "OTHER",
       comment: "Smells of burning",
-      photos: ["pic-1", "pic-2"],
+      photos: [
+        { filename: "one.jpg", bytes: JPEG },
+        { filename: "two.jpg", bytes: JPEG },
+      ],
     });
 
     expect(result.ticket.comment).toBe("Smells of burning");
-    expect(result.ticket.photos).toEqual(["pic-1", "pic-2"]);
+    expect(result.ticket.photos).toHaveLength(2);
   });
 
   it("refuses a report about a point that is not there", async () => {
@@ -182,7 +199,7 @@ describe("reportProblem — a technical fault makes a work order (US-54)", () =>
       reporterId,
       problemType: "DAMAGED_CABLE",
       comment: "Insulation is cut",
-      photos: ["pic-1"],
+      photos: [{ filename: "cut.jpg", bytes: JPEG }],
     });
 
     expect(result.workOrder).not.toBeNull();
@@ -192,7 +209,7 @@ describe("reportProblem — a technical fault makes a work order (US-54)", () =>
     expect(order.pointId).toBe(brokenPointId);
     expect(order.type).toBe("REPAIR");
     expect(order.description).toContain("Insulation is cut");
-    expect(order.photos).toEqual(["pic-1"]);
+    expect(order.photos).toEqual(result.ticket.photos);
     expect(order.partsNeeded).toContain("charging cable");
     expect(order.sourceTicketId).toBe(result.ticket.id);
   });
@@ -280,5 +297,115 @@ describe("nearestWorkingPoints — the offer right after (US-53)", () => {
       data: { operatorId, type: "CHARGING_STATION", name: "Nowhere", status: "PUBLISHED" },
     });
     expect(await nearestWorkingPoints(nowhere.id, "CCS2")).toEqual([]);
+  });
+});
+
+describe("a double tap is one report", () => {
+  it("returns the same ticket when a signed-in driver repeats within five minutes", async () => {
+    const first = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "BLOCKED",
+    });
+    const again = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "BLOCKED",
+    });
+    expect(again.ticket.id).toBe(first.ticket.id);
+    expect(await prisma.ticket.count({ where: { operatorId } })).toBe(1);
+  });
+
+  it("opens a new ticket after the window closed", async () => {
+    const first = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "BLOCKED",
+    });
+    await prisma.ticket.update({
+      where: { id: first.ticket.id },
+      data: { createdAt: new Date(Date.now() - 6 * 60 * 1000) },
+    });
+    const again = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "BLOCKED",
+    });
+    expect(again.ticket.id).not.toBe(first.ticket.id);
+  });
+
+  it("opens a new ticket for a different problem on the same point", async () => {
+    const first = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "BLOCKED",
+    });
+    const other = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "WRONG_PRICE",
+    });
+    expect(other.ticket.id).not.toBe(first.ticket.id);
+  });
+
+  it("never glues two anonymous reports together: without a reporter there is no 'same person'", async () => {
+    const first = await reportProblem({ pointId: brokenPointId, problemType: "BLOCKED" });
+    const second = await reportProblem({ pointId: brokenPointId, problemType: "BLOCKED" });
+    expect(second.ticket.id).not.toBe(first.ticket.id);
+  });
+
+  it("gives one ticket when two taps arrive at once", async () => {
+    const [a, b] = await Promise.all([
+      reportProblem({ pointId: brokenPointId, reporterId, problemType: "BLOCKED" }),
+      reportProblem({ pointId: brokenPointId, reporterId, problemType: "BLOCKED" }),
+    ]);
+    expect(a.ticket.id).toBe(b.ticket.id);
+    expect(await prisma.ticket.count({ where: { operatorId } })).toBe(1);
+  });
+});
+
+describe("the conversation starts with the report", () => {
+  it("keeps the customer's comment as the first message, so the thread reads from the start", async () => {
+    const result = await reportProblem({
+      pointId: brokenPointId,
+      reporterId,
+      problemType: "BLOCKED",
+      comment: "Стоит фургон без зарядки",
+    });
+    const messages = await prisma.ticketMessage.findMany({
+      where: { ticketId: result.ticket.id },
+      orderBy: { createdAt: "asc" },
+    });
+    expect(messages[0].authorKind).toBe("CUSTOMER");
+    expect(messages[0].body).toContain("фургон");
+    // Комментарий клиента не ответ поддержки: срок реакции §48 всё ещё идёт.
+    expect(result.ticket.firstRespondedAt).toBeNull();
+  });
+
+  it("says in the thread that a work order was opened (US-54)", async () => {
+    const result = await reportProblem({
+      pointId: brokenPointId,
+      connectorId: brokenConnectorId,
+      reporterId,
+      problemType: "DAMAGED_CABLE",
+    });
+    const messages = await prisma.ticketMessage.findMany({
+      where: { ticketId: result.ticket.id, authorKind: "SYSTEM" },
+    });
+    expect(messages).toHaveLength(1);
+    expect(result.workOrder).not.toBeNull();
+  });
+
+  it("puts the photos on both the ticket and the work order (§51.4, §48)", async () => {
+    const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff]), Buffer.alloc(16, 1)]);
+    const result = await reportProblem({
+      pointId: brokenPointId,
+      connectorId: brokenConnectorId,
+      reporterId,
+      problemType: "DAMAGED_CABLE",
+      photos: [{ filename: "cable.jpg", bytes: jpeg }],
+    });
+    expect(result.ticket.photos).toHaveLength(1);
+    expect(result.workOrder?.photos).toEqual(result.ticket.photos);
   });
 });

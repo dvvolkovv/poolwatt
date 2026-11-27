@@ -18,6 +18,8 @@ import { nearestWorkingPoints, type FoundPoint } from "@/lib/points/point-search
 import { cancelReservationsForConnector } from "@/lib/reservations/reservation-service";
 import { PARTS_BY_PROBLEM, createWorkOrder } from "./work-order-service";
 import { setConnectorStatus } from "@/lib/points/connector-status";
+import { systemMessage } from "./ticket-conversation";
+import { saveTicketPhotos, type IncomingPhoto } from "./ticket-photos";
 
 export class TicketError extends Error {}
 
@@ -42,13 +44,25 @@ const SLA_MINUTES: Record<TicketProblemType, number> = {
 
 /** How far around the broken point to look for somewhere else to charge. */
 
+/**
+ * §51 asks for thirty seconds, and a thumb that is not sure whether the tap
+ * registered taps again. Two tickets about one cable waste a support agent's
+ * morning, so a signed-in driver repeating the same point and the same
+ * problem inside this window gets the ticket they already opened.
+ *
+ * An anonymous report is never glued to another: without a reporter "the
+ * same person" cannot be told from "somebody else standing at the same
+ * broken station", and merging two people's reports loses one of them.
+ */
+export const DEDUPE_WINDOW_MINUTES = 5;
+
 export interface ReportProblemArgs {
   pointId: string;
   connectorId?: string | null;
   reporterId?: string | null;
   problemType: TicketProblemType;
   comment?: string | null;
-  photos?: string[];
+  photos?: IncomingPhoto[];
   source?: string;
 }
 
@@ -79,20 +93,20 @@ export async function reportProblem(
       ? "HIGH"
       : "NORMAL";
 
-  const ticket = await prisma.ticket.create({
-    data: {
-      operatorId: point.operatorId,
-      pointId: point.id,
-      connectorId: connector?.id ?? null,
-      reporterId: args.reporterId ?? null,
-      source: args.source ?? "app",
-      problemType: args.problemType,
-      comment: args.comment?.trim() || null,
-      photos: args.photos ?? [],
-      priority,
-      respondBy: new Date(Date.now() + SLA_MINUTES[args.problemType] * 60 * 1000),
-    },
-  });
+  const { ticket, fresh } = await findOrCreateTicket(args, point.operatorId, connector?.id ?? null, priority);
+
+  if (!fresh) {
+    // Тот же палец, то же нажатие: заявка уже есть, и всё, что она должна
+    // была сделать, уже сделано.
+    return {
+      ticket,
+      workOrder: ticket.workOrderId
+        ? await prisma.workOrder.findUnique({ where: { id: ticket.workOrderId } })
+        : null,
+      alternatives: await offerAlternatives(point.id, connector?.type ?? point.connectors[0]?.type ?? null),
+    };
+  }
+
   await writeAudit(prisma, {
     actor: args.reporterId ?? "anonymous",
     entity: "Ticket",
@@ -100,6 +114,30 @@ export async function reportProblem(
     action: "ticket.reported",
     after: { pointId: point.id, problemType: args.problemType, technical },
   });
+
+  // §51.4 — фотографии с места. Отказ по файлу не должен терять заявку:
+  // жалоба важнее снимка.
+  let photoKeys: string[] = [];
+  if (args.photos && args.photos.length > 0) {
+    try {
+      photoKeys = await saveTicketPhotos(ticket.id, args.photos);
+    } catch {
+      photoKeys = [];
+    }
+  }
+
+  // Комментарий клиента — первая реплика разговора, а не отдельное поле:
+  // §51.5 обещает переписку, и она должна читаться с начала.
+  if (args.comment?.trim()) {
+    await prisma.ticketMessage.create({
+      data: {
+        ticketId: ticket.id,
+        authorKind: "CUSTOMER",
+        authorId: args.reporterId ?? null,
+        body: args.comment.trim(),
+      },
+    });
+  }
 
   let workOrder: WorkOrder | null = null;
   if (technical) {
@@ -120,13 +158,16 @@ export async function reportProblem(
         .filter(Boolean)
         .join("\n"),
       partsNeeded: PARTS_BY_PROBLEM[args.problemType] ?? [],
-      photos: args.photos ?? [],
+      photos: photoKeys,
       sourceTicketId: ticket.id,
     });
     await prisma.ticket.update({
       where: { id: ticket.id },
       data: { workOrderId: workOrder.id, status: "IN_PROGRESS" },
     });
+    // §51.5 — клиент видит, что по его заявке уже поехали. Это сообщение
+    // системы, а не ответ поддержки: срок реакции §48 закрывает человек.
+    await systemMessage(prisma, ticket.id, "A repair order has been opened on this report.");
 
     // §51 — "пункт или разъём помечается в навигаторе как неработающий".
     if (connector) {
@@ -137,15 +178,76 @@ export async function reportProblem(
     }
   }
 
-  const alternatives = connector
-    ? await nearestWorkingPoints(point.id, connector.type)
-    : await nearestWorkingPoints(point.id, point.connectors[0]?.type ?? null);
-
   return {
     ticket: await prisma.ticket.findUniqueOrThrow({ where: { id: ticket.id } }),
     workOrder,
-    alternatives,
+    alternatives: await offerAlternatives(point.id, connector?.type ?? point.connectors[0]?.type ?? null),
   };
+}
+
+function offerAlternatives(pointId: string, connectorType: string | null) {
+  return nearestWorkingPoints(pointId, connectorType as never);
+}
+
+/**
+ * Одна заявка на одно нажатие. Строка заявителя берётся под блокировку,
+ * поэтому два одновременных нажатия одного человека встают в очередь, а не
+ * заводят две заявки каждое по своему пустому поиску.
+ */
+async function findOrCreateTicket(
+  args: ReportProblemArgs,
+  operatorId: string,
+  connectorId: string | null,
+  priority: WorkOrderPriority,
+): Promise<{ ticket: Ticket; fresh: boolean }> {
+  const create = () =>
+    prisma.ticket.create({
+      data: {
+        operatorId,
+        pointId: args.pointId,
+        connectorId,
+        reporterId: args.reporterId ?? null,
+        source: args.source ?? "app",
+        problemType: args.problemType,
+        comment: args.comment?.trim() || null,
+        photos: [],
+        priority,
+        respondBy: new Date(Date.now() + SLA_MINUTES[args.problemType] * 60 * 1000),
+      },
+    });
+
+  if (!args.reporterId) return { ticket: await create(), fresh: true };
+
+  return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${args.reporterId} FOR UPDATE`;
+    const since = new Date(Date.now() - DEDUPE_WINDOW_MINUTES * 60 * 1000);
+    const existing = await tx.ticket.findFirst({
+      where: {
+        reporterId: args.reporterId,
+        pointId: args.pointId,
+        problemType: args.problemType,
+        status: { in: ["OPEN", "IN_PROGRESS"] },
+        createdAt: { gte: since },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (existing) return { ticket: existing, fresh: false };
+    const ticket = await tx.ticket.create({
+      data: {
+        operatorId,
+        pointId: args.pointId,
+        connectorId,
+        reporterId: args.reporterId,
+        source: args.source ?? "app",
+        problemType: args.problemType,
+        comment: args.comment?.trim() || null,
+        photos: [],
+        priority,
+        respondBy: new Date(Date.now() + SLA_MINUTES[args.problemType] * 60 * 1000),
+      },
+    });
+    return { ticket, fresh: true };
+  });
 }
 
 export { nearestWorkingPoints };
