@@ -50,7 +50,7 @@ Call that prefix `TESTENV` below.
 - Modify: `prisma/schema.prisma`
 - Create: migration via `npx prisma migrate dev --name support_compensation`
 
-- [ ] **Step 1: Add `COMPENSATION` to `CampaignTrigger`**
+- [x] **Step 1: Add `COMPENSATION` to `CampaignTrigger`**
 
 In `enum CampaignTrigger`, after `TOKEN_PAYMENT`:
 
@@ -61,7 +61,7 @@ In `enum CampaignTrigger`, after `TOKEN_PAYMENT`:
   COMPENSATION
 ```
 
-- [ ] **Step 2: Add the session and the refunds to `Ticket`**
+- [x] **Step 2: Add the session and the refunds to `Ticket`**
 
 In `model Ticket`, after the `connector` relation:
 
@@ -85,7 +85,7 @@ and a new index at the bottom of the model:
   @@index([paymentId])
 ```
 
-- [ ] **Step 3: Add the back-relations and the model**
+- [x] **Step 3: Add the back-relations and the model**
 
 In `model Payment`, next to `promoGrants`:
 
@@ -136,7 +136,7 @@ model PaymentRefund {
 }
 ```
 
-- [ ] **Step 4: Migrate and generate**
+- [x] **Step 4: Migrate and generate**
 
 ```bash
 cd ~/poolwatt
@@ -146,7 +146,7 @@ TESTENV npx prisma migrate deploy
 
 Expected: migration applied on both databases, client regenerated.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add prisma/schema.prisma prisma/migrations
@@ -161,7 +161,7 @@ git commit -m "feat(support): the schema of a §51 compensation"
 - Create: `src/lib/work/ticket-compensation.ts`
 - Create: `src/lib/work/ticket-compensation.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Read `src/lib/work/ticket-conversation.test.ts` first for the fixture style
 used in this folder (it builds an operator, a point, a connector and a user
@@ -253,7 +253,7 @@ it("refuses a refund with no reason", async () => {
 });
 ```
 
-- [ ] **Step 2: Run them and watch them fail**
+- [x] **Step 2: Run them and watch them fail**
 
 ```bash
 TESTENV npx vitest run src/lib/work/ticket-compensation.test.ts
@@ -261,7 +261,7 @@ TESTENV npx vitest run src/lib/work/ticket-compensation.test.ts
 
 Expected: FAIL — `Cannot find module './ticket-compensation'`.
 
-- [ ] **Step 3: Write `src/lib/work/ticket-compensation.ts`**
+- [x] **Step 3: Write `src/lib/work/ticket-compensation.ts`**
 
 ```ts
 // Компенсации §51 — то, что сеть возвращает за испорченную зарядку.
@@ -446,7 +446,7 @@ Check `src/lib/exchange/idempotency.ts` actually exports `isUniqueViolation`;
 if it lives elsewhere (`campaign-engine.ts` imports it from somewhere — read
 its import list), import it from the same place.
 
-- [ ] **Step 4: Run the tests**
+- [x] **Step 4: Run the tests**
 
 ```bash
 TESTENV npx vitest run src/lib/work/ticket-compensation.test.ts
@@ -454,7 +454,7 @@ TESTENV npx vitest run src/lib/work/ticket-compensation.test.ts
 
 Expected: PASS, 8 cases.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/work/ticket-compensation.ts src/lib/work/ticket-compensation.test.ts
@@ -470,7 +470,7 @@ git commit -m "feat(support): a wrong debit goes back onto the balance, once per
 - Modify: `src/lib/work/ticket-compensation.test.ts`
 - Modify: `src/lib/marketing/campaign-engine.ts:69` (the trigger guard)
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to `ticket-compensation.test.ts` a `makeCompensationCampaign(operatorId, zoneId, over)`
 helper creating an `ACTIVE` campaign with `trigger: "COMPENSATION"`,
@@ -534,7 +534,7 @@ it("a charge earns no compensation gift", async () => {
 });
 ```
 
-- [ ] **Step 2: Run them and watch them fail**
+- [x] **Step 2: Run them and watch them fail**
 
 ```bash
 TESTENV npx vitest run src/lib/work/ticket-compensation.test.ts
@@ -542,7 +542,7 @@ TESTENV npx vitest run src/lib/work/ticket-compensation.test.ts
 
 Expected: FAIL — `grantTicketCompensation is not a function`.
 
-- [ ] **Step 3: Keep `COMPENSATION` out of the charge triggers**
+- [x] **Step 3: Keep `COMPENSATION` out of the charge triggers**
 
 In `src/lib/marketing/campaign-engine.ts`, extend the guard that already
 turns away `PROMO_CODE` and `BIRTHDAY`:
@@ -562,7 +562,7 @@ turns away `PROMO_CODE` and `BIRTHDAY`:
   }
 ```
 
-- [ ] **Step 4: Add the granter to `ticket-compensation.ts`**
+- [x] **Step 4: Add the granter to `ticket-compensation.ts`**
 
 ```ts
 export interface CompensationView {
@@ -672,7 +672,7 @@ export async function readCompensationCampaign(operatorId: string, pointId: stri
 }
 ```
 
-- [ ] **Step 5: Run the tests**
+- [x] **Step 5: Run the tests**
 
 ```bash
 TESTENV npx vitest run src/lib/work/ticket-compensation.test.ts src/lib/marketing/campaign-engine.test.ts
@@ -680,7 +680,7 @@ TESTENV npx vitest run src/lib/work/ticket-compensation.test.ts src/lib/marketin
 
 Expected: PASS, 14 cases in the new file and the engine's own suite green.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/work/ticket-compensation.ts src/lib/work/ticket-compensation.test.ts src/lib/marketing/campaign-engine.ts
@@ -695,7 +695,7 @@ git commit -m "feat(support): §51 compensation in gift kWh, out of the partner'
 - Modify: `src/lib/marketing/campaign-service.ts`
 - Modify: `src/lib/marketing/campaign-service.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 it("refuses a second compensation campaign in one network", async () => {
@@ -730,7 +730,7 @@ it("a compensation campaign gives no free booking", async () => {
 Read the existing `campaign-service.test.ts` for how it builds an operator and
 a user and reuse that helper rather than writing a second one.
 
-- [ ] **Step 2: Run them and watch them fail**
+- [x] **Step 2: Run them and watch them fail**
 
 ```bash
 TESTENV npx vitest run src/lib/marketing/campaign-service.test.ts
@@ -738,7 +738,7 @@ TESTENV npx vitest run src/lib/marketing/campaign-service.test.ts
 
 Expected: FAIL — the second activation succeeds.
 
-- [ ] **Step 3: Add the rules in `validate()` and in `setCampaignStatus`**
+- [x] **Step 3: Add the rules in `validate()` and in `setCampaignStatus`**
 
 In `validate()`, inside the `else` branch that handles gift campaigns, after
 the free-booking check:
@@ -781,7 +781,7 @@ In `setCampaignStatus`, before writing `ACTIVE`:
   }
 ```
 
-- [ ] **Step 4: Run the tests**
+- [x] **Step 4: Run the tests**
 
 ```bash
 TESTENV npx vitest run src/lib/marketing/campaign-service.test.ts
@@ -789,7 +789,7 @@ TESTENV npx vitest run src/lib/marketing/campaign-service.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/marketing/campaign-service.ts src/lib/marketing/campaign-service.test.ts
@@ -804,7 +804,7 @@ git commit -m "feat(marketing): a network runs one §51 compensation at a time"
 - Modify: `src/lib/work/ticket-service.ts`
 - Modify: `src/lib/work/ticket-service.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```ts
 it("keeps the session a report came from", async () => {
@@ -840,7 +840,7 @@ it("refuses a session that belongs to somebody else", async () => {
 });
 ```
 
-- [ ] **Step 2: Run them and watch them fail**
+- [x] **Step 2: Run them and watch them fail**
 
 ```bash
 TESTENV npx vitest run src/lib/work/ticket-service.test.ts
@@ -848,7 +848,7 @@ TESTENV npx vitest run src/lib/work/ticket-service.test.ts
 
 Expected: FAIL — `paymentId` is not accepted and lands nowhere.
 
-- [ ] **Step 3: Accept and verify the session**
+- [x] **Step 3: Accept and verify the session**
 
 In `ReportProblemArgs` add:
 
@@ -901,7 +901,7 @@ transaction, make the window depend on it:
     });
 ```
 
-- [ ] **Step 4: Run the tests**
+- [x] **Step 4: Run the tests**
 
 ```bash
 TESTENV npx vitest run src/lib/work/ticket-service.test.ts
@@ -909,7 +909,7 @@ TESTENV npx vitest run src/lib/work/ticket-service.test.ts
 
 Expected: PASS, including the existing cases.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/work/ticket-service.ts src/lib/work/ticket-service.test.ts
@@ -926,7 +926,7 @@ git commit -m "feat(support): a report from the charge history names its session
 - Modify: `src/lib/exchange/wallet-history.ts`
 - Modify: `src/lib/exchange/wallet-history.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `ledger.test.ts`:
 
@@ -975,7 +975,7 @@ it("a §51 refund shows up as money back", async () => {
 });
 ```
 
-- [ ] **Step 2: Run them and watch them fail**
+- [x] **Step 2: Run them and watch them fail**
 
 ```bash
 TESTENV npx vitest run src/lib/accounting/ledger.test.ts src/lib/exchange/wallet-history.test.ts
@@ -983,7 +983,7 @@ TESTENV npx vitest run src/lib/accounting/ledger.test.ts src/lib/exchange/wallet
 
 Expected: FAIL — no `refund` line, no `REFUND` entry.
 
-- [ ] **Step 3: Teach the ledger a second source**
+- [x] **Step 3: Teach the ledger a second source**
 
 In `ledger.ts`, widen the kind:
 
@@ -1041,7 +1041,7 @@ and after the receipt lines are built, before the totals:
 `const lines: LedgerLine[] = receipts.map(...)` (it already is) and push into
 it; if TypeScript complains about the inferred type, annotate it explicitly.
 
-- [ ] **Step 4: Teach the wallet history the new kind**
+- [x] **Step 4: Teach the wallet history the new kind**
 
 In `wallet-history.ts` add `"REFUND"` to `WalletHistoryKind` and to
 `ALL_HISTORY_KINDS`, and a block after the `CHARGE` one:
@@ -1077,7 +1077,7 @@ In `wallet-history.ts` add `"REFUND"` to `WalletHistoryKind` and to
   }
 ```
 
-- [ ] **Step 5: Run the tests**
+- [x] **Step 5: Run the tests**
 
 ```bash
 TESTENV npx vitest run src/lib/accounting src/lib/exchange/wallet-history.test.ts
@@ -1085,7 +1085,7 @@ TESTENV npx vitest run src/lib/accounting src/lib/exchange/wallet-history.test.t
 
 Expected: PASS, including the five export-format suites.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/accounting src/lib/exchange/wallet-history.ts src/lib/exchange/wallet-history.test.ts
@@ -1101,7 +1101,7 @@ git commit -m "feat(accounting): a §51 refund is a line in the partner's month 
 - Create: `src/lib/work/refund-mail.test.ts`
 - Modify: `worker/index.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 it("tells the driver once and marks it told", async () => {
@@ -1123,7 +1123,7 @@ it("marks a refund told even when the driver has no verified email", async () =>
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 ```bash
 TESTENV npx vitest run src/lib/work/refund-mail.test.ts
@@ -1131,7 +1131,7 @@ TESTENV npx vitest run src/lib/work/refund-mail.test.ts
 
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Write `src/lib/work/refund-mail.ts`**
+- [x] **Step 3: Write `src/lib/work/refund-mail.ts`**
 
 Copy the shape of `ticket-recovery.ts`: an options object with `sendTo`, a
 `findMany` over `paymentRefund` where `notifiedAt: null` with
@@ -1142,7 +1142,7 @@ number in the body. Address the refund's wallet owner, not the ticket's
 reporter — they are the same person today, and the wallet is the one who got
 the money.
 
-- [ ] **Step 4: Wire the worker**
+- [x] **Step 4: Wire the worker**
 
 In `worker/index.ts`, next to the other ticket passes:
 
@@ -1156,7 +1156,7 @@ In `worker/index.ts`, next to the other ticket passes:
   }
 ```
 
-- [ ] **Step 5: Run the tests**
+- [x] **Step 5: Run the tests**
 
 ```bash
 TESTENV npx vitest run src/lib/work/refund-mail.test.ts
@@ -1164,7 +1164,7 @@ TESTENV npx vitest run src/lib/work/refund-mail.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/work/refund-mail.ts src/lib/work/refund-mail.test.ts worker/index.ts
@@ -1180,7 +1180,7 @@ git commit -m "feat(support): the driver gets a letter about a §51 refund"
 - Modify: `src/app/[locale]/me/charger-operator/[id]/tickets/[ticketId]/page.tsx`
 - Modify: `messages/ru.json`, `messages/en.json`, `messages/sk.json`
 
-- [ ] **Step 1: Add the server actions**
+- [x] **Step 1: Add the server actions**
 
 In `src/app/[locale]/me/tickets/actions.ts` (the same file the other ticket
 actions live in, for the same reason: the right is decided by
@@ -1251,7 +1251,7 @@ Also add `revalidatePath(`/${locale}/me/wallet`)` and
 `/${locale}/app/wallet` to `revalidateTicket`: a refund changes the balance
 those pages print.
 
-- [ ] **Step 2: Put them on the page**
+- [x] **Step 2: Put them on the page**
 
 Read `src/app/[locale]/me/charger-operator/[id]/tickets/[ticketId]/page.tsx`
 and follow its existing client-component pattern for the reply form. Add a
@@ -1271,13 +1271,13 @@ section below the conversation:
 - When `ticket.compensation` is set: a line stating what the network gave
   back.
 
-- [ ] **Step 3: Add the words**
+- [x] **Step 3: Add the words**
 
 Add to the `tickets` namespace of all three message files; keep the Russian
 plain ("Вернуть списание", "Выдать компенсацию", "Сеть вернула",
 "Остаток к возврату", "Причина возврата", "Сеть не настроила компенсацию").
 
-- [ ] **Step 4: Build and look at it**
+- [x] **Step 4: Build and look at it**
 
 ```bash
 npm run build && pm2 restart poolwatt-web
@@ -1286,7 +1286,7 @@ npm run build && pm2 restart poolwatt-web
 Expected: build succeeds. Open the ticket of a network you own and see both
 controls.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app messages
@@ -1306,14 +1306,14 @@ git commit -m "feat(support): the desk can give back a debit and hand out a comp
 - Modify: `src/app/[locale]/c/[id]/report/actions.ts`
 - Modify: `messages/{ru,en,sk}.json`
 
-- [ ] **Step 1: Show the compensation on the client's ticket**
+- [x] **Step 1: Show the compensation on the client's ticket**
 
 On both client ticket pages, where the status block is printed, add a line
 when `ticket.compensation` is not null: the label from the messages file and
 the value. The systemmessages in the conversation already say it in words;
 this is the line a thumb finds without reading the thread.
 
-- [ ] **Step 2: Carry a session into the report form**
+- [x] **Step 2: Carry a session into the report form**
 
 In `src/app/[locale]/c/[id]/report/page.tsx`, read the optional
 `payment` search param (remember: `searchParams` is async — `await` it),
@@ -1323,7 +1323,7 @@ to the schema and pass it to `reportProblem`. When a session is given,
 default the problem type to `WRONG_PRICE` — that is what a report from the
 history is about nine times out of ten, and the list stays editable.
 
-- [ ] **Step 3: §51.1 — the button in the charge history**
+- [x] **Step 3: §51.1 — the button in the charge history**
 
 On `/me/wallet`, in the receipts table, add a last cell for rows with a
 `paymentId`: a link to
@@ -1333,7 +1333,7 @@ skip the link when the session has no point of ours (a charge elsewhere has
 no network to complain to). Do the same on the phone's wallet page in the
 charge list.
 
-- [ ] **Step 4: Build and walk it through**
+- [x] **Step 4: Build and walk it through**
 
 ```bash
 npm run build && pm2 restart poolwatt-web
@@ -1343,7 +1343,7 @@ Open `/ru/me/wallet`, press the link on a charge, send a report, then answer
 it from the support desk with a refund and a compensation, and watch both
 appear on the driver's ticket and in the wallet.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app messages
@@ -1360,13 +1360,13 @@ git commit -m "feat(support): §51.1 reports from the charge history, and the cl
 - Modify: `src/app/api/v1/tickets/report/route.ts`
 - Modify: `docs/api.md` if one exists; otherwise skip
 
-- [ ] **Step 1: Read the sibling route**
+- [x] **Step 1: Read the sibling route**
 
 `src/app/api/v1/tickets/[id]/messages/route.ts` is the model: how it reads
 the bearer or session identity, how it calls `readTicketForUser`, and how it
 answers 404 rather than 403. Copy that shape exactly.
 
-- [ ] **Step 2: Write the two routes**
+- [x] **Step 2: Write the two routes**
 
 `POST /v1/tickets/{id}/refund` takes `{ amountFiat, reason }` and
 `POST /v1/tickets/{id}/compensation` takes no body. Both require
@@ -1375,12 +1375,12 @@ answers 404 rather than 403. Copy that shape exactly.
 call), answer 503 on `FeatureClosedError`, 400 on
 `TicketCompensationError`, 404 when `readTicketForUser` says nothing.
 
-- [ ] **Step 3: Accept a session in the report method**
+- [x] **Step 3: Accept a session in the report method**
 
 In `src/app/api/v1/tickets/report/route.ts` add `paymentId` to the schema and
 pass it through, mirroring the server action.
 
-- [ ] **Step 4: Smoke them**
+- [x] **Step 4: Smoke them**
 
 ```bash
 npm run build && pm2 restart poolwatt-web
@@ -1390,7 +1390,7 @@ curl -s -X POST http://127.0.0.1:3000/api/v1/tickets/<id>/compensation \
 
 Expected: a JSON body, not an HTML error page.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/app/api
@@ -1405,7 +1405,7 @@ git commit -m "feat(api): POST /v1/tickets/{id}/refund and /compensation"
 - Create: `e2e/support-compensation.spec.ts`
 - Create: `e2e/support-compensation.mobile.spec.ts`
 
-- [ ] **Step 1: Write the desktop spec**
+- [x] **Step 1: Write the desktop spec**
 
 Read `e2e/support-conversation.spec.ts` for how it seeds a network, a point,
 a driver and a support employee through Prisma and signs them in. Then:
@@ -1415,13 +1415,13 @@ part of the amount with a reason and hands out the compensation; the driver
 reloads their ticket and sees both lines, and `/ru/me/wallet` shows the new
 balance. Clean up every row the spec created.
 
-- [ ] **Step 2: Write the phone spec**
+- [x] **Step 2: Write the phone spec**
 
 Mirror `e2e/support-conversation.mobile.spec.ts`: Pixel 7 viewport against
 the real domain, the driver's `/ru/app/tickets/[id]` shows the compensation
 line and `/ru/app/wallet` the refund in the history.
 
-- [ ] **Step 3: Run the suites**
+- [x] **Step 3: Run the suites**
 
 ```bash
 ssh dv@77.221.159.163 'pm2 status'     # poolwatt-web must be online
@@ -1430,7 +1430,7 @@ cd ~/poolwatt && npm run test:e2e -- support-compensation
 
 Expected: PASS.
 
-- [ ] **Step 4: Run everything**
+- [x] **Step 4: Run everything**
 
 ```bash
 TESTENV npx vitest run
@@ -1440,7 +1440,7 @@ cd ~/poolwatt && npm run test:e2e
 Expected: the whole unit suite green (1808 cases before this work, plus the
 new ones) and the whole e2e suite green.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add e2e
@@ -1451,9 +1451,9 @@ git commit -m "test(support): §51 compensations on the live build, on a monitor
 
 ### Task 12: Tick the plan and the tracker
 
-- [ ] **Step 1: Tick every box above that is done**
+- [x] **Step 1: Tick every box above that is done**
 
-- [ ] **Step 2: Update `inbox/TZ-STATUS.md`**
+- [x] **Step 2: Update `inbox/TZ-STATUS.md`**
 
 Mark N-2 `готово 2026-11-27`, write what was found before the work started
 (the dead `compensation` field, the missing session link, the refund that
@@ -1462,9 +1462,34 @@ checked and how, and what is not there and why (a refund to a card, a payout,
 push). The story count does not change: §51's compensation lines have no user
 story of their own.
 
-- [ ] **Step 3: Commit (the tracker is gitignored, so only the plan)**
+- [x] **Step 3: Commit (the tracker is gitignored, so only the plan)**
 
 ```bash
 git add docs/superpowers/plans/2026-11-27-support-compensation.md
 git commit -m "docs(support): tick the §51 compensation plan"
 ```
+
+---
+
+## Где работа разошлась с планом
+
+- **Чек на возврат не выпускается.** План обсуждал `Receipt.refundOfPaymentId`;
+  в работе возврат получил свой номер из `receipt_number_seq` и стал **вторым
+  источником строк** реестра §46, а не чеком. Так не пришлось трогать ни рендер
+  документа, ни QR проверки, ни правила доступа к чеку — а месяц партнёра
+  сходится так же.
+- **Найдено попутно и исправлено: защита CSV ломала отрицательную сумму.**
+  `csvCell` ставил апостроф перед любой ячейкой, начинающейся с `-`, — защита
+  от формулы в таблице. Возврат — отрицательное число, и `'-4,20` для Excel
+  текст: собственная сумма бухгалтера молча прошла бы мимо возврата. Теперь
+  простое подписанное число проходит как число, а всё остальное по-прежнему
+  закавычивается (случай `=HYPERLINK(...)` в тестах цел).
+- **Промокод на кампании-компенсации** уже отказывался существующим правилом
+  §42 («код несёт только кампания по коду»), поэтому своей проверки не
+  добавлено — только проверка на бесплатную бронь и на нулевые кВт·ч.
+- **Кнопка §51.1 стоит на чеке**, а не только в таблице истории: так она
+  появилась сразу и на мониторе, и в телефоне, а на `/me/wallet` в таблице
+  зарядок есть своя ссылка. Зарядка не в нашей сети ссылки не получает —
+  жаловаться там некому.
+- **Префиксы тестов.** `test_ticketcomp_` начинался с `test_ticket_`, и уборка
+  одного набора съедала данные другого. Стало `test_tcomp_`.
