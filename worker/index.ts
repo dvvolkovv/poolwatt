@@ -30,6 +30,7 @@ import { purgeIdempotencyRecords } from "@/lib/exchange/idempotency";
 import { expireStaleSessions } from "@/lib/exchange/charge-session";
 import { escalateOverdueTickets, closeResolvedTickets } from "@/lib/work/ticket-sla";
 import { notifyRecoveredTickets } from "@/lib/work/ticket-recovery";
+import { notifyPendingRefunds } from "@/lib/work/refund-mail";
 import { expireGrants, sweepPendingAwards } from "@/lib/marketing/campaign-engine";
 import { issueBirthdayGifts } from "@/lib/marketing/birthday";
 import { notifyPendingGrants } from "@/lib/marketing/gift-mail";
@@ -256,6 +257,15 @@ export async function runAlertSweep(now = new Date()): Promise<void> {
     if (told > 0) log(`support: ${told} reporter(s) told the station works again`);
   } catch (err) {
     console.error("[worker] recovery notices failed:", err);
+  }
+
+  // §51 «Ошибочное списание — возврат после проверки поддержкой»: о самом
+  // возврате водителю говорит письмо, экран заявки говорит то же.
+  try {
+    const told = await notifyPendingRefunds(now);
+    if (told > 0) log(`support: ${told} refund notification(s) sent`);
+  } catch (err) {
+    console.error("[worker] refund notification failed:", err);
   }
 
   // A resolved ticket nobody argued with closes by itself; an argument

@@ -399,8 +399,8 @@ describe("readLedger and a §51 refund", () => {
   });
 
   it("§47 — an accountant with other points does not see it", async () => {
-    const access = await accountingAccess(operatorId, accountantUserId, "USER");
-    const ledger = await readLedger({ operatorId, ...MAY, pointIds: access!.pointIds });
+    const access = await accountingAccess(operatorId, accountantUserId);
+    const ledger = await readLedger({ operatorId, ...MAY, pointIds: access.pointIds });
     // Точка A как раз разрешена этому бухгалтеру, поэтому возврат видно.
     expect(ledger.lines.some((l) => l.kind === "refund")).toBe(true);
     const narrowed = await readLedger({ operatorId, ...MAY, pointIds: [pointB] });
