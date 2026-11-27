@@ -65,6 +65,7 @@ model User {
   reservations            Reservation[]            @relation("ReservationDriver")
   reportedTickets         Ticket[]                 @relation("TicketReporter")
   ticketMessages          TicketMessage[]          @relation("TicketMessageAuthor")
+  refundsDecided          PaymentRefund[]          @relation("RefundDecidedBy")
 
   // Exchange core (ТЗ §4–§8).
   ownedCompanies     Company[]            @relation("CompanyOwner")
@@ -594,6 +595,11 @@ model Ticket {
   point              AcceptancePoint?  @relation(fields: [pointId], references: [id], onDelete: SetNull)
   connectorId        String?
   connector          PointConnector?   @relation(fields: [connectorId], references: [id], onDelete: SetNull)
+  // §51 "неверная цена или списание" — which session is being appealed.
+  // Filled by a report sent from the charge history; without it a refund has
+  // no subject, because support cannot know which debit to give back.
+  paymentId          String?
+  payment            Payment?          @relation("TicketPayment", fields: [paymentId], references: [id], onDelete: SetNull)
   reporterId         String?
   reporter           User?             @relation("TicketReporter", fields: [reporterId], references: [id], onDelete: SetNull)
   source             String            @default("app")
@@ -609,6 +615,8 @@ model Ticket {
   compensation       String?
   // §51 "клиент видит статус заявки и переписывается с поддержкой в чате".
   messages           TicketMessage[]
+  // §51 "Ошибочное списание — возврат после проверки поддержкой".
+  refunds            PaymentRefund[]
   // §48 "SLA по приоритету; эскалация". The first answer by a person, not
   // the work order the system opens by itself, is what the SLA measures.
   firstRespondedAt   DateTime?
@@ -624,6 +632,7 @@ model Ticket {
   @@index([operatorId, status])
   @@index([reporterId])
   @@index([operatorId, respondBy])
+  @@index([paymentId])
 }
 
 /// Who said it. Not derived: a network's employee can also be a customer of
@@ -647,6 +656,40 @@ model TicketMessage {
   createdAt  DateTime         @default(now())
 
   @@index([ticketId, createdAt])
+}
+
+/// §51 "Ошибочное списание — возврат после проверки поддержкой".
+///
+/// The money goes back onto the wallet balance it was taken from, which is the
+/// same ledger move as the booking fee of US-55 and needs no payment provider.
+/// A session paid by card is refused by `receiptRefundsOpen`: money back onto
+/// a card is the provider's job, and promising it would be an invention.
+model PaymentRefund {
+  id          String    @id @default(cuid())
+  paymentId   String
+  payment     Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  /// The review that decided it. Unique: one review, one refund — a second
+  /// refund needs a second review, and that is also what makes two clicks
+  /// produce one row without a lock.
+  ticketId    String    @unique
+  ticket      Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  walletId    String
+  wallet      Wallet    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  /// Its own number from `receipt_number_seq`: a partner's accountant refers
+  /// to a document, not to a cuid.
+  number      String    @unique
+  amountFiat  Decimal   @db.Decimal(18, 2)
+  currency    String    @default("EUR")
+  reason      String    @db.Text
+  decidedById String
+  decidedBy   User      @relation("RefundDecidedBy", fields: [decidedById], references: [id], onDelete: Cascade)
+  /// Null means the worker still owes the driver a letter.
+  notifiedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([paymentId])
+  @@index([notifiedAt])
+  @@index([createdAt])
 }
 
 enum WorkOrderType {
@@ -1791,6 +1834,7 @@ model Wallet {
   outgoingTransfers TokenTransfer[] @relation("TransferFrom")
   incomingTransfers TokenTransfer[] @relation("TransferTo")
   chargeSessions    ChargeSession[]
+  refunds           PaymentRefund[]
 
   @@unique([ownerUserId, zoneId])
   @@index([zoneId])
@@ -1899,6 +1943,9 @@ model Payment {
   roamingSettlement RoamingSettlement?
   promoGrants       PromoGrant[]
   chargeSession     ChargeSession?
+  // §51 — заявки об этом сеансе и возвраты по ним.
+  tickets           Ticket[]           @relation("TicketPayment")
+  refunds           PaymentRefund[]
 
   @@index([walletId, createdAt])
   @@index([status])
@@ -2800,6 +2847,10 @@ enum CampaignTrigger {
   BIRTHDAY
   // §8, US-12 — every session paid with tokens, not an n-th one.
   TOKEN_PAYMENT
+  // §51 "партнёр может настроить компенсацию подарочными кВт·ч своей сети за
+  // неудобство". Nothing earns it: support hands it out on a ticket, which is
+  // why `triggerFired` answers "no" for it like it does for a promo code.
+  COMPENSATION
 }
 
 enum PromoGrantKind {
