@@ -256,7 +256,10 @@ export function CampaignForm({
             </span>
             <input
               type="number"
-              min={0.001}
+              // §42 "комбинация" — zero kWh is a complete gift when the
+              // campaign gives a free booking, and the browser refuses to
+              // submit a form whose number is below `min`.
+              min={freeBooking ? 0 : 0.001}
               step={0.001}
               value={giftKwh}
               onChange={(e) => setGiftKwh(e.target.value)}
@@ -302,7 +305,7 @@ export function CampaignForm({
           </span>
           <input
             type="number"
-            min={0.001}
+            min={freeBooking ? 0 : 0.001}
             step={0.001}
             value={budgetKwh}
             onChange={(e) => setBudgetKwh(e.target.value)}
