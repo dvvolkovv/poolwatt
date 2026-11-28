@@ -33,10 +33,18 @@ export const telemetryChannel = (assetId: string) => `telemetry.${assetId}`;
  * exists. Who may hear it is decided by `readTicketForUser`, not here.
  */
 export const ticketChannel = (ticketId: string) => `ticket.${ticketId}`;
+/**
+ * А это шестой вид, и шаг за закрытый список §15 делается во второй раз по
+ * той же причине: §48 требует «внутренний чат команды и чат по каждому
+ * наряду», а чат, в котором ответ появляется после перезагрузки, — не чат.
+ * Имя комнаты собирает `chatChannel` в `work/chat-rooms.ts`; здесь только
+ * разрешение, потому что `isKnownChannel` сторожит публикатора от опечатки.
+ * Кто вправе слушать комнату, решает `readRoomForUser`, а не этот файл.
+ */
 
 /** §15 channel names, as a guard against typos in a publisher. */
 export function isKnownChannel(channel: string): boolean {
-  return /^(orderbook|trades|wallet|telemetry|ticket)\.[A-Za-z0-9_-]{1,64}$/.test(channel);
+  return /^(orderbook|trades|wallet|telemetry|ticket|team)\.[A-Za-z0-9_-]{1,64}$/.test(channel);
 }
 
 /** Order books and trades are public: the terminal shows them to anyone. */

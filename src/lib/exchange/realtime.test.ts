@@ -181,3 +181,22 @@ describe("ticket channels", () => {
     expect(ticketAllows(claims, ticketChannel("t2"))).toBe(false);
   });
 });
+
+// §48 — the sixth kind, the rooms of the internal chat.
+describe("team channels", () => {
+  it("is a known channel and is never public", () => {
+    expect(isKnownChannel("team.wo-abc123")).toBe(true);
+    expect(isKnownChannel("team.net-abc123")).toBe(true);
+    expect(isKnownChannel("team.crew-abc123")).toBe(true);
+    expect(isKnownChannel("team.")).toBe(false);
+    expect(isPublicChannel("team.net-abc123")).toBe(false);
+  });
+
+  it("is only heard by a ticket naming that very room", () => {
+    const ticket = issueTicket({ userId: "u1", channels: ["team.wo-w1"] });
+    const claims = verifyTicket(ticket)!;
+    expect(ticketAllows(claims, "team.wo-w1")).toBe(true);
+    expect(ticketAllows(claims, "team.wo-w2")).toBe(false);
+    expect(ticketAllows(claims, "team.net-op1")).toBe(false);
+  });
+});
