@@ -68,19 +68,27 @@ export default async function NavigatorPage({ params, searchParams }: Props) {
 
   // US-23 — the filters live in the address, so the view a driver found is a
   // link they can keep and send.
-  const one = (key: string) => (typeof sp[key] === "string" ? (sp[key] as string) : "");
+  const one = (key: string) =>
+    typeof sp[key] === "string" ? (sp[key] as string) : "";
 
   return (
-    <NavigatorClient
-      labels={labels}
-      initialFilters={{
-        connector: (one("connector") as never) || "",
-        power: (one("power") as never) || "",
-        status: one("status"),
-        query: one("q"),
-        sort: (one("sort") as never) || "default",
-        freeOnly: one("free") === "1",
-      }}
-    />
+    <>
+      {/* Карта занимает весь экран (`fixed inset-0`), поэтому заголовок
+          страницы — скрытый: имя у документа быть обязано, а место под него
+          на карте отдавать нечему. До этого у страницы не было ни `h1`, ни
+          `h2` вовсе, и для читалки экрана она была безымянной. */}
+      <h1 className="sr-only">{t("title")}</h1>
+      <NavigatorClient
+        labels={labels}
+        initialFilters={{
+          connector: (one("connector") as never) || "",
+          power: (one("power") as never) || "",
+          status: one("status"),
+          query: one("q"),
+          sort: (one("sort") as never) || "default",
+          freeOnly: one("free") === "1",
+        }}
+      />
+    </>
   );
 }
