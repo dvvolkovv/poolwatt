@@ -11,6 +11,8 @@ import { WorkOrderSitePanel } from "@/components/work/work-order-site-panel";
 import { readWorkOrderForUser } from "@/lib/work/work-order-access";
 import { ensureChecklist, readChecklist } from "@/lib/work/work-order-checklist";
 import { readSignature, readSitePhotos } from "@/lib/work/work-order-media";
+import { readRoomMessages } from "@/lib/work/chat-service";
+import { ChatThread } from "@/components/work/chat-thread";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +69,11 @@ export default async function WorkOrderPage({
   const signature = await readSignature(order.id);
 
   const t = await getTranslations("workOrders");
+  const tChat = await getTranslations("chat");
+
+  // §48 «чат по каждому наряду». Право то же, что на сам наряд: сюда уже
+  // дошли только те, кому `readWorkOrderForUser` сказал «да».
+  const chat = await readRoomMessages(`wo-${order.id}`, session.user.id, session.user.role);
 
   const staff = order.operatorId
     ? await prisma.employee.findMany({
@@ -155,6 +162,23 @@ export default async function WorkOrderPage({
           signedBy: t("signedBy"),
           signerSiteContact: t("signerSiteContact"),
           signerEngineer: t("signerEngineer"),
+        }}
+      />
+
+      <ChatThread
+        roomKey={`wo-${order.id}`}
+        messages={chat}
+        canWrite
+        labels={{
+          title: tChat("orderChat"),
+          placeholder: tChat("placeholder"),
+          send: tChat("send"),
+          sending: tChat("sending"),
+          system: tChat("system"),
+          live: tChat("live"),
+          empty: tChat("empty"),
+          queued: tChat("queued"),
+          offline: tChat("offline"),
         }}
       />
     </div>

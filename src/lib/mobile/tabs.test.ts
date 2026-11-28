@@ -98,3 +98,17 @@ describe("moreSections — US-49's engineer", () => {
     ).toEqual([]);
   });
 });
+
+describe("moreSections — чат команды §48", () => {
+  const base = { signedIn: true, hasAsset: false, isCoopMember: false };
+
+  it("предлагается сотруднику и никому больше", () => {
+    expect(moreSections({ ...base, isStaff: true })).toContain("chat");
+    expect(moreSections({ ...base, isStaff: false })).not.toContain("chat");
+  });
+
+  it("стоит сразу за нарядами: это та же работа", () => {
+    const sections = moreSections({ ...base, isStaff: true });
+    expect(sections.indexOf("chat")).toBe(sections.indexOf("work") + 1);
+  });
+});

@@ -32,7 +32,9 @@ export type QueuedKind =
   | "stock.issue"
   | "workorder.task"
   | "workorder.signature"
-  | "workorder.status";
+  | "workorder.status"
+  /** §48 — слово в чат наряда, сказанное там, где связи нет. */
+  | "workorder.chat";
 
 export interface QueuedOp {
   /** Он же `Idempotency-Key`: придуман при нажатии, неизменен при досылах. */

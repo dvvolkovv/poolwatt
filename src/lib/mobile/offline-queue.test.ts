@@ -11,6 +11,7 @@ import {
   flush,
   forget,
   list,
+  listFor,
   pendingCount,
 } from "./offline-queue";
 
@@ -203,5 +204,43 @@ describe("classify — a real fetch answer in the queue's own terms", () => {
       outcome: "rejected",
       reason: "HTTP 404",
     });
+  });
+});
+
+// §48 — пятый вид записи: слово в чат наряда из подвала.
+describe("сообщение чата в очереди", () => {
+  it("встаёт в очередь своего наряда и несёт свой ключ", () => {
+    const op = enqueue(storage, {
+      kind: "workorder.chat",
+      body: { body: "ворота с обратной стороны" },
+      workOrderId: "w1",
+      label: "ворота с обратной стороны",
+    });
+
+    expect(op.id).toBeTruthy();
+    expect(listFor(storage, "w1").map((o) => o.kind)).toEqual(["workorder.chat"]);
+    expect(listFor(storage, "w2")).toEqual([]);
+  });
+
+  it("досылается один раз: ключ придуман при нажатии", async () => {
+    enqueue(storage, {
+      kind: "workorder.chat",
+      body: { body: "уже на месте" },
+      workOrderId: "w1",
+      label: "уже на месте",
+    });
+
+    const keys: string[] = [];
+    await flush(storage, async (op) => {
+      keys.push(op.id);
+      return { outcome: "offline" };
+    });
+    await flush(storage, async (op) => {
+      keys.push(op.id);
+      return { outcome: "done" };
+    });
+
+    expect(keys[0]).toBe(keys[1]);
+    expect(list(storage)).toEqual([]);
   });
 });

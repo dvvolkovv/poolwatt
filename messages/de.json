@@ -1210,7 +1210,8 @@
       "roaming": "Roaming",
       "work": "Aufträge",
       "bookings": "Buchungen",
-      "support": "Unterstützung"
+      "support": "Unterstützung",
+      "chat": "Team-Chat"
     },
     "soon": {
       "title": "Not here yet",
@@ -3182,5 +3183,27 @@
       "violet": "Violett",
       "neutral": "Neutral"
     }
+  },
+  "chat": {
+    "eyebrow": "Team",
+    "title": "Team-Chat",
+    "orderChat": "Chat zum Auftrag",
+    "rooms": "Räume",
+    "noRooms": "Sie sind noch in keinem Raum",
+    "pick": "Raum auswählen",
+    "empty": "Noch nichts gesagt",
+    "placeholder": "An das Team schreiben",
+    "send": "Senden",
+    "sending": "…",
+    "system": "System",
+    "live": "Live",
+    "queued": "Auf dem Telefon gespeichert: geht raus, sobald wieder Netz da ist",
+    "unread": "neu",
+    "kind": {
+      "NETWORK": "Netz",
+      "CREW": "Team",
+      "WORK_ORDER": "Auftrag"
+    },
+    "offline": "Keine Verbindung — die Nachricht ging nicht raus, bitte erneut"
   }
 }

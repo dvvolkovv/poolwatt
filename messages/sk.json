@@ -2643,7 +2643,8 @@
       "card": "Karta",
       "contacts": "Kontakty a prevody",
       "roaming": "Roaming",
-      "support": "Podpora"
+      "support": "Podpora",
+      "chat": "Tímový chat"
     },
     "soon": {
       "title": "Obrazovka ešte nie je",
@@ -3180,5 +3181,27 @@
       "violet": "Fialová",
       "neutral": "Neutrálna"
     }
+  },
+  "chat": {
+    "eyebrow": "Tím",
+    "title": "Tímový chat",
+    "orderChat": "Chat k pracovnému príkazu",
+    "rooms": "Miestnosti",
+    "noRooms": "Zatiaľ nie ste v žiadnej miestnosti",
+    "pick": "Vyberte miestnosť",
+    "empty": "Zatiaľ nikto nič nenapísal",
+    "placeholder": "Napíšte tímu",
+    "send": "Poslať",
+    "sending": "…",
+    "system": "Systém",
+    "live": "Naživo",
+    "queued": "Uložené v telefóne: odošle sa, keď bude signál",
+    "unread": "nových",
+    "kind": {
+      "NETWORK": "Sieť",
+      "CREW": "Posádka",
+      "WORK_ORDER": "Pracovný príkaz"
+    },
+    "offline": "Bez signálu — správa sa neodoslala, skúste znova"
   }
 }

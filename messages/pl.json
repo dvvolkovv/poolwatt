@@ -1210,7 +1210,8 @@
       "roaming": "Roaming",
       "work": "Zlecenia",
       "bookings": "Rezerwacje",
-      "support": "Wsparcie"
+      "support": "Wsparcie",
+      "chat": "Czat zespołu"
     },
     "soon": {
       "title": "Not here yet",
@@ -3182,5 +3183,27 @@
       "violet": "Fioletowy",
       "neutral": "Neutralny"
     }
+  },
+  "chat": {
+    "eyebrow": "Zespół",
+    "title": "Czat zespołu",
+    "orderChat": "Czat zlecenia",
+    "rooms": "Pokoje",
+    "noRooms": "Nie jesteś jeszcze w żadnym pokoju",
+    "pick": "Wybierz pokój",
+    "empty": "Jeszcze nic nie powiedziano",
+    "placeholder": "Napisz do zespołu",
+    "send": "Wyślij",
+    "sending": "…",
+    "system": "System",
+    "live": "Na żywo",
+    "queued": "Zapisano w telefonie: wyśle się, gdy wróci sieć",
+    "unread": "nowe",
+    "kind": {
+      "NETWORK": "Sieć",
+      "CREW": "Brygada",
+      "WORK_ORDER": "Zlecenie"
+    },
+    "offline": "Brak sieci — wiadomość nie wyszła, spróbuj ponownie"
   }
 }

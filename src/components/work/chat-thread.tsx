@@ -34,6 +34,8 @@ export interface ChatThreadLabels {
   live: string;
   empty: string;
   queued: string;
+  /** Связь пропала, а очереди на этом экране нет. */
+  offline: string;
 }
 
 export function ChatThread({
@@ -118,19 +120,25 @@ export function ChatThread({
     }
 
     startTransition(async () => {
-      const result = await sendChatMessage({ key: roomKey, body: text });
-      if (!result.ok) {
-        // Отказ сети, а не по существу: на телефоне он тоже уходит в очередь.
+      try {
+        const result = await sendChatMessage({ key: roomKey, body: text });
+        if (!result.ok) {
+          setError(result.formError);
+          return;
+        }
+        setBody("");
+      } catch {
+        // Действие бросает только когда запрос не ушёл — это и есть офлайн.
+        // На телефоне сообщение встаёт в очередь §48 и уйдёт само; на
+        // мониторе очереди нет, и человеку надо сказать правду.
         if (offlineSend) {
           offlineSend(text);
           setBody("");
           setQueued(true);
           return;
         }
-        setError(result.formError);
-        return;
+        setError(labels.offline);
       }
-      setBody("");
     });
   }
 

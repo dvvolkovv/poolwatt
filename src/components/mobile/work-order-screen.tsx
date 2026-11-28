@@ -29,6 +29,11 @@ import {
 import type { EngineerStockView } from "@/lib/warehouse/engineer-view";
 import { Screen } from "@/components/mobile/screen";
 import {
+  ChatThread,
+  type ChatThreadLabels,
+  type ChatThreadMessage,
+} from "@/components/work/chat-thread";
+import {
   WorkOrderSiteWork,
   type SitePhoto,
   type SiteSignature,
@@ -46,6 +51,8 @@ const ENDPOINTS: Partial<Record<QueuedKind, (workOrderId: string) => string>> = 
   "workorder.task": (id) => `/api/v1/work-orders/${id}/tasks`,
   "workorder.signature": (id) => `/api/v1/work-orders/${id}/signature`,
   "workorder.status": (id) => `/api/v1/work-orders/${id}/status`,
+  // §48 — чат наряда: комната наряда зовётся по его же ключу.
+  "workorder.chat": (id) => `/api/v1/chat/rooms/wo-${id}/messages`,
 };
 
 export interface WorkOrderScreenLabels {
@@ -92,16 +99,21 @@ export function WorkOrderScreen({
   order,
   stock,
   site,
+  chat,
   labels,
   siteLabels,
+  chatLabels,
 }: {
   locale: string;
   order: WorkOrderScreenOrder;
   stock: EngineerStockView;
   /** §48 — чек-лист, снимки и подпись этого наряда. */
   site: { tasks: SiteTask[]; photos: SitePhoto[]; signature: SiteSignature | null; canWork: boolean };
+  /** §48 — переписка по этому наряду. */
+  chat: ChatThreadMessage[];
   labels: WorkOrderScreenLabels;
   siteLabels: SiteWorkLabels;
+  chatLabels: ChatThreadLabels;
 }) {
   const router = useRouter();
   const [queue, setQueue] = useState<QueuedOp[]>([]);
@@ -408,6 +420,24 @@ export function WorkOrderScreen({
         </button>
         <p className="mt-2 text-[12px] text-muted">{labels.snapshotAt}</p>
       </form>
+
+      <ChatThread
+        roomKey={`wo-${order.id}`}
+        messages={chat}
+        canWrite
+        compact
+        labels={chatLabels}
+        offlineSend={(body) => {
+          // Тот же путь, что у списания: очередь §48, ключ придуман при
+          // нажатии, порядок нажатий сохранён.
+          void enqueueOp({
+            kind: "workorder.chat",
+            workOrderId: order.id,
+            label: body,
+            body: { body },
+          });
+        }}
+      />
 
       <p className="mt-4 text-[12px] text-muted">
         <Link href={`/${locale}/me/work-orders/${order.id}`} prefetch={false} className="underline">

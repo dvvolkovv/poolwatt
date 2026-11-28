@@ -1210,7 +1210,8 @@
       "roaming": "Roaming",
       "work": "Órdenes de trabajo",
       "bookings": "Reservas",
-      "support": "Soporte"
+      "support": "Soporte",
+      "chat": "Chat del equipo"
     },
     "soon": {
       "title": "Not here yet",
@@ -3182,5 +3183,27 @@
       "violet": "Violeta",
       "neutral": "Neutral"
     }
+  },
+  "chat": {
+    "eyebrow": "Equipo",
+    "title": "Chat del equipo",
+    "orderChat": "Chat de la orden",
+    "rooms": "Salas",
+    "noRooms": "Todavía no estás en ninguna sala",
+    "pick": "Elige una sala",
+    "empty": "Aún no se ha dicho nada",
+    "placeholder": "Escribe al equipo",
+    "send": "Enviar",
+    "sending": "…",
+    "system": "Sistema",
+    "live": "En vivo",
+    "queued": "Guardado en el teléfono: se enviará cuando vuelva la señal",
+    "unread": "nuevos",
+    "kind": {
+      "NETWORK": "Red",
+      "CREW": "Cuadrilla",
+      "WORK_ORDER": "Orden de trabajo"
+    },
+    "offline": "Sin señal: el mensaje no se envió, inténtalo de nuevo"
   }
 }

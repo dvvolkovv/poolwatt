@@ -2643,7 +2643,8 @@
       "card": "Card",
       "contacts": "Contacts and transfers",
       "roaming": "Roaming",
-      "support": "Support"
+      "support": "Support",
+      "chat": "Team chat"
     },
     "soon": {
       "title": "Not here yet",
@@ -3180,5 +3181,27 @@
       "violet": "Violet",
       "neutral": "Neutral"
     }
+  },
+  "chat": {
+    "eyebrow": "Team",
+    "title": "Team chat",
+    "orderChat": "Chat on this order",
+    "rooms": "Rooms",
+    "noRooms": "You are in no rooms yet",
+    "pick": "Pick a room",
+    "empty": "Nothing said yet",
+    "placeholder": "Write to the team",
+    "send": "Send",
+    "sending": "…",
+    "system": "System",
+    "live": "Live",
+    "queued": "Saved on the phone: it goes out when the signal is back",
+    "unread": "new",
+    "kind": {
+      "NETWORK": "Network",
+      "CREW": "Crew",
+      "WORK_ORDER": "Work order"
+    },
+    "offline": "No signal — the message was not sent, try again"
   }
 }

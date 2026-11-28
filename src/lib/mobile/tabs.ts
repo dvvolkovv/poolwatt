@@ -13,6 +13,7 @@ export type MobileTab = "home" | "wallet" | "charge" | "more" | "profile";
 
 export type MobileSection =
   | "work"
+  | "chat"
   | "station"
   | "coop"
   | "bookings"
@@ -53,8 +54,9 @@ export const TAB_HREF: Record<MobileTab, string> = {
 export function moreSections(caps: ShellCapabilities): MobileSection[] {
   if (!caps.signedIn) return [];
   const sections: MobileSection[] = [];
-  // Наряды впереди всего: для инженера это работа, а не настройка.
-  if (caps.isStaff) sections.push("work");
+  // Наряды впереди всего: для инженера это работа, а не настройка. Чат
+  // команды §48 — сразу за ними, по той же причине.
+  if (caps.isStaff) sections.push("work", "chat");
   if (caps.hasAsset) sections.push("station");
   if (caps.isCoopMember) sections.push("coop");
   // Брони идут до счёта и карты: ими пользуются сегодня, а счёт и карта
@@ -67,6 +69,7 @@ export function moreSections(caps: ShellCapabilities): MobileSection[] {
 
 export const SECTION_HREF: Record<MobileSection, string> = {
   work: "/work-orders",
+  chat: "/chat",
   station: "/station",
   coop: "/coop",
   bookings: "/bookings",

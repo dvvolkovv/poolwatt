@@ -12,6 +12,7 @@ import { readEngineerStock } from "@/lib/warehouse/engineer-view";
 import { readWorkOrderForUser } from "@/lib/work/work-order-access";
 import { ensureChecklist, readChecklist } from "@/lib/work/work-order-checklist";
 import { readSignature, readSitePhotos } from "@/lib/work/work-order-media";
+import { readRoomMessages } from "@/lib/work/chat-service";
 import { WorkOrderScreen } from "@/components/mobile/work-order-screen";
 
 export const dynamic = "force-dynamic";
@@ -66,6 +67,11 @@ export default async function MobileWorkOrder({
 
   const t = await getTranslations("app.work");
   const tOrders = await getTranslations("workOrders");
+  const tChat = await getTranslations("chat");
+
+  // §48 «чат по каждому наряду»: право то же, что на наряд, — сюда дошли
+  // только те, кому `readWorkOrderForUser` сказал «да».
+  const chat = await readRoomMessages(`wo-${id}`, session.user.id, session.user.role);
 
   return (
     <WorkOrderScreen
@@ -99,6 +105,18 @@ export default async function MobileWorkOrder({
         })),
         signature,
         canWork: seen.canWork,
+      }}
+      chat={chat}
+      chatLabels={{
+        title: tChat("orderChat"),
+        placeholder: tChat("placeholder"),
+        send: tChat("send"),
+        sending: tChat("sending"),
+        system: tChat("system"),
+        live: tChat("live"),
+        empty: tChat("empty"),
+        queued: tChat("queued"),
+        offline: tChat("offline"),
       }}
       siteLabels={{
         checklist: t("checklist"),
