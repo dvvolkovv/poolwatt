@@ -7,6 +7,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ensureBuiltInRoles } from "@/lib/staff/staff-service";
 import { StaffTable } from "@/components/staff/staff-table";
+import { CrewEditor } from "@/components/work/crew-editor";
+import { readCrews } from "@/lib/work/crew-service";
 
 export const dynamic = "force-dynamic";
 
@@ -32,9 +34,10 @@ export default async function StaffPage({
   if (operator.claimedById !== session.user.id && session.user.role !== "ADMIN") notFound();
 
   const t = await getTranslations("staff");
+  const tc = await getTranslations("crews");
 
   const roles = await ensureBuiltInRoles(id);
-  const [employees, points] = await Promise.all([
+  const [employees, points, crews] = await Promise.all([
     prisma.employee.findMany({
       where: { operatorId: id },
       orderBy: { createdAt: "asc" },
@@ -45,6 +48,7 @@ export default async function StaffPage({
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
+    readCrews(id, session.user.id),
   ]);
 
   return (
@@ -88,6 +92,31 @@ export default async function StaffPage({
           roleNames: Object.fromEntries(
             roles.map((r) => [r.name, t(`roleName.${r.name}`)]),
           ),
+        }}
+      />
+
+      <CrewEditor
+        operatorId={id}
+        crews={crews ?? []}
+        engineers={employees
+          // §48 подбирает только тех, кому роль §47 разрешает работать наряд.
+          .filter((e) => e.role.permissions.includes("workorders.write"))
+          .map((e) => ({ id: e.id, username: e.user.username, regions: e.regions }))}
+        labels={{
+          title: tc("title"),
+          help: tc("help"),
+          add: tc("add"),
+          name: tc("name"),
+          regions: tc("regions"),
+          regionsHint: tc("regionsHint"),
+          members: tc("members"),
+          lead: tc("lead"),
+          addMember: tc("addMember"),
+          remove: tc("remove"),
+          empty: tc("empty"),
+          wholeNetwork: tc("wholeNetwork"),
+          save: tc("save"),
+          employeeRegions: tc("employeeRegions"),
         }}
       />
     </div>
