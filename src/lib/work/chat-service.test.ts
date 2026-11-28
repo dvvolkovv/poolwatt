@@ -162,11 +162,11 @@ describe("непрочитанное", () => {
       role: "USER",
       body: "смена в семь",
     });
-    const before = await listMyRooms(engineerUserId, "USER");
+    const before = await listMyRooms(engineerUserId);
     expect(before.find((r) => r.key === `net-${operatorId}`)?.unread).toBe(1);
 
     await markRoomSeen(`net-${operatorId}`, engineerUserId, "USER");
-    const after = await listMyRooms(engineerUserId, "USER");
+    const after = await listMyRooms(engineerUserId);
     expect(after.find((r) => r.key === `net-${operatorId}`)?.unread).toBe(0);
   });
 
@@ -177,7 +177,7 @@ describe("непрочитанное", () => {
       role: "USER",
       body: "понял",
     });
-    const rooms = await listMyRooms(engineerUserId, "USER");
+    const rooms = await listMyRooms(engineerUserId);
     expect(rooms.find((r) => r.key === `net-${operatorId}`)?.unread).toBe(0);
   });
 
@@ -188,7 +188,7 @@ describe("непрочитанное", () => {
       role: "USER",
       body: "и ещё одно",
     });
-    expect(await unreadTotal(engineerUserId, "USER")).toBe(1);
+    expect(await unreadTotal(engineerUserId)).toBe(1);
   });
 
   it("отметка в чужой комнате невозможна", async () => {
@@ -198,7 +198,7 @@ describe("непрочитанное", () => {
 
 describe("список комнат", () => {
   it("у инженера — сеть и его открытый наряд", async () => {
-    const rooms = await listMyRooms(engineerUserId, "USER");
+    const rooms = await listMyRooms(engineerUserId);
     expect(rooms.map((r) => r.key)).toEqual(
       expect.arrayContaining([`net-${operatorId}`, `wo-${orderId}`]),
     );
@@ -206,14 +206,14 @@ describe("список комнат", () => {
   });
 
   it("у участника бригады — ещё и бригада", async () => {
-    const rooms = await listMyRooms(crewEngineerUserId, "USER");
+    const rooms = await listMyRooms(crewEngineerUserId);
     expect(rooms.map((r) => r.key)).toEqual(
       expect.arrayContaining([`net-${operatorId}`, `crew-${crewId}`]),
     );
   });
 
   it("у постороннего комнат нет", async () => {
-    expect(await listMyRooms(strangerUserId, "USER")).toEqual([]);
+    expect(await listMyRooms(strangerUserId)).toEqual([]);
   });
 
   it("закрытый наряд в списке не висит", async () => {
@@ -221,7 +221,7 @@ describe("список комнат", () => {
       where: { id: orderId },
       data: { status: "VERIFIED", closedAt: new Date() },
     });
-    const rooms = await listMyRooms(engineerUserId, "USER");
+    const rooms = await listMyRooms(engineerUserId);
     expect(rooms.map((r) => r.key)).not.toContain(`wo-${orderId}`);
   });
 

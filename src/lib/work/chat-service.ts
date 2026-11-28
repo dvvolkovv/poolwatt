@@ -128,8 +128,15 @@ export async function markRoomSeen(key: string, userId: string, role: string): P
   await touchRead(key, userId, new Date());
 }
 
-/** Комнаты этого человека: его сети, его бригады, его открытые наряды. */
-export async function listMyRooms(userId: string, role: string): Promise<MyRoom[]> {
+/**
+ * Комнаты этого человека: его сети, его бригады, его открытые наряды.
+ *
+ * Роль платформы здесь не спрашивается нарочно: список строится из того, где
+ * человек состоит, а не из того, что ему позволено. ADMIN поэтому видит
+ * пустой список и заходит в комнаты со страниц — у него нет ни сети, ни
+ * бригады, и перечислять ему все комнаты платформы незачем.
+ */
+export async function listMyRooms(userId: string): Promise<MyRoom[]> {
   const [employments, owned, crews, orders, reads] = await Promise.all([
     prisma.employee.findMany({
       where: { userId },
@@ -214,8 +221,8 @@ export async function listMyRooms(userId: string, role: string): Promise<MyRoom[
 }
 
 /** Одно число для хаба §22: сколько всего меня ждёт. */
-export async function unreadTotal(userId: string, role: string): Promise<number> {
-  const rooms = await listMyRooms(userId, role);
+export async function unreadTotal(userId: string): Promise<number> {
+  const rooms = await listMyRooms(userId);
   return rooms.reduce((sum, room) => sum + room.unread, 0);
 }
 

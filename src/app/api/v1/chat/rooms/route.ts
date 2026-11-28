@@ -7,5 +7,5 @@ import { listMyRooms } from "@/lib/work/chat-service";
 export async function GET() {
   const user = await sessionUser();
   if (!user) return unauthorized();
-  return ok({ rooms: await listMyRooms(user.id, user.role) });
+  return ok({ rooms: await listMyRooms(user.id) });
 }

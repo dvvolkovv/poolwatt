@@ -59,7 +59,7 @@ export default async function MobileChat({
     );
   }
 
-  const rooms = await listMyRooms(session.user.id, session.user.role);
+  const rooms = await listMyRooms(session.user.id);
 
   return (
     <Screen title={t("title")} back={`/${locale}/app/more`}>

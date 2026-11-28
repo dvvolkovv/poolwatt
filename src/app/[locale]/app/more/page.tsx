@@ -26,7 +26,7 @@ export default async function MorePage({
   const sections = moreSections(ctx);
   // §48 — сколько слов меня ждёт. Считается только для сотрудника и только
   // здесь: хаб открывают редко, а каждый экран — часто.
-  const unread = ctx.isStaff ? await unreadTotal(session.user.id, session.user.role) : 0;
+  const unread = ctx.isStaff ? await unreadTotal(session.user.id) : 0;
 
   return (
     <Screen title={t("more")}>

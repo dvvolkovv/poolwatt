@@ -42,7 +42,7 @@ export default async function OperatorChatPage({
 
   const t = await getTranslations("chat");
 
-  const all = await listMyRooms(session.user.id, session.user.role);
+  const all = await listMyRooms(session.user.id);
   // Комнаты этой сети: её собственная и её бригады. Наряды живут на своих
   // страницах — там, где видно, о чём разговор.
   const crewIds = (
