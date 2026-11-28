@@ -6,7 +6,12 @@ import { withdrawContractor } from "@/app/[locale]/me/contractor/actions";
 
 type Props = { id: string; label: string; confirmText: string; locale: string };
 
-export function WithdrawContractorButton({ id, label, confirmText, locale }: Props) {
+export function WithdrawContractorButton({
+  id,
+  label,
+  confirmText,
+  locale,
+}: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 

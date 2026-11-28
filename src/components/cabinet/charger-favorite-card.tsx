@@ -38,9 +38,13 @@ export function ChargerFavoriteCard({
           aria-label={charger.status}
         />
       </div>
-      <div className="text-[12px] text-muted mb-3 line-clamp-1">{charger.address}</div>
+      <div className="text-[12px] text-muted mb-3 line-clamp-1">
+        {charger.address}
+      </div>
       <div className="flex items-center justify-between text-[11px] num">
-        <span className="text-muted uppercase tracking-[0.14em]">{charger.operator}</span>
+        <span className="text-muted uppercase tracking-[0.14em]">
+          {charger.operator}
+        </span>
         <span className="text-foreground">{maxPower} kW</span>
       </div>
     </Link>

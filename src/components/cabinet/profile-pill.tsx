@@ -37,7 +37,9 @@ export function ProfilePill({
           {username.slice(0, 1).toUpperCase()}
         </span>
         <span>@{username}</span>
-        <span aria-hidden className="text-muted">▾</span>
+        <span aria-hidden className="text-muted">
+          ▾
+        </span>
       </button>
       {open && (
         <div className="absolute right-0 mt-2 w-56 bg-card border border-hairline rounded-lg shadow-lg overflow-hidden text-sm">

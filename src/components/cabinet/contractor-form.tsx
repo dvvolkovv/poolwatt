@@ -4,17 +4,47 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { ContractorInput } from "@/lib/contractor-schema";
 import type { ContractorFormLabels } from "@/lib/contractor-form-labels";
-import { createContractor, updateContractor } from "@/app/[locale]/me/contractor/actions";
+import {
+  createContractor,
+  updateContractor,
+} from "@/app/[locale]/me/contractor/actions";
 
 type Mode = { kind: "create" } | { kind: "edit"; id: string };
 
-const WORK_VALUES = ["DESIGN", "MANUFACTURE", "SUPPLY", "INSTALLATION", "COMMISSIONING", "MAINTENANCE"] as const;
-const RENEWABLE_VALUES = ["SOLAR", "WIND", "HYDRO", "BIOMASS", "GEOTHERMAL", "HYBRID"] as const;
+const WORK_VALUES = [
+  "DESIGN",
+  "MANUFACTURE",
+  "SUPPLY",
+  "INSTALLATION",
+  "COMMISSIONING",
+  "MAINTENANCE",
+] as const;
+const RENEWABLE_VALUES = [
+  "SOLAR",
+  "WIND",
+  "HYDRO",
+  "BIOMASS",
+  "GEOTHERMAL",
+  "HYBRID",
+] as const;
 const ENTITY_VALUES = ["LEGAL_ENTITY", "SOLE_TRADER", "INDIVIDUAL"] as const;
 const EV_POWER_SOURCES = ["GRID", "MIXED", "RENEWABLE_ONLY"] as const;
-const EV_CONNECTOR_TYPES = ["CCS2", "CHAdeMO", "TYPE2", "TYPE1", "TESLA", "GB_T", "SCHUKO"] as const;
+const EV_CONNECTOR_TYPES = [
+  "CCS2",
+  "CHAdeMO",
+  "TYPE2",
+  "TYPE1",
+  "TESLA",
+  "GB_T",
+  "SCHUKO",
+] as const;
 const EV_POWER_LEVELS = ["AC_SLOW", "AC_FAST", "DC_FAST", "DC_ULTRA"] as const;
-const EV_USAGE_TYPES = ["PUBLIC", "MEMBERSHIP", "PRIVATE", "PAY_AT_LOCATION"] as const;
+const EV_USAGE_TYPES = [
+  "PUBLIC",
+  "MEMBERSHIP",
+  "PRIVATE",
+  "PAY_AT_LOCATION",
+] as const;
 
 type Props = {
   mode: Mode;
@@ -29,9 +59,9 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
 
-  const [entityType, setEntityType] = useState<"LEGAL_ENTITY" | "SOLE_TRADER" | "INDIVIDUAL">(
-    initial?.entityType ?? "LEGAL_ENTITY",
-  );
+  const [entityType, setEntityType] = useState<
+    "LEGAL_ENTITY" | "SOLE_TRADER" | "INDIVIDUAL"
+  >(initial?.entityType ?? "LEGAL_ENTITY");
   const [workCategories, setWorkCategories] = useState<string[]>(
     (initial?.workCategories as string[] | undefined) ?? [],
   );
@@ -39,11 +69,21 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
     (initial?.renewableTypes as string[] | undefined) ?? [],
   );
 
-  const [providesEvCharging, setProvidesEvCharging] = useState<boolean>(initial?.providesEvCharging ?? false);
-  const [evPowerSource, setEvPowerSource] = useState<"GRID" | "MIXED" | "RENEWABLE_ONLY" | "">(initial?.evPowerSource ?? "");
-  const [evConnectorTypes, setEvConnectorTypes] = useState<string[]>((initial?.evConnectorTypes as string[] | undefined) ?? []);
-  const [evPowerLevels, setEvPowerLevels] = useState<string[]>((initial?.evPowerLevels as string[] | undefined) ?? []);
-  const [evUsageType, setEvUsageType] = useState<"PUBLIC" | "MEMBERSHIP" | "PRIVATE" | "PAY_AT_LOCATION" | "">(initial?.evUsageType ?? "");
+  const [providesEvCharging, setProvidesEvCharging] = useState<boolean>(
+    initial?.providesEvCharging ?? false,
+  );
+  const [evPowerSource, setEvPowerSource] = useState<
+    "GRID" | "MIXED" | "RENEWABLE_ONLY" | ""
+  >(initial?.evPowerSource ?? "");
+  const [evConnectorTypes, setEvConnectorTypes] = useState<string[]>(
+    (initial?.evConnectorTypes as string[] | undefined) ?? [],
+  );
+  const [evPowerLevels, setEvPowerLevels] = useState<string[]>(
+    (initial?.evPowerLevels as string[] | undefined) ?? [],
+  );
+  const [evUsageType, setEvUsageType] = useState<
+    "PUBLIC" | "MEMBERSHIP" | "PRIVATE" | "PAY_AT_LOCATION" | ""
+  >(initial?.evUsageType ?? "");
 
   function toggle(list: string[], v: string, set: (xs: string[]) => void) {
     if (list.includes(v)) set(list.filter((x) => x !== v));
@@ -69,12 +109,14 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
     const input = {
       entityType,
       displayName: String(formData.get("displayName") ?? "").trim(),
-      legalName: entityType === "LEGAL_ENTITY"
-        ? String(formData.get("legalName") ?? "").trim() || undefined
-        : undefined,
-      registrationNumber: entityType !== "INDIVIDUAL"
-        ? String(formData.get("registrationNumber") ?? "").trim() || undefined
-        : undefined,
+      legalName:
+        entityType === "LEGAL_ENTITY"
+          ? String(formData.get("legalName") ?? "").trim() || undefined
+          : undefined,
+      registrationNumber:
+        entityType !== "INDIVIDUAL"
+          ? String(formData.get("registrationNumber") ?? "").trim() || undefined
+          : undefined,
       country: String(formData.get("country") ?? "").toUpperCase(),
       city: String(formData.get("city") ?? "").trim(),
       foundedYear,
@@ -87,19 +129,34 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
       contactEmail: String(formData.get("contactEmail") ?? "").trim(),
       contactPhone: String(formData.get("contactPhone") ?? "").trim(),
       providesEvCharging,
-      evPowerSource: providesEvCharging ? (evPowerSource || undefined) : undefined,
-      evStationCount: providesEvCharging && evStationCountRaw ? Number(evStationCountRaw) : undefined,
-      evConnectorTypes: providesEvCharging ? (evConnectorTypes as ContractorInput["evConnectorTypes"]) : undefined,
-      evPowerLevels: providesEvCharging ? (evPowerLevels as ContractorInput["evPowerLevels"]) : undefined,
-      evUsageType: providesEvCharging ? (evUsageType || undefined) : undefined,
-      evMaxPowerKw: providesEvCharging && evMaxPowerKwRaw ? Number(evMaxPowerKwRaw) : undefined,
-      evDescription: providesEvCharging ? (String(formData.get("evDescription") ?? "") || undefined) : undefined,
+      evPowerSource: providesEvCharging
+        ? evPowerSource || undefined
+        : undefined,
+      evStationCount:
+        providesEvCharging && evStationCountRaw
+          ? Number(evStationCountRaw)
+          : undefined,
+      evConnectorTypes: providesEvCharging
+        ? (evConnectorTypes as ContractorInput["evConnectorTypes"])
+        : undefined,
+      evPowerLevels: providesEvCharging
+        ? (evPowerLevels as ContractorInput["evPowerLevels"])
+        : undefined,
+      evUsageType: providesEvCharging ? evUsageType || undefined : undefined,
+      evMaxPowerKw:
+        providesEvCharging && evMaxPowerKwRaw
+          ? Number(evMaxPowerKwRaw)
+          : undefined,
+      evDescription: providesEvCharging
+        ? String(formData.get("evDescription") ?? "") || undefined
+        : undefined,
     } as ContractorInput;
 
     startTransition(async () => {
-      const result = mode.kind === "create"
-        ? await createContractor(input)
-        : await updateContractor(mode.id, input);
+      const result =
+        mode.kind === "create"
+          ? await createContractor(input)
+          : await updateContractor(mode.id, input);
 
       if (!result.ok) {
         if (result.fieldErrors) setErrors(result.fieldErrors);
@@ -114,43 +171,90 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
   return (
     <form action={onSubmit} className="space-y-8 max-w-2xl">
       <fieldset className="space-y-4">
-        <legend className="text-lg font-semibold">{labels.section.identity}</legend>
+        <legend className="text-lg font-semibold">
+          {labels.section.identity}
+        </legend>
 
         <div>
-          <label className="block text-sm mb-1">{labels.field.entityType.label}</label>
+          <label className="block text-sm mb-1">
+            {labels.field.entityType.label}
+          </label>
           <select
             value={entityType}
             onChange={(e) => setEntityType(e.target.value as typeof entityType)}
             className="border border-hairline rounded px-3 py-2 w-full"
           >
             {ENTITY_VALUES.map((v) => (
-              <option key={v} value={v}>{labels.field.entityType[v]}</option>
+              <option key={v} value={v}>
+                {labels.field.entityType[v]}
+              </option>
             ))}
           </select>
         </div>
 
-        <input name="displayName" defaultValue={initial?.displayName ?? ""} placeholder={labels.field.displayName.label} className="border border-hairline rounded px-3 py-2 w-full" />
-        {errors.displayName && <p className="text-red-600 text-xs">{errors.displayName}</p>}
+        <input
+          name="displayName"
+          defaultValue={initial?.displayName ?? ""}
+          placeholder={labels.field.displayName.label}
+          className="border border-hairline rounded px-3 py-2 w-full"
+        />
+        {errors.displayName && (
+          <p className="text-red-600 text-xs">{errors.displayName}</p>
+        )}
 
         {entityType === "LEGAL_ENTITY" && (
           <>
-            <input name="legalName" defaultValue={initial?.legalName ?? ""} placeholder={labels.field.legalName.label} className="border border-hairline rounded px-3 py-2 w-full" />
-            {errors.legalName && <p className="text-red-600 text-xs">{errors.legalName}</p>}
+            <input
+              name="legalName"
+              defaultValue={initial?.legalName ?? ""}
+              placeholder={labels.field.legalName.label}
+              className="border border-hairline rounded px-3 py-2 w-full"
+            />
+            {errors.legalName && (
+              <p className="text-red-600 text-xs">{errors.legalName}</p>
+            )}
           </>
         )}
 
         {entityType !== "INDIVIDUAL" && (
           <>
-            <input name="registrationNumber" defaultValue={initial?.registrationNumber ?? ""} placeholder={labels.field.registrationNumber.label} className="border border-hairline rounded px-3 py-2 w-full" />
-            {errors.registrationNumber && <p className="text-red-600 text-xs">{errors.registrationNumber}</p>}
+            <input
+              name="registrationNumber"
+              defaultValue={initial?.registrationNumber ?? ""}
+              placeholder={labels.field.registrationNumber.label}
+              className="border border-hairline rounded px-3 py-2 w-full"
+            />
+            {errors.registrationNumber && (
+              <p className="text-red-600 text-xs">
+                {errors.registrationNumber}
+              </p>
+            )}
           </>
         )}
 
         <div className="flex gap-2">
-          <input name="country" defaultValue={initial?.country ?? ""} placeholder="SK" maxLength={2} className="border border-hairline rounded px-3 py-2 w-20 uppercase" />
-          <input name="city" defaultValue={initial?.city ?? ""} placeholder={labels.field.city.label} className="border border-hairline rounded px-3 py-2 flex-1" />
+          <input
+            name="country"
+            defaultValue={initial?.country ?? ""}
+            placeholder="SK"
+            maxLength={2}
+            className="border border-hairline rounded px-3 py-2 w-20 uppercase"
+          />
+          <input
+            name="city"
+            defaultValue={initial?.city ?? ""}
+            placeholder={labels.field.city.label}
+            className="border border-hairline rounded px-3 py-2 flex-1"
+          />
         </div>
-        <input name="foundedYear" type="number" min="1900" defaultValue={initial?.foundedYear ?? ""} placeholder={labels.field.foundedYear.label} className="border border-hairline rounded px-3 py-2 w-40" />
+        <input
+          name="foundedYear"
+          type="number"
+          min="1900"
+          defaultValue={initial?.foundedYear ?? ""}
+          placeholder={labels.field.foundedYear.label}
+          className="border border-hairline rounded px-3 py-2 w-40"
+        />
       </fieldset>
 
       <fieldset className="space-y-4">
@@ -170,7 +274,9 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
               </label>
             ))}
           </div>
-          {errors.workCategories && <p className="text-red-600 text-xs mt-1">{errors.workCategories}</p>}
+          {errors.workCategories && (
+            <p className="text-red-600 text-xs mt-1">{errors.workCategories}</p>
+          )}
         </div>
 
         <div>
@@ -187,25 +293,73 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
               </label>
             ))}
           </div>
-          {errors.renewableTypes && <p className="text-red-600 text-xs mt-1">{errors.renewableTypes}</p>}
+          {errors.renewableTypes && (
+            <p className="text-red-600 text-xs mt-1">{errors.renewableTypes}</p>
+          )}
         </div>
 
-        <input name="countriesServed" defaultValue={(initial?.countriesServed as string[] | undefined)?.join(", ") ?? ""} placeholder={labels.field.countriesServed.label} className="border border-hairline rounded px-3 py-2 w-full uppercase" />
-        {errors.countriesServed && <p className="text-red-600 text-xs">{errors.countriesServed}</p>}
+        <input
+          name="countriesServed"
+          defaultValue={
+            (initial?.countriesServed as string[] | undefined)?.join(", ") ?? ""
+          }
+          placeholder={labels.field.countriesServed.label}
+          className="border border-hairline rounded px-3 py-2 w-full uppercase"
+        />
+        {errors.countriesServed && (
+          <p className="text-red-600 text-xs">{errors.countriesServed}</p>
+        )}
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-lg font-semibold">{labels.section.contact}</legend>
+        <legend className="text-lg font-semibold">
+          {labels.section.contact}
+        </legend>
 
-        <textarea name="bio" defaultValue={initial?.bio ?? ""} rows={6} maxLength={2000} placeholder={labels.field.bio.label} className="border border-hairline rounded px-3 py-2 w-full" />
+        <textarea
+          name="bio"
+          defaultValue={initial?.bio ?? ""}
+          rows={6}
+          maxLength={2000}
+          placeholder={labels.field.bio.label}
+          className="border border-hairline rounded px-3 py-2 w-full"
+        />
         {errors.bio && <p className="text-red-600 text-xs">{errors.bio}</p>}
 
-        <input name="websiteUrl" type="url" defaultValue={initial?.websiteUrl ?? ""} placeholder={labels.field.websiteUrl.label} className="border border-hairline rounded px-3 py-2 w-full" />
-        <input name="logoUrl" type="url" defaultValue={initial?.logoUrl ?? ""} placeholder={labels.field.logoUrl.label} className="border border-hairline rounded px-3 py-2 w-full" />
-        <input name="contactEmail" type="email" defaultValue={initial?.contactEmail ?? ""} placeholder={labels.field.contactEmail.label} className="border border-hairline rounded px-3 py-2 w-full" />
-        {errors.contactEmail && <p className="text-red-600 text-xs">{errors.contactEmail}</p>}
-        <input name="contactPhone" type="tel" defaultValue={initial?.contactPhone ?? ""} placeholder={labels.field.contactPhone.label} className="border border-hairline rounded px-3 py-2 w-full" />
-        {errors.contactPhone && <p className="text-red-600 text-xs">{errors.contactPhone}</p>}
+        <input
+          name="websiteUrl"
+          type="url"
+          defaultValue={initial?.websiteUrl ?? ""}
+          placeholder={labels.field.websiteUrl.label}
+          className="border border-hairline rounded px-3 py-2 w-full"
+        />
+        <input
+          name="logoUrl"
+          type="url"
+          defaultValue={initial?.logoUrl ?? ""}
+          placeholder={labels.field.logoUrl.label}
+          className="border border-hairline rounded px-3 py-2 w-full"
+        />
+        <input
+          name="contactEmail"
+          type="email"
+          defaultValue={initial?.contactEmail ?? ""}
+          placeholder={labels.field.contactEmail.label}
+          className="border border-hairline rounded px-3 py-2 w-full"
+        />
+        {errors.contactEmail && (
+          <p className="text-red-600 text-xs">{errors.contactEmail}</p>
+        )}
+        <input
+          name="contactPhone"
+          type="tel"
+          defaultValue={initial?.contactPhone ?? ""}
+          placeholder={labels.field.contactPhone.label}
+          className="border border-hairline rounded px-3 py-2 w-full"
+        />
+        {errors.contactPhone && (
+          <p className="text-red-600 text-xs">{errors.contactPhone}</p>
+        )}
       </fieldset>
 
       <fieldset className="space-y-4">
@@ -239,34 +393,55 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
                   </label>
                 ))}
               </div>
-              {errors.evPowerSource && <p className="text-red-600 text-xs mt-1">{errors.evPowerSource}</p>}
+              {errors.evPowerSource && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.evPowerSource}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm mb-1">{labels.field.evStationCount.label}</label>
+              <label className="block text-sm mb-1">
+                {labels.field.evStationCount.label}
+              </label>
               <input
-                name="evStationCount" type="number" min="1" max="10000"
+                name="evStationCount"
+                type="number"
+                min="1"
+                max="10000"
                 defaultValue={initial?.evStationCount ?? ""}
                 className="border border-hairline rounded px-3 py-2 w-40"
               />
-              {errors.evStationCount && <p className="text-red-600 text-xs mt-1">{errors.evStationCount}</p>}
+              {errors.evStationCount && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.evStationCount}
+                </p>
+              )}
             </div>
 
             <div>
-              <p className="text-sm mb-2">{labels.field.evConnectorTypes.label}</p>
+              <p className="text-sm mb-2">
+                {labels.field.evConnectorTypes.label}
+              </p>
               <div className="grid grid-cols-2 gap-2">
                 {EV_CONNECTOR_TYPES.map((v) => (
                   <label key={v} className="flex items-center gap-2 text-sm">
                     <input
                       type="checkbox"
                       checked={evConnectorTypes.includes(v)}
-                      onChange={() => toggle(evConnectorTypes, v, setEvConnectorTypes)}
+                      onChange={() =>
+                        toggle(evConnectorTypes, v, setEvConnectorTypes)
+                      }
                     />
                     {labels.field.evConnectorTypes[v]}
                   </label>
                 ))}
               </div>
-              {errors.evConnectorTypes && <p className="text-red-600 text-xs mt-1">{errors.evConnectorTypes}</p>}
+              {errors.evConnectorTypes && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.evConnectorTypes}
+                </p>
+              )}
             </div>
 
             <div>
@@ -277,13 +452,19 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
                     <input
                       type="checkbox"
                       checked={evPowerLevels.includes(v)}
-                      onChange={() => toggle(evPowerLevels, v, setEvPowerLevels)}
+                      onChange={() =>
+                        toggle(evPowerLevels, v, setEvPowerLevels)
+                      }
                     />
                     {labels.field.evPowerLevels[v]}
                   </label>
                 ))}
               </div>
-              {errors.evPowerLevels && <p className="text-red-600 text-xs mt-1">{errors.evPowerLevels}</p>}
+              {errors.evPowerLevels && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.evPowerLevels}
+                </p>
+              )}
             </div>
 
             <div>
@@ -303,21 +484,37 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
                   </label>
                 ))}
               </div>
-              {errors.evUsageType && <p className="text-red-600 text-xs mt-1">{errors.evUsageType}</p>}
+              {errors.evUsageType && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.evUsageType}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm mb-1">{labels.field.evMaxPowerKw.label}</label>
+              <label className="block text-sm mb-1">
+                {labels.field.evMaxPowerKw.label}
+              </label>
               <input
-                name="evMaxPowerKw" type="number" step="0.1" min="3.7" max="400"
+                name="evMaxPowerKw"
+                type="number"
+                step="0.1"
+                min="3.7"
+                max="400"
                 defaultValue={initial?.evMaxPowerKw ?? ""}
                 className="border border-hairline rounded px-3 py-2 w-40"
               />
-              {errors.evMaxPowerKw && <p className="text-red-600 text-xs mt-1">{errors.evMaxPowerKw}</p>}
+              {errors.evMaxPowerKw && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.evMaxPowerKw}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm mb-1">{labels.field.evDescription.label}</label>
+              <label className="block text-sm mb-1">
+                {labels.field.evDescription.label}
+              </label>
               <textarea
                 name="evDescription"
                 defaultValue={initial?.evDescription ?? ""}
@@ -326,7 +523,11 @@ export function ContractorForm({ mode, locale, initial, labels }: Props) {
                 placeholder={labels.field.evDescription.placeholder}
                 className="border border-hairline rounded px-3 py-2 w-full"
               />
-              {errors.evDescription && <p className="text-red-600 text-xs mt-1">{errors.evDescription}</p>}
+              {errors.evDescription && (
+                <p className="text-red-600 text-xs mt-1">
+                  {errors.evDescription}
+                </p>
+              )}
             </div>
           </div>
         )}

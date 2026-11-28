@@ -25,7 +25,9 @@ test.describe.configure({ mode: "serial" });
 test.use({ baseURL: process.env.PUBLIC_BASE_URL ?? "https://poolwatt.com" });
 
 async function wipe() {
-  await prisma.coopBallot.deleteMany({ where: { vote: { coop: { name: COOP } } } });
+  await prisma.coopBallot.deleteMany({
+    where: { vote: { coop: { name: COOP } } },
+  });
   await prisma.coopVote.deleteMany({ where: { coop: { name: COOP } } });
   await prisma.coopPayoutAllocation.deleteMany({
     where: { payout: { coop: { name: COOP } } },
@@ -121,7 +123,12 @@ test.beforeAll(async () => {
     },
   });
   await prisma.coopPayoutAllocation.create({
-    data: { payoutId: unpaid.id, memberId, shares: 30, amount: new Prisma.Decimal(150) },
+    data: {
+      payoutId: unpaid.id,
+      memberId,
+      shares: 30,
+      amount: new Prisma.Decimal(150),
+    },
   });
 
   voteId = (
@@ -139,17 +146,24 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
   await wipe();
   await prisma.user.deleteMany({
-    where: { username: { in: [MEMBER.username, SECOND.username, STRANGER.username] } },
+    where: {
+      username: { in: [MEMBER.username, SECOND.username, STRANGER.username] },
+    },
   });
   await prisma.$disconnect();
 });
 
-test("a member sees their shares, income and payout history (US-10)", async ({ page }) => {
+test("a member sees their shares, income and payout history (US-10)", async ({
+  page,
+}) => {
   await signInWithPassword(page, MEMBER);
 
-  // The cabinet now has a door into the cooperative.
+  // The cabinet now has a door into the cooperative. Since 2026-11-28 that
+  // door is a tile of the cabinet board, and it carries the share count.
   await page.goto("/en/me");
-  await expect(page.getByTestId("me-coop")).toContainText("Your cooperatives");
+  const coopTile = page.getByTestId("tile-coop");
+  await expect(coopTile).toBeVisible();
+  await expect(coopTile).toContainText("30");
 
   await page.goto("/en/me/coop");
   await expect(page.getByTestId("coop-list")).toContainText(COOP);
@@ -174,33 +188,47 @@ test("a member sees their shares, income and payout history (US-10)", async ({ p
   await expect(page.getByTestId("coop-period-income")).toContainText("0.00");
 });
 
-test("a member votes, changes their vote, and sees no score (US-21)", async ({ page }) => {
+test("a member votes, changes their vote, and sees no score (US-21)", async ({
+  page,
+}) => {
   await signInWithPassword(page, MEMBER);
   await page.goto(`/en/me/coop/${coopId}`);
 
-  await expect(page.getByTestId("coop-votes")).toContainText("Where should the next battery go?");
+  await expect(page.getByTestId("coop-votes")).toContainText(
+    "Where should the next battery go?",
+  );
   await expect(page.getByTestId(`ballot-${voteId}`)).toBeVisible();
   // While the vote is open there is no tally on the page at all.
   await expect(page.getByTestId(`result-${voteId}`)).toHaveCount(0);
 
-  await page.getByTestId(`ballot-${voteId}`).getByRole("radio", { name: "School" }).check();
+  await page
+    .getByTestId(`ballot-${voteId}`)
+    .getByRole("radio", { name: "School" })
+    .check();
   await page.getByTestId(`cast-${voteId}`).click();
 
   await expect
     .poll(async () => {
-      const b = await prisma.coopBallot.findFirst({ where: { voteId, memberId } });
+      const b = await prisma.coopBallot.findFirst({
+        where: { voteId, memberId },
+      });
       return b?.option;
     })
     .toBe("School");
 
   // One member, one vote: changing it replaces the ballot, not adds one.
   await page.reload();
-  await page.getByTestId(`ballot-${voteId}`).getByRole("radio", { name: "Market" }).check();
+  await page
+    .getByTestId(`ballot-${voteId}`)
+    .getByRole("radio", { name: "Market" })
+    .check();
   await page.getByTestId(`cast-${voteId}`).click();
 
   await expect
     .poll(async () => {
-      const b = await prisma.coopBallot.findFirst({ where: { voteId, memberId } });
+      const b = await prisma.coopBallot.findFirst({
+        where: { voteId, memberId },
+      });
       return b?.option;
     })
     .toBe("Market");

@@ -4,7 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { BuildRequestInput } from "@/lib/build-request-schema";
 import type { BuildRequestFormLabels } from "@/lib/build-request-form-labels";
-import { createBuildRequest, updateBuildRequest } from "@/app/[locale]/me/build-requests/actions";
+import {
+  createBuildRequest,
+  updateBuildRequest,
+} from "@/app/[locale]/me/build-requests/actions";
 
 type Mode = { kind: "create" } | { kind: "edit"; id: string };
 
@@ -17,15 +20,28 @@ type Props = {
   labels: BuildRequestFormLabels;
 };
 
-export function BuildRequestForm({ mode, locale, initial, userName, userPhone, labels }: Props) {
+export function BuildRequestForm({
+  mode,
+  locale,
+  initial,
+  userName,
+  userPhone,
+  labels,
+}: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
 
-  const [source, setSource] = useState<"SOLAR" | "WIND" | "HYBRID">(initial?.source ?? "SOLAR");
-  const [wantPowerbank, setWantPowerbank] = useState(initial?.wantPowerbank ?? false);
-  const [wantEvCharger, setWantEvCharger] = useState(initial?.wantEvCharger ?? false);
+  const [source, setSource] = useState<"SOLAR" | "WIND" | "HYBRID">(
+    initial?.source ?? "SOLAR",
+  );
+  const [wantPowerbank, setWantPowerbank] = useState(
+    initial?.wantPowerbank ?? false,
+  );
+  const [wantEvCharger, setWantEvCharger] = useState(
+    initial?.wantEvCharger ?? false,
+  );
 
   async function onSubmit(formData: FormData) {
     setErrors({});
@@ -35,10 +51,15 @@ export function BuildRequestForm({ mode, locale, initial, userName, userPhone, l
       source,
       peakKw: Number(formData.get("peakKw")),
       wantPowerbank,
-      powerbankKwh: wantPowerbank ? Number(formData.get("powerbankKwh")) : undefined,
+      powerbankKwh: wantPowerbank
+        ? Number(formData.get("powerbankKwh"))
+        : undefined,
       wantEvCharger,
-      evChargerPorts: wantEvCharger ? Number(formData.get("evChargerPorts")) : undefined,
-      evPublicForSale: wantEvCharger && formData.get("evPublicForSale") === "on",
+      evChargerPorts: wantEvCharger
+        ? Number(formData.get("evChargerPorts"))
+        : undefined,
+      evPublicForSale:
+        wantEvCharger && formData.get("evPublicForSale") === "on",
       country: String(formData.get("country") ?? "").toUpperCase(),
       city: String(formData.get("city") ?? ""),
       addressLine: String(formData.get("addressLine") ?? ""),
@@ -46,9 +67,12 @@ export function BuildRequestForm({ mode, locale, initial, userName, userPhone, l
       availableAreaM2: formData.get("availableAreaM2")
         ? Number(formData.get("availableAreaM2"))
         : undefined,
-      roofOrientation: source === "WIND"
-        ? undefined
-        : (formData.get("roofOrientation") as BuildRequestInput["roofOrientation"]),
+      roofOrientation:
+        source === "WIND"
+          ? undefined
+          : (formData.get(
+              "roofOrientation",
+            ) as BuildRequestInput["roofOrientation"]),
       budget: formData.get("budget") as BuildRequestInput["budget"],
       timeline: formData.get("timeline") as BuildRequestInput["timeline"],
       notes: String(formData.get("notes") ?? "") || undefined,
@@ -57,9 +81,10 @@ export function BuildRequestForm({ mode, locale, initial, userName, userPhone, l
     };
 
     startTransition(async () => {
-      const result = mode.kind === "create"
-        ? await createBuildRequest(input)
-        : await updateBuildRequest(mode.id, input);
+      const result =
+        mode.kind === "create"
+          ? await createBuildRequest(input)
+          : await updateBuildRequest(mode.id, input);
 
       if (!result.ok) {
         if (result.fieldErrors) setErrors(result.fieldErrors);
@@ -77,7 +102,9 @@ export function BuildRequestForm({ mode, locale, initial, userName, userPhone, l
         <legend className="text-lg font-semibold">{labels.section.what}</legend>
 
         <div>
-          <label className="block text-sm mb-1">{labels.field.source.label}</label>
+          <label className="block text-sm mb-1">
+            {labels.field.source.label}
+          </label>
           <select
             value={source}
             onChange={(e) => setSource(e.target.value as typeof source)}
@@ -90,13 +117,21 @@ export function BuildRequestForm({ mode, locale, initial, userName, userPhone, l
         </div>
 
         <div>
-          <label className="block text-sm mb-1">{labels.field.peakKw.label}</label>
+          <label className="block text-sm mb-1">
+            {labels.field.peakKw.label}
+          </label>
           <input
-            name="peakKw" type="number" step="0.1" min="0.5" max="500"
+            name="peakKw"
+            type="number"
+            step="0.1"
+            min="0.5"
+            max="500"
             defaultValue={initial?.peakKw ?? 5}
             className="border border-hairline rounded px-3 py-2 w-40"
           />
-          {errors.peakKw && <p className="text-red-600 text-xs mt-1">{errors.peakKw}</p>}
+          {errors.peakKw && (
+            <p className="text-red-600 text-xs mt-1">{errors.peakKw}</p>
+          )}
         </div>
 
         <label className="flex items-center gap-2">
@@ -109,7 +144,11 @@ export function BuildRequestForm({ mode, locale, initial, userName, userPhone, l
         </label>
         {wantPowerbank && (
           <input
-            name="powerbankKwh" type="number" min="1" max="500" step="0.5"
+            name="powerbankKwh"
+            type="number"
+            min="1"
+            max="500"
+            step="0.5"
             defaultValue={initial?.powerbankKwh ?? 10}
             placeholder={labels.field.powerbankKwh.label}
             className="border border-hairline rounded px-3 py-2 w-40"
@@ -127,14 +166,19 @@ export function BuildRequestForm({ mode, locale, initial, userName, userPhone, l
         {wantEvCharger && (
           <>
             <input
-              name="evChargerPorts" type="number" min="1" max="10" step="1"
+              name="evChargerPorts"
+              type="number"
+              min="1"
+              max="10"
+              step="1"
               defaultValue={initial?.evChargerPorts ?? 1}
               placeholder={labels.field.evChargerPorts.label}
               className="border border-hairline rounded px-3 py-2 w-40"
             />
             <label className="flex items-center gap-2">
               <input
-                type="checkbox" name="evPublicForSale"
+                type="checkbox"
+                name="evPublicForSale"
                 defaultChecked={initial?.evPublicForSale ?? false}
               />
               {labels.field.evPublicForSale.label}
@@ -144,45 +188,123 @@ export function BuildRequestForm({ mode, locale, initial, userName, userPhone, l
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-lg font-semibold">{labels.section.where}</legend>
-        <input name="country" defaultValue={initial?.country ?? ""} placeholder="SK" maxLength={2} className="border border-hairline rounded px-3 py-2 w-20 uppercase" />
-        <input name="city" defaultValue={initial?.city ?? ""} placeholder={labels.field.city.label} className="border border-hairline rounded px-3 py-2 w-full" />
-        <input name="addressLine" defaultValue={initial?.addressLine ?? ""} placeholder={labels.field.addressLine.label} className="border border-hairline rounded px-3 py-2 w-full" />
-        <select name="siteType" defaultValue={initial?.siteType ?? "PRIVATE_HOUSE"} className="border border-hairline rounded px-3 py-2">
-          {(["PRIVATE_HOUSE", "APARTMENT_ROOF", "LAND_PLOT", "COMMERCIAL"] as const).map((v) => (
-            <option key={v} value={v}>{labels.field.siteType[v]}</option>
+        <legend className="text-lg font-semibold">
+          {labels.section.where}
+        </legend>
+        <input
+          name="country"
+          defaultValue={initial?.country ?? ""}
+          placeholder="SK"
+          maxLength={2}
+          className="border border-hairline rounded px-3 py-2 w-20 uppercase"
+        />
+        <input
+          name="city"
+          defaultValue={initial?.city ?? ""}
+          placeholder={labels.field.city.label}
+          className="border border-hairline rounded px-3 py-2 w-full"
+        />
+        <input
+          name="addressLine"
+          defaultValue={initial?.addressLine ?? ""}
+          placeholder={labels.field.addressLine.label}
+          className="border border-hairline rounded px-3 py-2 w-full"
+        />
+        <select
+          name="siteType"
+          defaultValue={initial?.siteType ?? "PRIVATE_HOUSE"}
+          className="border border-hairline rounded px-3 py-2"
+        >
+          {(
+            [
+              "PRIVATE_HOUSE",
+              "APARTMENT_ROOF",
+              "LAND_PLOT",
+              "COMMERCIAL",
+            ] as const
+          ).map((v) => (
+            <option key={v} value={v}>
+              {labels.field.siteType[v]}
+            </option>
           ))}
         </select>
-        <input name="availableAreaM2" type="number" min="0" defaultValue={initial?.availableAreaM2 ?? ""} placeholder={labels.field.availableAreaM2.label} className="border border-hairline rounded px-3 py-2 w-40" />
+        <input
+          name="availableAreaM2"
+          type="number"
+          min="0"
+          defaultValue={initial?.availableAreaM2 ?? ""}
+          placeholder={labels.field.availableAreaM2.label}
+          className="border border-hairline rounded px-3 py-2 w-40"
+        />
         {source !== "WIND" && (
-          <select name="roofOrientation" defaultValue={initial?.roofOrientation ?? "S"} className="border border-hairline rounded px-3 py-2">
+          <select
+            name="roofOrientation"
+            defaultValue={initial?.roofOrientation ?? "S"}
+            className="border border-hairline rounded px-3 py-2"
+          >
             {(["S", "SE", "SW", "E", "W", "UNKNOWN"] as const).map((v) => (
-              <option key={v} value={v}>{labels.field.roofOrientation[v]}</option>
+              <option key={v} value={v}>
+                {labels.field.roofOrientation[v]}
+              </option>
             ))}
           </select>
         )}
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-lg font-semibold">{labels.section.money}</legend>
-        <select name="budget" defaultValue={initial?.budget ?? "AWAITING_QUOTE"} className="border border-hairline rounded px-3 py-2">
-          {(["UNDER_5K","FROM_5K_TO_15K","FROM_15K_TO_30K","FROM_30K_TO_60K","OVER_60K","AWAITING_QUOTE"] as const).map((v) => (
-            <option key={v} value={v}>{labels.field.budget[v]}</option>
+        <legend className="text-lg font-semibold">
+          {labels.section.money}
+        </legend>
+        <select
+          name="budget"
+          defaultValue={initial?.budget ?? "AWAITING_QUOTE"}
+          className="border border-hairline rounded px-3 py-2"
+        >
+          {(
+            [
+              "UNDER_5K",
+              "FROM_5K_TO_15K",
+              "FROM_15K_TO_30K",
+              "FROM_30K_TO_60K",
+              "OVER_60K",
+              "AWAITING_QUOTE",
+            ] as const
+          ).map((v) => (
+            <option key={v} value={v}>
+              {labels.field.budget[v]}
+            </option>
           ))}
         </select>
-        <select name="timeline" defaultValue={initial?.timeline ?? "EXPLORING"} className="border border-hairline rounded px-3 py-2">
-          {(["URGENT_1_3M","WITHIN_YEAR","EXPLORING"] as const).map((v) => (
-            <option key={v} value={v}>{labels.field.timeline[v]}</option>
+        <select
+          name="timeline"
+          defaultValue={initial?.timeline ?? "EXPLORING"}
+          className="border border-hairline rounded px-3 py-2"
+        >
+          {(["URGENT_1_3M", "WITHIN_YEAR", "EXPLORING"] as const).map((v) => (
+            <option key={v} value={v}>
+              {labels.field.timeline[v]}
+            </option>
           ))}
         </select>
-        <textarea name="notes" defaultValue={initial?.notes ?? ""} maxLength={1000} rows={4} placeholder={labels.field.notes.label} className="border border-hairline rounded px-3 py-2 w-full" />
+        <textarea
+          name="notes"
+          defaultValue={initial?.notes ?? ""}
+          maxLength={1000}
+          rows={4}
+          placeholder={labels.field.notes.label}
+          className="border border-hairline rounded px-3 py-2 w-full"
+        />
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="text-lg font-semibold">{labels.section.contact}</legend>
+        <legend className="text-lg font-semibold">
+          {labels.section.contact}
+        </legend>
         <p className="text-xs text-muted">{labels.contactHint}</p>
         <div>
-          <label className="block text-sm mb-1">{labels.field.name.label}</label>
+          <label className="block text-sm mb-1">
+            {labels.field.name.label}
+          </label>
           <input
             name="name"
             type="text"
@@ -192,10 +314,14 @@ export function BuildRequestForm({ mode, locale, initial, userName, userPhone, l
             maxLength={80}
             className="border border-hairline rounded px-3 py-2 w-full"
           />
-          {errors.name && <p className="text-red-600 text-xs mt-1">{errors.name}</p>}
+          {errors.name && (
+            <p className="text-red-600 text-xs mt-1">{errors.name}</p>
+          )}
         </div>
         <div>
-          <label className="block text-sm mb-1">{labels.field.phone.label}</label>
+          <label className="block text-sm mb-1">
+            {labels.field.phone.label}
+          </label>
           <input
             name="phone"
             type="tel"
@@ -205,7 +331,9 @@ export function BuildRequestForm({ mode, locale, initial, userName, userPhone, l
             maxLength={30}
             className="border border-hairline rounded px-3 py-2 w-full"
           />
-          {errors.phone && <p className="text-red-600 text-xs mt-1">{errors.phone}</p>}
+          {errors.phone && (
+            <p className="text-red-600 text-xs mt-1">{errors.phone}</p>
+          )}
         </div>
       </fieldset>
 

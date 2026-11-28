@@ -3089,5 +3089,82 @@
     "qrTitle": "Otvoriť v telefóne",
     "qrBody": "Nasmerujte kameru telefónu na kód.",
     "openApp": "Otvoriť telefónnu sekciu"
+  },
+  "cabinetTiles": {
+    "labels": {
+      "wallet": "Peňaženka",
+      "bookings": "Rezervácie",
+      "support": "Podpora",
+      "favorites": "Obľúbené",
+      "gifts": "Darčeky",
+      "roaming": "Roaming",
+      "build": "Výstavba",
+      "company": "Moja firma",
+      "producer": "Výrobca",
+      "network": "Sieť nabíjačiek",
+      "contractor": "Dodávateľ",
+      "coop": "Kooperatíva",
+      "workOrders": "Pracovné príkazy",
+      "operator": "Operátor platformy",
+      "settings": "Nastavenia účtu",
+      "interface": "Rozhranie",
+      "signOut": "Odhlásiť sa",
+      "adminListings": "Front listingov",
+      "adminBuildRequests": "Žiadosti o výstavbu",
+      "adminContractors": "Dodávatelia",
+      "adminPoints": "Body",
+      "adminZones": "Zóny",
+      "adminRoaming": "Roamingové koridory",
+      "adminMarketing": "Obsah",
+      "adminFeePlans": "Tarifné plány",
+      "adminReconciliation": "Zúčtovanie",
+      "adminReceiptClaims": "Reklamácie dokladov",
+      "buy": "Kúpiť",
+      "charge": "Nabiť",
+      "transfer": "Previesť",
+      "topUp": "Doplniť"
+    },
+    "units": {
+      "walletBalance": "kWh",
+      "bookingsAhead": "vpredu",
+      "favoritesCount": "uložené",
+      "openTickets": "otvorené",
+      "activeGifts": "aktívne",
+      "buildRequests": "v práci",
+      "coopShares": "podielov",
+      "myWorkOrders": "na mne"
+    },
+    "boards": {
+      "root": "Kabinet",
+      "account": "Môj účet",
+      "operator": "Operátor platformy",
+      "back": "Späť",
+      "userCaption": "Nastavenia, rozhranie, odhlásenie"
+    },
+    "closed": {
+      "transfer": "čaká na právny posudok",
+      "topUp": "čaká na banku"
+    }
+  },
+  "interfaceSettings": {
+    "title": "Rozhranie",
+    "subtitle": "Ako vyzerajú dlaždice kabinetu a v akom poradí stoja.",
+    "accentTitle": "Obrys dlaždíc",
+    "accentHint": "Šesť farieb z témy — obrys zostáva čitateľný v svetlej aj tmavej.",
+    "orderTitle": "Poradie dlaždíc",
+    "orderHint": "Pretiahnite dlaždicu alebo použite strelky — strelky fungujú aj z klávesnice.",
+    "up": "Vyššie",
+    "down": "Nižšie",
+    "save": "Uložiť",
+    "saved": "Uložené",
+    "reset": "Obnoviť poradie",
+    "accents": {
+      "accent": "Jantárová",
+      "green": "Zelená",
+      "blue": "Tyrkysová",
+      "amber": "Oranžová",
+      "violet": "Fialová",
+      "neutral": "Neutrálna"
+    }
   }
 }

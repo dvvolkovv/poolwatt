@@ -30,6 +30,12 @@ model User {
   // электронный" — both on, paper happens on demand at the terminal.
   receiptEmail      Boolean   @default(true)
   receiptPush       Boolean   @default(true)
+  // Настройки интерфейса кабинета: цвет контура плиток и порядок, в котором
+  // человек их разложил. Порядок — список ключей плиток; применяется мягко
+  // (см. `orderTiles` в src/lib/cabinet/tiles.ts), поэтому плитка, которой
+  // при настройке ещё не было, не теряется.
+  tileAccent        String    @default("accent")
+  tileOrder         Json?
   emailVerified     DateTime?
   // §42's birthday trigger. Day and month only, given voluntarily: a year
   // would be one more piece of personal data for no extra use.

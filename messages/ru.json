@@ -3089,5 +3089,82 @@
     "qrTitle": "Открыть на телефоне",
     "qrBody": "Наведите камеру телефона на код.",
     "openApp": "Открыть телефонный раздел"
+  },
+  "cabinetTiles": {
+    "labels": {
+      "wallet": "Кошелёк",
+      "bookings": "Брони",
+      "support": "Поддержка",
+      "favorites": "Избранное",
+      "gifts": "Подарки",
+      "roaming": "Роуминг",
+      "build": "Строительство",
+      "company": "Моя компания",
+      "producer": "Производитель",
+      "network": "Сеть зарядок",
+      "contractor": "Подрядчик",
+      "coop": "Кооператив",
+      "workOrders": "Наряды",
+      "operator": "Оператор платформы",
+      "settings": "Настройки аккаунта",
+      "interface": "Интерфейс",
+      "signOut": "Выйти",
+      "adminListings": "Заявки на листинг",
+      "adminBuildRequests": "Заявки на строительство",
+      "adminContractors": "Подрядчики",
+      "adminPoints": "Пункты",
+      "adminZones": "Зоны",
+      "adminRoaming": "Коридоры роуминга",
+      "adminMarketing": "Контент",
+      "adminFeePlans": "Тарифные планы",
+      "adminReconciliation": "Сверка",
+      "adminReceiptClaims": "Претензии по чекам",
+      "buy": "Купить",
+      "charge": "Зарядиться",
+      "transfer": "Перевести",
+      "topUp": "Пополнить"
+    },
+    "units": {
+      "walletBalance": "кВт·ч",
+      "bookingsAhead": "впереди",
+      "favoritesCount": "в избранном",
+      "openTickets": "открыто",
+      "activeGifts": "действует",
+      "buildRequests": "в работе",
+      "coopShares": "паёв",
+      "myWorkOrders": "на мне"
+    },
+    "boards": {
+      "root": "Кабинет",
+      "account": "Мой аккаунт",
+      "operator": "Оператор платформы",
+      "back": "Назад",
+      "userCaption": "Настройки, интерфейс, выход"
+    },
+    "closed": {
+      "transfer": "ждёт заключения юриста",
+      "topUp": "ждёт банка"
+    }
+  },
+  "interfaceSettings": {
+    "title": "Интерфейс",
+    "subtitle": "Как выглядят плитки кабинета и в каком порядке стоят.",
+    "accentTitle": "Контур плиток",
+    "accentHint": "Шесть цветов из темы — контур остаётся читаемым и в светлой, и в тёмной.",
+    "orderTitle": "Порядок плиток",
+    "orderHint": "Перетащите плитку или воспользуйтесь стрелками — стрелки работают и с клавиатуры.",
+    "up": "Выше",
+    "down": "Ниже",
+    "save": "Сохранить",
+    "saved": "Сохранено",
+    "reset": "Сбросить порядок",
+    "accents": {
+      "accent": "Янтарный",
+      "green": "Зелёный",
+      "blue": "Голубой",
+      "amber": "Оранжевый",
+      "violet": "Фиолетовый",
+      "neutral": "Нейтральный"
+    }
   }
 }

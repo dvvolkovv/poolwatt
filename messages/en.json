@@ -3089,5 +3089,82 @@
     "qrTitle": "Open on a phone",
     "qrBody": "Point the phone camera at the code.",
     "openApp": "Open the phone section"
+  },
+  "cabinetTiles": {
+    "labels": {
+      "wallet": "Wallet",
+      "bookings": "Bookings",
+      "support": "Support",
+      "favorites": "Favorites",
+      "gifts": "Gifts",
+      "roaming": "Roaming",
+      "build": "Building",
+      "company": "My company",
+      "producer": "Producer",
+      "network": "Charging network",
+      "contractor": "Contractor",
+      "coop": "Cooperative",
+      "workOrders": "Work orders",
+      "operator": "Platform operator",
+      "settings": "Account settings",
+      "interface": "Interface",
+      "signOut": "Sign out",
+      "adminListings": "Listing queue",
+      "adminBuildRequests": "Building requests",
+      "adminContractors": "Contractors",
+      "adminPoints": "Points",
+      "adminZones": "Zones",
+      "adminRoaming": "Roaming corridors",
+      "adminMarketing": "Content",
+      "adminFeePlans": "Fee plans",
+      "adminReconciliation": "Reconciliation",
+      "adminReceiptClaims": "Receipt claims",
+      "buy": "Buy",
+      "charge": "Charge",
+      "transfer": "Transfer",
+      "topUp": "Top up"
+    },
+    "units": {
+      "walletBalance": "kWh",
+      "bookingsAhead": "ahead",
+      "favoritesCount": "saved",
+      "openTickets": "open",
+      "activeGifts": "active",
+      "buildRequests": "in progress",
+      "coopShares": "shares",
+      "myWorkOrders": "on me"
+    },
+    "boards": {
+      "root": "Cabinet",
+      "account": "My account",
+      "operator": "Platform operator",
+      "back": "Back",
+      "userCaption": "Settings, interface, sign out"
+    },
+    "closed": {
+      "transfer": "awaiting a legal opinion",
+      "topUp": "awaiting a bank"
+    }
+  },
+  "interfaceSettings": {
+    "title": "Interface",
+    "subtitle": "How the cabinet tiles look and in what order they stand.",
+    "accentTitle": "Tile outline",
+    "accentHint": "Six colours from the theme, so the outline stays readable in both light and dark.",
+    "orderTitle": "Tile order",
+    "orderHint": "Drag a tile, or use the arrows — the arrows also work from a keyboard.",
+    "up": "Move up",
+    "down": "Move down",
+    "save": "Save",
+    "saved": "Saved",
+    "reset": "Reset order",
+    "accents": {
+      "accent": "Amber",
+      "green": "Green",
+      "blue": "Cyan",
+      "amber": "Orange",
+      "violet": "Violet",
+      "neutral": "Neutral"
+    }
   }
 }
