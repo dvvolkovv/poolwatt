@@ -1113,6 +1113,10 @@
       "submit": "Uložiť",
       "success": "Meno aktualizované"
     },
+    "language": {
+      "title": "Jazyk",
+      "help": "Jazyk stránok a e-mailov. Voľba sa pamätá pre konto."
+    },
     "phone": {
       "title": "Telefón",
       "placeholder": "+421 900 000 000",

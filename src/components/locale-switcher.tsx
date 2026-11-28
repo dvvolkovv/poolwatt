@@ -4,7 +4,19 @@ import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { SUPPORTED_LOCALES, LOCALE_LABELS, type Locale } from "@/lib/locales";
 
-export function LocaleSwitcher() {
+/**
+ * Выбор языка. С 2026-11-28 его нет в ряду шапки: он занимал место, которого
+ * на телефоне нет. Подписанный меняет язык в настройках аккаунта, где выбор
+ * ещё и запоминается; гостю запоминать некуда, поэтому у него выбор живёт
+ * внизу панели гамбургера — то есть тоже спрятан, а не брошен.
+ */
+export function LocaleSwitcher({
+  testId,
+  className,
+}: {
+  testId?: string;
+  className?: string;
+} = {}) {
   const router = useRouter();
   const pathname = usePathname();
   const current = useLocale() as Locale;
@@ -26,7 +38,11 @@ export function LocaleSwitcher() {
     <select
       value={current}
       onChange={(e) => onChange(e.target.value as Locale)}
-      className="bg-card border border-hairline rounded-md text-xs px-2 py-1 text-muted-strong hover:text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+      data-testid={testId}
+      className={
+        className ??
+        "bg-card border border-hairline rounded-md text-xs px-2 py-1 text-muted-strong hover:text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+      }
       aria-label="Language"
     >
       {SUPPORTED_LOCALES.map((l) => (

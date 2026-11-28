@@ -58,8 +58,8 @@ export default async function Home({
       <div className="max-w-[1600px] mx-auto px-4 md:px-12 xl:px-20">
         {/* HERO */}
         <section className="py-12 md:py-28">
-          <div className="grid grid-cols-12 gap-8 items-end">
-            <div className="col-span-12 lg:col-span-8">
+          <div className="grid gap-8 items-end lg:grid-cols-12">
+            <div className="lg:col-span-8">
               <div className="num text-[11px] uppercase tracking-[0.3em] text-up mb-6 inline-flex items-center gap-2">
                 <span
                   className="w-2 h-2 rounded-full bg-up animate-pulse"
@@ -90,24 +90,24 @@ export default async function Home({
                 >
                   <span aria-hidden>⚡</span> {tNav("items.chargers")}
                 </Link>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   <Link
                     href="#producers"
-                    className="inline-flex min-h-[44px] flex-1 sm:flex-none items-center justify-center px-5 rounded-full font-semibold text-[12px] sm:text-[13px] uppercase tracking-[0.14em] border border-hairline text-muted-strong hover:text-foreground hover:border-accent/60 transition-all"
+                    className="inline-flex min-h-[44px] min-w-0 flex-1 basis-0 sm:flex-none sm:basis-auto items-center justify-center px-4 py-2 sm:px-5 rounded-full font-semibold text-center leading-tight text-[12px] sm:text-[13px] uppercase tracking-[0.14em] border border-hairline text-muted-strong hover:text-foreground hover:border-accent/60 transition-all"
                   >
                     {th("ctaPrimary")}
                   </Link>
                   <Link
                     href={`/${locale}/me/build-requests/new`}
                     prefetch={false}
-                    className="inline-flex min-h-[44px] flex-1 sm:flex-none items-center justify-center px-5 rounded-full font-semibold text-[12px] sm:text-[13px] uppercase tracking-[0.14em] border border-hairline text-muted-strong hover:text-foreground hover:border-accent/60 transition-all"
+                    className="inline-flex min-h-[44px] min-w-0 flex-1 basis-0 sm:flex-none sm:basis-auto items-center justify-center px-4 py-2 sm:px-5 rounded-full font-semibold text-center leading-tight text-[12px] sm:text-[13px] uppercase tracking-[0.14em] border border-hairline text-muted-strong hover:text-foreground hover:border-accent/60 transition-all"
                   >
                     {th("ctaSecondary")}
                   </Link>
                 </div>
               </div>
             </div>
-            <div className="col-span-12 lg:col-span-4">
+            <div className="lg:col-span-4">
               <GridStatsHero
                 stats={stats}
                 currency={currency}

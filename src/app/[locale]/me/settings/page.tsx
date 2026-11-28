@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NameSection } from "@/components/settings/name-section";
+import { LanguageSection } from "@/components/settings/language-section";
 import { EmailSection } from "@/components/settings/email-section";
 import { PhoneSection } from "@/components/settings/phone-section";
 import { BirthdaySection } from "@/components/settings/birthday-section";
@@ -12,6 +13,7 @@ import { TalerIdSection } from "@/components/settings/talerid-section";
 import { DangerZone } from "@/components/settings/danger-zone";
 import { ReceiptDeliverySection } from "@/components/settings/receipt-delivery-section";
 import { pushOpen } from "@/lib/exchange/gates";
+import { toLocale } from "@/lib/email-i18n";
 import { isTalerIdEnabled, TALERID_PROVIDER_ID } from "@/lib/talerid/config";
 import { talerIdErrorKey } from "@/lib/talerid/errors";
 
@@ -51,6 +53,7 @@ export default async function SettingsPage({
   if (!user) redirect(`/${locale}/login`);
 
   const t = await getTranslations("settings");
+  const tCommon = await getTranslations("common");
   const tTalerId = await getTranslations("auth.talerId");
   const hasPassword = user.passwordHash != null;
   const talerIdError = talerIdErrorKey(query.error);
@@ -70,6 +73,21 @@ export default async function SettingsPage({
             placeholder: t("name.placeholder"),
             submit: t("name.submit"),
             success: t("name.success"),
+          }}
+        />
+
+        {/* Язык переехал сюда из шапки 2026-11-28 вместе с правом записать
+            `preferredLocale`, по которой письма выбирают язык. */}
+        <LanguageSection
+          // Язык, на котором человек читает страницу прямо сейчас, а не то,
+          // что лежит в колонке: до этой страницы колонку нечем было
+          // записать, и у всех там стоит «en» по умолчанию. Сохранение
+          // сводит их вместе.
+          current={toLocale(locale)}
+          labels={{
+            title: t("language.title"),
+            help: t("language.help"),
+            submit: tCommon("save"),
           }}
         />
 

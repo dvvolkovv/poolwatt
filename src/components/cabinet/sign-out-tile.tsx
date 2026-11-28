@@ -23,12 +23,15 @@ export function SignOutTile({
       aria-label={label}
       data-testid="tile-signOut"
       data-tile
-      className={`${TILE_CLASS} text-left`}
+      className={TILE_CLASS}
     >
-      <span aria-hidden className="text-[20px] leading-none text-down">
+      <span
+        aria-hidden
+        className="text-[26px] leading-none text-down sm:text-[30px]"
+      >
         {glyph}
       </span>
-      <span className="text-[13px] sm:text-[14px] font-semibold leading-tight text-down">
+      <span className="text-[13px] sm:text-[15px] font-semibold leading-tight text-down">
         {label}
       </span>
     </button>

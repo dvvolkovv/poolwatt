@@ -60,6 +60,13 @@ body {
 body {
   font-family: var(--font-sans);
   font-feature-settings: "ss01" 1, "cv11" 1;
+  /* Страница не ездит вправо-влево. Именно `clip`, а не `hidden`: `hidden`
+     делает из тела прокручиваемую область, и тогда `position: sticky` у шапки
+     перестаёт держаться за край экрана. `clip` ничего не прокручивает —
+     поэтому и шапка, и `position: fixed` (нижняя панель приложения §22)
+     остаются на месте. Настоящие источники переполнения всё равно правятся
+     по месту: это пояс, а не замена ремню. */
+  overflow-x: clip;
 }
 
 /* Tabular numerics — apply via .num class wherever kWh/percent/price renders. */

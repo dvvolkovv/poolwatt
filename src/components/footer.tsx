@@ -23,9 +23,13 @@ export async function Footer() {
   return (
     <footer className="mt-20 bg-bg-tint border-t border-hairline">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 xl:px-20 py-10 md:py-16">
-        <div className="grid grid-cols-12 gap-8">
+        {/* Двенадцать колонок — только с планшета. На телефоне одиннадцать
+            промежутков по 32 точки (352) сами по себе шире экрана, и подвал
+            растягивал страницу на каждой странице сайта: именно от этого
+            кабинет ездил вправо-влево. */}
+        <div className="grid gap-8 md:grid-cols-12">
           {/* Brand + tagline */}
-          <div className="col-span-12 md:col-span-4">
+          <div className="md:col-span-4">
             <div className="flex items-baseline gap-2 mb-3">
               <span className="text-[18px] font-bold tracking-[-0.02em] text-foreground">
                 poolwatt
@@ -61,7 +65,7 @@ export async function Footer() {
 
           {/* Разделы — своей сеткой внутри, чтобы их число могло меняться
               вместе с правами человека и не ломало внешние 12 колонок. */}
-          <div className="col-span-12 md:col-span-8 grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 gap-8 md:col-span-8 lg:grid-cols-4">
             {groups.map((group) => (
               <div key={group.key}>
                 <div className="text-[10px] uppercase tracking-[0.18em] mb-3 text-muted">

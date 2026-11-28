@@ -32,17 +32,16 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
-test("во главе кабинета человек, и плитки квадратные", async ({ page }) => {
+test("у кабинета есть заголовок, и плитки квадратные", async ({ page }) => {
   await signInWithPassword(page, USER, "ru");
   await page.goto("/ru/me");
 
-  const user = page.getByTestId("tile-user");
-  await expect(user).toBeVisible();
-  await expect(user).toContainText(`@${USER.username}`);
-  // Единственный `h1` страницы — имя человека: он во главе.
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    USER.username,
-  );
+  // Квадрат с именем человека стоял во главе доски до 2026-11-28. Владелец
+  // попросил его убрать: учётная запись живёт в шапке, а у страницы остался
+  // заголовок и бейдж статуса.
+  await expect(page.getByTestId("tile-user")).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByTestId("status-badge")).toBeVisible();
 
   const wallet = page.getByTestId("tile-wallet");
   await expect(wallet).toBeVisible();
@@ -78,7 +77,7 @@ test("плитка «Пополнить» не молчит о том, чего 
   await expect(topUp).toHaveAttribute("aria-disabled", "true");
 });
 
-test("нажатие на человека открывает его аккаунт, и кнопка возвращает", async ({
+test("никнейм в шапке открывает аккаунт, и кнопка возвращает", async ({
   page,
 }) => {
   await signInWithPassword(page, USER, "ru");
@@ -87,7 +86,7 @@ test("нажатие на человека открывает его аккау�
   // На доме кабинета возвращаться некуда — кнопки нет.
   await expect(page.getByTestId("cabinet-back")).toHaveCount(0);
 
-  await page.getByTestId("tile-user").click();
+  await page.getByTestId("account-pill").click();
   await page.waitForURL("**/ru/me/g/account");
   await expect(page.getByTestId("tile-settings")).toBeVisible();
   await expect(page.getByTestId("tile-interface")).toBeVisible();
@@ -98,7 +97,7 @@ test("нажатие на человека открывает его аккау�
   await expect(back).toBeVisible();
   await back.click();
   await page.waitForURL(/\/ru\/me$/);
-  await expect(page.getByTestId("tile-user")).toBeVisible();
+  await expect(page.getByTestId("tile-wallet")).toBeVisible();
 });
 
 test("со страницы раздела кнопка ведёт на её доску", async ({ page }) => {

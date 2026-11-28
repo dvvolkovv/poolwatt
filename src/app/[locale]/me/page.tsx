@@ -4,10 +4,16 @@
 //
 // Что изменилось 2026-11-28: навигация кабинета перестала быть полосой из
 // десяти текстовых ссылок (её рисовал `me/layout.tsx` под `overflow-x-auto`,
-// одинаковую для всех) и стала доской плиток. Во главе — человек: нажатие на
-// него открывает доску его аккаунта. Живой баланс и цена зоны остались там
-// же, где были: это требование §22.2, а не украшение. Четыре быстрые кнопки
-// §22.2 стали плитками, и две из них по-прежнему говорят, чего ждут.
+// одинаковую для всех) и стала доской плиток. Живой баланс и цена зоны
+// остались там же, где были: это требование §22.2, а не украшение. Четыре
+// быстрые кнопки §22.2 стали плитками, и две из них по-прежнему говорят,
+// чего ждут.
+//
+// Во главе страницы в тот же день стоял квадрат с именем человека во всю
+// ширину. Владелец прошёл кабинет с телефона и попросил его убрать: учётная
+// запись и вход в неё — сбоку, в шапке (`AccountPill`), а первый экран
+// кабинета пусть занимают баланс и разделы. Остался заголовок и бейдж
+// статуса одной строкой.
 
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
@@ -20,11 +26,9 @@ import { readWallets } from "@/lib/exchange/wallet-service";
 import { intervalStartFor } from "@/lib/exchange/zone-service";
 import { walletChannel } from "@/lib/exchange/realtime";
 import { readCabinetContext } from "@/lib/cabinet/context";
-import { boardPath } from "@/lib/cabinet/tiles";
 import { accentStyle } from "@/lib/cabinet/accents";
 import { LiveBalanceSummary } from "@/components/exchange/live-balance-summary";
 import { CabinetBoard } from "@/components/cabinet/board";
-import { UserTile } from "@/components/cabinet/tile-board";
 
 export const dynamic = "force-dynamic";
 
@@ -62,13 +66,21 @@ export default async function MainScreen({
 
   return (
     <div style={accentStyle(ctx.accent)}>
-      <div className="mb-3">
-        <UserTile
-          href={`/${locale}${boardPath("account")}`}
-          username={ctx.username || session.user.username}
-          statusLabel={t(`status.${ctx.status}`)}
-          caption={tTiles("boards.userCaption")}
-        />
+      {/* Заголовок страницы и бейдж статуса — одной строкой. До 2026-11-28
+          здесь стоял квадрат во всю ширину с именем человека: владелец
+          попросил его убрать, оставив учётную запись только сбоку, в шапке.
+          Бейдж статуса остаётся: его требует §22.2, а квадрат не требовал
+          никто. */}
+      <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 className="text-[22px] sm:text-[26px] font-bold leading-none tracking-[-0.02em] text-foreground">
+          {tTiles("boards.root")}
+        </h1>
+        <span
+          data-testid="status-badge"
+          className="num text-[11px] uppercase tracking-[0.18em] text-[color:var(--tile-line-strong)]"
+        >
+          {t(`status.${ctx.status}`)}
+        </span>
       </div>
 
       <section className="mb-6">

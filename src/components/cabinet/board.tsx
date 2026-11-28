@@ -33,7 +33,7 @@ export const TILE_GLYPH: Record<string, string> = {
   coop: "🤝",
   workOrders: "🛠",
   operator: "🛡",
-  buy: "＋",
+  buy: "+",
   charge: "🔌",
   transfer: "⇄",
   topUp: "💳",

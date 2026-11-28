@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { LocaleSwitcher } from "./locale-switcher";
-import { ProfilePill } from "./cabinet/profile-pill";
+import { AccountPill } from "./cabinet/account-pill";
 import { SiteMenu } from "./site-menu";
 import { auth } from "@/lib/auth";
 import { navHref, primaryItems, visibleNav } from "@/lib/site-nav";
@@ -21,19 +20,22 @@ export async function Navbar() {
   const primary = primaryItems(ctx);
   const groups = visibleNav(ctx);
 
+  // Что убрано 2026-11-28 и почему: жёлтый значок `.energy` рядом со словом
+  // `poolwatt` и выбор языка. Торговая марка — само слово, а список из
+  // двадцати девяти языков в ряду шапки занимал место, которого на телефоне
+  // нет: вместе с никнеймом и гамбургером ряд не влезал в экран, и вся
+  // страница ездила вправо-влево. Язык теперь в настройках аккаунта, а гостю
+  // — в панели гамбургера.
   return (
     <header className="sticky top-0 z-30 backdrop-blur-md bg-[rgba(12,16,20,0.85)] border-b border-hairline">
-      <div className="max-w-[1600px] mx-auto px-4 md:px-12 xl:px-20 h-16 flex items-center gap-4">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-12 xl:px-20 h-16 flex items-center gap-2 md:gap-4">
         <Link
           href={`/${locale}`}
-          className="flex items-baseline gap-2"
+          className="shrink-0"
           aria-label={t("appName")}
         >
           <span className="text-[20px] font-bold tracking-[-0.02em] text-foreground">
             poolwatt
-          </span>
-          <span className="num text-[10px] font-medium uppercase tracking-[0.25em] px-1.5 py-0.5 rounded-sm text-accent border border-accent/40">
-            .energy
           </span>
         </Link>
 
@@ -53,17 +55,12 @@ export async function Navbar() {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
-          <LocaleSwitcher />
+        <div className="ml-auto flex min-w-0 items-center gap-2">
           {session?.user ? (
-            <ProfilePill
+            <AccountPill
               username={session.user.username}
               locale={locale}
-              labels={{
-                cabinet: t("cabinet"),
-                settings: t("settings"),
-                signOut: t("signOut"),
-              }}
+              label={t("cabinet")}
             />
           ) : (
             // На мониторе «Войти» остаётся на виду; на телефоне она внутри

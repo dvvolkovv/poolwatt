@@ -62,11 +62,11 @@ export function LiveBalanceSummary({
             <div className="text-[11px] uppercase tracking-[0.14em] text-muted">
               {w.zoneCode} · {labels.kwhBalance}
             </div>
-            <div className="num text-[44px] leading-none font-semibold tracking-[-0.02em]">
+            <div className="num text-[34px] sm:text-[44px] leading-none font-semibold tracking-[-0.02em]">
               <span data-testid={`home-kwh-${w.zoneCode}`}>{w.kwhBalance.toFixed(3)}</span>
               <span className="ml-2 text-[16px] text-muted">kWh</span>
             </div>
-            <div className="mt-3 flex gap-6 text-[13px]">
+            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-[13px]">
               <span className="text-muted">
                 {labels.fiatBalance}{" "}
                 <b className="num text-foreground" data-testid={`home-fiat-${w.zoneCode}`}>

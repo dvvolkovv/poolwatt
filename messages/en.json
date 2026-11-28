@@ -1113,6 +1113,10 @@
       "submit": "Save",
       "success": "Name updated"
     },
+    "language": {
+      "title": "Language",
+      "help": "The language of the pages and of the e-mails. The choice is remembered for the account."
+    },
     "phone": {
       "title": "Phone",
       "placeholder": "+421 900 000 000",

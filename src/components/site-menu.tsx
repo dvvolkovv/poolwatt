@@ -19,6 +19,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { signOut } from "next-auth/react";
 import { navHref, type NavGroup } from "@/lib/site-nav";
+import { LocaleSwitcher } from "./locale-switcher";
 
 const PANEL_ID = "site-menu-panel";
 
@@ -179,6 +180,21 @@ export function SiteMenu({
                   </Link>
                 )}
               </div>
+
+              {/* Гостю настроек негде взять, а язык ему нужен: выбор остаётся
+                  внизу панели. Подписанный меняет язык в настройках аккаунта,
+                  где он ещё и запоминается. */}
+              {!signedIn && (
+                <div className="mt-6 border-t border-hairline pt-4">
+                  <label className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-muted mb-2">
+                    {tc("languageLabel")}
+                  </label>
+                  <LocaleSwitcher
+                    testId="site-menu-language"
+                    className="w-full rounded-md border border-hairline bg-bg px-3 py-2 text-[15px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                  />
+                </div>
+              )}
             </nav>
           </div>
         </>
