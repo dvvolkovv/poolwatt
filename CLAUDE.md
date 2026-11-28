@@ -21,7 +21,10 @@ The owner wants the whole TZ delivered. It is the default job: "продолжа
 Every run:
 
 1. Take the first block in the tracker that is neither finished nor waiting for
-   the owner. One block per run, or a part of one that can be finished.
+   the owner. One block per run, or a part of one that can be finished — the
+   one the owner gave the go-ahead for in answer to the question of part 3 of
+   the report protocol below. A bare "продолжай" / "дальше" is that go-ahead
+   for the block the last report named.
 2. Follow the skills: brainstorming → spec → writing-plans → TDD →
    verification-before-completion. When brainstorming needs the owner, send one
    message with numbered questions and a recommendation for each, write them to
@@ -40,8 +43,10 @@ Every run:
 7. Tests only against the throwaway database (see Known gotchas), and the whole
    suite with e2e before a deploy.
 8. Tick the boxes of a plan as you go.
-9. Finish with a report: what is done and how it was checked, what is next, what
-   you need from the owner. Audio reports are not committed (`*.mp3` is ignored).
+9. Finish with a report in the three parts of the report protocol below — what
+   is done from the TZ and how it was checked, what is left, and the question
+   about the next block (may I, and what for) — then stop and wait for the
+   answer. Audio reports are not committed (`*.mp3` is ignored).
 
 ## How to report to the owner
 
@@ -56,16 +61,38 @@ The owner asked for this explicitly (2026-11-24): keep going through the queue
 one task at a time, and **report after every finished task**, not only at the
 end of the run.
 
-- Plain words, no tables, no jargon, no code in the report. Tell it like you
-  would tell a person over the phone: what you just finished, and what is left
-  to do next.
-- Short. A few sentences per finished task is enough.
-- Always say what remains in the queue after this task, and what you need from
-  the owner if anything.
+### The report protocol (set by the owner on 2026-11-28)
+
+Every report to the owner has exactly these three parts, in this order, and
+**never skips the third**:
+
+1. **Что сделано из ТЗ.** Which TZ section / story number, and what a person of
+   that role can now actually do. Plain words, as if over the phone.
+2. **Что осталось сделать.** What is still open in the tracker after this task,
+   how much of it, and roughly how long. Name what waits for the owner
+   separately from what is ours to do.
+3. **Вопрос владельцу — обязательный.** Name the next block and ask two things
+   in one breath:
+   - **можно ли это делать** — a direct request for the go-ahead, and
+   - **для чего это нужно сделать** — the purpose, stated by Claude, not asked
+     of the owner: what breaks or stays unfinished in the TZ if this block is
+     not done, and who feels it.
+
+   Then **stop and wait for the answer.** A question asked while already
+   starting the next block is theatre. The answers that unblock are the usual
+   ones — "продолжай", "дальше", "делай" — and they mean the named block.
+
+Shape of the report:
+
+- Plain words, no tables, no jargon, no code. Short: a few sentences per
+  finished task.
 - Russian text always, plus the two audio files (RU + SK), as the bot-response
-  rules below require. English is never acceptable.
-- Then move on to the next task without waiting for an answer, unless the task
-  is blocked on the owner.
+  rules below require. English is never acceptable, in any part.
+- The question of part 3 goes into the audio too — it is the point of the
+  report, not a postscript.
+- If a block is blocked on the owner (a closed gate in `gates.ts`, a missing
+  licence, a provider), say so in part 2 and ask in part 3 about the first
+  block that is **not** blocked.
 
 Other Claude sessions deploy from this directory too. Before `git add -A`, look
 at `git status` and leave alone what you did not change.
