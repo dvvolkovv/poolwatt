@@ -62,7 +62,7 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 - Modify: `prisma/schema.prisma`
 - Create: `prisma/migrations/<ts>_work_order_dispatch/migration.sql` (генерируется)
 
-- [ ] **Шаг 1: поля и таблицы**
+- [x] **Шаг 1: поля и таблицы**
 
 В `model Employee` добавить рядом с `pointIds`:
 
@@ -124,7 +124,7 @@ model CrewMember {
 
 В `model ChargerOperator` добавить `crews Crew[]`.
 
-- [ ] **Шаг 2: миграция на выбрасываемой базе**
+- [x] **Шаг 2: миграция на выбрасываемой базе**
 
 ```bash
 cd ~/poolwatt
@@ -135,13 +135,13 @@ NODE_ENV=development DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 
 Ожидание: миграция создана, клиент сгенерирован.
 
-- [ ] **Шаг 3: та же миграция на живой базе**
+- [x] **Шаг 3: та же миграция на живой базе**
 
 ```bash
 cd ~/poolwatt && npx prisma migrate deploy
 ```
 
-- [ ] **Шаг 4: коммит**
+- [x] **Шаг 4: коммит**
 
 ```bash
 git add prisma && git commit -m "feat(work): crews, engineer regions and a crew assignee on the order"
@@ -155,7 +155,7 @@ git add prisma && git commit -m "feat(work): crews, engineer regions and a crew 
 - Create: `src/lib/work/assignment.ts`
 - Test: `src/lib/work/assignment.test.ts`
 
-- [ ] **Шаг 1: падающий тест загрузки**
+- [x] **Шаг 1: падающий тест загрузки**
 
 `src/lib/work/assignment.test.ts` — сеть, два инженера, бригада из обоих,
 пункт в городе `Košice`. Случаи:
@@ -186,7 +186,7 @@ it("has no candidates for a generation asset order", async () => {
 });
 ```
 
-- [ ] **Шаг 2: прогон — падает**
+- [x] **Шаг 2: прогон — падает**
 
 ```bash
 NODE_ENV=test DATABASE_URL=… npx vitest run src/lib/work/assignment.test.ts
@@ -194,7 +194,7 @@ NODE_ENV=test DATABASE_URL=… npx vitest run src/lib/work/assignment.test.ts
 
 Ожидание: `Cannot find module './assignment'`.
 
-- [ ] **Шаг 3: модуль**
+- [x] **Шаг 3: модуль**
 
 ```ts
 // Кому отдать наряд — §48 «с учётом региона и загрузки».
@@ -235,9 +235,9 @@ export async function autoAssign(workOrderId: string): Promise<string | null>;
 `autoAssign` — первый кандидат через `assignWorkOrder(..., "system")`;
 кандидатов нет — `null`.
 
-- [ ] **Шаг 4: прогон — зелено**
+- [x] **Шаг 4: прогон — зелено**
 
-- [ ] **Шаг 5: коммит**
+- [x] **Шаг 5: коммит**
 
 ```bash
 git add src/lib/work/assignment.ts src/lib/work/assignment.test.ts
@@ -251,7 +251,7 @@ git commit -m "feat(work): pick an assignee by region and open load"
 **Files:**
 - Create: `src/lib/work/crew-service.ts`, `src/lib/work/crew-service.test.ts`
 
-- [ ] **Шаг 1: падающий тест**
+- [x] **Шаг 1: падающий тест**
 
 ```ts
 it("refuses a crew in somebody else's network", …);        // CrewError
@@ -262,9 +262,9 @@ it("moves the lead flag instead of keeping two leads", …);
 it("writes an audit entry for every change", …);
 ```
 
-- [ ] **Шаг 2: прогон — падает**
+- [x] **Шаг 2: прогон — падает**
 
-- [ ] **Шаг 3: модуль**
+- [x] **Шаг 3: модуль**
 
 ```ts
 export class CrewError extends Error {}
@@ -283,8 +283,8 @@ export async function readCrews(operatorId: string, userId: string): Promise<Cre
 `staff-service.ts`; переиспользовать её, не писать вторую). Города
 нормализуются: `trim`, пустые выброшены, без повторов.
 
-- [ ] **Шаг 4: прогон — зелено**
-- [ ] **Шаг 5: коммит**
+- [x] **Шаг 4: прогон — зелено**
+- [x] **Шаг 5: коммит**
 
 ```bash
 git commit -am "feat(work): crews and the regions an engineer covers"
@@ -298,7 +298,7 @@ git commit -am "feat(work): crews and the regions an engineer covers"
 - Modify: `src/lib/work/work-order-service.ts`
 - Test: `src/lib/work/work-order-service.test.ts`
 
-- [ ] **Шаг 1: падающий тест**
+- [x] **Шаг 1: падающий тест**
 
 ```ts
 it("assigning a crew clears the person", async () => {
@@ -312,16 +312,16 @@ it("refuses a crew of another network", …);
 it("refuses a crew without a single engineer who may work", …);
 ```
 
-- [ ] **Шаг 2: прогон — падает (сигнатура другая)**
+- [x] **Шаг 2: прогон — падает (сигнатура другая)**
 
-- [ ] **Шаг 3: правка**
+- [x] **Шаг 3: правка**
 
 `assignWorkOrder(workOrderId, target: { employeeId: string } | { crewId: string }, actorUserId)`.
 Обновление ставит одно поле и `null` второму. Вызовы поправить в
 `src/app/[locale]/me/work-orders/actions.ts` и везде, где компилятор укажет.
 
-- [ ] **Шаг 4: прогон — зелено**
-- [ ] **Шаг 5: коммит**
+- [x] **Шаг 4: прогон — зелено**
+- [x] **Шаг 5: коммит**
 
 ```bash
 git commit -am "feat(work): an order goes to a person or to a crew, never both"
@@ -335,7 +335,7 @@ git commit -am "feat(work): an order goes to a person or to a crew, never both"
 - Modify: `src/lib/work/work-order-service.ts`
 - Test: `src/lib/work/work-order-service.test.ts`
 
-- [ ] **Шаг 1: падающий тест**
+- [x] **Шаг 1: падающий тест**
 
 ```ts
 it("assigns an alert-born order to the best candidate", async () => {
@@ -353,9 +353,9 @@ it("records the automatic assignment as the system's", async () => {
 });
 ```
 
-- [ ] **Шаг 2: прогон — падает**
+- [x] **Шаг 2: прогон — падает**
 
-- [ ] **Шаг 3: правка**
+- [x] **Шаг 3: правка**
 
 `CreateWorkOrderArgs.autoAssign?: boolean`. После `writeAudit` создания — если
 включено, `await autoAssign(order.id)` в `try/catch` (подбор не должен уронить
@@ -363,8 +363,8 @@ it("records the automatic assignment as the system's", async () => {
 ветках: `openWorkOrdersForAlerts` и перевод заявки §51 в наряд
 (`ticket-service.ts`, найти вызов `createWorkOrder`).
 
-- [ ] **Шаг 4: прогон — зелено**
-- [ ] **Шаг 5: коммит**
+- [x] **Шаг 4: прогон — зелено**
+- [x] **Шаг 5: коммит**
 
 ```bash
 git commit -am "feat(work): an alarm finds the engineer by itself"
@@ -379,7 +379,7 @@ git commit -am "feat(work): an alarm finds the engineer by itself"
   `src/app/[locale]/me/work-orders/page.tsx`
 - Test: `src/lib/work/work-order-access.test.ts`
 
-- [ ] **Шаг 1: падающий тест**
+- [x] **Шаг 1: падающий тест**
 
 ```ts
 it("lets a member of the assigned crew work the order", async () => {
@@ -392,9 +392,9 @@ it("hides the order from a member of another crew", async () => {
 });
 ```
 
-- [ ] **Шаг 2: прогон — падает**
+- [x] **Шаг 2: прогон — падает**
 
-- [ ] **Шаг 3: правка**
+- [x] **Шаг 3: правка**
 
 В `readWorkOrderForUser` рядом с веткой исполнителя добавить `crew: { select:
 { members: { select: { employeeId: true, employee: { select: { userId: true } } } } } }`
@@ -404,8 +404,8 @@ it("hides the order from a member of another crew", async () => {
 В `engineer-view.ts` и в странице кабинета добавить в `OR` условие
 `{ crew: { members: { some: { employee: { userId } } } } }`.
 
-- [ ] **Шаг 4: прогон — зелено**
-- [ ] **Шаг 5: коммит**
+- [x] **Шаг 4: прогон — зелено**
+- [x] **Шаг 5: коммит**
 
 ```bash
 git commit -am "feat(work): a crew order is every member's order"
@@ -419,7 +419,7 @@ git commit -am "feat(work): a crew order is every member's order"
 - Modify: `src/lib/work/work-order-service.ts`
 - Test: `src/lib/work/work-order-service.test.ts`
 
-- [ ] **Шаг 1: падающий тест**
+- [x] **Шаг 1: падающий тест**
 
 ```ts
 it("mails every member of the assigned crew", async () => {
@@ -430,16 +430,16 @@ it("mails every member of the assigned crew", async () => {
 it("falls back to the owner when no member confirmed an address", async () => { … });
 ```
 
-- [ ] **Шаг 2: прогон — падает**
+- [x] **Шаг 2: прогон — падает**
 
-- [ ] **Шаг 3: правка**
+- [x] **Шаг 3: правка**
 
 В `include` добавить
 `crew: { select: { name: true, members: { select: { employee: { select: { user: { select: { email: true, emailVerified: true } } } } } } } }`
 и между веткой исполнителя и веткой владельца — ветку бригады.
 
-- [ ] **Шаг 4: прогон — зелено**
-- [ ] **Шаг 5: коммит**
+- [x] **Шаг 4: прогон — зелено**
+- [x] **Шаг 5: коммит**
 
 ```bash
 git commit -am "feat(work): the crew hears about its order"
@@ -454,7 +454,7 @@ git commit -am "feat(work): the crew hears about its order"
   `src/app/api/v1/work-orders/[id]/assign/route.ts`,
   `src/app/api/v1/work-orders/[id]/candidates/route.ts`
 
-- [ ] **Шаг 1: `GET`/`POST /v1/work-orders`**
+- [x] **Шаг 1: `GET`/`POST /v1/work-orders`**
 
 По образцу `src/app/api/v1/pipeline/route.ts`: `sessionUser()`, `parseBody`,
 `ok`/`fail`. `GET` требует `operatorId`, отдаёт очередь (та же выборка, что у
@@ -462,22 +462,22 @@ git commit -am "feat(work): the crew hears about its order"
 страница и метод не расходились). `POST` — создание через `createWorkOrder`
 после проверки права `workorders.write` на пункт. Чужая сеть — 404.
 
-- [ ] **Шаг 2: `POST /v1/work-orders/[id]/assign`**
+- [x] **Шаг 2: `POST /v1/work-orders/[id]/assign`**
 
 Тело `{ employeeId }` **или** `{ crewId }`; оба или ни одного — 400.
 Право — `readWorkOrderForUser(...).canWork`, иначе 404.
 
-- [ ] **Шаг 3: `GET /v1/work-orders/[id]/candidates`**
+- [x] **Шаг 3: `GET /v1/work-orders/[id]/candidates`**
 
 `suggestAssignees`, 404 на чужой наряд.
 
-- [ ] **Шаг 4: проверка**
+- [x] **Шаг 4: проверка**
 
 ```bash
 npx tsc --noEmit
 ```
 
-- [ ] **Шаг 5: коммит**
+- [x] **Шаг 5: коммит**
 
 ```bash
 git add src/app/api/v1/work-orders && git commit -m "feat(work): §50 routes for the queue, creation and assignment"
@@ -493,7 +493,7 @@ git add src/app/api/v1/work-orders && git commit -m "feat(work): §50 routes for
   `src/components/work/dispatch-board.tsx`
 - Modify: `messages/{en,ru,sk,de,uk}.json`
 
-- [ ] **Шаг 1: серверные действия**
+- [x] **Шаг 1: серверные действия**
 
 `actions.ts` по образцу `src/app/[locale]/me/work-orders/actions.ts`:
 `createOrder(input)` (zod: `operatorId`, `type`, `priority`, `pointId`,
@@ -502,14 +502,14 @@ git add src/app/api/v1/work-orders && git commit -m "feat(work): §50 routes for
 Право — владелец сети или `workorders.write`; иначе `{ ok: false, formError }`.
 `revalidatePath("/[locale]/me/charger-operator/[id]/dispatch", "page")`.
 
-- [ ] **Шаг 2: страница**
+- [x] **Шаг 2: страница**
 
 Серверный компонент: `auth()`, доступ к сети той же проверкой, что соседние
 страницы кабинета сети (посмотреть `tickets/page.tsx`), `readDispatchQueue`,
 `readCrews`, список пунктов сети, загрузка по людям. Передать в
 `<DispatchBoard …/>`. `export const dynamic = "force-dynamic"`.
 
-- [ ] **Шаг 3: клиентская доска**
+- [x] **Шаг 3: клиентская доска**
 
 `dispatch-board.tsx`: очередь строками (`data-testid="dispatch-queue"`),
 неназначенные первыми и помечены; на строке кнопка «Назначить» раскрывает
@@ -518,24 +518,24 @@ git add src/app/api/v1/work-orders && git commit -m "feat(work): §50 routes for
 (`data-testid="dispatch-create"`); таблица загрузки
 (`data-testid="dispatch-load"`). Все числа — класс `.num`.
 
-- [ ] **Шаг 4: ключи перевода**
+- [x] **Шаг 4: ключи перевода**
 
 `dispatch.title`, `dispatch.eyebrow`, `dispatch.unassigned`,
 `dispatch.assign`, `dispatch.reason.city|network|region`, `dispatch.load`,
 `dispatch.create.*`, `crews.*` — во все пять файлов `messages/`.
 
-- [ ] **Шаг 5: ссылка из кабинета сети**
+- [x] **Шаг 5: ссылка из кабинета сети**
 
 Добавить `dispatch` в навигацию кабинета сети рядом с `tickets` и `warehouse`
 (найти, где перечислены разделы).
 
-- [ ] **Шаг 6: сборка**
+- [x] **Шаг 6: сборка**
 
 ```bash
 cd ~/poolwatt && npm run build && pm2 restart poolwatt-web
 ```
 
-- [ ] **Шаг 7: коммит**
+- [x] **Шаг 7: коммит**
 
 ```bash
 git add -A src/app src/components messages && git commit -m "feat(work): a dispatcher's workplace — queue, creation, assignment"

@@ -1694,6 +1694,55 @@
     "signerSiteContact": "zástupca objektu",
     "signerEngineer": "technik za seba"
   },
+  "dispatch": {
+    "eyebrow": "Dispečing",
+    "title": "Pracovné príkazy siete",
+    "cabinetLink": "Dispečing",
+    "queue": "Front",
+    "unassigned": "Nepriradené",
+    "assign": "Priradiť",
+    "candidatesEmpty": "Nie je komu priradiť: sieť nemá inžiniera s právom na príkazy",
+    "load": "Kto je zaneprázdnený",
+    "loadOpen": "otvorených",
+    "loadRegions": "Mestá",
+    "wholeNetwork": "celá sieť",
+    "age": "h vo fronte",
+    "crew": "Tím",
+    "engineer": "Inžinier",
+    "reason": {
+      "city": "mesto príkazu",
+      "network": "celá sieť",
+      "region": "iné mesto"
+    },
+    "create": {
+      "title": "Nový príkaz",
+      "name": "Názov",
+      "description": "Čo sa stalo",
+      "point": "Bod",
+      "type": "Druh prác",
+      "priority": "Priorita",
+      "parts": "Čo priviezť",
+      "partsHint": "oddelené čiarkou",
+      "submit": "Vytvoriť príkaz",
+      "done": "Príkaz je vytvorený"
+    }
+  },
+  "crews": {
+    "title": "Tímy",
+    "help": "Tím sú dvaja či viac inžinierov, ktorí vyjazdia spolu. Príkaz dostane buď človek, alebo tím, nikdy obaja.",
+    "add": "Pridať tím",
+    "name": "Názov",
+    "regions": "Mestá",
+    "regionsHint": "oddelené čiarkou; prázdne znamená celú sieť",
+    "members": "Zloženie",
+    "lead": "Vedúci",
+    "addMember": "Pridať člena",
+    "remove": "Odobrať",
+    "empty": "Zatiaľ žiadne tímy",
+    "wholeNetwork": "celá sieť",
+    "save": "Uložiť",
+    "employeeRegions": "Mestá tohto inžiniera"
+  },
   "report": {
     "title": "Nahlásiť problém",
     "connector": "Konektor",

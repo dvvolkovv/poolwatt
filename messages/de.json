@@ -365,5 +365,54 @@
       "retry": "Try again",
       "stale": "The figure may be out of date."
     }
+  },
+  "dispatch": {
+    "eyebrow": "Disposition",
+    "title": "Arbeitsaufträge des Netzes",
+    "cabinetLink": "Disposition",
+    "queue": "Warteschlange",
+    "unassigned": "Nicht zugewiesen",
+    "assign": "Zuweisen",
+    "candidatesEmpty": "Niemand zum Zuweisen: im Netz gibt es keinen Techniker mit Auftragsrecht",
+    "load": "Wer ist beschäftigt",
+    "loadOpen": "offen",
+    "loadRegions": "Städte",
+    "wholeNetwork": "ganzes Netz",
+    "age": "h in der Warteschlange",
+    "crew": "Team",
+    "engineer": "Techniker",
+    "reason": {
+      "city": "Stadt des Auftrags",
+      "network": "ganzes Netz",
+      "region": "andere Stadt"
+    },
+    "create": {
+      "title": "Neuer Auftrag",
+      "name": "Titel",
+      "description": "Was ist passiert",
+      "point": "Standort",
+      "type": "Art der Arbeit",
+      "priority": "Priorität",
+      "parts": "Mitzubringende Teile",
+      "partsHint": "mit Komma getrennt",
+      "submit": "Auftrag anlegen",
+      "done": "Der Auftrag ist angelegt"
+    }
+  },
+  "crews": {
+    "title": "Teams",
+    "help": "Ein Team sind mehrere Techniker, die zusammen hinausfahren. Ein Auftrag geht entweder an eine Person oder an ein Team, niemals an beide.",
+    "add": "Team hinzufügen",
+    "name": "Name",
+    "regions": "Städte",
+    "regionsHint": "mit Komma getrennt; leer bedeutet das ganze Netz",
+    "members": "Besetzung",
+    "lead": "Leitung",
+    "addMember": "Mitglied hinzufügen",
+    "remove": "Entfernen",
+    "empty": "Noch keine Teams",
+    "wholeNetwork": "ganzes Netz",
+    "save": "Speichern",
+    "employeeRegions": "Städte dieses Technikers"
   }
 }

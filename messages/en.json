@@ -1694,6 +1694,55 @@
     "signerSiteContact": "site representative",
     "signerEngineer": "the engineer, for themselves"
   },
+  "dispatch": {
+    "eyebrow": "Dispatch",
+    "title": "Network work orders",
+    "cabinetLink": "Dispatch",
+    "queue": "Queue",
+    "unassigned": "Unassigned",
+    "assign": "Assign",
+    "candidatesEmpty": "Nobody to assign: this network has no engineer allowed to work orders",
+    "load": "Who is busy",
+    "loadOpen": "open",
+    "loadRegions": "Cities",
+    "wholeNetwork": "whole network",
+    "age": "h in queue",
+    "crew": "Crew",
+    "engineer": "Engineer",
+    "reason": {
+      "city": "the order's city",
+      "network": "whole network",
+      "region": "another city"
+    },
+    "create": {
+      "title": "New work order",
+      "name": "Title",
+      "description": "What happened",
+      "point": "Point",
+      "type": "Work type",
+      "priority": "Priority",
+      "parts": "Parts to bring",
+      "partsHint": "comma separated",
+      "submit": "Create the order",
+      "done": "The order is created"
+    }
+  },
+  "crews": {
+    "title": "Crews",
+    "help": "A crew is a few engineers who drive out together. An order goes either to a person or to a crew, never both.",
+    "add": "Add a crew",
+    "name": "Name",
+    "regions": "Cities",
+    "regionsHint": "comma separated; empty means the whole network",
+    "members": "Members",
+    "lead": "Lead",
+    "addMember": "Add a member",
+    "remove": "Remove",
+    "empty": "No crews yet",
+    "wholeNetwork": "whole network",
+    "save": "Save",
+    "employeeRegions": "Cities this engineer covers"
+  },
   "report": {
     "title": "Report a problem",
     "connector": "Connector",
