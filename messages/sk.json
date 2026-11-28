@@ -145,7 +145,17 @@
     "availability_OUT_OF_SERVICE": "mimo prevádzky",
     "availability_UNKNOWN": "neznáme",
     "availability_BOOKED": "rezervovaný",
-    "fullCard": "Celá karta"
+    "fullCard": "Celá karta",
+    "tabStations": "Stanice",
+    "tabOperators": "Operátori",
+    "tabMap": "Na mape",
+    "nearMe": "V mojom okolí",
+    "locating": "Hľadáme vás…",
+    "country": "Krajina",
+    "sortDistance": "Najbližšie najprv",
+    "noOperators": "V tejto oblasti nie sú operátori.",
+    "payments": "Prijímané platby",
+    "back": "Späť"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot doručuje živé upozornenia a umožňuje výrobcom zverejňovať ponuky priamo z telefónu."

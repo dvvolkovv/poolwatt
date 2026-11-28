@@ -83,11 +83,15 @@ describe("the order book has no notion of who owns a participant", () => {
 
 describe("the navigator ranks points by what a driver can see", () => {
   const client = readFileSync("src/components/navigator/navigator-client.tsx", "utf8");
-  const sidebar = readFileSync("src/components/navigator/sidebar.tsx", "utf8");
+  // The sidebar became `filter-bar.tsx` on 2026-11-28, when the navigator
+  // stopped being a map with a 380pt column beside it and became three
+  // sections — stations, operators, map. The rule did not change with it.
+  const filterBar = readFileSync("src/components/navigator/filter-bar.tsx", "utf8");
 
-  it("sorts on price, and on nothing about the owner", () => {
-    // The only sort the driver is offered besides the default is by price.
-    expect(sidebar).toContain("sortPriceAsc");
+  it("sorts on price or distance, and on nothing about the owner", () => {
+    // The sorts a driver is offered: nearest first, the feed order, price.
+    expect(filterBar).toContain("sortPriceAsc");
+    expect(filterBar).toContain("sortDistance");
     expect(client).toContain('"priceAsc"');
     // Nothing in the client reads an owner, a company or a platform flag.
     for (const forbidden of ["poolwattOwned", "isPlatformOwned", "ownCompany", "boost"]) {

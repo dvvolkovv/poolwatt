@@ -145,7 +145,17 @@
     "availability_OUT_OF_SERVICE": "out of service",
     "availability_UNKNOWN": "unknown",
     "availability_BOOKED": "booked",
-    "fullCard": "Full card"
+    "fullCard": "Full card",
+    "tabStations": "Stations",
+    "tabOperators": "Operators",
+    "tabMap": "Map",
+    "nearMe": "Near me",
+    "locating": "Finding you…",
+    "country": "Country",
+    "sortDistance": "Nearest first",
+    "noOperators": "No operators in this area.",
+    "payments": "Payment accepted",
+    "back": "Back"
   },
   "bot": {
     "siblingNote": "Telegram bot @PoolwattBot delivers live alerts and lets producers post offers from their phone."

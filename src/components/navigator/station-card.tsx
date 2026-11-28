@@ -77,7 +77,8 @@ export function StationCard({ station: s, onClose, labels }: Props) {
 
 
   return (
-    <div className="bg-card border border-hairline rounded-lg overflow-hidden animate-in slide-in-from-right-4 duration-300">
+    <div data-testid="station-card"
+      className="bg-card border border-hairline lg:rounded-lg overflow-hidden">
       {/* §41 — the mini-card has room for the network's banner and nothing
           else. Only our own points have one; an OpenStreetMap pin has no
           partner behind it. */}
@@ -102,9 +103,11 @@ export function StationCard({ station: s, onClose, labels }: Props) {
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 p-1 rounded-md hover:bg-card-alt transition-colors text-muted hover:text-foreground"
+            aria-label={labels.back ?? "Back"}
+            data-testid="station-card-close"
+            className="inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-card-alt hover:text-foreground"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
 
@@ -277,6 +280,26 @@ export function StationCard({ station: s, onClose, labels }: Props) {
         <div className="px-4 py-2 border-b border-hairline text-[11px] text-muted">
           {labels.lastVerified ?? "Last verified"}:{" "}
           <span className="num">{new Date(s.lastVerified).toLocaleDateString()}</span>
+        </div>
+      )}
+
+      {/* §28 «Способы оплаты». Водителю это нужно до поездки, а не на месте:
+          у чужого пина их нет вовсе, у нашего — список из карточки пункта. */}
+      {s.paymentMethods && s.paymentMethods.length > 0 && (
+        <div className="px-4 py-3 border-b border-hairline">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted mb-2">
+            {labels.payments ?? "Payment"}
+          </div>
+          <div className="flex flex-wrap gap-1.5" data-testid="station-payments">
+            {s.paymentMethods.map((method) => (
+              <span
+                key={method}
+                className="rounded-full border border-hairline px-2 py-0.5 text-[11px] text-foreground"
+              >
+                {labels[`payment_${method}`] ?? method}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 

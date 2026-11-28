@@ -20,7 +20,8 @@
     "themeSystem": "Sistema",
     "cabinet": "Cabinet",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "exchange": "Scambio"
   },
   "home": {
     "heroEyebrow": "Live · Rete Poolwatt · aggiornamento ogni 60 s",
@@ -136,7 +137,15 @@
     "priceUpdated": "Updated",
     "sortLabel": "Sort",
     "sortDefault": "Default",
-    "sortPriceAsc": "Cheapest first"
+    "sortPriceAsc": "Cheapest first",
+    "freeNow": "Libero adesso",
+    "freeNowHelp": "Solo i punti che segnalano la loro occupazione possono promettere questo.",
+    "availability_FREE": "libero",
+    "availability_BUSY": "occupato",
+    "availability_OUT_OF_SERVICE": "fuori servizio",
+    "availability_UNKNOWN": "sconosciuto",
+    "availability_BOOKED": "prenotato",
+    "fullCard": "Scheda completa"
   },
   "bot": {
     "siblingNote": "Il bot Telegram @PoolwattBot invia notifiche in tempo reale e consente ai produttori di pubblicare offerte direttamente dal telefono."
@@ -153,7 +162,9 @@
       "submitting": "Creating…",
       "haveAccount": "Already have one?",
       "signIn": "Sign in",
-      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password."
+      "emailNote": "We'll send a confirmation link to this address. You'll need the email to reset your password.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com"
     },
     "login": {
       "title": "Welcome back",
@@ -167,6 +178,21 @@
       "noAccount": "First time here?",
       "register": "Register",
       "forgotPassword": "Forgot password?"
+    },
+    "talerId": {
+      "signIn": "Accedi con Taler ID",
+      "continue": "Continua con Taler ID",
+      "pending": "Apertura Taler ID…",
+      "noTalerId": "Nessun Taler ID ancora?",
+      "create": "Scarica l'app",
+      "or": "o",
+      "errors": {
+        "cancelled": "Accesso con Taler ID annullato.",
+        "emailTaken": "Un account con questa email esiste già. Accedi con il tuo soprannome, poi collega Taler ID nelle impostazioni.",
+        "taken": "Questo Taler ID è già collegato a un altro account Poolwatt.",
+        "alreadyLinked": "Il tuo account è già collegato a un altro Taler ID. Scollegalo prima.",
+        "failed": "Impossibile completare l'accesso con Taler ID. Riprova in questo stesso browser."
+      }
     }
   },
   "cabinet": {
@@ -174,12 +200,23 @@
       "title": "Add an email for password recovery",
       "body": "Without an email we can't help you recover a forgotten password.",
       "cta": "Add email",
-      "dismiss": "Later"
+      "dismiss": "Later",
+      "pendingTitle": "Conferma la tua email",
+      "pendingBody": "Abbiamo inviato un link di conferma a questo indirizzo. Se non è lì, controlla la cartella spam:",
+      "pendingCta": "Invia di nuovo"
     },
     "sidebar": {
       "favorites": "Favorites",
       "settings": "Settings",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "buildRequests": "Richieste di costruzione",
+      "contractor": "La mia azienda",
+      "wallet": "Portafoglio",
+      "listing": "Elenco",
+      "home": "Home",
+      "workOrders": "Ordini di lavoro",
+      "bookings": "Prenotazioni",
+      "roaming": "Roaming"
     },
     "favorites": {
       "title": "Favorites",
@@ -189,6 +226,671 @@
       "emptyProducersBody": "Open the [producer list] and tap the star on a card to save it here.",
       "emptyChargersTitle": "No favorite chargers yet",
       "emptyChargersBody": "Open the [navigator] and tap the star on a charger to save it here."
+    },
+    "buildRequest": {
+      "title": "Richieste di costruzione",
+      "empty": "Non hai ancora presentato richieste di costruzione.",
+      "newButton": "+ Nuova richiesta",
+      "new": {
+        "title": "Nuova richiesta di costruzione",
+        "section": {
+          "what": "Cosa costruire",
+          "where": "Dove costruire",
+          "money": "Budget e tempistiche",
+          "contact": "Contatto"
+        }
+      },
+      "field": {
+        "source": {
+          "label": "Fonte",
+          "SOLAR": "Solare",
+          "WIND": "Eolico",
+          "HYBRID": "Solare + Eolico"
+        },
+        "peakKw": {
+          "label": "Potenza di picco (kW)"
+        },
+        "wantPowerbank": {
+          "label": "Includere un powerbank"
+        },
+        "powerbankKwh": {
+          "label": "Capacità del powerbank (kWh)"
+        },
+        "wantEvCharger": {
+          "label": "Includere un caricatore EV"
+        },
+        "evChargerPorts": {
+          "label": "Numero di porte di ricarica"
+        },
+        "evPublicForSale": {
+          "label": "Offrire ricarica EV a conducenti di passaggio"
+        },
+        "country": {
+          "label": "Paese"
+        },
+        "city": {
+          "label": "Città"
+        },
+        "addressLine": {
+          "label": "Indirizzo"
+        },
+        "siteType": {
+          "label": "Tipo di sito",
+          "PRIVATE_HOUSE": "Casa privata",
+          "APARTMENT_ROOF": "Tetto di edificio residenziale",
+          "LAND_PLOT": "Terreno",
+          "COMMERCIAL": "Commerciale"
+        },
+        "availableAreaM2": {
+          "label": "Area disponibile (m²)"
+        },
+        "roofOrientation": {
+          "label": "Orientamento del tetto",
+          "S": "Sud",
+          "SE": "Sud-est",
+          "SW": "Sud-ovest",
+          "E": "Est",
+          "W": "Ovest",
+          "UNKNOWN": "Non lo so"
+        },
+        "budget": {
+          "label": "Budget",
+          "UNDER_5K": "Fino a €5k",
+          "FROM_5K_TO_15K": "€5–15k",
+          "FROM_15K_TO_30K": "€15–30k",
+          "FROM_30K_TO_60K": "€30–60k",
+          "OVER_60K": "€60k+",
+          "AWAITING_QUOTE": "In attesa di preventivo"
+        },
+        "timeline": {
+          "label": "Tempistiche",
+          "URGENT_1_3M": "Urgente (1–3 mesi)",
+          "WITHIN_YEAR": "Entro un anno",
+          "EXPLORING": "Solo esplorando"
+        },
+        "notes": {
+          "label": "Note (opzionale)"
+        },
+        "name": {
+          "label": "Il tuo nome",
+          "placeholder": "es. Alessandro Volkov"
+        },
+        "phone": {
+          "label": "Telefono",
+          "placeholder": "+421 900 000 000"
+        }
+      },
+      "contactHint": "Condividiamo questo con l'appaltatore che accetti — nessun altro.",
+      "status": {
+        "OPEN": "Aperta",
+        "MATCHED": "In lavorazione",
+        "FULFILLED": "Completata",
+        "CANCELLED": "Annullata"
+      },
+      "action": {
+        "submit": "Invia",
+        "save": "Salva",
+        "cancel": "Annulla richiesta",
+        "edit": "Modifica",
+        "back": "Torna all'elenco",
+        "newRequest": "Nuova richiesta",
+        "goToSettings": "Vai alle impostazioni →"
+      },
+      "error": {
+        "phoneRequired": "Aggiungi il tuo numero di telefono nelle impostazioni prima di inviare una richiesta.",
+        "nameRequired": "Aggiungi il tuo nome nelle impostazioni prima di inviare una richiesta.",
+        "contactRequired": "Aggiungi il tuo nome e numero di telefono nelle impostazioni prima di inviare una richiesta.",
+        "notEditable": "Questa richiesta è in fase di elaborazione e non può più essere modificata."
+      },
+      "claims": {
+        "title": "Appaltatori interessati ({count})",
+        "empty": "Nessun appaltatore ha ancora espresso interesse.",
+        "accept": "Accetta questo appaltatore",
+        "confirmAccept": "Accettare questo appaltatore? Gli altri appaltatori interessati saranno automaticamente rifiutati e questa richiesta passerà a MATCHED."
+      },
+      "matched": {
+        "title": "Il tuo appaltatore selezionato",
+        "rejectedSiblings": "Altri appaltatori (non selezionati)"
+      },
+      "producerClaims": {
+        "sectionTitle": "Produttori interessati ({count})",
+        "accept": "Accetta",
+        "acceptConfirm": "Accettare questo produttore? Altri reclami in sospeso saranno automaticamente rifiutati."
+      }
+    },
+    "chargerOperator": {
+      "listTitle": "Le mie reti di ricarica",
+      "emptyState": "Non hai ancora rivendicato alcuna carta di rete di ricarica.",
+      "emptyStateCta": "Apri il navigatore",
+      "backToList": "Torna alle mie reti",
+      "viewOnMap": "Visualizza sulla mappa",
+      "justClaimedBanner": "Hai appena rivendicato questa rete. Le modifiche appariranno sulle pagine delle stazioni entro un minuto.",
+      "cardSection": "Informazioni sulla rete",
+      "displayName": "Nome visualizzato",
+      "description": "Informazioni sulla rete",
+      "websiteUrl": "URL del sito web",
+      "logoUrl": "URL del logo",
+      "email": "Email di contatto",
+      "phone": "Telefono",
+      "save": "Salva",
+      "saved": "Salvato",
+      "dangerSection": "Zona pericolosa",
+      "unlinkHint": "Disconnette questa rete dal tuo account. Qualcun altro può ri-pretenderla in seguito.",
+      "unlinkButton": "Disconnetti",
+      "unlinkConfirm": "Sei sicuro? Questo disconnette la rete dal tuo account.",
+      "priceSection": "Tariffa pubblica",
+      "priceHelp": "Questo prezzo apparirà su ogni scheda stazione che elenca la tua rete come operatore. Aggiorna ogni volta che la tua tariffa reale cambia.",
+      "pricePerKwhLabel": "Prezzo per kWh",
+      "pricePerKwhPlaceholder": "0,42",
+      "priceCurrencyLabel": "Valuta",
+      "priceSave": "Pubblica",
+      "priceClear": "Cancella prezzo",
+      "priceCleared": "Cancellato",
+      "priceNotSet": "Nessun prezzo pubblicato ancora.",
+      "priceUpdatedAtPrefix": "Ultimo aggiornamento",
+      "apiSection": "Accesso API",
+      "apiHelp": "Genera un token per inviare aggiornamenti tariffari dai tuoi sistemi. Ogni token viene mostrato una sola volta — conservalo come una password.",
+      "apiKeyLabel": "Etichetta",
+      "apiKeyLabelPlaceholder": "es. Gateway di produzione",
+      "apiGenerate": "Genera chiave",
+      "apiRevoke": "Revoca",
+      "apiRevokeConfirm": "Revocare questa chiave? Le applicazioni che la utilizzano smetteranno di funzionare immediatamente.",
+      "apiRevoked": "Revocato",
+      "apiActive": "Attivo",
+      "apiNeverUsed": "Mai usato",
+      "apiLastUsedPrefix": "Ultimo utilizzo",
+      "apiPlaintextHeading": "Salva questo token ora",
+      "apiPlaintextSubtitle": "Questa è l'unica volta che vedrai il testo in chiaro. Conservalo nel tuo gestore di segreti — noi conserviamo solo un hash.",
+      "apiCopy": "Copia",
+      "apiCopied": "Copiato",
+      "apiDismiss": "L'ho salvato",
+      "apiEmpty": "Nessuna chiave API ancora. Generane una sopra per abilitare aggiornamenti programmati.",
+      "apiCreatedPrefix": "Creato",
+      "apiEndpointHint": "# Invia un aggiornamento prezzo:"
+    },
+    "producer": {
+      "listTitle": "Le mie schede produttore",
+      "emptyState": "Non hai ancora rivendicato alcuna scheda produttore.",
+      "emptyStateCta": "Sfoglia il catalogo",
+      "availableRequests": "Richieste disponibili",
+      "requests": {
+        "back": "Torna al cabinet",
+        "title": "Richieste disponibili",
+        "subtitle": "Richieste aperte che corrispondono a {name}.",
+        "openSection": "Richieste aperte",
+        "noOpen": "Non ci sono richieste aperte che corrispondono al tuo paese e fonte in questo momento.",
+        "myClaimsSection": "Le mie richieste",
+        "noClaims": "Non hai ancora espresso interesse per alcuna richiesta.",
+        "messagePlaceholder": "Messaggio opzionale per il proprietario di casa (max 2000 caratteri)",
+        "expressSubmit": "Esprimi interesse",
+        "expressSubmitting": "Invio…",
+        "status": "Stato",
+        "withdraw": "Ritira",
+        "withdrawConfirm": "Ritirare il tuo interesse per questa richiesta?"
+      },
+      "backToList": "Torna alle mie schede",
+      "viewPublic": "Visualizza pagina pubblica",
+      "justClaimedBanner": "Hai appena rivendicato questa scheda. Le modifiche appariranno pubblicamente entro 60 secondi.",
+      "cardSection": "Scheda",
+      "displayName": "Nome visualizzato",
+      "bio": "Breve descrizione",
+      "logoUrl": "URL logo",
+      "websiteUrl": "URL sito web",
+      "twitterUrl": "URL Twitter",
+      "profileSection": "Profilo aziendale",
+      "description": "Informazioni sull'azienda",
+      "founded": "Fondato (anno)",
+      "employees": "Dipendenti",
+      "website": "Sito web",
+      "email": "Email di contatto",
+      "phone": "Telefono",
+      "address": "Indirizzo",
+      "ceo": "CEO",
+      "stockTicker": "Ticker azionario",
+      "save": "Salva",
+      "saved": "Salvato",
+      "dangerSection": "Zona pericolosa",
+      "unlinkHint": "Disassociare questa scheda dal tuo account. Puoi rivendicarla di nuovo in seguito se nessun altro lo fa prima.",
+      "unlinkButton": "Disassociare richiesta",
+      "unlinkConfirm": "Sei sicuro? Questo disassocerà la scheda dal tuo account."
+    },
+    "contractor": {
+      "title": "La mia azienda",
+      "empty": "Non hai ancora registrato un'azienda.",
+      "newButton": "+ Registrare azienda",
+      "sidebar": {
+        "requests": "Richieste disponibili"
+      },
+      "requests": {
+        "title": "Richieste di costruzione disponibili",
+        "subtitle": "Richieste aperte che corrispondono al tuo paese e ai tipi di energia rinnovabile.",
+        "empty": "Nessuna richiesta aperta corrispondente al momento.",
+        "expressInterest": "Esprimi interesse",
+        "message": {
+          "label": "Messaggio facoltativo per il proprietario di casa",
+          "placeholder": "Perché saresti un'ottima scelta per questo progetto (10–500 caratteri, facoltativo)"
+        },
+        "submit": "Invia",
+        "submitting": "Invio in corso…",
+        "withdraw": "Ritira",
+        "youExpressedInterest": "Hai espresso interesse. Stato: PENDING"
+      },
+      "new": {
+        "title": "Registrare la tua azienda",
+        "section": {
+          "identity": "Identità aziendale",
+          "work": "Cosa fai",
+          "contact": "Contatti e profilo",
+          "ev": "Infrastruttura di ricarica per veicoli elettrici"
+        }
+      },
+      "field": {
+        "entityType": {
+          "label": "Tipo di entità",
+          "LEGAL_ENTITY": "Entità legale (Srl / s.r.o. / a.s.)",
+          "SOLE_TRADER": "Lavoratore autonomo (I.P. / OSVČ / FOP)",
+          "INDIVIDUAL": "Specialista individuale"
+        },
+        "displayName": {
+          "label": "Nome visualizzato"
+        },
+        "legalName": {
+          "label": "Nome legale completo"
+        },
+        "registrationNumber": {
+          "label": "Numero di registrazione (IČO / EDRPOU / ecc.)"
+        },
+        "country": {
+          "label": "Paese della sede"
+        },
+        "city": {
+          "label": "Città"
+        },
+        "foundedYear": {
+          "label": "Anno di fondazione"
+        },
+        "workCategories": {
+          "label": "Cosa fai",
+          "DESIGN": "Progettazione / ingegneria",
+          "MANUFACTURE": "Produzione di attrezzature",
+          "SUPPLY": "Fornitura di attrezzature",
+          "INSTALLATION": "Installazione / costruzione",
+          "COMMISSIONING": "Avviamento",
+          "MAINTENANCE": "Manutenzione / O&M"
+        },
+        "renewableTypes": {
+          "label": "Tipi di fonti rinnovabili",
+          "SOLAR": "Solare",
+          "WIND": "Eolico",
+          "HYDRO": "Idrico",
+          "BIOMASS": "Biomassa / biogas",
+          "GEOTHERMAL": "Geotermico",
+          "HYBRID": "Ibrido"
+        },
+        "countriesServed": {
+          "label": "Paesi serviti (codici ISO-2, separati da virgole)"
+        },
+        "bio": {
+          "label": "Informazioni sulla tua azienda (100–2000 caratteri)"
+        },
+        "websiteUrl": {
+          "label": "URL del sito web"
+        },
+        "logoUrl": {
+          "label": "URL del logo"
+        },
+        "contactEmail": {
+          "label": "Email di contatto"
+        },
+        "contactPhone": {
+          "label": "Telefono di contatto (E.164)"
+        },
+        "providesEvCharging": {
+          "label": "Questa azienda gestisce stazioni di ricarica EV"
+        },
+        "evPowerSource": {
+          "label": "Fonte di energia",
+          "GRID": "Rete (energia elettrica normale)",
+          "MIXED": "Mista (rete + rinnovabile / verde certificato)",
+          "RENEWABLE_ONLY": "Solo rinnovabile (100% solare / eolico / off-grid)"
+        },
+        "evStationCount": {
+          "label": "Numero di stazioni di ricarica gestite"
+        },
+        "evConnectorTypes": {
+          "label": "Tipi di connettori",
+          "CCS2": "CCS2",
+          "CHAdeMO": "CHAdeMO",
+          "TYPE2": "Tipo 2",
+          "TYPE1": "Tipo 1",
+          "TESLA": "Tesla",
+          "GB_T": "GB/T",
+          "SCHUKO": "Schuko"
+        },
+        "evPowerLevels": {
+          "label": "Livelli di potenza",
+          "AC_SLOW": "AC lento (≤7 kW)",
+          "AC_FAST": "AC veloce (11–22 kW)",
+          "DC_FAST": "DC veloce (50–150 kW)",
+          "DC_ULTRA": "DC ultra (≥150 kW)"
+        },
+        "evUsageType": {
+          "label": "Tipo di accesso",
+          "PUBLIC": "Pubblico (chiunque può usare)",
+          "MEMBERSHIP": "Abbonamento (solo utenti registrati)",
+          "PRIVATE": "Privato (solo flotte proprie / dipendenti)",
+          "PAY_AT_LOCATION": "Pagamento in loco (contante / carta)"
+        },
+        "evMaxPowerKw": {
+          "label": "Potenza max per punto (kW)"
+        },
+        "evDescription": {
+          "label": "Descrizione della tua infrastruttura di ricarica EV",
+          "placeholder": "es. 12 stazioni lungo il corridoio Bratislava–Vienna, alimentate da 240 kW di pannelli solari sul tetto + backup di rete, 24/7 pubbliche con attivazione tramite app mobile"
+        }
+      },
+      "status": {
+        "PENDING": "In attesa di revisione",
+        "APPROVED": "Approvata",
+        "REJECTED": "Rifiutata",
+        "SUSPENDED": "Sospesa"
+      },
+      "action": {
+        "submit": "Invia registrazione",
+        "save": "Salva modifiche",
+        "edit": "Modifica",
+        "withdraw": "Annulla registrazione",
+        "back": "Torna all'elenco",
+        "newContractor": "Registrare nuova azienda",
+        "confirmWithdraw": "Sei sicuro? Questo elimina la registrazione."
+      },
+      "error": {
+        "notEditable": "Questa registrazione è in fase di elaborazione e non può più essere modificata."
+      }
+    },
+    "listing": {
+      "title": "Elenco produttori",
+      "intro": "Per coniare token kWh, registrare la propria azienda, allegare i documenti e inviare la domanda all'operatore.",
+      "companies": "Le mie aziende",
+      "empty": "Nessuna azienda ancora.",
+      "newCompany": "Registrare un'azienda",
+      "open": "Apri",
+      "assetsCount": "Asset",
+      "applicationStatus": "Domanda",
+      "noApplication": "nessuna",
+      "form": {
+        "title": "Dettagli azienda",
+        "legalName": "Nome legale",
+        "country": "Paese (codice di due lettere)",
+        "regNumber": "Numero di registrazione",
+        "vatNumber": "Numero IVA (opzionale)",
+        "type": "Tipo di partecipante",
+        "website": "Sito web (opzionale)",
+        "contactName": "Persona di contatto",
+        "contactEmail": "Email di contatto",
+        "contactPhone": "Telefono",
+        "submit": "Registrare",
+        "cancel": "Annulla",
+        "saving": "Salvataggio…"
+      },
+      "type": {
+        "PRODUCER": "Produttore",
+        "WHOLESALE": "Acquirente all'ingrosso",
+        "COOPERATIVE": "Cooperativa",
+        "OPERATOR": "Operatore di ricarica"
+      },
+      "status": {
+        "DRAFT": "bozza",
+        "SUBMITTED": "in revisione",
+        "APPROVED": "approvata",
+        "REJECTED": "rifiutata"
+      },
+      "kyb": {
+        "PENDING": "in attesa",
+        "APPROVED": "superato",
+        "REJECTED": "non superato"
+      },
+      "detail": {
+        "back": "Torna alle aziende",
+        "documents": "Documenti",
+        "documentsHelp": "PDF, JPEG o PNG, fino a 20 MB. Registrazione dell'azienda, licenze, documenti sugli impianti di generazione, contratto di connessione alla rete.",
+        "noDocuments": "Nessun documento ancora.",
+        "upload": "Allega un file",
+        "uploading": "Caricamento…",
+        "remove": "Rimuovi",
+        "submit": "Invia per revisione",
+        "submitting": "Invio…",
+        "submittedNotice": "La domanda è con l'operatore. I documenti non possono essere modificati mentre è in revisione.",
+        "approvedNotice": "L'inserzione è stata approvata. I tuoi impianti sono stati trasferiti a connessione di test — imposta la telemetria.",
+        "rejectedNotice": "La domanda è stata rifiutata. Correggi quanto segnalato dall'operatore e inviala di nuovo: i documenti sono modificabili ora.",
+        "operatorComment": "Commento dell'operatore",
+        "decidedAt": "Deciso",
+        "needDocuments": "Allega almeno un documento — altrimenti non c'è nulla da inviare.",
+        "assets": "Impianti di generazione",
+        "assetsLink": "Impianti e monitoraggio",
+        "tokensLink": "Token"
+      },
+      "assets": {
+        "title": "Impianti e monitoraggio",
+        "intro": "Collega un impianto di generazione, ottieni una chiave e inizia a inviare letture. Le prime letture appariranno qui non appena saranno accettate.",
+        "empty": "Nessun impianto ancora.",
+        "newAsset": "Aggiungi un impianto",
+        "form": {
+          "title": "Nuovo impianto",
+          "kind": "Tipo di generazione",
+          "name": "Nome",
+          "capacityKw": "Potenza nominale, kW",
+          "storageKwh": "Capacità di stoccaggio, kWh",
+          "address": "Indirizzo",
+          "latitude": "Latitudine",
+          "longitude": "Longitudine",
+          "zone": "Zona di trading",
+          "meterId": "Numero del contatore",
+          "goCertificateRef": "Garanzia di origine (riferimento al registro)",
+          "submit": "Aggiungi",
+          "cancel": "Annulla",
+          "saving": "Salvataggio…"
+        },
+        "kind": {
+          "SOLAR": "Solare",
+          "WIND": "Eolico",
+          "BIOGAS": "Biogas",
+          "HYDRO": "Idroelettrico",
+          "STORAGE": "Stoccaggio",
+          "MIXED": "Misto"
+        },
+        "status": {
+          "DRAFT": "bozza",
+          "REVIEW": "in revisione",
+          "TEST": "test connessione",
+          "ACTIVE": "attivo",
+          "SUSPENDED": "sospeso"
+        },
+        "statusLabel": "Stato",
+        "activatedAt": "Attivo da",
+        "cleanSince": "Telemetria pulita da",
+        "capacity": "Potenza",
+        "meter": "Contatore",
+        "keys": "Chiavi di telemetria",
+        "keysHelp": "Una chiave viene mostrata una sola volta. Le letture arrivano in due modi. REST: POST /api/v1/telemetry/readings con un'intestazione Authorization contenente «Bearer» e la chiave. MQTT: pubblica nel topic poolwatt/v1/assets/{assetId}/readings, con un corpo JSON contenente key, intervalStart ed energyKwh. Una chiave emessa con un segreto di firma deve firmare ogni messaggio: su MQTT aggiungi i campi ts con il tempo Unix in secondi e sig con «v1=» e l'HMAC-SHA256 della riga v1.<ts>.MQTT.<topic>.<interval>:<kWh a tre decimali>, più letture unite da un punto e virgola.",
+        "noKeys": "Nessuna chiave ancora.",
+        "issueKey": "Emetti una chiave",
+        "issuing": "Emissione in corso…",
+        "keyLabel": "Etichetta (es. \"cloud dell'inverter\")",
+        "revoke": "Revoca",
+        "revoked": "revocato",
+        "lastUsed": "Ultimo utilizzo",
+        "never": "mai",
+        "keyOnce": "Salva la chiave ora — non verrà mostrata di nuovo.",
+        "secretOnce": "Segreto di firma — salvalo insieme alla chiave. Firma ogni richiesta: X-Poolwatt-Timestamp con il tempo Unix in secondi, X-Poolwatt-Signature con «v1=» e l'HMAC-SHA256 della riga v1.<timestamp>.POST.<path>.<SHA-256 del corpo>, preso con questo segreto.",
+        "signing": "Firma",
+        "signed": "firma le sue richieste",
+        "unsigned": "nessuna firma — riemetti la chiave per iniziare a firmare",
+        "readings": "Ultime letture",
+        "noReadings": "Nessuna lettura ancora. Il primo intervallo che il tuo equipaggiamento invia apparirà qui.",
+        "interval": "Intervallo",
+        "energy": "kWh",
+        "validation": "Validazione",
+        "minted": "Coniato",
+        "note": "Nota",
+        "validationStatus": {
+          "RECEIVED": "ricevuto",
+          "VALID": "valido",
+          "SUSPICIOUS": "sospetto",
+          "REJECTED": "rifiutato"
+        },
+        "rules": "Regole di vendita",
+        "rulesHelp": "Le quote devono sommare a 100. Ciò che non viene venduto va in deposito o a te tramite queste quote.",
+        "minSalePrice": "Prezzo minimo, €/kWh",
+        "shareToMarket": "Al mercato, %",
+        "shareToStorage": "Al deposito, %",
+        "shareToSelf": "A se stesso, %",
+        "saveRules": "Salva regole",
+        "saved": "Salvato",
+        "console": "Console della stazione →",
+        "reserveSoc": "Riserva, %"
+      },
+      "tokens": {
+        "title": "Token",
+        "intro": "kWh coniati, venduti e non venduti per asset e periodo.",
+        "asset": "Asset",
+        "period": "Periodo",
+        "days": "{days} giorni",
+        "from": "Da",
+        "to": "A",
+        "apply": "Mostra",
+        "csv": "Scarica CSV",
+        "minted": "Coniato",
+        "available": "Disponibile per la vendita",
+        "sold": "Venduto",
+        "stored": "Conservato",
+        "routed": "Inviato all'aggregatore",
+        "burned": "Bruciato",
+        "batches": "Lotti",
+        "noBatches": "Nessun lotto in questo periodo.",
+        "interval": "Intervallo",
+        "amount": "kWh",
+        "status": "Stato",
+        "certificate": "Garanzia di origine",
+        "noAssets": "Aggiungi prima un asset di generazione.",
+        "tokenStatus": {
+          "AVAILABLE": "disponibile",
+          "RESERVED": "riservato",
+          "STORED": "conservato",
+          "SOLD": "venduto",
+          "BURNED": "bruciato",
+          "ROUTED": "inviato"
+        }
+      }
+    },
+    "home": {
+      "eyebrow": "Schermata principale",
+      "status": {
+        "GUEST": "Ospite",
+        "CONSUMER": "Consumatore",
+        "PROSUMER": "Prosumer",
+        "COOP_MEMBER": "Membro della cooperativa"
+      },
+      "kwhBalance": "saldo kWh",
+      "fiatBalance": "Denaro",
+      "available": "Disponibile",
+      "live": "In tempo reale",
+      "offline": "Offline — mostra i saldi caricati più recenti",
+      "noWallet": "Nessun portafoglio ancora — acquista kWh o ricevi un trasferimento e uno si aprirà.",
+      "zonePrice": "Prezzo di zona",
+      "bestAsk": "Migliore offerta",
+      "zone": "Zona",
+      "actions": {
+        "buy": "Acquista",
+        "transfer": "Trasferire",
+        "charge": "Ricaricare",
+        "topUp": "Ricaricare",
+        "transferClosed": "in attesa di un parere legale",
+        "topUpClosed": "in attesa di una banca"
+      }
+    },
+    "station": {
+      "eyebrow": "Console della stazione",
+      "back": "Torna agli asset",
+      "capacity": "Capacità",
+      "live": "In tempo reale",
+      "offline": "Offline — dati dall'ultimo caricamento",
+      "stale": "Nessuna lettura per più di 15 minuti — i dati su questa pagina sono obsoleti.",
+      "nowKw": "Produzione attuale",
+      "today": "Ultime 24 ore",
+      "week": "Ultimi 7 giorni",
+      "month": "Ultimi 30 giorni",
+      "year": "Ultimo anno",
+      "efficiency": "Da targa",
+      "revenue": "Entrate",
+      "avgPrice": "Prezzo medio di vendita",
+      "chart": "Produzione",
+      "chartEmpty": "Nessuna lettura in questo periodo",
+      "range": {
+        "day": "Giorno",
+        "week": "Settimana",
+        "month": "Mese"
+      },
+      "tokens": "Token, ultimi 30 giorni",
+      "minted": "Emesso",
+      "sold": "Venduto",
+      "unsold": "Non venduto",
+      "stored": "In magazzino",
+      "routed": "All'aggregatore",
+      "equipment": "Attrezzatura",
+      "noKeys": "Nessuna chiave di telemetria ancora",
+      "revoked": "revocato",
+      "neverUsed": "mai connesso",
+      "alerts": {
+        "title": "Allarmi",
+        "none": "Nessun allarme aperto",
+        "notified": "ingegnere avvisato",
+        "pending": "notifica in attesa",
+        "notePlaceholder": "Cosa è stato fatto",
+        "clear": "Cancella",
+        "kind": {
+          "TELEMETRY_ANOMALY": "Anomalia di telemetria",
+          "LINK_LOST": "Attrezzatura offline",
+          "SUSPENDED": "Asset sospeso"
+        }
+      },
+      "widget": {
+        "nowKw": "Adesso",
+        "today": "Oggi",
+        "week": "Questa settimana",
+        "month": "Questo mese",
+        "year": "Quest'anno",
+        "efficiency": "Fattore di capacità",
+        "revenue": "Entrate",
+        "avgPrice": "Prezzo medio",
+        "minted": "Coniato",
+        "sold": "Venduto",
+        "unsold": "Non venduto",
+        "stored": "In magazzino",
+        "routed": "All'aggregatore",
+        "storageSoc": "Stato di carica",
+        "zonePrice": "Prezzo di zona",
+        "priceForecast": "Previsione prezzo",
+        "generationChart": "Grafico di generazione",
+        "alerts": "Allarmi",
+        "equipment": "Attrezzatura"
+      },
+      "noForecast": "Nessuna curva di prezzo per il giorno successivo è stata pubblicata ancora.",
+      "panel": {
+        "title": "Il tuo pannello personale",
+        "help": "Scegli i widget, imposta il loro ordine e dimensione, e salva il layout con un nome. Possono esserci più layout — “Mattina”, “Finanze”, “Tecnologia”. Fino a quando non ce n'è uno, il pannello mostra tutto.",
+        "name": "Nome del layout",
+        "newName": "Ad esempio, Finanze",
+        "add": "Aggiungi:",
+        "remove": "Rimuovi",
+        "up": "Su",
+        "down": "Giù",
+        "size": "Dimensione",
+        "save": "Salva layout",
+        "saved": "Salvato",
+        "delete": "Elimina layout",
+        "makeDefault": "Apri con questo"
+      }
     }
   },
   "charger": {
@@ -220,7 +922,12 @@
     "priceLabel": "Price / kWh",
     "priceFallback": "Tariff varies — contact operator",
     "priceLive": "Live",
-    "priceUpdated": "Updated"
+    "priceUpdated": "Updated",
+    "operatorSection": {
+      "title": "Informazioni su {name}",
+      "verifiedBadge": "Operatore verificato",
+      "claimCta": "Questa è la nostra azienda — richiedi questa scheda"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -248,6 +955,56 @@
       "confirmLabel": "Type {username} to confirm",
       "submit": "Delete forever",
       "submitting": "Deleting…"
+    },
+    "name": {
+      "title": "Nome",
+      "placeholder": "Il tuo nome",
+      "submit": "Salva",
+      "success": "Nome aggiornato"
+    },
+    "language": {
+      "title": "Lingua",
+      "help": "La lingua delle pagine e delle email. La scelta viene ricordata per l'account."
+    },
+    "phone": {
+      "title": "Telefono",
+      "placeholder": "+421 900 000 000",
+      "submit": "Salva",
+      "success": "Telefono aggiornato"
+    },
+    "talerId": {
+      "title": "Taler ID",
+      "linked": "Collegato. Puoi accedere con Taler ID.",
+      "notLinked": "Collega Taler ID per accedere senza un soprannome e una password.",
+      "link": "Collega Taler ID",
+      "unlink": "Scollega",
+      "unlinking": "Scollegando…",
+      "needsPassword": "Per scollegare Taler ID, imposta prima una password — altrimenti non potrai accedere.",
+      "linkedNotice": "Taler ID collegato."
+    },
+    "setPassword": {
+      "title": "Imposta una password",
+      "note": "Il tuo account non ha ancora una password. Impostane una per accedere anche con il tuo soprannome.",
+      "newLabel": "Nuova password",
+      "submit": "Imposta password",
+      "submitting": "Salvataggio…"
+    },
+    "receipts": {
+      "title": "Ricevute",
+      "hint": "Una ricevuta è sempre nel tuo portafoglio. Scegli come vuoi riceverla.",
+      "email": "Via email",
+      "push": "Notifica push",
+      "pushClosed": "non disponibile ancora",
+      "submit": "Salva",
+      "success": "Salvato"
+    },
+    "birthday": {
+      "title": "Compleanno",
+      "help": "Solo giorno e mese — i partner possono inviare un regalo di compleanno. Lascia entrambi vuoti per rimuoverlo.",
+      "day": "Giorno",
+      "month": "Mese",
+      "submit": "Salva",
+      "success": "Salvato."
     }
   },
   "verifyEmail": {
@@ -317,6 +1074,45 @@
       "subject": "Poolwatt: codice di verifica per {name}",
       "body": "È stato richiesto di rivendicare il profilo {name} su Poolwatt con questa email. Il tuo codice di verifica:",
       "expires": "Il codice è valido per 30 minuti."
+    },
+    "notify": {
+      "hi": "Ciao {name},",
+      "buildStatus": {
+        "subject": "La tua richiesta di costruzione #{id}: {status}",
+        "body": "La tua richiesta di costruzione #{id} ha cambiato stato in: {status}.",
+        "cta": "Visualizza la tua richiesta"
+      },
+      "buildStatusName": {
+        "OPEN": "aperta",
+        "MATCHED": "esecutore trovato",
+        "FULFILLED": "completata",
+        "CANCELLED": "annullata"
+      },
+      "contractorStatus": {
+        "subject": "La tua registrazione come appaltatore #{id}: {status}",
+        "body": "La tua registrazione come appaltatore #{id} ha cambiato stato in: {status}.",
+        "cta": "Visualizza la tua registrazione"
+      },
+      "contractorStatusName": {
+        "PENDING": "in attesa di revisione",
+        "APPROVED": "approvata",
+        "REJECTED": "respinta",
+        "SUSPENDED": "sospesa"
+      },
+      "interest": {
+        "subject": "{company} è interessata alla tua richiesta di costruzione #{id}",
+        "contractor": "{company} ha espresso interesse per la tua richiesta di costruzione #{id}.",
+        "producer": "{company} (un produttore verificato) ha espresso interesse per la tua richiesta di costruzione #{id}.",
+        "cta": "Esamina e accetta"
+      },
+      "accepted": {
+        "subject": "Il tuo interesse per la richiesta #{id} è stato accettato: dettagli di contatto all'interno",
+        "body": "Il proprietario della casa ha accettato il tuo interesse per la richiesta #{id}.",
+        "contacts": "Dettagli di contatto",
+        "name": "Nome",
+        "email": "Email",
+        "phone": "Telefono"
+      }
     }
   },
   "app": {
@@ -364,6 +1160,278 @@
       "body": "This is the last balance this phone saw, at {at}.",
       "retry": "Try again",
       "stale": "The figure may be out of date."
+    }
+  },
+  "admin": {
+    "buildRequest": {
+      "title": "Richieste di costruzione",
+      "filter": {
+        "status": "Stato",
+        "country": "Paese",
+        "all": "Tutti"
+      },
+      "table": {
+        "id": "ID",
+        "createdAt": "Creato",
+        "owner": "Proprietario",
+        "source": "Fonte",
+        "country": "Paese",
+        "status": "Stato"
+      },
+      "action": {
+        "setStatus": "Cambia stato",
+        "adminNote": "Nota interna",
+        "submit": "Applica"
+      },
+      "claims": {
+        "title": "Audit delle richieste"
+      }
+    },
+    "contractor": {
+      "title": "Appaltatori",
+      "filter": {
+        "status": "Stato",
+        "country": "Paese",
+        "entityType": "Tipo di entità",
+        "all": "Tutti"
+      },
+      "table": {
+        "createdAt": "Creato",
+        "owner": "Proprietario",
+        "displayName": "Nome",
+        "entityType": "Tipo",
+        "country": "Paese",
+        "status": "Stato"
+      },
+      "action": {
+        "setStatus": "Cambia stato",
+        "adminNote": "Nota interna (obbligatoria)",
+        "submit": "Applica",
+        "approve": "Approva",
+        "reject": "Rifiuta"
+      }
+    },
+    "listings": {
+      "title": "Richieste di listing",
+      "empty": "Nessuna richiesta",
+      "company": "Azienda",
+      "country": "Paese",
+      "type": "Tipo",
+      "status": "Stato",
+      "submitted": "Inviata",
+      "documents": "Documenti",
+      "kyb": "KYB",
+      "review": "Decisione",
+      "approve": "Approva",
+      "reject": "Rifiuta",
+      "comment": "Commento (richiesto per rifiutare)",
+      "screening": {
+        "title": "Verifica KYB e sanzioni",
+        "help": "Nessun fornitore KYB è ancora contratto, quindi l'operatore effettua la registrazione: cerca l'azienda nel suo registro nazionale, cerca essa e i suoi proprietari nelle liste consolidate delle sanzioni, quindi annota cosa hai controllato e cosa hai trovato. Una domanda non può essere approvata senza un verbale KYB e un verdetto sulle sanzioni (ТЗ §4).",
+        "kind": "Controllo",
+        "result": "Risultato",
+        "evidence": "Cosa è stato controllato",
+        "evidencePlaceholder": "es. estratto ORSR 12345/B; lista consolidata delle sanzioni UE — nessuna corrispondenza",
+        "save": "Registra",
+        "saving": "Registrazione…",
+        "latest": "Ultimi risultati",
+        "none": "Nessun controllo ancora.",
+        "blocked": "Non può essere approvato:",
+        "ready": "Verifica superata, la domanda può essere approvata.",
+        "provider": "fonte",
+        "checkedAt": "controllato",
+        "kindNames": {
+          "KYB": "KYB",
+          "SANCTIONS": "Sanzioni",
+          "ADVERSE_MEDIA": "Media negativi"
+        },
+        "resultNames": {
+          "CLEAR": "pulito",
+          "HIT": "corrispondenza",
+          "INCONCLUSIVE": "inconcludente"
+        }
+      },
+      "decided": "Decisione presa",
+      "reviewer": "Revisore",
+      "assets": "Attivi",
+      "account": "IBAN aperto",
+      "back": "Torna alle domande",
+      "noDocuments": "Nessun documento allegato"
+    },
+    "navListings": "Elenco",
+    "navZones": "Zone e prezzi",
+    "zones": {
+      "title": "Zone e prezzi",
+      "intro": "Il riferimento spot da cui ogni zona misura il suo ±corridoio (ТЗ §6, §16.5). Una zona su fonte esterna prende il prezzo giorno per giorno dell'intervallo in cui si trova; una zona in modalità manuale mantiene quanto impostato dall'operatore.",
+      "feedClosed": "La fonte esterna è spenta: ENTSOE_TOKEN non è impostato, quindi tutte le zone rimangono al loro prezzo manuale.",
+      "feedOpen": "Il feed esterno è attivo.",
+      "zone": "Zona",
+      "currency": "Valuta",
+      "interval": "Intervallo, min",
+      "source": "Fonte prezzo",
+      "areaCode": "Zona di offerta alla fonte",
+      "corridor": "Corridoio, ±%",
+      "spotPrice": "Riferimento spot",
+      "spotPriceAt": "Per l'intervallo",
+      "manual": "manuale",
+      "none": "—",
+      "history": "Storia riferimento",
+      "historyFor": "Ultimi intervalli di",
+      "noHistory": "Niente memorizzato ancora.",
+      "price": "Prezzo, per kWh",
+      "fetchedAt": "Recuperato",
+      "refresh": "Aggiorna ora",
+      "refreshing": "Aggiornando…",
+      "refreshed": "Aggiornato: {stored} intervalli memorizzati.",
+      "refreshFailed": "La fonte non può essere letta: {error}. Il riferimento precedente è intatto."
+    },
+    "navReconciliation": "Riconciliazione",
+    "reconciliation": {
+      "title": "Riconciliazione registro token",
+      "intro": "Ogni notte il registro viene controllato rispetto alle letture del contatore da cui è stato emesso (ТЗ §16.11). Niente viene mai riparato automaticamente: una discrepanza è un bug a monte, e un controllo che corregge le proprie scoperte le nasconde.",
+      "runNow": "Esegui ora",
+      "running": "Eseguendo…",
+      "ranOk": "Fatto: nessuna deviazione in {checked} confronti.",
+      "ranDrift": "Fatto: trovata/e {drifts} deviazione/i.",
+      "ranFailed": "Impossibile eseguire: {error}",
+      "noRuns": "Nessuna esecuzione ancora. Il lavoratore ne esegue una ogni notte alle 03:15.",
+      "startedAt": "Iniziato",
+      "window": "Finestra",
+      "result": "Risultato",
+      "drifts": "Deviazioni",
+      "clean": "pulito",
+      "failed": "deviazione",
+      "unfinished": "non completato",
+      "checks": "Controlli",
+      "checked": "confrontato",
+      "expected": "atteso",
+      "found": "trovato",
+      "lastRun": "Ultima esecuzione",
+      "externalFeed": "«Dati di rete» qui significa le letture firmate dagli asset stessi. Il confronto con la dichiarazione dell'operatore di rete richiede un contratto e un feed da loro; il totale giornaliero per asset è strutturato in modo che il feed possa essere inserito accanto ad esso."
+    },
+    "navPoints": "Schede punti",
+    "navMarketing": "Contenuti partner",
+    "navReceiptClaims": "Ricevute restituite"
+  },
+  "claim": {
+    "title": "Richiesta {name}",
+    "instructions": "Inserisci un'email aziendale sul dominio dell'azienda. Invieremo un codice di verifica di 6 cifre per confermare la proprietà.",
+    "emailLabel": "Email aziendale",
+    "submitLabel": "Invia codice",
+    "domainHint": "Deve corrispondere al sito web dell'azienda: {website}",
+    "noWebsiteFallback": "Questa scheda non ha un sito web registrato. Per richiederla, invia un'email a admin@poolwatt.com.",
+    "verifyTitle": "Verifica codice per {name}",
+    "verifyInstructions": "Inserisci il codice di 6 cifre dall'email. Il codice è valido per 30 minuti.",
+    "codeLabel": "Codice di 6 cifre",
+    "verifySubmitLabel": "Verifica",
+    "publicCta": "Questa è la nostra azienda — richiedi questa scheda",
+    "publicBadge": "Verificato",
+    "publicBanner": "Hai richiesto questa scheda. Modificala dal tuo cabinet."
+  },
+  "public": {
+    "contractor": {
+      "listing": {
+        "title": "Appaltatori",
+        "subtitle": "Partner di energia rinnovabile — progettazione, installazione, avviamento della tua centrale.",
+        "empty": "Nessun appaltatore approvato ancora.",
+        "emptyCta": "Sii il primo — registra la tua azienda →",
+        "page": "Pagina {page} di {total}",
+        "total": "{count} appaltatori"
+      },
+      "filter": {
+        "country": "Paese",
+        "renewable": "Rinnovabile",
+        "all": "Tutti",
+        "apply": "Applica",
+        "clear": "Cancella filtri",
+        "evOnly": "Solo operatori di ricarica EV"
+      },
+      "detail": {
+        "about": "Informazioni",
+        "whatWeDo": "Cosa facciamo",
+        "workCategories": "Servizi",
+        "renewableTypes": "Tipi rinnovabili",
+        "countriesServed": "Paesi serviti",
+        "contact": "Contatto",
+        "contactEmail": "Email",
+        "contactPhone": "Telefono",
+        "website": "Sito web",
+        "companyInfo": "Informazioni aziendali",
+        "legalName": "Nome legale"
+      }
+    }
+  },
+  "exchange": {
+    "ladder": {
+      "ask": "Offerta",
+      "mine": "Mio"
+    },
+    "receipt": {
+      "eyebrow": "Ricevuta",
+      "kindTrade": "Acquisto di kWh",
+      "kindCharge": "Sessione di ricarica",
+      "back": "Torna al portafoglio",
+      "issuedAt": "Emesso",
+      "zone": "Zona",
+      "kwh": "Energia",
+      "price": "Prezzo",
+      "notional": "Valore",
+      "fee": "Commissione",
+      "total": "Totale",
+      "reference": "Riferimento",
+      "tokens": "Token spesi"
+    }
+  },
+  "points": {
+    "name": "Nome",
+    "type": "Tipo",
+    "create": "Crea",
+    "connectors": "connettori",
+    "sentBack": "Restituito",
+    "back": "Indietro",
+    "next": "Avanti",
+    "save": "Salva",
+    "saved": "Salvato",
+    "preview": "Anteprima nel navigatore",
+    "submit": "Invia per revisione",
+    "submitted": "In attesa di revisione",
+    "missing": "Ancora richiesto",
+    "missingNone": "Tutti i campi obbligatori sono compilati",
+    "connectionHelp": "L'attrezzatura riporta l'occupazione dei connettori con la chiave del punto. La scheda appare nel navigatore dopo che l'operatore l'ha approvata e l'attrezzatura riporta per la prima volta.",
+    "step": {
+      "type": "Tipo",
+      "address": "Indirizzo",
+      "equipment": "Attrezzatura",
+      "tariffs": "Tariffe",
+      "payment": "Pagamento",
+      "connection": "Connessione",
+      "publish": "Pubblica"
+    },
+    "kind": {
+      "CHARGING_STATION": "Stazione di ricarica",
+      "POWERBANK": "Powerbank",
+      "GENERATION": "Generazione",
+      "MIXED": "Misto"
+    },
+    "status": {
+      "DRAFT": "Bozza",
+      "REVIEW": "In revisione",
+      "TEST": "Connessione di prova",
+      "PUBLISHED": "Pubblicato",
+      "SUSPENDED": "Sospeso"
+    },
+    "source": {
+      "SOLAR": "Solare",
+      "WIND": "Eolico",
+      "BIOGAS": "Biogas",
+      "HYDRO": "Idrico",
+      "GRID": "Rete",
+      "MIXED": "Misto"
+    },
+    "payment": {
+      "TOKEN": "token kWh",
+      "POOLWATT_CARD": "Carta Poolwatt",
+      "WHITE_LABEL_CARD": "Carta white label"
     }
   }
 }

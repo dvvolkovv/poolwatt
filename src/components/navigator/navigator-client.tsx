@@ -1,133 +1,210 @@
 "use client";
 
+// Страница зарядок: три раздела — станции, операторы, карта.
+//
+// Что было до 2026-11-28. Страница была картой: `fixed inset-0 flex`, слева
+// колонка списка жёсткой ширины 380 точек, справа карта. На экране 360 точек
+// колонка занимала весь экран, а карта целиком уезжала за правый край —
+// водитель с телефона не видел её вовсе. Область поиска задавала только
+// карта, то есть на телефоне её не задавал никто.
+//
+// Что стало. Открывается список станций во всю ширину, ближние первыми, —
+// это и есть первый экран водителя. Карта — отдельный раздел, во весь экран,
+// без деления пополам. Операторы — третий. Раздел и фильтры живут в адресе
+// (US-23: «вид, который водитель нашёл, — это ссылка»), а область поиска
+// задаётся тремя способами: геопозицией, выбором страны и окном карты.
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ChargerStation, ConnectorType, PowerLevel } from "@/lib/chargers";
+import { useLocale } from "next-intl";
+import { AlertTriangle, RotateCw, X } from "lucide-react";
+import type { ChargerStation } from "@/lib/chargers";
+import {
+  bboxAround,
+  COUNTRY_BOXES,
+  DEFAULT_CENTRE,
+  DEFAULT_RADIUS_KM,
+  distanceKm,
+  type BBox,
+  type Centre,
+} from "@/lib/navigator/areas";
 import { ChargerMap, type Viewport } from "./charger-map";
-import { Sidebar } from "./sidebar";
 import { StationCard } from "./station-card";
-import { PanelLeftClose, PanelLeftOpen, AlertTriangle, RotateCw, X } from "lucide-react";
+import { StationList, type ListStation } from "./station-list";
+import { OperatorList, operatorsOf } from "./operator-list";
+import { FilterBar, type Filters, type SortKey } from "./filter-bar";
 
-type SortKey = "default" | "priceAsc";
-
-type Filters = {
-  connector: ConnectorType | "";
-  power: PowerLevel | "";
-  status: string;
-  query: string;
-  sort: SortKey;
-  freeOnly: boolean;
-};
-
+type View = "list" | "operators" | "map";
 type SourceTag = "live" | "cache" | "stale" | "mock" | null;
 
-const FETCH_DEBOUNCE_MS = 600;
+const FETCH_DEBOUNCE_MS = 400;
+const VIEWS: View[] = ["list", "operators", "map"];
 
 export function NavigatorClient({
   labels,
   initialFilters,
+  initialView,
 }: {
   labels: Record<string, string>;
   /** US-23 — the filters arrive in the address, so a filtered view is a link. */
   initialFilters: Partial<Filters>;
+  initialView: View;
 }) {
+  const locale = useLocale();
+  const [view, setView] = useState<View>(initialView);
   const [stations, setStations] = useState<ChargerStation[]>([]);
   const [loading, setLoading] = useState(false);
   const [source, setSource] = useState<SourceTag>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [me, setMe] = useState<Centre | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [area, setArea] = useState<BBox>(
+    () =>
+      (initialFilters.country ? COUNTRY_BOXES[initialFilters.country] : null) ??
+      bboxAround(DEFAULT_CENTRE, DEFAULT_RADIUS_KM),
+  );
   const [filters, setFilters] = useState<Filters>({
     connector: "",
     power: "",
     status: "",
     query: "",
-    sort: "default",
+    sort: "distance",
     freeOnly: false,
+    country: "",
+    operator: "",
     ...initialFilters,
   });
 
-  // Keep the address in step with the filters: without this a driver cannot
-  // keep, share or reopen the search they just made.
+  // Адрес идёт за видом и фильтрами: иначе найденное нельзя ни сохранить, ни
+  // переслать, ни открыть заново.
   useEffect(() => {
     const params = new URLSearchParams();
+    if (view !== "list") params.set("view", view);
     if (filters.connector) params.set("connector", filters.connector);
     if (filters.power) params.set("power", filters.power);
     if (filters.status) params.set("status", filters.status);
     if (filters.query) params.set("q", filters.query);
-    if (filters.sort !== "default") params.set("sort", filters.sort);
+    if (filters.country) params.set("country", filters.country);
+    if (filters.operator) params.set("operator", filters.operator);
+    if (filters.sort !== "distance") params.set("sort", filters.sort);
     if (filters.freeOnly) params.set("free", "1");
     const next = params.toString();
-    const url = next ? `${window.location.pathname}?${next}` : window.location.pathname;
-    window.history.replaceState(null, "", url);
-  }, [filters]);
+    window.history.replaceState(
+      null,
+      "",
+      next ? `${window.location.pathname}?${next}` : window.location.pathname,
+    );
+  }, [filters, view]);
 
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inflight = useRef<AbortController | null>(null);
-  const lastViewport = useRef<Viewport | null>(null);
 
-  const runFetch = useCallback(async (vp: Viewport) => {
-    inflight.current?.abort();
-    const ac = new AbortController();
-    inflight.current = ac;
+  const load = useCallback(
+    async (box: BBox, at: Centre | null) => {
+      inflight.current?.abort();
+      const ac = new AbortController();
+      inflight.current = ac;
+      setLoading(true);
+      setErrorMsg(null);
+      setStations([]);
+      try {
+        const params = new URLSearchParams({
+          south: box.south.toFixed(5),
+          west: box.west.toFixed(5),
+          north: box.north.toFixed(5),
+          east: box.east.toFixed(5),
+        });
+        if (at) {
+          params.set("atLat", at.lat.toFixed(5));
+          params.set("atLng", at.lng.toFixed(5));
+        }
 
-    setLoading(true);
-    setErrorMsg(null);
-    try {
-      const params = new URLSearchParams({
-        south: vp.south.toFixed(5),
-        west: vp.west.toFixed(5),
-        north: vp.north.toFixed(5),
-        east: vp.east.toFixed(5),
-      });
-      const res = await fetch(`/api/chargers?${params}`, { signal: ac.signal });
-      if (!res.ok) {
-        setErrorMsg(labels.errorLoad ?? "Could not load stations");
-        setStations([]);
+        // Сначала наши пункты — они в нашей базе и приходят мгновенно.
+        // Холодный ответ из OpenStreetMap идёт до двадцати шести секунд, и
+        // пустой экран всё это время водитель читает как «сайт сломался».
+        void fetch(`/api/chargers?${params}&fast=1`, { signal: ac.signal })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((quick: ChargerStation[] | null) => {
+            if (ac.signal.aborted || !quick?.length) return;
+            setStations((current) => (current.length === 0 ? quick : current));
+          })
+          .catch(() => undefined);
+
+        const res = await fetch(`/api/chargers?${params}`, { signal: ac.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        setSource((res.headers.get("X-Source") as SourceTag) ?? null);
+        setStations((await res.json()) as ChargerStation[]);
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+        setErrorMsg(labels.errorLoad);
         setSource(null);
-        return;
+      } finally {
+        if (!ac.signal.aborted) setLoading(false);
       }
-      const data = (await res.json()) as ChargerStation[];
-      const tag = (res.headers.get("X-Source") as SourceTag) ?? "live";
-      setStations(data);
-      setSource(tag);
-      if (tag === "stale" || tag === "mock") {
-        setErrorMsg(res.headers.get("X-Error") ?? null);
-      }
-    } catch (e) {
-      if ((e as Error).name === "AbortError") return;
-      setErrorMsg(labels.errorLoad ?? "Could not load stations");
-    } finally {
-      if (inflight.current === ac) {
-        inflight.current = null;
-        setLoading(false);
-      }
-    }
-  }, [labels.errorLoad]);
-
-  const scheduleFetch = useCallback(
-    (vp: Viewport) => {
-      lastViewport.current = vp;
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      debounceTimer.current = setTimeout(() => {
-        runFetch(vp);
-      }, FETCH_DEBOUNCE_MS);
     },
-    [runFetch],
+    [labels.errorLoad],
   );
 
+  // Один запрос на область: дрожание карты не должно бить по сети.
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => void load(area, me), FETCH_DEBOUNCE_MS);
     return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      inflight.current?.abort();
+      if (timer.current) clearTimeout(timer.current);
     };
+  }, [area, me, load]);
+
+  const locate = useCallback(() => {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const centre = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setMe(centre);
+        setArea(bboxAround(centre, DEFAULT_RADIUS_KM));
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300_000 },
+    );
   }, []);
 
-  const handleRetry = useCallback(() => {
-    if (lastViewport.current) runFetch(lastViewport.current);
-  }, [runFetch]);
+  // «Согласно моей локации»: спрашиваем один раз при открытии, и только если
+  // человек уже разрешал геопозицию этому сайту. Иначе окно браузера
+  // выскакивало бы у каждого, кто зашёл просто посмотреть.
+  useEffect(() => {
+    if (!navigator.permissions?.query) return;
+    let cancelled = false;
+    void navigator.permissions
+      .query({ name: "geolocation" as PermissionName })
+      .then((status) => {
+        if (!cancelled && status.state === "granted") locate();
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [locate]);
 
-  const filtered = useMemo(() => {
-    let result = stations;
+  const onViewport = useCallback((vp: Viewport) => {
+    setArea({ south: vp.south, west: vp.west, north: vp.north, east: vp.east });
+  }, []);
+
+  const shown: ListStation[] = useMemo(() => {
+    let result: ListStation[] = stations.map((s) => ({
+      ...s,
+      distanceKm: me ? distanceKm(me, { lat: s.lat, lng: s.lng }) : null,
+    }));
+
+    if (filters.country) {
+      result = result.filter((s) => s.country === filters.country);
+    }
+    if (filters.operator) {
+      result = result.filter((s) => s.operator === filters.operator);
+    }
     if (filters.connector) {
       result = result.filter((s) =>
         s.connections.some((c) => c.connectorType === filters.connector),
@@ -140,8 +217,6 @@ export function NavigatorClient({
       result = result.filter((s) => s.status === filters.status);
     }
     if (filters.freeOnly) {
-      // A connector whose occupancy nobody reported is not free, it is
-      // unknown — and the driver asked for free.
       result = result.filter((s) =>
         s.connections.some((c) => c.availability === "FREE"),
       );
@@ -156,128 +231,218 @@ export function NavigatorClient({
           s.address.toLowerCase().includes(q),
       );
     }
-    if (filters.sort === "priceAsc") {
-      // Operator-published prices first (ascending); stations without a
-      // published price fall to the bottom in their original order.
-      result = [...result].sort((a, b) => {
-        const pa = a.operatorPrice ? Number(a.operatorPrice.pricePerKwh) : Number.POSITIVE_INFINITY;
-        const pb = b.operatorPrice ? Number(b.operatorPrice.pricePerKwh) : Number.POSITIVE_INFINITY;
-        return pa - pb;
-      });
-    }
-    return result;
-  }, [stations, filters]);
 
-  const selected = useMemo(
-    () => filtered.find((s) => s.id === selectedId) ?? null,
-    [filtered, selectedId],
+    return sortStations(result, filters.sort);
+  }, [stations, filters, me]);
+
+  const operators = useMemo(
+    () =>
+      operatorsOf(
+        filters.operator ? stations : shown.map((s) => s as ChargerStation),
+      ),
+    [stations, shown, filters.operator],
   );
 
-  const handleSelect = useCallback((s: ChargerStation) => {
-    setSelectedId(s.id);
+  const selected = useMemo(
+    () => shown.find((s) => s.id === selectedId) ?? null,
+    [shown, selectedId],
+  );
+
+  const openStation = useCallback((station: ListStation) => {
+    setSelectedId(station.id);
   }, []);
 
+  // Выбор страны переносит область поиска в эту страну. Это следствие
+  // нажатия, а не состояния: в эффекте оно превратилось бы в лишний проход
+  // отрисовки (`react-hooks/set-state-in-effect`).
+  const changeFilters = useCallback(
+    (next: Filters) => {
+      if (next.country !== filters.country) {
+        const box = next.country ? COUNTRY_BOXES[next.country] : null;
+        if (box) setArea(box);
+      }
+      setFilters(next);
+    },
+    [filters.country],
+  );
+
   return (
-    <div className="fixed inset-0 top-16 flex">
-      <div
-        className={`${
-          sidebarOpen ? "w-[380px]" : "w-0"
-        } transition-all duration-300 overflow-hidden shrink-0 relative z-10`}
+    <div className="flex min-h-[calc(100dvh-4rem)] flex-col">
+      <nav
+        aria-label={labels.title}
+        className="sticky top-16 z-20 border-b border-hairline bg-bg/95 backdrop-blur-md"
       >
-        <Sidebar
-          stations={filtered}
-          loading={loading}
-          selectedId={selectedId}
-          onSelect={handleSelect}
-          filters={filters}
-          onFiltersChange={setFilters}
-          labels={labels}
-        />
+        <div className="mx-auto flex max-w-[1200px] gap-1 px-4">
+          {VIEWS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setView(key)}
+              data-testid={`view-${key}`}
+              aria-current={view === key}
+              className={`min-h-[48px] flex-1 border-b-2 px-2 text-[12px] font-semibold uppercase tracking-[0.12em] transition-colors sm:text-[13px] ${
+                view === key
+                  ? "border-accent text-accent"
+                  : "border-transparent text-muted hover:text-foreground"
+              }`}
+            >
+              {labels[`tab_${key}`]}
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      <FilterBar
+        filters={filters}
+        onChange={changeFilters}
+        labels={labels}
+        locale={locale}
+        locating={locating}
+        located={me != null}
+        onLocate={locate}
+      />
+
+      <div className="mx-auto w-full max-w-[1200px] px-4 py-2">
+        <p className="num text-[12px] text-muted" data-testid="navigator-count">
+          {loading
+            ? labels.loading
+            : `${shown.length} ${labels.stationsFound}`}
+        </p>
       </div>
 
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="absolute top-4 z-20 p-2 rounded-r-lg bg-card/90 backdrop-blur-sm border border-l-0 border-hairline text-muted hover:text-foreground transition-colors"
-        style={{ left: sidebarOpen ? "380px" : "0px", transition: "left 0.3s" }}
-      >
-        {sidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
-      </button>
-
-      <div className="flex-1 relative">
-        <ChargerMap
-          stations={filtered}
-          selectedId={selectedId}
-          onSelect={handleSelect}
-          onViewportChange={scheduleFetch}
-        />
-
-        <DataSourceBanner
-          source={source}
-          loading={loading}
-          errorMsg={errorMsg}
+      {errorMsg && (
+        <Banner message={errorMsg} labels={labels} onRetry={() => void load(area, me)} onDismiss={() => setErrorMsg(null)} />
+      )}
+      {!errorMsg && (source === "stale" || source === "mock") && (
+        <Banner
+          message={source === "stale" ? labels.sourceStale : labels.sourceMock}
           labels={labels}
-          onRetry={handleRetry}
-          onDismiss={() => setErrorMsg(null)}
+          onRetry={() => void load(area, me)}
+          onDismiss={() => setSource(null)}
         />
+      )}
 
-        {selected && (
-          <div className="absolute top-4 right-4 w-[360px] max-h-[calc(100vh-6rem)] overflow-y-auto z-10">
-            <StationCard
-              station={selected}
-              onClose={() => setSelectedId(null)}
+      {view === "list" && (
+        <div className="mx-auto flex w-full max-w-[1200px] flex-1 gap-6 px-0 pb-10 lg:px-4">
+          <div className="min-w-0 flex-1">
+            <StationList
+              stations={shown}
+              loading={loading}
+              selectedId={selectedId}
+              onSelect={openStation}
               labels={labels}
             />
           </div>
-        )}
-      </div>
+
+          {/* Одна карточка, два облика. На телефоне это отдельный экран
+              поверх всего, на мониторе — колонка справа от списка. Два узла
+              вместо одного стоили бы двух одинаковых кнопок «маршрут» в
+              разметке — и это ловил тест §27. */}
+          {selected && (
+            <aside
+              data-testid="station-sheet"
+              className="fixed inset-0 z-40 overflow-y-auto bg-bg lg:static lg:z-auto lg:w-[380px] lg:shrink-0 lg:overflow-visible lg:bg-transparent"
+            >
+              <div className="lg:sticky lg:top-[180px]">
+                <StationCard
+                  station={selected}
+                  onClose={() => setSelectedId(null)}
+                  labels={labels}
+                />
+              </div>
+            </aside>
+          )}
+        </div>
+      )}
+
+      {view === "operators" && (
+        <div className="mx-auto w-full max-w-[1200px] flex-1 pb-10">
+          <OperatorList
+            operators={operators}
+            labels={labels}
+            onSelect={(name) => {
+              setFilters((f) => ({ ...f, operator: name }));
+              setView("list");
+            }}
+          />
+        </div>
+      )}
+
+      {view === "map" && (
+        <div className="relative h-[calc(100dvh-4rem-48px-69px)] min-h-[320px] w-full">
+          <ChargerMap
+            stations={shown}
+            selectedId={selectedId}
+            onSelect={openStation}
+            onViewportChange={onViewport}
+          />
+          {selected && (
+            <div className="absolute inset-x-2 top-2 z-10 max-h-[calc(100%-1rem)] overflow-y-auto sm:inset-x-auto sm:right-4 sm:w-[360px]">
+              <StationCard
+                station={selected}
+                onClose={() => setSelectedId(null)}
+                labels={labels}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 }
 
-function DataSourceBanner({
-  source,
-  loading,
-  errorMsg,
+function sortStations(list: ListStation[], sort: SortKey): ListStation[] {
+  if (sort === "priceAsc") {
+    return [...list].sort((a, b) => price(a) - price(b));
+  }
+  if (sort === "distance") {
+    // Без геопозиции расстояния нет — остаётся порядок выдачи, в котором наши
+    // пункты идут первыми.
+    if (list.every((s) => s.distanceKm == null)) return list;
+    return [...list].sort(
+      (a, b) =>
+        (a.distanceKm ?? Number.POSITIVE_INFINITY) -
+        (b.distanceKm ?? Number.POSITIVE_INFINITY),
+    );
+  }
+  return list;
+}
+
+const price = (s: ListStation) =>
+  s.operatorPrice ? Number(s.operatorPrice.pricePerKwh) : Number.POSITIVE_INFINITY;
+
+function Banner({
+  message,
   labels,
   onRetry,
   onDismiss,
 }: {
-  source: SourceTag;
-  loading: boolean;
-  errorMsg: string | null;
+  message: string;
   labels: Record<string, string>;
   onRetry: () => void;
   onDismiss: () => void;
 }) {
-  // Banner shows only when there is something useful to surface:
-  // a degraded data source or an error. Live + no-error = silent.
-  const degraded = source === "stale" || source === "mock";
-  const hardError = !source && errorMsg;
-  if (!degraded && !hardError) return null;
-
-  const message = hardError
-    ? labels.errorLoad
-    : source === "stale"
-      ? labels.sourceStale
-      : labels.sourceMock;
-
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 max-w-[520px] w-[calc(100vw-2rem)]">
-      <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-card/95 backdrop-blur-sm border border-amber-500/40 shadow-lg">
-        <AlertTriangle size={16} className="text-amber-500 shrink-0" />
-        <span className="text-[13px] text-foreground flex-1 leading-snug">{message}</span>
+    <div className="mx-auto w-full max-w-[1200px] px-4 pb-2">
+      <div className="flex items-center gap-3 rounded-lg border border-amber-500/40 bg-card px-3 py-2">
+        <AlertTriangle size={16} className="shrink-0 text-amber-500" />
+        <span className="min-w-0 flex-1 text-[13px] leading-snug text-foreground">
+          {message}
+        </span>
         <button
+          type="button"
           onClick={onRetry}
-          disabled={loading}
-          className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider rounded-md border border-hairline text-foreground hover:bg-card-alt disabled:opacity-50 transition-colors"
+          className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-hairline px-2.5 text-[11px] font-medium uppercase tracking-wider text-foreground"
         >
-          <RotateCw size={11} className={loading ? "animate-spin" : ""} />
+          <RotateCw size={11} />
           {labels.retry}
         </button>
         <button
+          type="button"
           onClick={onDismiss}
-          className="p-1 text-muted hover:text-foreground transition-colors"
           aria-label="Dismiss"
+          className="p-1 text-muted hover:text-foreground"
         >
           <X size={14} />
         </button>

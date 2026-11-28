@@ -111,7 +111,13 @@ export async function GET(req: NextRequest) {
   const filters = parseMapFilters(req.nextUrl.searchParams);
   // Семь фильтров §27 опираются на поля, которых у чужого пина нет: пустить
   // его в такую выдачу — соврать о нём. Заодно экономится запрос к Overpass.
-  const onlyOurs = oursOnly(filters);
+  //
+  // `fast=1` — тот же расчёт по другой причине. Холодный запрос в Overpass
+  // идёт до двадцати шести секунд, и всё это время водитель смотрит на
+  // «Загружаем станции…». Поэтому список спрашивает дважды: сперва быстро и
+  // только наши пункты (они в нашей базе, это миллисекунды), потом полный
+  // ответ, который приходит следом и заменяет список.
+  const onlyOurs = oursOnly(filters) || req.nextUrl.searchParams.get("fast") === "1";
   const minPowerKw = filters.power != null ? MIN_POWER_KW[filters.power] : null;
 
   // Расстояния считает сервер, если водитель поделился местоположением.
@@ -189,6 +195,7 @@ export async function GET(req: NextRequest) {
     "X-Points": String(ours.length),
   };
   if (onlyOurs) headers["X-Ours-Only"] = "1";
+  if (req.nextUrl.searchParams.get("fast") === "1") headers["X-Fast"] = "1";
   if (result.mirror) headers["X-Mirror"] = result.mirror;
   if (result.error) headers["X-Error"] = result.error.slice(0, 200);
 

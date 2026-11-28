@@ -145,7 +145,17 @@
     "availability_OUT_OF_SERVICE": "не работает",
     "availability_UNKNOWN": "неизвестно",
     "availability_BOOKED": "забронирован",
-    "fullCard": "Полная карточка"
+    "fullCard": "Полная карточка",
+    "tabStations": "Станции",
+    "tabOperators": "Операторы",
+    "tabMap": "На карте",
+    "nearMe": "Рядом со мной",
+    "locating": "Ищем вас…",
+    "country": "Страна",
+    "sortDistance": "Сначала ближние",
+    "noOperators": "В этой области операторов нет.",
+    "payments": "Приём оплаты",
+    "back": "Назад"
   },
   "bot": {
     "siblingNote": "Telegram-бот @PoolwattBot шлёт live-оповещения и позволяет производителям публиковать офферы прямо с телефона."

@@ -19,6 +19,7 @@ export default async function NavigatorPage({ params, searchParams }: Props) {
   const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("navigator");
+  const tPayment = await getTranslations("points.payment");
 
   const labels: Record<string, string> = {
     title: t("title"),
@@ -64,6 +65,22 @@ export default async function NavigatorPage({ params, searchParams }: Props) {
     availability_BOOKED: t("availability_BOOKED"),
     availability_UNKNOWN: t("availability_UNKNOWN"),
     fullCard: t("fullCard"),
+    // Три раздела, геопозиция, страна, оплата — всё новое от 2026-11-28.
+    tab_list: t("tabStations"),
+    tab_operators: t("tabOperators"),
+    tab_map: t("tabMap"),
+    nearMe: t("nearMe"),
+    locating: t("locating"),
+    country: t("country"),
+    sortDistance: t("sortDistance"),
+    noOperators: t("noOperators"),
+    payments: t("payments"),
+    back: t("back"),
+    payment_TOKEN: tPayment("TOKEN"),
+    payment_POOLWATT_CARD: tPayment("POOLWATT_CARD"),
+    payment_WHITE_LABEL_CARD: tPayment("WHITE_LABEL_CARD"),
+    payment_BANK_CARD: tPayment("BANK_CARD"),
+    payment_QR: tPayment("QR"),
   };
 
   // US-23 — the filters live in the address, so the view a driver found is a
@@ -71,21 +88,26 @@ export default async function NavigatorPage({ params, searchParams }: Props) {
   const one = (key: string) =>
     typeof sp[key] === "string" ? (sp[key] as string) : "";
 
+  const view = one("view");
+
   return (
     <>
-      {/* Карта занимает весь экран (`fixed inset-0`), поэтому заголовок
-          страницы — скрытый: имя у документа быть обязано, а место под него
-          на карте отдавать нечему. До этого у страницы не было ни `h1`, ни
-          `h2` вовсе, и для читалки экрана она была безымянной. */}
+      {/* Заголовок страницы скрытый: три раздела под ним названы словами, и
+          повторять имя страницы крупно — отнимать у телефона первый экран.
+          Имя документу всё равно нужно: без него страница безымянна для
+          читалки экрана. */}
       <h1 className="sr-only">{t("title")}</h1>
       <NavigatorClient
         labels={labels}
+        initialView={view === "map" || view === "operators" ? view : "list"}
         initialFilters={{
           connector: (one("connector") as never) || "",
           power: (one("power") as never) || "",
           status: one("status"),
           query: one("q"),
-          sort: (one("sort") as never) || "default",
+          country: one("country"),
+          operator: one("operator"),
+          sort: (one("sort") as never) || "distance",
           freeOnly: one("free") === "1",
         }}
       />
