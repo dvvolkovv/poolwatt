@@ -1,19 +1,31 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
+import { auth } from "@/lib/auth";
+import { navHref, visibleNav } from "@/lib/site-nav";
 
 export async function Footer() {
   const t = await getTranslations("common");
   const tf = await getTranslations("footer");
   const tb = await getTranslations("bot");
+  const tNav = await getTranslations("nav");
   const locale = await getLocale();
   const year = new Date().getFullYear();
+  const session = await auth();
+
+  // Подвал читает те же разделы, что шапка и гамбургер (`site-nav.ts`). До
+  // этого у него был свой список, и в нём жили `/hubs`, `/offers` и
+  // `/settings` — все три отдавали 404.
+  const groups = visibleNav({
+    signedIn: Boolean(session?.user),
+    operator: session?.user?.role === "ADMIN",
+  });
 
   return (
     <footer className="mt-20 bg-bg-tint border-t border-hairline">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 xl:px-20 py-10 md:py-16">
         <div className="grid grid-cols-12 gap-8">
           {/* Brand + tagline */}
-          <div className="col-span-12 md:col-span-5">
+          <div className="col-span-12 md:col-span-4">
             <div className="flex items-baseline gap-2 mb-3">
               <span className="text-[18px] font-bold tracking-[-0.02em] text-foreground">
                 poolwatt
@@ -28,64 +40,48 @@ export async function Footer() {
             <p className="mt-4 text-[12px] leading-[1.6] max-w-[440px] text-muted">
               {tb("siblingNote")}
             </p>
+            <div className="mt-6">
+              <div className="text-[10px] uppercase tracking-[0.18em] mb-2 text-muted">
+                {tf("section.data")}
+              </div>
+              <p className="text-[12px] leading-[1.6] max-w-[440px] text-muted">
+                {tf("dataNote")}
+              </p>
+            </div>
+            {!session?.user && (
+              <Link
+                href={`/${locale}/login`}
+                prefetch={false}
+                className="mt-6 inline-flex min-h-[44px] items-center text-[14px] font-semibold text-accent hover:brightness-110"
+              >
+                {t("signIn")}
+              </Link>
+            )}
           </div>
 
-          {/* Grid links */}
-          <div className="col-span-6 md:col-span-2">
-            <div className="text-[10px] uppercase tracking-[0.18em] mb-3 text-muted">
-              {tf("section.grid")}
-            </div>
-            <ul className="space-y-2 text-[14px]">
-              <li>
-                <Link href={`/${locale}`} className="text-muted hover:text-foreground transition-colors">
-                  {t("producers")}
-                </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/hubs`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
-                  {t("hubs")}
-                </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/offers`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
-                  {t("offers")}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Account */}
-          <div className="col-span-6 md:col-span-2">
-            <div className="text-[10px] uppercase tracking-[0.18em] mb-3 text-muted">
-              {tf("section.account")}
-            </div>
-            <ul className="space-y-2 text-[14px]">
-              <li>
-                <Link href={`/${locale}/login`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
-                  {t("signIn")}
-                </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/settings`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
-                  {t("settings")}
-                </Link>
-              </li>
-              <li>
-                <Link href={`/${locale}/me/build-requests/new`} prefetch={false} className="text-muted hover:text-foreground transition-colors">
-                  {t("request")}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Data */}
-          <div className="col-span-12 md:col-span-3">
-            <div className="text-[10px] uppercase tracking-[0.18em] mb-3 text-muted">
-              {tf("section.data")}
-            </div>
-            <p className="text-[12px] leading-[1.6] text-muted">
-              {tf("dataNote")}
-            </p>
+          {/* Разделы — своей сеткой внутри, чтобы их число могло меняться
+              вместе с правами человека и не ломало внешние 12 колонок. */}
+          <div className="col-span-12 md:col-span-8 grid grid-cols-2 lg:grid-cols-4 gap-8">
+            {groups.map((group) => (
+              <div key={group.key}>
+                <div className="text-[10px] uppercase tracking-[0.18em] mb-3 text-muted">
+                  {tNav(`groups.${group.key}`)}
+                </div>
+                <ul className="space-y-2 text-[14px]">
+                  {group.items.map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        href={navHref(locale, item.href)}
+                        prefetch={false}
+                        className="inline-flex min-h-[32px] items-center text-muted hover:text-foreground transition-colors"
+                      >
+                        {tNav(`items.${item.key}`)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -95,15 +91,18 @@ export async function Footer() {
             <br />
             Mlynské nivy&nbsp;II. 18884/52B, 821&nbsp;05 Bratislava
             <br />
-            IČO:&nbsp;<span className="num">35806842</span> &middot;
-            DIČ:&nbsp;<span className="num">2020258867</span> &middot;
-            IČ&nbsp;DPH:&nbsp;<span className="num">SK2020258867</span>
+            IČO:&nbsp;<span className="num">35806842</span> &middot; DIČ:&nbsp;
+            <span className="num">2020258867</span> &middot; IČ&nbsp;DPH:&nbsp;
+            <span className="num">SK2020258867</span>
             <br />
-            Obch. register OS&nbsp;BA&nbsp;III, Sa, vl.&nbsp;č.&nbsp;<span className="num">2664</span>/B
+            Obch. register OS&nbsp;BA&nbsp;III, Sa, vl.&nbsp;č.&nbsp;
+            <span className="num">2664</span>/B
           </div>
 
           <div className="flex flex-col items-start md:items-end justify-end gap-1 num text-[11px] uppercase tracking-[0.18em] text-muted">
-            <div>&copy; {year} {t("appName")}</div>
+            <div>
+              &copy; {year} {t("appName")}
+            </div>
             <div>v0.1.0 &middot; MMXXVI</div>
           </div>
         </div>
