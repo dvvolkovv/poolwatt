@@ -10,7 +10,7 @@ import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { mergeMessages } from "./messages";
-import { SUPPORTED_LOCALES } from "./locales";
+import { SUPPORTED_LOCALES, COMPLETE_LOCALES } from "./locales";
 
 const DIR = join(process.cwd(), "messages");
 const read = (locale: string) =>
@@ -73,4 +73,38 @@ describe("разделы есть у каждого языка", () => {
       ).toBeTruthy();
     });
   }
+});
+
+describe("список предлагаемых языков не врёт", () => {
+  const en = read("en");
+  const flatten = (tree: Record<string, unknown>, prefix = ""): string[] => {
+    const out: string[] = [];
+    for (const [key, value] of Object.entries(tree)) {
+      const path = prefix ? `${prefix}.${key}` : key;
+      if (value && typeof value === "object") {
+        out.push(...flatten(value as Record<string, unknown>, path));
+      } else {
+        out.push(path);
+      }
+    }
+    return out;
+  };
+  const keys = flatten(en);
+
+  const complete = SUPPORTED_LOCALES.filter((locale) => {
+    const own = new Set(flatten(read(locale)));
+    return keys.every((key) => own.has(key));
+  });
+
+  it("предлагаются ровно те языки, у которых переведено всё", () => {
+    // Падение здесь — хорошая новость: словарь дособрали, и язык пора
+    // добавить в `COMPLETE_LOCALES`. Или наоборот: из словаря что-то пропало.
+    expect([...COMPLETE_LOCALES].sort()).toEqual([...complete].sort());
+  });
+
+  it("английский, русский и словацкий в списке всегда", () => {
+    for (const locale of ["en", "ru", "sk"]) {
+      expect(COMPLETE_LOCALES).toContain(locale);
+    }
+  });
 });

@@ -145,7 +145,17 @@
     "availability_OUT_OF_SERVICE": "außer Betrieb",
     "availability_UNKNOWN": "unbekannt",
     "availability_BOOKED": "gebucht",
-    "fullCard": "Vollständige Karte"
+    "fullCard": "Vollständige Karte",
+    "tabStations": "Stationen",
+    "tabOperators": "Betreiber",
+    "tabMap": "Karte",
+    "nearMe": "In meiner Nähe",
+    "locating": "Wir suchen Sie…",
+    "country": "Land",
+    "sortDistance": "Nächste zuerst",
+    "noOperators": "In diesem Gebiet gibt es keine Betreiber.",
+    "payments": "Akzeptierte Zahlungen",
+    "back": "Zurück"
   },
   "bot": {
     "siblingNote": "Der Telegram-Bot @PoolwattBot liefert Live-Benachrichtigungen und ermöglicht Erzeugern, Angebote direkt vom Handy zu veröffentlichen."

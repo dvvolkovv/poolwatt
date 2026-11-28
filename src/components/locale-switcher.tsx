@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
-import { SUPPORTED_LOCALES, LOCALE_LABELS, type Locale } from "@/lib/locales";
+import { COMPLETE_LOCALES, LOCALE_LABELS, type Locale } from "@/lib/locales";
 
 /**
  * Выбор языка. С 2026-11-28 его нет в ряду шапки: он занимал место, которого
@@ -45,7 +45,7 @@ export function LocaleSwitcher({
       }
       aria-label="Language"
     >
-      {SUPPORTED_LOCALES.map((l) => (
+      {COMPLETE_LOCALES.map((l) => (
         <option key={l} value={l} className="bg-card text-foreground">
           {LOCALE_LABELS[l]}
         </option>

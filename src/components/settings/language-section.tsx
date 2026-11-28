@@ -13,7 +13,7 @@
 
 import { useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { SUPPORTED_LOCALES, LOCALE_LABELS, type Locale } from "@/lib/locales";
+import { COMPLETE_LOCALES, LOCALE_LABELS, type Locale } from "@/lib/locales";
 import { updatePreferencesAction } from "@/app/[locale]/me/settings/actions";
 
 export function LanguageSection({
@@ -52,7 +52,7 @@ export function LanguageSection({
           aria-label={labels.title}
           className="w-full rounded-md border border-hairline bg-card px-3 py-2 text-[15px] text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
         >
-          {SUPPORTED_LOCALES.map((l) => (
+          {COMPLETE_LOCALES.map((l) => (
             <option key={l} value={l}>
               {LOCALE_LABELS[l]}
             </option>
