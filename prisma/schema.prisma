@@ -72,6 +72,8 @@ model User {
   reportedTickets         Ticket[]                 @relation("TicketReporter")
   ticketMessages          TicketMessage[]          @relation("TicketMessageAuthor")
   refundsDecided          PaymentRefund[]          @relation("RefundDecidedBy")
+  chatMessages            ChatMessage[]            @relation("ChatMessageAuthor")
+  chatReads               ChatRead[]               @relation("ChatReadUser")
 
   // Exchange core (ТЗ §4–§8).
   ownedCompanies     Company[]            @relation("CompanyOwner")
@@ -260,6 +262,8 @@ model ChargerOperator {
   // §46 — the claims this network's accountant returned to support.
   receiptClaims     ReceiptClaim[]
   warehouses        Warehouse[]
+  // §48 «внутренний чат команды»: одна комната на сеть.
+  chatMessages      ChatMessage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -599,6 +603,8 @@ model WorkOrder {
   tasks         WorkOrderTask[]
   sitePhotos    WorkOrderPhoto[]
   signature     WorkOrderSignature?
+  // §48 «чат по каждому наряду» — он же рассказ наряда о себе.
+  chatMessages  ChatMessage[]
 
   @@index([operatorId, status])
   @@index([companyId, status])
@@ -682,8 +688,9 @@ model Crew {
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
 
-  members    CrewMember[]
-  workOrders WorkOrder[]
+  members      CrewMember[]
+  workOrders   WorkOrder[]
+  chatMessages ChatMessage[]
 
   @@unique([operatorId, name])
   @@index([operatorId])
@@ -827,6 +834,58 @@ enum WorkOrderPriority {
 
 // §48 — новый → назначен → в пути → в работе → ожидает запчасть → выполнен →
 // проверен.
+/// §48 «Внутренний чат команды и чат по каждому наряду».
+///
+/// Append-only: внутренняя переписка о наряде — часть его истории, и
+/// переписанное задним числом хуже отсутствующего. Комната не существует как
+/// отдельная строка — это сеть, бригада или наряд плюс их сообщения, поэтому
+/// заполнена ровно одна из трёх ссылок. Удалили бригаду — её переписка ушла
+/// каскадом, осиротеть ей негде.
+model ChatMessage {
+  id          String           @id @default(cuid())
+  kind        ChatRoomKind
+  operatorId  String?
+  operator    ChargerOperator? @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  crewId      String?
+  crew        Crew?            @relation(fields: [crewId], references: [id], onDelete: Cascade)
+  workOrderId String?
+  workOrder   WorkOrder?       @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  authorKind  ChatAuthorKind   @default(STAFF)
+  authorId    String?
+  author      User?            @relation("ChatMessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  body        String           @db.Text
+  createdAt   DateTime         @default(now())
+
+  @@index([operatorId, createdAt])
+  @@index([crewId, createdAt])
+  @@index([workOrderId, createdAt])
+}
+
+enum ChatRoomKind {
+  NETWORK
+  CREW
+  WORK_ORDER
+}
+
+enum ChatAuthorKind {
+  STAFF
+  SYSTEM
+}
+
+/// Одна отметка на человека и комнату: всё, что новее её, — непрочитанное.
+/// Ключ комнаты строкой, а не тремя ссылками: отметка не данные о комнате, а
+/// закладка читателя, и ссылочная целостность ей ничего не добавляет.
+model ChatRead {
+  id      String   @id @default(cuid())
+  userId  String
+  user    User     @relation("ChatReadUser", fields: [userId], references: [id], onDelete: Cascade)
+  roomKey String
+  seenAt  DateTime @default(now())
+
+  @@unique([userId, roomKey])
+  @@index([userId])
+}
+
 enum WorkOrderStatus {
   NEW
   ASSIGNED
