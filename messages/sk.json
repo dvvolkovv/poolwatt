@@ -3038,5 +3038,56 @@
       "pointAddress": "Adresa bodu",
       "connector": "Konektor"
     }
+  },
+  "nav": {
+    "menu": "Menu",
+    "open": "Otvoriť menu",
+    "close": "Zavrieť menu",
+    "title": "Sekcie",
+    "groups": {
+      "energy": "Energia",
+      "mine": "Moje",
+      "partners": "Pre majiteľov a partnerov",
+      "apps": "Aplikácia",
+      "operator": "Operátor"
+    },
+    "items": {
+      "chargers": "Nabíjacie stanice",
+      "producers": "Výrobcovia",
+      "exchange": "Burza",
+      "cabinet": "Kabinet",
+      "wallet": "Peňaženka",
+      "bookings": "Rezervácie",
+      "favorites": "Obľúbené",
+      "support": "Podpora",
+      "settings": "Nastavenia",
+      "buildRequest": "Zaregistrovať dom",
+      "contractors": "Dodávatelia",
+      "listing": "Listing firmy",
+      "chargerOperator": "Sieť nabíjačiek",
+      "install": "Nainštalovať do telefónu",
+      "listings": "Front žiadostí"
+    }
+  },
+  "install": {
+    "eyebrow": "Aplikácia",
+    "title": "Poolwatt v telefóne",
+    "subtitle": "Ten istý Poolwatt na domovskej obrazovke: mapa nabíjačiek, zostatok, vlastná stanica.",
+    "pwaTitle": "Pridať na domovskú obrazovku",
+    "pwaInstall": "Nainštalovať",
+    "pwaBody": "Funguje na Androide aj na iPhone. Z obchodu netreba nič stahovať — prehliadač sám položí ikonu na obrazovku.",
+    "iosTitle": "iPhone, Safari",
+    "iosStep1": "Otvorte túto stránku v Safari.",
+    "iosStep2": "Stlačte „Zdieľať“.",
+    "iosStep3": "Vyberte „Pridať na domovskú obrazovku“.",
+    "iosTestflight": "Natívna zostava pre iOS sa rozdáva cez TestFlight. Pozvánka príde na Apple ID a testera môže pridať iba vlastník — verejný odkaz neexistuje.",
+    "androidTitle": "Android, súbor APK",
+    "androidBody": "Zostava je podpísaná mimo Google Play, preto Android požiada o povolenie na inštaláciu.",
+    "androidDownload": "Stiahnuť APK",
+    "androidBuild": "Zostava {build} · {size} MB",
+    "androidMissing": "Zostava ešte nie je zverejnená.",
+    "qrTitle": "Otvoriť v telefóne",
+    "qrBody": "Nasmerujte kameru telefónu na kód.",
+    "openApp": "Otvoriť telefónnu sekciu"
   }
 }

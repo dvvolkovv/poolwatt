@@ -3038,5 +3038,56 @@
       "pointAddress": "Point address",
       "connector": "Connector"
     }
+  },
+  "nav": {
+    "menu": "Menu",
+    "open": "Open menu",
+    "close": "Close menu",
+    "title": "Sections",
+    "groups": {
+      "energy": "Energy",
+      "mine": "Mine",
+      "partners": "Owners and partners",
+      "apps": "App",
+      "operator": "Operator"
+    },
+    "items": {
+      "chargers": "Charging stations",
+      "producers": "Producers",
+      "exchange": "Exchange",
+      "cabinet": "Cabinet",
+      "wallet": "Wallet",
+      "bookings": "Bookings",
+      "favorites": "Favorites",
+      "support": "Support",
+      "settings": "Settings",
+      "buildRequest": "Register a home",
+      "contractors": "Contractors",
+      "listing": "Company listing",
+      "chargerOperator": "Charging network",
+      "install": "Install on a phone",
+      "listings": "Listing queue"
+    }
+  },
+  "install": {
+    "eyebrow": "App",
+    "title": "Poolwatt on your phone",
+    "subtitle": "The same Poolwatt, on your home screen: the charging map, your balance, your station.",
+    "pwaTitle": "Add to the home screen",
+    "pwaInstall": "Install",
+    "pwaBody": "Works on Android and on iPhone. Nothing to download from a store — the browser puts the icon on your screen itself.",
+    "iosTitle": "iPhone, Safari",
+    "iosStep1": "Open this page in Safari.",
+    "iosStep2": "Tap Share.",
+    "iosStep3": "Choose “Add to Home Screen”.",
+    "iosTestflight": "The native iOS build is distributed through TestFlight. An invitation goes to your Apple ID, and only the owner can add a tester — there is no public link.",
+    "androidTitle": "Android, the APK",
+    "androidBody": "A build signed outside Google Play, so Android will ask for permission to install it.",
+    "androidDownload": "Download the APK",
+    "androidBuild": "Build {build} · {size} MB",
+    "androidMissing": "No build published yet.",
+    "qrTitle": "Open on a phone",
+    "qrBody": "Point the phone camera at the code.",
+    "openApp": "Open the phone section"
   }
 }
