@@ -550,26 +550,26 @@ git add -A src/app src/components messages && git commit -m "feat(work): a dispa
 - Modify: `src/app/[locale]/me/charger-operator/[id]/staff/page.tsx`,
   `src/app/[locale]/me/charger-operator/[id]/staff/actions.ts`
 
-- [ ] **Шаг 1: действия**
+- [x] **Шаг 1: действия**
 
 В существующий `staff/actions.ts` добавить `saveEmployeeRegions`,
 `addCrew`, `saveCrewRegions`, `addMember`, `dropMember` — тонкие обёртки над
 `crew-service.ts`, право проверяет сервис.
 
-- [ ] **Шаг 2: врезка**
+- [x] **Шаг 2: врезка**
 
 `crew-editor.tsx`: у каждого сотрудника поле городов (через запятую), ниже
 список бригад с составом, старшим и городами; добавление бригады и участника.
 `data-testid="crew-editor"`.
 
-- [ ] **Шаг 3: сборка и проверка глазами**
+- [x] **Шаг 3: сборка и проверка глазами**
 
 ```bash
 npm run build && pm2 restart poolwatt-web
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/ru/me/charger-operator
 ```
 
-- [ ] **Шаг 4: коммит**
+- [x] **Шаг 4: коммит**
 
 ```bash
 git commit -am "feat(work): crews and regions where the staff of §47 lives"
@@ -582,7 +582,7 @@ git commit -am "feat(work): crews and regions where the staff of §47 lives"
 **Files:**
 - Create: `tests/e2e/dispatch.spec.ts`
 
-- [ ] **Шаг 1: сценарий**
+- [x] **Шаг 1: сценарий**
 
 По образцу `tests/e2e/pipeline.spec.ts`: создать сеть, пункт в городе, двух
 сотрудников-инженеров, войти владельцем. Проверить:
@@ -592,13 +592,13 @@ git commit -am "feat(work): crews and regions where the staff of §47 lives"
 `/{locale}/me/work-orders` и на `/{locale}/app/work-orders`. Свои строки
 удалить в конце.
 
-- [ ] **Шаг 2: прогон**
+- [x] **Шаг 2: прогон**
 
 ```bash
 cd ~/poolwatt && npx playwright test tests/e2e/dispatch.spec.ts
 ```
 
-- [ ] **Шаг 3: коммит**
+- [x] **Шаг 3: коммит**
 
 ```bash
 git add tests/e2e/dispatch.spec.ts && git commit -m "test(work): a dispatcher creates and assigns on the live build"
@@ -608,7 +608,7 @@ git add tests/e2e/dispatch.spec.ts && git commit -m "test(work): a dispatcher cr
 
 ### Задача 12: весь набор и реестр
 
-- [ ] **Шаг 1: юнит-тесты целиком**
+- [x] **Шаг 1: юнит-тесты целиком**
 
 ```bash
 cd ~/poolwatt
@@ -618,25 +618,25 @@ NODE_ENV=test DATABASE_URL="$(sed -n 's/^DATABASE_URL=//p' .env.local \
 
 Ожидание: всё зелено, кроме известной флаки `resolve-user.test.ts`.
 
-- [ ] **Шаг 2: e2e целиком**
+- [x] **Шаг 2: e2e целиком**
 
 ```bash
 cd ~/poolwatt && npm run test:e2e
 ```
 
-- [ ] **Шаг 3: сборка и перезапуск**
+- [x] **Шаг 3: сборка и перезапуск**
 
 ```bash
 cd ~/poolwatt && npm run build && pm2 restart poolwatt-web poolwatt-worker
 ```
 
-- [ ] **Шаг 4: реестр**
+- [x] **Шаг 4: реестр**
 
 `inbox/TZ-STATUS.md`: часть N-3-б — «готово 2026-11-27» с коммитами и
 тестами; строка итога сверху; запись в журнал с тем, что нашлось до начала
 работы. В git не попадает (`inbox/` в `.gitignore`).
 
-- [ ] **Шаг 5: коммит и отчёт**
+- [x] **Шаг 5: коммит и отчёт**
 
 ```bash
 git add -A && git commit -m "docs(work): tick the N-3-b plan" && git push

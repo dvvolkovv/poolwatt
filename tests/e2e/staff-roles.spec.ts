@@ -79,7 +79,9 @@ test("the owner grants an engineer one point, and only that point", async ({ pag
   await page.getByLabel("Role", { exact: true }).selectOption("ENGINEER");
   // Scope: point A only.
   await page.locator('fieldset label:has-text("E2E Staff Point A") input').check();
-  await page.locator('button:has-text("Add")').click();
+  // Кнопка берётся из формы приглашения: на странице §47 теперь есть и
+  // врезка бригад §48 со своей кнопкой «Add a crew».
+  await page.getByTestId("staff-invite").getByRole("button", { name: "Add", exact: true }).click();
 
   await expect(page.getByTestId(`staff-${ENGINEER.username}`)).toBeVisible();
 
