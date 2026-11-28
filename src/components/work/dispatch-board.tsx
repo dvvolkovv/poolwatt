@@ -181,7 +181,9 @@ export function DispatchBoard({
       <section>
         <h2 className="mb-3 text-[11px] uppercase tracking-[0.14em] text-muted">{labels.queue}</h2>
         {rows.length === 0 ? (
-          <p className="text-sm text-muted">{labels.empty}</p>
+          <p className="text-sm text-muted" data-testid="dispatch-empty">
+            {labels.empty}
+          </p>
         ) : (
           <ul className="divide-y divide-hairline" data-testid="dispatch-queue">
             {rows.map((row) => (
