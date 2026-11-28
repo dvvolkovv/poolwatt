@@ -18,6 +18,7 @@ import { writeAudit } from "@/lib/exchange/audit";
 import { pushOpen } from "@/lib/exchange/gates";
 import { checklistBlocking } from "./work-order-checklist";
 import { readSignature } from "./work-order-media";
+import { systemChatMessage } from "./chat-service";
 import { suggestAssignees } from "./assignment";
 
 export class WorkOrderError extends Error {}
@@ -233,11 +234,12 @@ export async function assignWorkOrder(
 
   let assigneeId: string | null = null;
   let crewId: string | null = null;
+  let line = "";
 
   if (target.employeeId) {
     const employee = await prisma.employee.findUnique({
       where: { id: target.employeeId },
-      include: { role: true },
+      include: { role: true, user: { select: { username: true } } },
     });
     if (!employee) throw new WorkOrderError("Employee not found");
     if (employee.operatorId !== order.operatorId) {
@@ -247,6 +249,7 @@ export async function assignWorkOrder(
       throw new WorkOrderError("That role does not do work orders");
     }
     assigneeId = employee.id;
+    line = `Назначен: @${employee.user.username}`;
   } else {
     const crew = await prisma.crew.findUnique({
       where: { id: target.crewId },
@@ -263,6 +266,7 @@ export async function assignWorkOrder(
       throw new WorkOrderError("Nobody in that crew may work an order");
     }
     crewId = crew.id;
+    line = `Назначена бригада «${crew.name}»`;
   }
 
   const updated = await prisma.workOrder.update({
@@ -283,6 +287,10 @@ export async function assignWorkOrder(
     before: { assigneeId: order.assigneeId, crewId: order.crewId, status: order.status },
     after: { assigneeId, crewId, status: updated.status },
   });
+  // §48 «чат по каждому наряду»: он же рассказ наряда о себе. Запись вне
+  // транзакции наряда сознательно — потерянная строка рассказа не стоит
+  // отката назначения.
+  await systemChatMessage(prisma, { kind: "WORK_ORDER", id: workOrderId }, line);
   return updated;
 }
 
@@ -334,6 +342,11 @@ export async function advanceWorkOrder(
     before: { status: order.status },
     after: { status: next, report: updated.report },
   });
+  await systemChatMessage(
+    prisma,
+    { kind: "WORK_ORDER", id: workOrderId },
+    `Статус: ${order.status} → ${next}`,
+  );
   return updated;
 }
 

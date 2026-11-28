@@ -421,6 +421,27 @@ describe("assignWorkOrder — §48", () => {
       assignWorkOrder(order.id, { crewId: emptyCrewId }, ownerUserId),
     ).rejects.toThrow(/nobody|empty/i);
   });
+
+  // §48 «чат по каждому наряду» — он же рассказ наряда о себе: человек,
+  // открывший наряд, должен прочитать его как историю, а не собирать по
+  // таблицам.
+  it("назначение падает в чат наряда системной строкой", async () => {
+    const order = await fresh();
+    await assignWorkOrder(order.id, { employeeId: engineerEmployeeId }, ownerUserId);
+
+    const rows = await prisma.chatMessage.findMany({ where: { workOrderId: order.id } });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ authorKind: "SYSTEM", kind: "WORK_ORDER" });
+    expect(rows[0].body).toContain("Назначен");
+  });
+
+  it("назначение бригаде называет бригаду", async () => {
+    const order = await fresh();
+    await assignWorkOrder(order.id, { crewId: crewIdOfThisNetwork }, ownerUserId);
+
+    const rows = await prisma.chatMessage.findMany({ where: { workOrderId: order.id } });
+    expect(rows[0].body).toMatch(/Назначена бригада/);
+  });
 });
 
 // §48 «наряд создаётся … автоматически по аварии оборудования» плюс критерий
@@ -514,6 +535,17 @@ describe("advanceWorkOrder — the statuses of §48", () => {
       signedById: ownerUserId,
     });
   }
+
+  it("смена статуса падает в чат наряда системной строкой", async () => {
+    const order = await assigned();
+    await advanceWorkOrder(order.id, "EN_ROUTE", ownerUserId, null);
+
+    const rows = await prisma.chatMessage.findMany({
+      where: { workOrderId: order.id, authorKind: "SYSTEM" },
+      orderBy: { createdAt: "asc" },
+    });
+    expect(rows.at(-1)?.body).toContain("EN_ROUTE");
+  });
 
   it("walks новый → назначен → в пути → в работе → выполнен → проверен", async () => {
     let order = await assigned();
