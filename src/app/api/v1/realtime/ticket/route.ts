@@ -13,6 +13,7 @@ import {
   walletChannel,
 } from "@/lib/exchange/realtime";
 import { prisma } from "@/lib/prisma";
+import { readRoomForUser } from "@/lib/work/chat-access";
 import { readTicketForUser } from "@/lib/work/ticket-access";
 
 export async function POST(request: NextRequest) {
@@ -39,6 +40,17 @@ export async function POST(request: NextRequest) {
       const ticketId = asked.slice("ticket.".length);
       const seen = await readTicketForUser(ticketId, user.id, user.role ?? "USER");
       if (seen) channels.push(asked);
+    }
+
+    // §48 — одна комната внутреннего чата, и тоже по имени: сотрудник сети
+    // состоит в десятках комнат, а страница слушает ту, которую показывает.
+    if (asked?.startsWith("team.")) {
+      const room = await readRoomForUser(
+        asked.slice("team.".length),
+        user.id,
+        user.role ?? "USER",
+      );
+      if (room) channels.push(asked);
     }
   }
 
